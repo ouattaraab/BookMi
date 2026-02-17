@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BookMi - Design Directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #1A2744;
+  --navy-light: #243356;
+  --navy-deep: #0F1B33;
+  --blue: #2196F3;
+  --blue-dark: #1976D2;
+  --blue-light: #64B5F6;
+  --blue-50: #E3F2FD;
+  --orange: #FF6B35;
+  --orange-dark: #E55A2B;
+  --orange-light: #FF8C5E;
+  --success: #00C853;
+  --warning: #FFB300;
+  --error: #FF1744;
+  --white: #FFFFFF;
+  --gray-50: #FAFAFA;
+  --gray-100: #F5F5F5;
+  --gray-200: #EEEEEE;
+  --gray-400: #BDBDBD;
+  --gray-600: #757575;
+  --glass-white: rgba(255,255,255,0.15);
+  --glass-white-md: rgba(255,255,255,0.25);
+  --glass-white-strong: rgba(255,255,255,0.40);
+  --glass-dark: rgba(26,39,68,0.80);
+  --glass-border: rgba(255,255,255,0.25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Nunito', sans-serif; background: var(--gray-50); color: var(--navy); }
+
+/* Navigation */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--navy); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { color: var(--white); font-size: 20px; font-weight: 700; }
+.nav-logo span { color: var(--blue); }
+.nav-tabs { display: flex; gap: 4px; overflow-x: auto; }
+.nav-tab { padding: 8px 16px; border-radius: 999px; border: none; background: transparent; color: rgba(255,255,255,0.6); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s; }
+.nav-tab:hover { color: var(--white); background: rgba(255,255,255,0.1); }
+.nav-tab.active { color: var(--white); background: var(--blue); }
+
+/* Main Content */
+.main { padding-top: 72px; }
+.direction { display: none; padding: 32px 24px; min-height: calc(100vh - 72px); }
+.direction.active { display: block; }
+.direction-header { text-align: center; margin-bottom: 40px; }
+.direction-header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.direction-header p { font-size: 16px; color: var(--gray-600); max-width: 600px; margin: 0 auto; }
+.direction-header .tags { display: flex; gap: 8px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+.direction-header .tag { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+
+/* Phone Frame */
+.phone-grid { display: flex; gap: 32px; justify-content: center; flex-wrap: wrap; padding: 0 16px; }
+.phone-wrapper { text-align: center; }
+.phone-wrapper h3 { font-size: 14px; font-weight: 600; color: var(--gray-600); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.phone { width: 375px; height: 812px; border-radius: 40px; overflow: hidden; position: relative; box-shadow: 0 24px 48px rgba(0,0,0,0.15); border: 8px solid #1a1a1a; }
+.phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 160px; height: 34px; background: #1a1a1a; border-radius: 0 0 20px 20px; z-index: 10; }
+.phone-content { width: 100%; height: 100%; overflow: hidden; position: relative; }
+
+/* Common phone UI elements */
+.status-bar { height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; font-size: 12px; font-weight: 600; }
+.bottom-tab-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 83px; display: flex; align-items: flex-start; justify-content: space-around; padding-top: 8px; }
+.tab-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; font-weight: 500; opacity: 0.5; }
+.tab-item.active { opacity: 1; }
+.tab-icon { width: 24px; height: 24px; border-radius: 6px; }
+
+/* ========================================= */
+/* DIRECTION 1: Deep Glassmorphism */
+/* ========================================= */
+.d1-bg { background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 50%, #0F3460 100%); }
+.d1-status { color: var(--white); }
+.d1-search { margin: 60px 16px 16px; padding: 14px 20px; background: var(--glass-white-md); border: 1px solid var(--glass-border); border-radius: 16px; color: rgba(255,255,255,0.6); font-size: 16px; backdrop-filter: blur(20px); }
+.d1-section-title { color: var(--white); font-size: 18px; font-weight: 700; padding: 0 16px; margin-bottom: 12px; }
+.d1-categories { display: flex; gap: 12px; padding: 0 16px; overflow: hidden; }
+.d1-cat { width: 80px; text-align: center; }
+.d1-cat-icon { width: 64px; height: 64px; border-radius: 20px; background: var(--glass-white-md); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 6px; }
+.d1-cat-label { color: rgba(255,255,255,0.8); font-size: 11px; font-weight: 600; }
+.d1-talent-card { margin: 0 16px 12px; border-radius: 20px; overflow: hidden; background: var(--glass-white); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
+.d1-talent-img { height: 160px; background: linear-gradient(135deg, #7C4DFF 0%, #536DFE 100%); position: relative; }
+.d1-talent-img.img2 { background: linear-gradient(135deg, #FF4081 0%, #FF6E40 100%); }
+.d1-talent-badge { position: absolute; top: 12px; right: 12px; background: var(--glass-white-strong); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 8px; padding: 4px 8px; font-size: 10px; color: var(--white); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.d1-talent-info { padding: 14px 16px; }
+.d1-talent-name { color: var(--white); font-size: 16px; font-weight: 700; }
+.d1-talent-cat { color: rgba(255,255,255,0.6); font-size: 12px; margin-top: 2px; }
+.d1-talent-price { color: var(--blue-light); font-size: 14px; font-weight: 700; margin-top: 6px; }
+.d1-talent-rating { display: flex; align-items: center; gap: 4px; color: var(--warning); font-size: 12px; font-weight: 600; margin-top: 4px; }
+.d1-bottom { background: var(--glass-dark); border-top: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
+.d1-tab { color: rgba(255,255,255,0.4); }
+.d1-tab.active { color: var(--blue); }
+
+/* ========================================= */
+/* DIRECTION 2: Light Glassmorphism */
+/* ========================================= */
+.d2-bg { background: linear-gradient(180deg, var(--blue-50) 0%, var(--white) 40%, var(--gray-50) 100%); }
+.d2-status { color: var(--navy); }
+.d2-header { padding: 60px 16px 20px; }
+.d2-greeting { font-size: 14px; color: var(--gray-600); font-weight: 500; }
+.d2-title { font-size: 24px; font-weight: 700; color: var(--navy); margin-top: 4px; }
+.d2-search { margin: 0 16px 20px; padding: 14px 20px; background: var(--white); border: 2px solid var(--gray-200); border-radius: 16px; color: var(--gray-400); font-size: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.d2-section-title { color: var(--navy); font-size: 16px; font-weight: 700; padding: 0 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.d2-see-all { color: var(--blue); font-size: 13px; font-weight: 600; }
+.d2-categories { display: flex; gap: 10px; padding: 0 16px; overflow: hidden; }
+.d2-cat { padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; color: var(--white); }
+.d2-talent-card { margin: 0 16px 12px; border-radius: 20px; overflow: hidden; background: var(--white); border: 1px solid var(--gray-200); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+.d2-talent-img { height: 150px; background: linear-gradient(135deg, #7C4DFF 0%, #536DFE 100%); position: relative; }
+.d2-talent-img.img2 { background: linear-gradient(135deg, #00BFA5 0%, #2196F3 100%); }
+.d2-talent-badge { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.95); border-radius: 8px; padding: 4px 10px; font-size: 10px; color: var(--blue); font-weight: 700; display: flex; align-items: center; gap: 4px; }
+.d2-talent-info { padding: 14px 16px; }
+.d2-talent-name { color: var(--navy); font-size: 16px; font-weight: 700; }
+.d2-talent-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+.d2-talent-price { color: var(--orange); font-size: 15px; font-weight: 700; }
+.d2-talent-rating { color: var(--gray-600); font-size: 12px; }
+.d2-bottom { background: var(--white); border-top: 1px solid var(--gray-200); }
+.d2-tab { color: var(--gray-400); }
+.d2-tab.active { color: var(--blue); }
+
+/* ========================================= */
+/* DIRECTION 3: Bold Gradient */
+/* ========================================= */
+.d3-bg { background: linear-gradient(180deg, var(--navy-deep) 0%, #0D1F3C 30%, #0A1628 100%); }
+.d3-hero { height: 280px; background: linear-gradient(135deg, var(--blue-dark), var(--blue), var(--blue-light)); border-radius: 0 0 32px 32px; padding: 60px 20px 24px; position: relative; overflow: hidden; }
+.d3-hero::after { content: ''; position: absolute; bottom: -40px; right: -40px; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+.d3-hero-title { color: var(--white); font-size: 28px; font-weight: 800; margin-top: 8px; }
+.d3-hero-subtitle { color: rgba(255,255,255,0.7); font-size: 14px; margin-top: 4px; }
+.d3-hero-search { margin-top: 20px; padding: 14px 20px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 16px; color: rgba(255,255,255,0.7); font-size: 15px; backdrop-filter: blur(10px); }
+.d3-talent-card { margin: 20px 16px 0; border-radius: 24px; overflow: hidden; background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.1); }
+.d3-talent-img { height: 140px; background: linear-gradient(135deg, #7C4DFF, #E040FB); }
+.d3-talent-img.img2 { background: linear-gradient(135deg, #FF6B35, #FF4081); }
+.d3-talent-info { padding: 16px; }
+.d3-talent-name { color: var(--white); font-size: 17px; font-weight: 700; }
+.d3-talent-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.d3-talent-price { color: var(--blue-light); font-size: 15px; font-weight: 700; }
+.d3-cta-btn { padding: 8px 20px; background: linear-gradient(135deg, var(--orange), var(--orange-light)); border-radius: 12px; color: var(--white); font-size: 12px; font-weight: 700; }
+.d3-bottom { background: rgba(15,27,51,0.95); border-top: 1px solid rgba(255,255,255,0.08); }
+.d3-tab { color: rgba(255,255,255,0.3); }
+.d3-tab.active { color: var(--blue-light); }
+
+/* ========================================= */
+/* DIRECTION 4: Minimal Glass */
+/* ========================================= */
+.d4-bg { background: #F8FAFE; }
+.d4-header { padding: 60px 20px 16px; }
+.d4-logo { font-size: 22px; font-weight: 800; color: var(--navy); }
+.d4-logo span { color: var(--blue); }
+.d4-search { margin: 8px 20px 24px; padding: 16px 20px; background: var(--white); border-radius: 14px; color: var(--gray-400); font-size: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border: 1px solid var(--gray-100); }
+.d4-section { padding: 0 20px; margin-bottom: 24px; }
+.d4-section-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+.d4-talent-card { border-radius: 16px; overflow: hidden; background: var(--white); margin-bottom: 16px; border: 1px solid var(--gray-100); }
+.d4-talent-img { height: 200px; background: linear-gradient(135deg, var(--navy), var(--blue-dark)); position: relative; }
+.d4-talent-img.img2 { background: linear-gradient(135deg, #7C4DFF, var(--blue)); }
+.d4-talent-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 16px 16px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
+.d4-talent-name { color: var(--white); font-size: 18px; font-weight: 700; }
+.d4-talent-cat { color: rgba(255,255,255,0.7); font-size: 12px; margin-top: 2px; }
+.d4-talent-footer { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.d4-talent-price { font-size: 16px; font-weight: 700; color: var(--navy); }
+.d4-talent-rating { font-size: 13px; color: var(--gray-600); }
+.d4-badge { position: absolute; top: 12px; right: 12px; background: var(--blue); color: var(--white); font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 8px; }
+.d4-bottom { background: var(--white); border-top: 1px solid var(--gray-100); }
+.d4-tab { color: var(--gray-400); }
+.d4-tab.active { color: var(--blue); }
+
+/* ========================================= */
+/* DIRECTION 5: Immersive Media */
+/* ========================================= */
+.d5-bg { background: #000; }
+.d5-hero-img { height: 400px; background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.8) 70%, #000 100%), linear-gradient(135deg, #7C4DFF, #2196F3, #00BFA5); padding-top: 54px; }
+.d5-hero-content { position: absolute; bottom: 180px; left: 0; right: 0; padding: 0 20px; }
+.d5-hero-tag { display: inline-block; padding: 4px 12px; background: var(--blue); border-radius: 999px; font-size: 11px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+.d5-hero-title { color: var(--white); font-size: 32px; font-weight: 800; line-height: 1.1; }
+.d5-hero-meta { color: rgba(255,255,255,0.6); font-size: 13px; margin-top: 6px; }
+.d5-cta { position: absolute; bottom: 130px; left: 20px; right: 20px; padding: 16px; background: linear-gradient(135deg, var(--orange), var(--orange-dark)); border-radius: 16px; text-align: center; color: var(--white); font-size: 16px; font-weight: 700; }
+.d5-scroll-section { padding: 24px 0 0; }
+.d5-scroll-title { color: var(--white); font-size: 18px; font-weight: 700; padding: 0 20px; margin-bottom: 12px; }
+.d5-scroll-cards { display: flex; gap: 12px; padding: 0 20px; overflow: hidden; }
+.d5-mini-card { width: 140px; flex-shrink: 0; border-radius: 16px; overflow: hidden; }
+.d5-mini-img { height: 180px; background: linear-gradient(135deg, #FF4081, #7C4DFF); position: relative; }
+.d5-mini-img.c2 { background: linear-gradient(135deg, #00BFA5, #2196F3); }
+.d5-mini-img.c3 { background: linear-gradient(135deg, #FFB300, #FF6B35); }
+.d5-mini-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 24px 10px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); }
+.d5-mini-name { color: var(--white); font-size: 13px; font-weight: 700; }
+.d5-mini-price { color: var(--blue-light); font-size: 11px; font-weight: 600; }
+.d5-bottom { background: rgba(0,0,0,0.95); border-top: 1px solid rgba(255,255,255,0.08); }
+.d5-tab { color: rgba(255,255,255,0.3); }
+.d5-tab.active { color: var(--blue); }
+
+/* ========================================= */
+/* DIRECTION 6: Card-Centric Glass */
+/* ========================================= */
+.d6-bg { background: linear-gradient(180deg, var(--navy) 0%, var(--navy) 40%, var(--navy-deep) 100%); }
+.d6-header { padding: 60px 20px 16px; display: flex; justify-content: space-between; align-items: center; }
+.d6-logo { font-size: 20px; font-weight: 800; color: var(--white); }
+.d6-logo span { color: var(--blue); }
+.d6-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--glass-white-md); border: 2px solid var(--glass-border); }
+.d6-promo { margin: 8px 16px 20px; padding: 20px; border-radius: 20px; background: linear-gradient(135deg, var(--blue-dark), var(--blue)); position: relative; overflow: hidden; }
+.d6-promo::after { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+.d6-promo-title { color: var(--white); font-size: 18px; font-weight: 700; }
+.d6-promo-subtitle { color: rgba(255,255,255,0.7); font-size: 13px; margin-top: 4px; }
+.d6-promo-btn { display: inline-block; margin-top: 12px; padding: 8px 20px; background: var(--white); border-radius: 10px; color: var(--blue); font-size: 13px; font-weight: 700; }
+.d6-section-title { color: var(--white); font-size: 16px; font-weight: 700; padding: 0 20px; margin-bottom: 12px; }
+.d6-talent-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 16px; }
+.d6-talent-card { border-radius: 20px; overflow: hidden; background: var(--glass-white); border: 1px solid var(--glass-border); backdrop-filter: blur(20px); }
+.d6-talent-img { height: 120px; background: linear-gradient(135deg, #7C4DFF, #536DFE); position: relative; }
+.d6-talent-img.c2 { background: linear-gradient(135deg, #FF4081, #FF6E40); }
+.d6-talent-img.c3 { background: linear-gradient(135deg, #00BFA5, #2196F3); }
+.d6-talent-img.c4 { background: linear-gradient(135deg, #FFB300, #FF6B35); }
+.d6-talent-info { padding: 10px 12px; }
+.d6-talent-name { color: var(--white); font-size: 13px; font-weight: 700; }
+.d6-talent-price { color: var(--blue-light); font-size: 12px; font-weight: 600; margin-top: 2px; }
+.d6-talent-rating { color: var(--warning); font-size: 10px; margin-top: 2px; }
+.d6-badge { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; background: var(--glass-white-strong); backdrop-filter: blur(10px); border: 1px solid var(--glass-border); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--white); }
+.d6-bottom { background: var(--glass-dark); border-top: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(20px); }
+.d6-tab { color: rgba(255,255,255,0.3); }
+.d6-tab.active { color: var(--blue); }
+
+/* Comparison section */
+.comparison { padding: 40px 24px; background: var(--white); border-top: 2px solid var(--gray-200); }
+.comparison h2 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 32px; }
+.comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+.comparison-card { border-radius: 16px; padding: 24px; border: 2px solid var(--gray-200); transition: all 0.3s; cursor: pointer; }
+.comparison-card:hover { border-color: var(--blue); box-shadow: 0 8px 24px rgba(33,150,243,0.15); }
+.comparison-card.recommended { border-color: var(--blue); background: var(--blue-50); }
+.comparison-card.recommended::before { content: 'RECOMMANDÉ'; display: block; font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 1px; margin-bottom: 8px; }
+.comparison-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.comparison-card .subtitle { font-size: 13px; color: var(--gray-600); margin-bottom: 12px; }
+.comparison-card .pros { list-style: none; }
+.comparison-card .pros li { font-size: 13px; padding: 3px 0; }
+.comparison-card .pros li::before { content: '✅ '; }
+.comparison-card .cons li { font-size: 13px; padding: 3px 0; color: var(--gray-600); }
+.comparison-card .cons li::before { content: '⚠️ '; }
+.comparison-card .cons { list-style: none; margin-top: 8px; }
+
+@media (max-width: 768px) {
+  .phone-grid { flex-direction: column; align-items: center; }
+  .nav-tabs { max-width: 60vw; }
+  .comparison-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">Book<span>Mi</span> Design</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showDirection(0)">D1: Deep Glass</button>
+    <button class="nav-tab" onclick="showDirection(1)">D2: Light Glass</button>
+    <button class="nav-tab" onclick="showDirection(2)">D3: Bold Gradient</button>
+    <button class="nav-tab" onclick="showDirection(3)">D4: Minimal</button>
+    <button class="nav-tab" onclick="showDirection(4)">D5: Immersive</button>
+    <button class="nav-tab" onclick="showDirection(5)">D6: Card Grid</button>
+    <button class="nav-tab" onclick="showDirection(6)">Comparaison</button>
+  </div>
+</nav>
+
+<main class="main">
+
+  <!-- DIRECTION 1: Deep Glassmorphism -->
+  <section class="direction active" id="d1">
+    <div class="direction-header">
+      <h2>Direction 1 — Deep Glassmorphism</h2>
+      <p>Fond navy profond avec des cartes en verre givré. L'esthétique iOS 16 à son maximum. Effet premium immédiat.</p>
+      <div class="tags">
+        <span class="tag" style="background:var(--navy);color:var(--white)">Navy profond</span>
+        <span class="tag" style="background:var(--blue);color:var(--white)">Glass cards</span>
+        <span class="tag" style="background:var(--glass-dark);color:var(--white);border:1px solid rgba(255,255,255,0.3)">Backdrop blur</span>
+      </div>
+    </div>
+    <div class="phone-grid">
+      <div class="phone-wrapper">
+        <h3>Écran d'accueil</h3>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content d1-bg">
+            <div class="status-bar d1-status"><span>9:41</span><span>●●● WiFi 🔋</span></div>
+            <div class="d1-search">🔍 Quel talent cherchez-vous ?</div>
+            <div style="margin-top:20px">
+              <div class="d1-section-title">Catégories</div>
+              <div class="d1-categories">
+                <div class="d1-cat"><div class="d1-cat-icon">🎵</div><div class="d1-cat-label">DJ</div></div>
+                <div class="d1-cat"><div class="d1-cat-icon">🎤</div><div class="d1-cat-label">Chanteur</div></div>
+                <div class="d1-cat"><div class="d1-cat-icon">😂</div><div class="d1-cat-label">Humour</div></div>
+                <div class="d1-cat"><div class="d1-cat-icon">💃</div><div class="d1-cat-label">Danse</div></div>
+              </div>
+            </div>
+            <div style="margin-top:24px">
+              <div class="d1-section-title">Talents populaires</div>
+              <div class="d1-talent-card">
+                <div class="d1-talent-img">
+                  <div class="d1-talent-badge">✓ Vérifié</div>
+                </div>
+                <div class="d1-talent-info">
+                  <div class="d1-talent-name">DJ Kerozen</div>
+                  <div class="d1-talent-cat">DJ · Abidjan, Cocody</div>
+                  <div class="d1-talent-price">À partir de 480 000 FCFA</div>
+                  <div class="d1-talent-rating">★ 4.8 (47 avis)</div>
+                </div>
+              </div>
+              <div class="d1-talent-card">
+                <div class="d1-talent-img img2">
+                  <div class="d1-talent-badge">✓ Vérifié</div>
+                </div>
+                <div class="d1-talent-info">
+                  <div class="d1-talent-name">Roseline Layo</div>
+                  <div class="d1-talent-cat">Chanteuse · Abidjan, Plateau</div>
+                  <div class="d1-talent-price">À partir de 350 000 FCFA</div>
+                  <div class="d1-talent-rating">★ 4.9 (32 avis)</div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-tab-bar d1-bottom">
+              <div class="tab-item d1-tab active"><div class="tab-icon" style="background:var(--blue);border-radius:6px"></div>Accueil</div>
+              <div class="tab-item d1-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.1);border-radius:6px"></div>Recherche</div>
+              <div class="tab-item d1-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.1);border-radius:6px"></div>Réservations</div>
+              <div class="tab-item d1-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.1);border-radius:6px"></div>Messages</div>
+              <div class="tab-item d1-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.1);border-radius:6px"></div>Profil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIRECTION 2: Light Glassmorphism -->
+  <section class="direction" id="d2">
+    <div class="direction-header">
+      <h2>Direction 2 — Light Glassmorphism</h2>
+      <p>Fond clair avec des touches de bleu. Plus aéré, plus accessible. Le glass est utilisé subtilement. Feeling "app bancaire premium".</p>
+      <div class="tags">
+        <span class="tag" style="background:var(--blue-50);color:var(--blue)">Fond clair</span>
+        <span class="tag" style="background:var(--white);color:var(--navy);border:1px solid var(--gray-200)">Cartes blanches</span>
+        <span class="tag" style="background:var(--orange);color:var(--white)">CTA orange</span>
+      </div>
+    </div>
+    <div class="phone-grid">
+      <div class="phone-wrapper">
+        <h3>Écran d'accueil</h3>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content d2-bg">
+            <div class="status-bar d2-status"><span>9:41</span><span>●●● WiFi 🔋</span></div>
+            <div class="d2-header">
+              <div class="d2-greeting">Bonjour, Aminata 👋</div>
+              <div class="d2-title">Trouvez votre talent</div>
+            </div>
+            <div class="d2-search">🔍 DJ, chanteur, humoriste...</div>
+            <div style="margin-bottom:20px">
+              <div class="d2-section-title">Catégories <span class="d2-see-all">Voir tout</span></div>
+              <div class="d2-categories">
+                <div class="d2-cat" style="background:#7C4DFF">🎵 DJ</div>
+                <div class="d2-cat" style="background:#2196F3">🎤 Chanteur</div>
+                <div class="d2-cat" style="background:#FF4081">😂 Humour</div>
+                <div class="d2-cat" style="background:#00BFA5">💃 Danse</div>
+              </div>
+            </div>
+            <div>
+              <div class="d2-section-title">Populaires <span class="d2-see-all">Voir tout</span></div>
+              <div class="d2-talent-card">
+                <div class="d2-talent-img">
+                  <div class="d2-talent-badge">✓ Vérifié</div>
+                </div>
+                <div class="d2-talent-info">
+                  <div class="d2-talent-name">DJ Kerozen</div>
+                  <div class="d2-talent-meta">
+                    <div class="d2-talent-price">480 000 FCFA</div>
+                    <div class="d2-talent-rating">★ 4.8 · 47 avis</div>
+                  </div>
+                </div>
+              </div>
+              <div class="d2-talent-card">
+                <div class="d2-talent-img img2">
+                  <div class="d2-talent-badge">✓ Vérifié</div>
+                </div>
+                <div class="d2-talent-info">
+                  <div class="d2-talent-name">Roseline Layo</div>
+                  <div class="d2-talent-meta">
+                    <div class="d2-talent-price">350 000 FCFA</div>
+                    <div class="d2-talent-rating">★ 4.9 · 32 avis</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-tab-bar d2-bottom">
+              <div class="tab-item d2-tab active"><div class="tab-icon" style="background:var(--blue);border-radius:6px"></div>Accueil</div>
+              <div class="tab-item d2-tab"><div class="tab-icon" style="background:var(--gray-200);border-radius:6px"></div>Recherche</div>
+              <div class="tab-item d2-tab"><div class="tab-icon" style="background:var(--gray-200);border-radius:6px"></div>Réservations</div>
+              <div class="tab-item d2-tab"><div class="tab-icon" style="background:var(--gray-200);border-radius:6px"></div>Messages</div>
+              <div class="tab-item d2-tab"><div class="tab-icon" style="background:var(--gray-200);border-radius:6px"></div>Profil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIRECTION 3: Bold Gradient -->
+  <section class="direction" id="d3">
+    <div class="direction-header">
+      <h2>Direction 3 — Bold Gradient</h2>
+      <p>Gradients dramatiques bleu → violet. Hero section impactante. Les couleurs de catégories sont vibrantes. Maximum d'impact visuel.</p>
+      <div class="tags">
+        <span class="tag" style="background:linear-gradient(135deg,var(--blue-dark),var(--blue));color:var(--white)">Gradient hero</span>
+        <span class="tag" style="background:var(--orange);color:var(--white)">CTA bold</span>
+        <span class="tag" style="background:var(--navy-deep);color:var(--white)">Fond profond</span>
+      </div>
+    </div>
+    <div class="phone-grid">
+      <div class="phone-wrapper">
+        <h3>Écran d'accueil</h3>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content d3-bg" style="position:relative">
+            <div class="d3-hero">
+              <div class="status-bar" style="color:white"><span>9:41</span><span>●●● WiFi 🔋</span></div>
+              <div style="font-size:13px;color:rgba(255,255,255,0.7);margin-top:16px">Bonjour, Aminata</div>
+              <div class="d3-hero-title">Réservez les meilleurs talents</div>
+              <div class="d3-hero-subtitle">+200 artistes vérifiés à Abidjan</div>
+              <div class="d3-hero-search">🔍 Rechercher un talent...</div>
+            </div>
+            <div class="d3-talent-card">
+              <div class="d3-talent-img"></div>
+              <div class="d3-talent-info">
+                <div class="d3-talent-name">DJ Kerozen</div>
+                <div class="d3-talent-bottom">
+                  <div class="d3-talent-price">480 000 FCFA</div>
+                  <div class="d3-cta-btn">Réserver</div>
+                </div>
+              </div>
+            </div>
+            <div class="d3-talent-card">
+              <div class="d3-talent-img img2"></div>
+              <div class="d3-talent-info">
+                <div class="d3-talent-name">Roseline Layo</div>
+                <div class="d3-talent-bottom">
+                  <div class="d3-talent-price">350 000 FCFA</div>
+                  <div class="d3-cta-btn">Réserver</div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-tab-bar d3-bottom">
+              <div class="tab-item d3-tab active"><div class="tab-icon" style="background:var(--blue);border-radius:6px"></div>Accueil</div>
+              <div class="tab-item d3-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Recherche</div>
+              <div class="tab-item d3-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Réservations</div>
+              <div class="tab-item d3-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Messages</div>
+              <div class="tab-item d3-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Profil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIRECTION 4: Minimal Glass -->
+  <section class="direction" id="d4">
+    <div class="direction-header">
+      <h2>Direction 4 — Minimal & Clean</h2>
+      <p>Minimalisme élégant. Fond clair, typographie forte, espaces généreux. Le glass est réservé aux moments clés uniquement.</p>
+      <div class="tags">
+        <span class="tag" style="background:var(--gray-50);color:var(--navy);border:1px solid var(--gray-200)">Minimaliste</span>
+        <span class="tag" style="background:var(--navy);color:var(--white)">Typo forte</span>
+        <span class="tag" style="background:var(--blue);color:var(--white)">Accents bleu</span>
+      </div>
+    </div>
+    <div class="phone-grid">
+      <div class="phone-wrapper">
+        <h3>Écran d'accueil</h3>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content d4-bg">
+            <div class="status-bar d2-status"><span>9:41</span><span>●●● WiFi 🔋</span></div>
+            <div class="d4-header">
+              <div class="d4-logo">Book<span>Mi</span></div>
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--blue-50);border:2px solid var(--blue)"></div>
+            </div>
+            <div class="d4-search">🔍 Rechercher un talent...</div>
+            <div class="d4-section">
+              <div class="d4-section-title">Talents populaires</div>
+              <div class="d4-talent-card">
+                <div class="d4-talent-img">
+                  <div class="d4-badge">✓ Vérifié</div>
+                  <div class="d4-talent-overlay">
+                    <div class="d4-talent-name">DJ Kerozen</div>
+                    <div class="d4-talent-cat">DJ · Abidjan</div>
+                  </div>
+                </div>
+                <div class="d4-talent-footer">
+                  <div class="d4-talent-price">480 000 FCFA</div>
+                  <div class="d4-talent-rating">★ 4.8 · 47 avis</div>
+                </div>
+              </div>
+              <div class="d4-talent-card">
+                <div class="d4-talent-img img2">
+                  <div class="d4-badge">✓ Vérifié</div>
+                  <div class="d4-talent-overlay">
+                    <div class="d4-talent-name">Roseline Layo</div>
+                    <div class="d4-talent-cat">Chanteuse · Abidjan</div>
+                  </div>
+                </div>
+                <div class="d4-talent-footer">
+                  <div class="d4-talent-price">350 000 FCFA</div>
+                  <div class="d4-talent-rating">★ 4.9 · 32 avis</div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-tab-bar d4-bottom">
+              <div class="tab-item d4-tab active"><div class="tab-icon" style="background:var(--blue);border-radius:6px"></div>Accueil</div>
+              <div class="tab-item d4-tab"><div class="tab-icon" style="background:var(--gray-100);border-radius:6px"></div>Recherche</div>
+              <div class="tab-item d4-tab"><div class="tab-icon" style="background:var(--gray-100);border-radius:6px"></div>Réservations</div>
+              <div class="tab-item d4-tab"><div class="tab-icon" style="background:var(--gray-100);border-radius:6px"></div>Messages</div>
+              <div class="tab-item d4-tab"><div class="tab-icon" style="background:var(--gray-100);border-radius:6px"></div>Profil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIRECTION 5: Immersive Media -->
+  <section class="direction" id="d5">
+    <div class="direction-header">
+      <h2>Direction 5 — Immersive Media</h2>
+      <p>Photos et vidéos en plein écran. Fond noir cinématique. Inspiré de Netflix/Spotify. Les talents sont les stars.</p>
+      <div class="tags">
+        <span class="tag" style="background:#000;color:var(--white)">Fond noir</span>
+        <span class="tag" style="background:var(--blue);color:var(--white)">Full bleed</span>
+        <span class="tag" style="background:var(--orange);color:var(--white)">CTA proéminent</span>
+      </div>
+    </div>
+    <div class="phone-grid">
+      <div class="phone-wrapper">
+        <h3>Écran d'accueil</h3>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content d5-bg" style="position:relative">
+            <div class="d5-hero-img">
+              <div class="status-bar" style="color:white;position:relative;z-index:2"><span>9:41</span><span>●●● WiFi 🔋</span></div>
+            </div>
+            <div class="d5-hero-content">
+              <div class="d5-hero-tag">TALENT DU JOUR</div>
+              <div class="d5-hero-title">DJ Kerozen</div>
+              <div class="d5-hero-meta">★ 4.8 · 47 avis · Abidjan, Cocody</div>
+            </div>
+            <div class="d5-cta">Réserver — 480 000 FCFA</div>
+            <div class="d5-scroll-section">
+              <div class="d5-scroll-title">Populaires</div>
+              <div class="d5-scroll-cards">
+                <div class="d5-mini-card">
+                  <div class="d5-mini-img">
+                    <div class="d5-mini-overlay">
+                      <div class="d5-mini-name">Roseline Layo</div>
+                      <div class="d5-mini-price">350 000 FCFA</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="d5-mini-card">
+                  <div class="d5-mini-img c2">
+                    <div class="d5-mini-overlay">
+                      <div class="d5-mini-name">MC Yves</div>
+                      <div class="d5-mini-price">200 000 FCFA</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="d5-mini-card">
+                  <div class="d5-mini-img c3">
+                    <div class="d5-mini-overlay">
+                      <div class="d5-mini-name">Serge DJ</div>
+                      <div class="d5-mini-price">280 000 FCFA</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-tab-bar d5-bottom">
+              <div class="tab-item d5-tab active"><div class="tab-icon" style="background:var(--blue);border-radius:6px"></div>Accueil</div>
+              <div class="tab-item d5-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Recherche</div>
+              <div class="tab-item d5-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Réservations</div>
+              <div class="tab-item d5-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Messages</div>
+              <div class="tab-item d5-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Profil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIRECTION 6: Card-Centric Glass -->
+  <section class="direction" id="d6">
+    <div class="direction-header">
+      <h2>Direction 6 — Card Grid Glass</h2>
+      <p>Grille de cartes glassmorphism 2 colonnes. Fond navy. Navigation structurée. Promo card en haut. Instagram-like grid.</p>
+      <div class="tags">
+        <span class="tag" style="background:var(--navy);color:var(--white)">Grid 2 colonnes</span>
+        <span class="tag" style="background:var(--blue);color:var(--white)">Promo card</span>
+        <span class="tag" style="background:var(--glass-dark);color:var(--white);border:1px solid rgba(255,255,255,0.3)">Glass grid</span>
+      </div>
+    </div>
+    <div class="phone-grid">
+      <div class="phone-wrapper">
+        <h3>Écran d'accueil</h3>
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-content d6-bg">
+            <div class="status-bar" style="color:white"><span>9:41</span><span>●●● WiFi 🔋</span></div>
+            <div class="d6-header">
+              <div class="d6-logo">Book<span>Mi</span></div>
+              <div class="d6-avatar"></div>
+            </div>
+            <div class="d6-promo">
+              <div class="d6-promo-title">Trouvez votre talent</div>
+              <div class="d6-promo-subtitle">+200 artistes vérifiés à Abidjan</div>
+              <div class="d6-promo-btn">Explorer</div>
+            </div>
+            <div class="d6-section-title">Populaires</div>
+            <div class="d6-talent-grid">
+              <div class="d6-talent-card">
+                <div class="d6-talent-img"><div class="d6-badge">✓</div></div>
+                <div class="d6-talent-info">
+                  <div class="d6-talent-name">DJ Kerozen</div>
+                  <div class="d6-talent-price">480 000 FCFA</div>
+                  <div class="d6-talent-rating">★ 4.8</div>
+                </div>
+              </div>
+              <div class="d6-talent-card">
+                <div class="d6-talent-img c2"><div class="d6-badge">✓</div></div>
+                <div class="d6-talent-info">
+                  <div class="d6-talent-name">Roseline Layo</div>
+                  <div class="d6-talent-price">350 000 FCFA</div>
+                  <div class="d6-talent-rating">★ 4.9</div>
+                </div>
+              </div>
+              <div class="d6-talent-card">
+                <div class="d6-talent-img c3"><div class="d6-badge">✓</div></div>
+                <div class="d6-talent-info">
+                  <div class="d6-talent-name">MC Yves</div>
+                  <div class="d6-talent-price">200 000 FCFA</div>
+                  <div class="d6-talent-rating">★ 4.7</div>
+                </div>
+              </div>
+              <div class="d6-talent-card">
+                <div class="d6-talent-img c4"><div class="d6-badge">✓</div></div>
+                <div class="d6-talent-info">
+                  <div class="d6-talent-name">Serge DJ</div>
+                  <div class="d6-talent-price">280 000 FCFA</div>
+                  <div class="d6-talent-rating">★ 4.6</div>
+                </div>
+              </div>
+            </div>
+            <div class="bottom-tab-bar d6-bottom">
+              <div class="tab-item d6-tab active"><div class="tab-icon" style="background:var(--blue);border-radius:6px"></div>Accueil</div>
+              <div class="tab-item d6-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Recherche</div>
+              <div class="tab-item d6-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Réservations</div>
+              <div class="tab-item d6-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Messages</div>
+              <div class="tab-item d6-tab"><div class="tab-icon" style="background:rgba(255,255,255,0.08);border-radius:6px"></div>Profil</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON -->
+  <section class="direction" id="comparison">
+    <div class="comparison">
+      <h2>Comparaison des Directions</h2>
+      <div class="comparison-grid">
+        <div class="comparison-card recommended">
+          <h3>D1 — Deep Glassmorphism</h3>
+          <div class="subtitle">Fond navy + cartes glass + backdrop blur</div>
+          <ul class="pros">
+            <li>Maximum d'esthétique iOS 16</li>
+            <li>Effet premium immédiat et distinctif</li>
+            <li>Cohérent avec la direction demandée</li>
+            <li>Fonctionne bien avec les couleurs du logo (Navy + Bleu)</li>
+          </ul>
+          <ul class="cons">
+            <li>Plus gourmand en GPU (backdrop blur)</li>
+            <li>Nécessite dégradation gracieuse pour devices faibles</li>
+          </ul>
+        </div>
+        <div class="comparison-card">
+          <h3>D2 — Light Glassmorphism</h3>
+          <div class="subtitle">Fond clair + cartes blanches + touches de bleu</div>
+          <ul class="pros">
+            <li>Meilleure lisibilité sur tous devices</li>
+            <li>Performance optimale (pas de blur)</li>
+            <li>Accessible et familier</li>
+          </ul>
+          <ul class="cons">
+            <li>Moins distinctif, plus "app bancaire"</li>
+            <li>Moins d'impact glassmorphism iOS 16</li>
+          </ul>
+        </div>
+        <div class="comparison-card">
+          <h3>D3 — Bold Gradient</h3>
+          <div class="subtitle">Gradients dramatiques + hero section + fond profond</div>
+          <ul class="pros">
+            <li>Impact visuel maximum</li>
+            <li>Hero section très engageante</li>
+            <li>CTA très visibles</li>
+          </ul>
+          <ul class="cons">
+            <li>Les gradients peuvent fatiguer visuellement</li>
+            <li>Moins d'espace pour le contenu</li>
+          </ul>
+        </div>
+        <div class="comparison-card">
+          <h3>D4 — Minimal & Clean</h3>
+          <div class="subtitle">Minimalisme + typographie forte + accents bleu</div>
+          <ul class="pros">
+            <li>Performance maximale</li>
+            <li>Très lisible et accessible</li>
+            <li>Facile à implémenter</li>
+          </ul>
+          <ul class="cons">
+            <li>Peu distinctif — ressemble à beaucoup d'apps</li>
+            <li>Pas d'effet "wow" glassmorphism</li>
+          </ul>
+        </div>
+        <div class="comparison-card">
+          <h3>D5 — Immersive Media</h3>
+          <div class="subtitle">Full bleed media + fond noir + focus contenu</div>
+          <ul class="pros">
+            <li>Les talents sont mis en vedette</li>
+            <li>Feeling premium cinématique</li>
+            <li>Très engageant pour la découverte</li>
+          </ul>
+          <ul class="cons">
+            <li>Nécessite du contenu média riche dès le lancement</li>
+            <li>Fond noir peut sembler austère</li>
+          </ul>
+        </div>
+        <div class="comparison-card">
+          <h3>D6 — Card Grid Glass</h3>
+          <div class="subtitle">Grille 2 colonnes + glass cards + promo banner</div>
+          <ul class="pros">
+            <li>Montre plus de talents à la fois</li>
+            <li>Glassmorphism équilibré</li>
+            <li>Bon pour la découverte</li>
+          </ul>
+          <ul class="cons">
+            <li>Cartes petites — moins d'impact visuel par talent</li>
+            <li>Peut sembler dense sur petits écrans</li>
+          </ul>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:40px;padding:24px;background:var(--blue-50);border-radius:16px;max-width:600px;margin-left:auto;margin-right:auto">
+        <h3 style="color:var(--blue);margin-bottom:8px">Recommandation</h3>
+        <p style="font-size:14px;color:var(--navy)"><strong>Direction 1 (Deep Glassmorphism)</strong> comme base principale — c'est la direction la plus alignée avec votre vision iOS 16. Combinée avec des éléments de la <strong>Direction 6 (Card Grid)</strong> pour les écrans de listing, et la <strong>Direction 5 (Immersive)</strong> pour les profils talents.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+function showDirection(index) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const directions = document.querySelectorAll('.direction');
+  const tabs = document.querySelectorAll('.nav-tab');
+  if (directions[index]) directions[index].classList.add('active');
+  if (tabs[index]) tabs[index].classList.add('active');
+}
+</script>
+
+</body>
+</html>

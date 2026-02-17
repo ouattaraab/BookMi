@@ -1,0 +1,166 @@
+# generated: 2026-02-17
+# project: BookMi_v2
+# project_key: bookmi-v2
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-02-17
+project: BookMi_v2
+project_key: bookmi-v2
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ──────────────────────────────────────────────
+  # Epic 1: Profil Talent & Découverte (12 stories)
+  # ──────────────────────────────────────────────
+  epic-1: in-progress
+  1-1-initialisation-projet-backend-laravel: review
+  1-2-initialisation-projet-mobile-flutter: done
+  1-3-modele-talent-et-crud-profil: done
+  1-4-verification-didentite: done
+  1-5-annuaire-des-talents-avec-filtres: done
+  1-6-recherche-par-geolocalisation: done
+  1-7-profil-public-talent: done
+  1-8-packages-de-prestation: done
+  1-9-favoris: backlog
+  1-10-ecrans-decouverte-flutter: backlog
+  1-11-ecran-profil-talent-flutter: backlog
+  1-12-pipeline-ci-cd-initiale: backlog
+  epic-1-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 2: Authentification (6 stories)
+  # ──────────────────────────────────────────────
+  epic-2: backlog
+  2-1-inscription-client-et-talent: backlog
+  2-2-verification-otp-telephone: backlog
+  2-3-connexion-email-mot-de-passe: backlog
+  2-4-reinitialisation-mot-de-passe: backlog
+  2-5-deconnexion-et-gestion-token: backlog
+  2-6-ecrans-authentification-flutter: backlog
+  epic-2-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 3: Réservation & Contrats (10 stories)
+  # ──────────────────────────────────────────────
+  epic-3: backlog
+  3-1-calendrier-disponibilites-du-talent: backlog
+  3-2-demande-de-reservation: backlog
+  3-3-accepter-refuser-une-reservation: backlog
+  3-4-devis-detaille-transparent: backlog
+  3-5-contrat-electronique-et-pdf: backlog
+  3-6-reservation-express: backlog
+  3-7-politique-annulation-graduee: backlog
+  3-8-report-de-reservation: backlog
+  3-9-flow-de-reservation-flutter: backlog
+  3-10-ecran-reservations-flutter: backlog
+  epic-3-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 4: Paiement & Séquestre (10 stories)
+  # ──────────────────────────────────────────────
+  epic-4: backlog
+  4-1-integration-paystack-paiement-mobile-money: backlog
+  4-2-webhooks-paiement-idempotents: backlog
+  4-3-paiement-carte-bancaire-et-virement: backlog
+  4-4-systeme-de-sequestre-escrow: backlog
+  4-5-versement-automatique-au-talent: backlog
+  4-6-failover-passerelle-de-paiement: backlog
+  4-7-remboursement-en-cas-de-litige: backlog
+  4-8-dashboard-financier-talent: backlog
+  4-9-export-rapports-financiers-admin: backlog
+  4-10-ecran-paiement-flutter: backlog
+  epic-4-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 5: Communication & Notifications (7 stories)
+  # ──────────────────────────────────────────────
+  epic-5: backlog
+  5-1-messagerie-interne-temps-reel: backlog
+  5-2-detection-anti-desintermediation: backlog
+  5-3-reponses-automatiques-talent: backlog
+  5-4-notifications-push-fcm: backlog
+  5-5-rappels-automatiques-j7-et-j2: backlog
+  5-6-acces-admin-messages-en-cas-de-litige: backlog
+  5-7-ecran-messagerie-flutter: backlog
+  epic-5-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 6: Suivi Jour J & Évaluation (9 stories)
+  # ──────────────────────────────────────────────
+  epic-6: backlog
+  6-1-tracker-jour-j-temps-reel: backlog
+  6-2-check-in-geolocalisation-jour-j: backlog
+  6-3-alerte-check-in-manquant: backlog
+  6-4-evaluation-talent-par-client: backlog
+  6-5-evaluation-client-par-talent: backlog
+  6-6-signalement-de-probleme: backlog
+  6-7-enrichissement-portfolio-post-prestation: backlog
+  6-8-ecran-tracker-jour-j-flutter: backlog
+  6-9-ecran-evaluation-flutter: backlog
+  epic-6-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 7: Gestion Talents & Manager (10 stories)
+  # ──────────────────────────────────────────────
+  epic-7: backlog
+  7-1-assignation-manager-a-un-talent: backlog
+  7-2-interface-unifiee-manager-multi-talents: backlog
+  7-3-alertes-surcharge-talent: backlog
+  7-4-gestion-calendrier-par-le-manager: backlog
+  7-5-validation-reservation-par-le-manager: backlog
+  7-6-messages-manager-au-nom-du-talent: backlog
+  7-7-niveaux-automatiques-talent: backlog
+  7-8-analytics-talent: backlog
+  7-9-attestation-de-revenus-annuelle: backlog
+  7-10-onboarding-gamifie-talent-flutter: backlog
+  epic-7-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Epic 8: Administration & Gouvernance (13 stories)
+  # ──────────────────────────────────────────────
+  epic-8: backlog
+  8-1-dashboard-admin-temps-reel: backlog
+  8-2-gestion-litiges-avec-tracabilite: backlog
+  8-3-avertissement-formel-et-suspension: backlog
+  8-4-signalement-automatique-talents-note-basse: backlog
+  8-5-detection-comportements-suspects: backlog
+  8-6-delegation-taches-admin-ceo: backlog
+  8-7-export-donnees-financieres-comptable: backlog
+  8-8-suivi-check-ins-controleur-operationnel: backlog
+  8-9-moderation-des-avis: backlog
+  8-10-piste-audit-complete: backlog
+  8-11-relances-automatiques-admin: backlog
+  8-12-kpis-plateforme: backlog
+  8-13-monitoring-et-logs: backlog
+  epic-8-retrospective: optional

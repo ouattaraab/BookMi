@@ -1,0 +1,75 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: bookmi-app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www/html
+    networks:
+      - bookmi-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: bookmi-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-8080}:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - bookmi-network
+    depends_on:
+      - app
+
+  mysql:
+    image: mysql:8.4
+    container_name: bookmi-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: bookmi
+      MYSQL_USER: bookmi
+      MYSQL_PASSWORD: bookmi_secret
+      MYSQL_ROOT_PASSWORD: root_secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - bookmi-mysql-data:/var/lib/mysql
+    networks:
+      - bookmi-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: bookmi-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - bookmi-redis-data:/data
+    networks:
+      - bookmi-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  bookmi-network:
+    driver: bridge
+
+volumes:
+  bookmi-mysql-data:
+  bookmi-redis-data:
