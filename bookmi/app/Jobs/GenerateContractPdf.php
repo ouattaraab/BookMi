@@ -26,9 +26,9 @@ class GenerateContractPdf implements ShouldQueue
     public function handle(): void
     {
         $booking = $this->booking->load([
-            'client',
-            'talentProfile',
-            'servicePackage',
+            'client:id,name,email,phone',
+            'talentProfile:id,stage_name',
+            'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 
         $pdf = Pdf::loadView('pdf.booking-contract', ['booking' => $booking])
