@@ -52,7 +52,7 @@ class BookingRequestController extends BaseController
         $booking->load([
             'client:id,name',
             'talentProfile:id,stage_name',
-            'servicePackage:id,name,type',
+            'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 
         return $this->successResponse(new BookingRequestResource($booking), 201);
@@ -68,7 +68,7 @@ class BookingRequestController extends BaseController
         $booking->load([
             'client:id,name',
             'talentProfile:id,stage_name',
-            'servicePackage:id,name,type',
+            'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 
         return $this->successResponse(new BookingRequestResource($booking));
@@ -86,7 +86,7 @@ class BookingRequestController extends BaseController
         $booking->load([
             'client:id,name',
             'talentProfile:id,stage_name',
-            'servicePackage:id,name,type',
+            'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 
         return $this->successResponse(new BookingRequestResource($booking));
@@ -104,7 +104,7 @@ class BookingRequestController extends BaseController
         $booking->load([
             'client:id,name',
             'talentProfile:id,stage_name',
-            'servicePackage:id,name,type',
+            'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 
         return $this->successResponse(new BookingRequestResource($booking));

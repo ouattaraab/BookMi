@@ -23,9 +23,12 @@ class BookingRequestResource extends JsonResource
                 'stage_name' => $this->talentProfile->stage_name,
             ],
             'service_package' => [
-                'id'   => $this->servicePackage->id,
-                'name' => $this->servicePackage->name,
-                'type' => $this->servicePackage->type->value,
+                'id'               => $this->servicePackage->id,
+                'name'             => $this->servicePackage->name,
+                'type'             => $this->servicePackage->type->value,
+                'description'      => $this->servicePackage->description,
+                'inclusions'       => $this->servicePackage->inclusions,
+                'duration_minutes' => $this->servicePackage->duration_minutes,
             ],
             'event_date'      => $this->event_date->toDateString(),
             'event_location'  => $this->event_location,
@@ -35,6 +38,7 @@ class BookingRequestResource extends JsonResource
                 'cachet_amount'     => $this->cachet_amount,
                 'commission_amount' => $this->commission_amount,
                 'total_amount'      => $this->total_amount,
+                'message'           => 'Cachet artiste intact — BookMi ajoute 15% de frais de service',
             ],
         ];
     }

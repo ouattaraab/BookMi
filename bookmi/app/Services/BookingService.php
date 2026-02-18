@@ -80,7 +80,7 @@ class BookingService
         $query = BookingRequest::with([
             'client:id,name',
             'talentProfile:id,stage_name',
-            'servicePackage:id,name,type',
+            'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 
         $talentProfile = TalentProfile::where('user_id', $user->id)->first();
