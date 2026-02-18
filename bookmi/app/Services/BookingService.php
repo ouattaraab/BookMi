@@ -141,6 +141,59 @@ class BookingService
     }
 
     /**
+     * Cancel a booking (client action) with graduated refund policy.
+     *
+     * Policy (from config):
+     *   >= J-14 days → full refund (100%)
+     *   >= J-7 days  → partial refund (50%)
+     *   >= J-2 days  → mediation required (throws)
+     *   <  J-2 days  → not allowed (throws)
+     */
+    public function cancelBooking(BookingRequest $booking): BookingRequest
+    {
+        if (! $booking->status->canTransitionTo(BookingStatus::Cancelled)) {
+            throw BookingException::invalidStatusTransition();
+        }
+
+        $cancellation   = config('bookmi.cancellation');
+        $fullRefundDays = (int) $cancellation['full_refund_days'];
+        $partialDays    = (int) $cancellation['partial_refund_days'];
+        $mediationDays  = (int) $cancellation['mediation_only_days'];
+        $partialRate    = (int) $cancellation['partial_refund_rate'];
+
+        $daysUntilEvent = now()->startOfDay()->diffInDays(
+            $booking->event_date->startOfDay(),
+            absolute: false,
+        );
+
+        if ($daysUntilEvent < $mediationDays) {
+            throw BookingException::cancellationNotAllowed();
+        }
+
+        if ($daysUntilEvent < $partialDays) {
+            throw BookingException::cancellationRequiresMediation();
+        }
+
+        if ($daysUntilEvent >= $fullRefundDays) {
+            $refundAmount = $booking->total_amount;
+            $policy       = 'full_refund';
+        } else {
+            $refundAmount = (int) round($booking->total_amount * $partialRate / 100);
+            $policy       = 'partial_refund';
+        }
+
+        $booking->update([
+            'status'                      => BookingStatus::Cancelled,
+            'refund_amount'               => $refundAmount,
+            'cancellation_policy_applied' => $policy,
+        ]);
+
+        BookingCancelled::dispatch($booking);
+
+        return $booking;
+    }
+
+    /**
      * Reject a pending booking request (talent action).
      *
      * Transitions: pending → cancelled

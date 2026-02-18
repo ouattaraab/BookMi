@@ -80,7 +80,7 @@ development_status:
   3-4-devis-detaille-transparent: done
   3-5-contrat-electronique-et-pdf: done
   3-6-reservation-express: done
-  3-7-politique-annulation-graduee: backlog
+  3-7-politique-annulation-graduee: done
   3-8-report-de-reservation: backlog
   3-9-flow-de-reservation-flutter: backlog
   3-10-ecran-reservations-flutter: backlog

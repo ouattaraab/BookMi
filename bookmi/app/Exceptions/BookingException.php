@@ -40,6 +40,24 @@ class BookingException extends BookmiException
         );
     }
 
+    public static function cancellationNotAllowed(): self
+    {
+        return new self(
+            'BOOKING_CANCELLATION_NOT_ALLOWED',
+            'L\'annulation n\'est plus possible à moins de 2 jours de l\'événement.',
+            422,
+        );
+    }
+
+    public static function cancellationRequiresMediation(): self
+    {
+        return new self(
+            'BOOKING_CANCELLATION_MEDIATION_REQUIRED',
+            'L\'annulation à moins de 7 jours de l\'événement nécessite une médiation.',
+            422,
+        );
+    }
+
     public static function expressBookingNotAvailable(): self
     {
         return new self(

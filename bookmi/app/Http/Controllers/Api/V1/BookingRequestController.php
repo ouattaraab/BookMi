@@ -98,6 +98,20 @@ class BookingRequestController extends BaseController
     }
 
     /**
+     * POST /api/v1/booking_requests/{booking}/cancel
+     */
+    public function cancel(BookingRequest $booking): JsonResponse
+    {
+        $this->authorize('cancel', $booking);
+
+        $booking = $this->bookingService->cancelBooking($booking);
+
+        $booking->load($this->bookingRelations());
+
+        return $this->successResponse(new BookingRequestResource($booking));
+    }
+
+    /**
      * GET /api/v1/booking_requests/{booking}/contract
      */
     public function contract(BookingRequest $booking): Response

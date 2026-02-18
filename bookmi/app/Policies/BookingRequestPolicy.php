@@ -23,6 +23,11 @@ class BookingRequestPolicy
         return $this->isTalentOwner($user, $booking);
     }
 
+    public function cancel(User $user, BookingRequest $booking): bool
+    {
+        return $booking->client_id === $user->id;
+    }
+
     public function downloadContract(User $user, BookingRequest $booking): bool
     {
         return $booking->isOwnedByUser($user);

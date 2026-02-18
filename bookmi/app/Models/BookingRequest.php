@@ -26,6 +26,8 @@ class BookingRequest extends Model
         'cachet_amount',
         'commission_amount',
         'total_amount',
+        'refund_amount',
+        'cancellation_policy_applied',
     ];
 
     /**
@@ -41,6 +43,7 @@ class BookingRequest extends Model
             'cachet_amount'     => 'integer',
             'commission_amount' => 'integer',
             'total_amount'      => 'integer',
+            'refund_amount'     => 'integer',
         ];
     }
 
