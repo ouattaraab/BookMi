@@ -73,7 +73,7 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 3: Réservation & Contrats (10 stories)
   # ──────────────────────────────────────────────
-  epic-3: in-progress
+  epic-3: done
   3-1-calendrier-disponibilites-du-talent: done
   3-2-demande-de-reservation: done
   3-3-accepter-refuser-une-reservation: done
@@ -82,8 +82,8 @@ development_status:
   3-6-reservation-express: done
   3-7-politique-annulation-graduee: done
   3-8-report-de-reservation: done
-  3-9-flow-de-reservation-flutter: backlog
-  3-10-ecran-reservations-flutter: backlog
+  3-9-flow-de-reservation-flutter: done
+  3-10-ecran-reservations-flutter: done
   epic-3-retrospective: optional
 
   # ──────────────────────────────────────────────
