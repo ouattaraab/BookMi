@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'paystack' => [
+        'secret_key' => env('PAYSTACK_SECRET_KEY'),
+        'webhook_secret' => env('PAYSTACK_WEBHOOK_SECRET'),
+    ],
+
+    'cinetpay' => [
+        'api_key'   => env('CINETPAY_API_KEY'),
+        'site_id'   => env('CINETPAY_SITE_ID'),
+        'notify_url' => env('CINETPAY_NOTIFY_URL', ''),
+    ],
+
 ];

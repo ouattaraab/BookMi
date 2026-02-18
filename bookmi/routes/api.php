@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\RescheduleController;
 use App\Http\Controllers\Api\V1\BookingRequestController;
 use App\Http\Controllers\Api\V1\CalendarSlotController;
@@ -83,6 +84,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Report de réservation
         Route::post('/reschedule_requests/{reschedule}/accept', [RescheduleController::class, 'accept'])->name('reschedule_requests.accept');
         Route::post('/reschedule_requests/{reschedule}/reject', [RescheduleController::class, 'reject'])->name('reschedule_requests.reject');
+
+        // Paiements
+        Route::post('/payments/initiate', [PaymentController::class, 'initiate'])
+            ->middleware('throttle:payment')
+            ->name('payments.initiate');
 
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])

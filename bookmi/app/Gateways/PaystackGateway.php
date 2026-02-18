@@ -1,0 +1,64 @@
+<?php
+
+namespace App\Gateways;
+
+use App\Contracts\PaymentGatewayInterface;
+use App\Exceptions\PaymentException;
+use Illuminate\Support\Facades\Http;
+
+class PaystackGateway implements PaymentGatewayInterface
+{
+    private string $baseUrl = 'https://api.paystack.co';
+
+    public function name(): string
+    {
+        return 'paystack';
+    }
+
+    public function initiateCharge(array $payload): array
+    {
+        $response = Http::withToken($this->secretKey())
+            ->post("{$this->baseUrl}/charge", $payload);
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Unknown error');
+        }
+
+        return $data['data'];
+    }
+
+    public function verifyTransaction(string $reference): array
+    {
+        $response = Http::withToken($this->secretKey())
+            ->get("{$this->baseUrl}/transaction/verify/{$reference}");
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Unknown error');
+        }
+
+        return $data['data'];
+    }
+
+    public function initiateTransfer(array $payload): array
+    {
+        $response = Http::withToken($this->secretKey())
+            ->post("{$this->baseUrl}/transfer", $payload);
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Unknown error');
+        }
+
+        return $data['data'];
+    }
+
+    private function secretKey(): string
+    {
+        return (string) (config('services.paystack.secret_key') ?? '');
+    }
+}
