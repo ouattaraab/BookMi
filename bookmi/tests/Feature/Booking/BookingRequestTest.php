@@ -318,6 +318,17 @@ class BookingRequestTest extends TestCase
         ])->assertStatus(401);
     }
 
+    #[Test]
+    public function booking_list_with_invalid_status_returns_422(): void
+    {
+        $client = $this->createClientUser();
+        $this->actingAs($client, 'sanctum');
+
+        $this->getJson('/api/v1/booking_requests?status=invalide')
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'BOOKING_INVALID_STATUS');
+    }
+
     // ─── AC5: Accès à sa propre réservation ───────────────────────────────────
 
     #[Test]

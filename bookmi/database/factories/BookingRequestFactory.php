@@ -38,6 +38,29 @@ class BookingRequestFactory extends Factory
         ];
     }
 
+    /**
+     * Ensure service_package belongs to the talent_profile.
+     * Without this, talent_profile_id and service_package_id are independent
+     * and the service_package does not belong to the talent — violating the business rule.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (BookingRequest $booking) {
+            $alreadyLinked = ServicePackage::where('id', $booking->service_package_id)
+                ->where('talent_profile_id', $booking->talent_profile_id)
+                ->exists();
+
+            if (! $alreadyLinked) {
+                $package = ServicePackage::factory()->create([
+                    'talent_profile_id' => $booking->talent_profile_id,
+                    'cachet_amount'     => $booking->cachet_amount,
+                ]);
+                $booking->service_package_id = $package->id;
+                $booking->saveQuietly();
+            }
+        });
+    }
+
     public function pending(): static
     {
         return $this->state(['status' => BookingStatus::Pending]);

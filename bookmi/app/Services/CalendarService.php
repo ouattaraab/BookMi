@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\BookingStatus;
 use App\Enums\CalendarSlotStatus;
 use App\Exceptions\CalendarException;
 use App\Models\CalendarSlot;
@@ -10,7 +11,6 @@ use Carbon\Carbon;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class CalendarService
 {
@@ -76,12 +76,8 @@ class CalendarService
             ->get()
             ->keyBy(fn (CalendarSlot $s) => $s->date->toDateString());
 
-        // 2. Load confirmed booking dates (anticipate booking_requests table from story 3.2)
-        //    If the table doesn't exist yet we skip gracefully.
-        $confirmedDates = collect();
-        if ($this->bookingTableExists()) {
-            $confirmedDates = $this->getConfirmedBookingDates($talent->id, $start, $end);
-        }
+        // 2. Load confirmed booking dates and merge virtual 'confirmed' status
+        $confirmedDates = $this->getConfirmedBookingDates($talent->id, $start, $end);
 
         // 3. Merge: confirmed bookings override manual slots
         $calendar = $slots->map(fn (CalendarSlot $slot) => [
@@ -124,27 +120,17 @@ class CalendarService
             return false;
         }
 
-        if ($this->bookingTableExists()) {
-            $hasConfirmedBooking = DB::table('booking_requests')
-                ->where('talent_profile_id', $talent->id)
-                ->where('event_date', $date)
-                ->where('status', 'confirmed')
-                ->exists();
+        $hasConfirmedBooking = DB::table('booking_requests')
+            ->where('talent_profile_id', $talent->id)
+            ->where('event_date', $date)
+            ->where('status', BookingStatus::Confirmed->value)
+            ->exists();
 
-            if ($hasConfirmedBooking) {
-                return false;
-            }
+        if ($hasConfirmedBooking) {
+            return false;
         }
 
         return true;
-    }
-
-    /**
-     * Check whether the booking_requests table exists (it is created in story 3.2).
-     */
-    private function bookingTableExists(): bool
-    {
-        return Schema::hasTable('booking_requests');
     }
 
     /**
@@ -154,7 +140,7 @@ class CalendarService
     {
         return DB::table('booking_requests')
             ->where('talent_profile_id', $talentProfileId)
-            ->where('status', 'confirmed')
+            ->where('status', BookingStatus::Confirmed->value)
             ->whereBetween('event_date', [$start->toDateString(), $end->toDateString()])
             ->pluck('event_date')
             ->map(fn ($d) => Carbon::parse($d)->toDateString());

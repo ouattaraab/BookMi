@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Http\Requests\Api\StoreBookingRequestRequest;
 use App\Http\Resources\BookingRequestResource;
 use App\Models\BookingRequest;
@@ -21,9 +22,15 @@ class BookingRequestController extends BaseController
      */
     public function index(Request $request): JsonResponse
     {
+        $status = $request->query('status');
+
+        if ($status !== null && ! in_array($status, array_column(BookingStatus::cases(), 'value'), strict: true)) {
+            return $this->errorResponse('BOOKING_INVALID_STATUS', 'Le statut fourni est invalide.', 422);
+        }
+
         $paginator = $this->bookingService->getBookingsForUser(
             $request->user(),
-            ['status' => $request->query('status')],
+            ['status' => $status],
         );
 
         $paginator->through(fn ($booking) => new BookingRequestResource($booking));

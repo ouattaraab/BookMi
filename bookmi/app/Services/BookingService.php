@@ -93,21 +93,4 @@ class BookingService
         return $query->latest('id')->cursorPaginate(20);
     }
 
-    /**
-     * Return a single booking, verifying user ownership.
-     *
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     */
-    public function getBookingForUser(User $user, BookingRequest $booking): BookingRequest
-    {
-        if (! $booking->isOwnedByUser($user)) {
-            throw new \Illuminate\Auth\Access\AuthorizationException();
-        }
-
-        return $booking->load([
-            'client:id,name',
-            'talentProfile:id,stage_name',
-            'servicePackage:id,name,type',
-        ]);
-    }
 }
