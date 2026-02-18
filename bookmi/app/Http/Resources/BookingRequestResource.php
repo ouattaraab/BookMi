@@ -30,6 +30,7 @@ class BookingRequestResource extends JsonResource
             'event_date'      => $this->event_date->toDateString(),
             'event_location'  => $this->event_location,
             'message'         => $this->message,
+            'reject_reason'   => $this->reject_reason,
             'devis'           => [
                 'cachet_amount'     => $this->cachet_amount,
                 'commission_amount' => $this->commission_amount,

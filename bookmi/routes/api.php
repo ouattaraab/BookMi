@@ -73,6 +73,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/booking_requests', [BookingRequestController::class, 'index'])->name('booking_requests.index');
         Route::post('/booking_requests', [BookingRequestController::class, 'store'])->name('booking_requests.store');
         Route::get('/booking_requests/{booking}', [BookingRequestController::class, 'show'])->name('booking_requests.show');
+        Route::post('/booking_requests/{booking}/accept', [BookingRequestController::class, 'accept'])->name('booking_requests.accept');
+        Route::post('/booking_requests/{booking}/reject', [BookingRequestController::class, 'reject'])->name('booking_requests.reject');
 
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])

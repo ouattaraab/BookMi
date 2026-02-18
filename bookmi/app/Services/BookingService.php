@@ -3,9 +3,13 @@
 namespace App\Services;
 
 use App\Enums\BookingStatus;
+use App\Enums\CalendarSlotStatus;
+use App\Events\BookingAccepted;
+use App\Events\BookingCancelled;
 use App\Events\BookingCreated;
 use App\Exceptions\BookingException;
 use App\Models\BookingRequest;
+use App\Models\CalendarSlot;
 use App\Models\ServicePackage;
 use App\Models\TalentProfile;
 use App\Models\User;
@@ -93,4 +97,52 @@ class BookingService
         return $query->latest('id')->cursorPaginate(20);
     }
 
+    /**
+     * Accept a pending booking request (talent action).
+     *
+     * Transitions: pending → accepted
+     * Side-effects: blocks the calendar slot, dispatches BookingAccepted.
+     */
+    public function acceptBooking(BookingRequest $booking): BookingRequest
+    {
+        if (! $booking->status->canTransitionTo(BookingStatus::Accepted)) {
+            throw BookingException::invalidStatusTransition();
+        }
+
+        $booking->update(['status' => BookingStatus::Accepted]);
+
+        CalendarSlot::updateOrCreate(
+            [
+                'talent_profile_id' => $booking->talent_profile_id,
+                'date'              => $booking->event_date->toDateString(),
+            ],
+            ['status' => CalendarSlotStatus::Blocked],
+        );
+
+        BookingAccepted::dispatch($booking);
+
+        return $booking;
+    }
+
+    /**
+     * Reject a pending booking request (talent action).
+     *
+     * Transitions: pending → cancelled
+     * Side-effects: stores optional reject_reason, dispatches BookingCancelled.
+     */
+    public function rejectBooking(BookingRequest $booking, ?string $reason = null): BookingRequest
+    {
+        if (! $booking->status->canTransitionTo(BookingStatus::Cancelled)) {
+            throw BookingException::invalidStatusTransition();
+        }
+
+        $booking->update([
+            'status'        => BookingStatus::Cancelled,
+            'reject_reason' => $reason,
+        ]);
+
+        BookingCancelled::dispatch($booking);
+
+        return $booking;
+    }
 }

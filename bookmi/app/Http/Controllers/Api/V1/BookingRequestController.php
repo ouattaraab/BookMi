@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
+use App\Http\Requests\Api\RejectBookingRequestRequest;
 use App\Http\Requests\Api\StoreBookingRequestRequest;
 use App\Http\Resources\BookingRequestResource;
 use App\Models\BookingRequest;
@@ -63,6 +64,42 @@ class BookingRequestController extends BaseController
     public function show(BookingRequest $booking): JsonResponse
     {
         $this->authorize('view', $booking);
+
+        $booking->load([
+            'client:id,name',
+            'talentProfile:id,stage_name',
+            'servicePackage:id,name,type',
+        ]);
+
+        return $this->successResponse(new BookingRequestResource($booking));
+    }
+
+    /**
+     * POST /api/v1/booking_requests/{booking}/accept
+     */
+    public function accept(BookingRequest $booking): JsonResponse
+    {
+        $this->authorize('accept', $booking);
+
+        $booking = $this->bookingService->acceptBooking($booking);
+
+        $booking->load([
+            'client:id,name',
+            'talentProfile:id,stage_name',
+            'servicePackage:id,name,type',
+        ]);
+
+        return $this->successResponse(new BookingRequestResource($booking));
+    }
+
+    /**
+     * POST /api/v1/booking_requests/{booking}/reject
+     */
+    public function reject(RejectBookingRequestRequest $request, BookingRequest $booking): JsonResponse
+    {
+        $this->authorize('reject', $booking);
+
+        $booking = $this->bookingService->rejectBooking($booking, $request->validated('reason'));
 
         $booking->load([
             'client:id,name',

@@ -19,6 +19,7 @@ class BookingRequest extends Model
         'event_date',
         'event_location',
         'message',
+        'reject_reason',
         'status',
         'cachet_amount',
         'commission_amount',
@@ -33,6 +34,7 @@ class BookingRequest extends Model
         return [
             'event_date'        => 'date:Y-m-d',
             'status'            => BookingStatus::class,
+            'reject_reason'     => 'string',
             'cachet_amount'     => 'integer',
             'commission_amount' => 'integer',
             'total_amount'      => 'integer',
