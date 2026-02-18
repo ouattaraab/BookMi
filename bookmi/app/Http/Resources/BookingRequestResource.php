@@ -38,7 +38,10 @@ class BookingRequestResource extends JsonResource
                 'cachet_amount'     => $this->cachet_amount,
                 'commission_amount' => $this->commission_amount,
                 'total_amount'      => $this->total_amount,
-                'message'           => 'Cachet artiste intact — BookMi ajoute 15% de frais de service',
+                'message'           => sprintf(
+                    'Cachet artiste intact — BookMi ajoute %d%% de frais de service',
+                    (int) config('bookmi.commission_rate', 15),
+                ),
             ],
         ];
     }

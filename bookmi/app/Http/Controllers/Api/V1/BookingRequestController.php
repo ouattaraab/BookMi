@@ -49,11 +49,7 @@ class BookingRequestController extends BaseController
             $request->validated(),
         );
 
-        $booking->load([
-            'client:id,name',
-            'talentProfile:id,stage_name',
-            'servicePackage:id,name,type,description,inclusions,duration_minutes',
-        ]);
+        $booking->load($this->bookingRelations());
 
         return $this->successResponse(new BookingRequestResource($booking), 201);
     }
@@ -65,11 +61,7 @@ class BookingRequestController extends BaseController
     {
         $this->authorize('view', $booking);
 
-        $booking->load([
-            'client:id,name',
-            'talentProfile:id,stage_name',
-            'servicePackage:id,name,type,description,inclusions,duration_minutes',
-        ]);
+        $booking->load($this->bookingRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
     }
@@ -83,11 +75,7 @@ class BookingRequestController extends BaseController
 
         $booking = $this->bookingService->acceptBooking($booking);
 
-        $booking->load([
-            'client:id,name',
-            'talentProfile:id,stage_name',
-            'servicePackage:id,name,type,description,inclusions,duration_minutes',
-        ]);
+        $booking->load($this->bookingRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
     }
@@ -101,12 +89,20 @@ class BookingRequestController extends BaseController
 
         $booking = $this->bookingService->rejectBooking($booking, $request->validated('reason'));
 
-        $booking->load([
+        $booking->load($this->bookingRelations());
+
+        return $this->successResponse(new BookingRequestResource($booking));
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function bookingRelations(): array
+    {
+        return [
             'client:id,name',
             'talentProfile:id,stage_name',
             'servicePackage:id,name,type,description,inclusions,duration_minutes',
-        ]);
-
-        return $this->successResponse(new BookingRequestResource($booking));
+        ];
     }
 }
