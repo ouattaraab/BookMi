@@ -93,7 +93,7 @@ development_status:
   4-1-integration-paystack-paiement-mobile-money: done
   4-2-webhooks-paiement-idempotents: done
   4-3-paiement-carte-bancaire-et-virement: done
-  4-4-systeme-de-sequestre-escrow: backlog
+  4-4-systeme-de-sequestre-escrow: done
   4-5-versement-automatique-au-talent: backlog
   4-6-failover-passerelle-de-paiement: backlog
   4-7-remboursement-en-cas-de-litige: backlog

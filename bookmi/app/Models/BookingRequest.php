@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class BookingRequest extends Model
 {
@@ -79,6 +80,14 @@ class BookingRequest extends Model
     public function rescheduleRequests(): HasMany
     {
         return $this->hasMany(RescheduleRequest::class);
+    }
+
+    /**
+     * @return HasOne<EscrowHold, $this>
+     */
+    public function escrowHold(): HasOne
+    {
+        return $this->hasOne(EscrowHold::class);
     }
 
     public function hasPendingReschedule(): bool

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaystackWebhookController;
 use App\Http\Controllers\Api\V1\RescheduleController;
@@ -90,6 +91,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/booking_requests/{booking}/cancel', [BookingRequestController::class, 'cancel'])->name('booking_requests.cancel');
         Route::get('/booking_requests/{booking}/contract', [BookingRequestController::class, 'contract'])->name('booking_requests.contract');
         Route::post('/booking_requests/{booking}/reschedule', [RescheduleController::class, 'store'])->name('reschedule_requests.store');
+        Route::post('/booking_requests/{booking}/confirm_delivery', [EscrowController::class, 'confirmDelivery'])->name('booking_requests.confirm_delivery');
 
         // Report de réservation
         Route::post('/reschedule_requests/{reschedule}/accept', [RescheduleController::class, 'accept'])->name('reschedule_requests.accept');
