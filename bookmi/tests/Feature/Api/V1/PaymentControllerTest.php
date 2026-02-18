@@ -323,4 +323,165 @@ class PaymentControllerTest extends TestCase
             'status'             => TransactionStatus::Processing->value,
         ]);
     }
+
+    // ── submit_otp ────────────────────────────────────────────────────────
+
+    public function test_client_can_submit_otp_for_processing_transaction(): void
+    {
+        Http::fake([
+            'https://api.paystack.co/charge/submit_otp' => Http::response([
+                'status'  => true,
+                'message' => 'OTP submitted',
+                'data'    => [
+                    'status'       => 'success',
+                    'display_text' => 'Paiement effectué avec succès',
+                ],
+            ], 200),
+        ]);
+
+        $client  = User::factory()->create();
+        $booking = BookingRequest::factory()->accepted()->create(['client_id' => $client->id]);
+
+        $transaction = Transaction::create([
+            'booking_request_id' => $booking->id,
+            'payment_method'     => 'orange_money',
+            'amount'             => $booking->total_amount,
+            'currency'           => 'XOF',
+            'gateway'            => 'paystack',
+            'status'             => TransactionStatus::Processing->value,
+            'idempotency_key'    => 'test-idem-key-submit-otp',
+            'initiated_at'       => now(),
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/payments/submit_otp', [
+                'reference' => $transaction->idempotency_key,
+                'otp'       => '123456',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('status', 'success')
+            ->assertJsonStructure(['status', 'display_text']);
+    }
+
+    public function test_submit_otp_returns_422_when_reference_does_not_exist(): void
+    {
+        Http::preventStrayRequests();
+
+        $client = User::factory()->create();
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/payments/submit_otp', [
+                'reference' => 'non-existent-reference',
+                'otp'       => '123456',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('error.code', 'VALIDATION_FAILED')
+            ->assertJsonStructure(['error' => ['details' => ['errors' => ['reference']]]]);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_submit_otp_returns_422_when_otp_is_not_digits(): void
+    {
+        Http::preventStrayRequests();
+
+        $client  = User::factory()->create();
+        $booking = BookingRequest::factory()->accepted()->create(['client_id' => $client->id]);
+
+        Transaction::create([
+            'booking_request_id' => $booking->id,
+            'payment_method'     => 'orange_money',
+            'amount'             => $booking->total_amount,
+            'currency'           => 'XOF',
+            'gateway'            => 'paystack',
+            'status'             => TransactionStatus::Processing->value,
+            'idempotency_key'    => 'test-otp-validation-key',
+            'initiated_at'       => now(),
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/payments/submit_otp', [
+                'reference' => 'test-otp-validation-key',
+                'otp'       => 'not-digits',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('error.code', 'VALIDATION_FAILED')
+            ->assertJsonStructure(['error' => ['details' => ['errors' => ['otp']]]]);
+
+        Http::assertNothingSent();
+    }
+
+    public function test_submit_otp_returns_422_when_transaction_not_in_processing_state(): void
+    {
+        Http::preventStrayRequests();
+
+        $client  = User::factory()->create();
+        $booking = BookingRequest::factory()->accepted()->create(['client_id' => $client->id]);
+
+        // Transaction déjà en état succeeded
+        Transaction::create([
+            'booking_request_id' => $booking->id,
+            'payment_method'     => 'orange_money',
+            'amount'             => $booking->total_amount,
+            'currency'           => 'XOF',
+            'gateway'            => 'paystack',
+            'status'             => TransactionStatus::Succeeded->value,
+            'idempotency_key'    => 'test-succeeded-ref',
+            'initiated_at'       => now(),
+            'completed_at'       => now(),
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/payments/submit_otp', [
+                'reference' => 'test-succeeded-ref',
+                'otp'       => '123456',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonPath('error.code', 'PAYMENT_TRANSACTION_NOT_PROCESSING');
+
+        Http::assertNothingSent();
+    }
+
+    public function test_submit_otp_returns_403_when_user_is_not_owner(): void
+    {
+        Http::preventStrayRequests();
+
+        $client    = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $booking   = BookingRequest::factory()->accepted()->create(['client_id' => $client->id]);
+
+        Transaction::create([
+            'booking_request_id' => $booking->id,
+            'payment_method'     => 'orange_money',
+            'amount'             => $booking->total_amount,
+            'currency'           => 'XOF',
+            'gateway'            => 'paystack',
+            'status'             => TransactionStatus::Processing->value,
+            'idempotency_key'    => 'test-ownership-ref',
+            'initiated_at'       => now(),
+        ]);
+
+        $response = $this->actingAs($otherUser, 'sanctum')
+            ->postJson('/api/v1/payments/submit_otp', [
+                'reference' => 'test-ownership-ref',
+                'otp'       => '123456',
+            ]);
+
+        $response->assertStatus(403);
+        Http::assertNothingSent();
+    }
+
+    public function test_submit_otp_returns_401_when_unauthenticated(): void
+    {
+        $response = $this->postJson('/api/v1/payments/submit_otp', [
+            'reference' => 'any-reference',
+            'otp'       => '123456',
+        ]);
+
+        $response->assertStatus(401);
+    }
 }

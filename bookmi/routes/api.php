@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\PaystackWebhookController;
 use App\Http\Controllers\Api\V1\RescheduleController;
 use App\Http\Controllers\Api\V1\BookingRequestController;
 use App\Http\Controllers\Api\V1\CalendarSlotController;
@@ -40,6 +41,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('/auth/reset-password', [AuthController::class, 'resetPassword'])
         ->middleware('throttle:auth')
         ->name('auth.reset-password');
+
+    // Webhook Paystack (public — signature validée par middleware)
+    Route::post('/webhooks/paystack', [PaystackWebhookController::class, 'handle'])
+        ->middleware('paystack-webhook')
+        ->name('webhooks.paystack');
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
@@ -89,6 +95,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/payments/initiate', [PaymentController::class, 'initiate'])
             ->middleware('throttle:payment')
             ->name('payments.initiate');
+
+        Route::post('/payments/submit_otp', [PaymentController::class, 'submitOtp'])
+            ->middleware('throttle:payment')
+            ->name('payments.submit_otp');
 
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])

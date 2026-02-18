@@ -43,6 +43,23 @@ class PaystackGateway implements PaymentGatewayInterface
         return $data['data'];
     }
 
+    public function submitOtp(string $reference, string $otp): array
+    {
+        $response = Http::withToken($this->secretKey())
+            ->post("{$this->baseUrl}/charge/submit_otp", [
+                'reference' => $reference,
+                'otp'       => $otp,
+            ]);
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Unknown error');
+        }
+
+        return $data['data'];
+    }
+
     public function initiateTransfer(array $payload): array
     {
         $response = Http::withToken($this->secretKey())

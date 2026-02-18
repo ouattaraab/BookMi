@@ -1,0 +1,141 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Enums\BookingStatus;
+use App\Enums\EscrowStatus;
+use App\Enums\TransactionStatus;
+use App\Events\PaymentReceived;
+use App\Models\BookingRequest;
+use App\Models\EscrowHold;
+use App\Models\Transaction;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
+
+class HandlePaymentWebhook implements ShouldQueue
+{
+    use Queueable;
+
+    /** Maximum number of attempts (NFR35 — 5 retries). */
+    public int $tries = 5;
+
+    /**
+     * Backoff in seconds between retries: 10s, 30s, 90s, 270s, 810s.
+     * Exponential backoff × 3 each step.
+     *
+     * @var array<int>
+     */
+    public array $backoff = [10, 30, 90, 270, 810];
+
+    public function __construct(
+        public readonly string $event,
+        public readonly array $data,
+    ) {
+        $this->onQueue('payments');
+    }
+
+    public function handle(): void
+    {
+        match ($this->event) {
+            'charge.success' => $this->handleChargeSuccess(),
+            'charge.failed'  => $this->handleChargeFailure(),
+            default          => null, // unknown events are silently ignored
+        };
+    }
+
+    // ── charge.success ────────────────────────────────────────────────────
+
+    private function handleChargeSuccess(): void
+    {
+        $reference = $this->data['reference'] ?? null;
+
+        if (! $reference) {
+            return;
+        }
+
+        $transaction = Transaction::where('idempotency_key', $reference)
+            ->orWhere('gateway_reference', $reference)
+            ->first();
+
+        if (! $transaction) {
+            return;
+        }
+
+        $escrowHold = null;
+
+        DB::transaction(function () use ($transaction, &$escrowHold) {
+            // H1 fix: idempotency guard WITH lock — prevents duplicate EscrowHold
+            // under concurrent webhook retries (TOCTOU race condition).
+            $fresh = Transaction::where('id', $transaction->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $fresh || $fresh->status === TransactionStatus::Succeeded) {
+                return;
+            }
+
+            $fresh->update([
+                'status'       => TransactionStatus::Succeeded->value,
+                'completed_at' => now(),
+            ]);
+
+            // H2 fix: throw RuntimeException so DB::transaction rolls back
+            // if the booking is missing (data integrity guard).
+            $booking = BookingRequest::find($fresh->booking_request_id);
+
+            if (! $booking) {
+                throw new \RuntimeException(
+                    "handleChargeSuccess: booking #{$fresh->booking_request_id} not found for transaction #{$fresh->id}"
+                );
+            }
+
+            $booking->update(['status' => BookingStatus::Paid->value]);
+
+            $escrowHold = EscrowHold::create([
+                'transaction_id'       => $fresh->id,
+                'booking_request_id'   => $booking->id,
+                'cachet_amount'        => $booking->cachet_amount,
+                'commission_amount'    => $booking->commission_amount,
+                'total_amount'         => $booking->total_amount,
+                'status'               => EscrowStatus::Held->value,
+                'held_at'              => now(),
+                'release_scheduled_at' => now()->addHours(
+                    config('bookmi.escrow.auto_confirm_hours', 48)
+                ),
+            ]);
+
+        });
+
+        // Emit event AFTER transaction commits (so listeners see committed data)
+        if ($escrowHold) {
+            PaymentReceived::dispatch($transaction->fresh(), $escrowHold);
+        }
+    }
+
+    // ── charge.failed ─────────────────────────────────────────────────────
+
+    private function handleChargeFailure(): void
+    {
+        $reference = $this->data['reference'] ?? null;
+
+        if (! $reference) {
+            return;
+        }
+
+        $transaction = Transaction::where('idempotency_key', $reference)
+            ->orWhere('gateway_reference', $reference)
+            ->first();
+
+        if (! $transaction) {
+            return;
+        }
+
+        // Idempotency: already in a terminal state
+        if (in_array($transaction->status, [TransactionStatus::Failed, TransactionStatus::Succeeded], strict: true)) {
+            return;
+        }
+
+        $transaction->update(['status' => TransactionStatus::Failed->value]);
+    }
+}

@@ -101,4 +101,23 @@ class PaymentService
 
         return $transaction->fresh();
     }
+
+    /**
+     * Submit OTP for a pending mobile money charge.
+     *
+     * Finds the transaction by idempotency_key (= the reference sent to Paystack),
+     * validates it is still in processing state, then forwards the OTP to Paystack.
+     *
+     * @return array<string, mixed> Gateway response (status, display_text, etc.)
+     */
+    public function submitOtp(string $reference, string $otp): array
+    {
+        $transaction = Transaction::where('idempotency_key', $reference)->firstOrFail();
+
+        if ($transaction->status !== TransactionStatus::Processing) {
+            throw PaymentException::transactionNotProcessing($transaction->status->value);
+        }
+
+        return $this->gateway->submitOtp($reference, $otp);
+    }
 }

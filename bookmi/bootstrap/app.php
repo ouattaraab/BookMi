@@ -27,7 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->throttleWithRedis();
         $middleware->alias([
-            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'admin'             => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'paystack-webhook'  => \App\Http\Middleware\ValidatePaystackSignature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

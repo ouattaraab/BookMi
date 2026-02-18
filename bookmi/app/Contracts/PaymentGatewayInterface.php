@@ -25,6 +25,13 @@ interface PaymentGatewayInterface
     public function verifyTransaction(string $reference): array;
 
     /**
+     * Submit OTP to complete a mobile money charge.
+     *
+     * @return array<string, mixed>
+     */
+    public function submitOtp(string $reference, string $otp): array;
+
+    /**
      * Initiate a transfer (talent payout).
      *
      * @param  array<string, mixed>  $payload

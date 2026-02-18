@@ -37,4 +37,12 @@ class PaymentException extends BookmiException
             409,
         );
     }
+
+    public static function transactionNotProcessing(string $status): self
+    {
+        return new self(
+            'PAYMENT_TRANSACTION_NOT_PROCESSING',
+            "L'OTP ne peut pas être soumis (statut de la transaction: {$status}).",
+        );
+    }
 }
