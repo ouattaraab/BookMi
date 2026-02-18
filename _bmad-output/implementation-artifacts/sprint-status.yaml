@@ -73,9 +73,9 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 3: Réservation & Contrats (10 stories)
   # ──────────────────────────────────────────────
-  epic-3: backlog
-  3-1-calendrier-disponibilites-du-talent: backlog
-  3-2-demande-de-reservation: backlog
+  epic-3: in-progress
+  3-1-calendrier-disponibilites-du-talent: done
+  3-2-demande-de-reservation: done
   3-3-accepter-refuser-une-reservation: backlog
   3-4-devis-detaille-transparent: backlog
   3-5-contrat-electronique-et-pdf: backlog

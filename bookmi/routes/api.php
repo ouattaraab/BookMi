@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BookingRequestController;
+use App\Http\Controllers\Api\V1\CalendarSlotController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\FavoriteController;
 use App\Http\Controllers\Api\V1\HealthCheckController;
@@ -41,6 +43,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     Route::get('/talents', [TalentController::class, 'index'])->name('talents.index');
     Route::get('/talents/{slug}', [TalentController::class, 'show'])->name('talents.show');
+    Route::get('/talents/{talent}/calendar', [CalendarSlotController::class, 'index'])->name('calendar.index');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout'])
@@ -60,6 +63,16 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/verifications/me', [VerificationController::class, 'showOwn'])->name('verifications.me');
 
         Route::apiResource('service_packages', ServicePackageController::class)->except(['show']);
+
+        // Calendrier disponibilités (talent uniquement)
+        Route::post('/calendar_slots', [CalendarSlotController::class, 'store'])->name('calendar.store');
+        Route::put('/calendar_slots/{slot}', [CalendarSlotController::class, 'update'])->name('calendar.update');
+        Route::delete('/calendar_slots/{slot}', [CalendarSlotController::class, 'destroy'])->name('calendar.destroy');
+
+        // Réservations
+        Route::get('/booking_requests', [BookingRequestController::class, 'index'])->name('booking_requests.index');
+        Route::post('/booking_requests', [BookingRequestController::class, 'store'])->name('booking_requests.store');
+        Route::get('/booking_requests/{booking}', [BookingRequestController::class, 'show'])->name('booking_requests.show');
 
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])
