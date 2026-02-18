@@ -11,6 +11,7 @@ import 'package:bookmi_app/features/discovery/data/repositories/discovery_reposi
 import 'package:bookmi_app/features/favorites/bloc/favorites_bloc.dart';
 import 'package:bookmi_app/features/favorites/data/local/favorites_local_source.dart';
 import 'package:bookmi_app/features/favorites/data/repositories/favorites_repository.dart';
+import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/l10n/l10n.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,7 @@ class _AppDependencies {
     required this.favoritesRepo,
     required this.discoveryRepo,
     required this.talentProfileRepo,
+    required this.bookingRepo,
     required this.router,
   });
 
@@ -77,6 +79,7 @@ class _AppDependencies {
   final FavoritesRepository favoritesRepo;
   final DiscoveryRepository discoveryRepo;
   final TalentProfileRepository talentProfileRepo;
+  final BookingRepository bookingRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -122,7 +125,14 @@ class _AppDependencies {
       localStorage: talentProfileLocalStorage,
     );
 
-    final router = buildAppRouter(talentProfileRepo, authBloc);
+    final bookingsBox = await Hive.openBox<dynamic>('bookings');
+    final bookingLocalStorage = LocalStorage(box: bookingsBox);
+    final bookingRepo = BookingRepository(
+      apiClient: apiClient,
+      localStorage: bookingLocalStorage,
+    );
+
+    final router = buildAppRouter(talentProfileRepo, authBloc, bookingRepo);
 
     return _AppDependencies(
       authBloc: authBloc,
@@ -130,6 +140,7 @@ class _AppDependencies {
       favoritesRepo: favoritesRepo,
       discoveryRepo: discoveryRepo,
       talentProfileRepo: talentProfileRepo,
+      bookingRepo: bookingRepo,
       router: router,
     );
   }

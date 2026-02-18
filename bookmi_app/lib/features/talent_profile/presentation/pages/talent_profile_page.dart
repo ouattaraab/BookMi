@@ -7,6 +7,7 @@ import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/favorites/widgets/favorite_button.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_event.dart';
@@ -489,7 +490,15 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(BookmiRadius.button),
-                  onTap: () {},
+                  onTap: () => BookingFlowSheet.show(
+                    context,
+                    repository: context.read<BookingRepository>(),
+                    talentProfileId: talentId,
+                    talentStageName: stageName,
+                    servicePackages: servicePackages,
+                    enableExpress:
+                        profile['enable_express_booking'] as bool? ?? false,
+                  ),
                   child: Center(
                     child: Text(
                       'Réserver · ${TalentCard.formatCachet(cachetAmount)}',

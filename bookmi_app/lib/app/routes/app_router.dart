@@ -12,7 +12,7 @@ import 'package:bookmi_app/features/auth/presentation/pages/otp_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/register_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:bookmi_app/features/discovery/presentation/pages/discovery_page.dart';
-import 'package:bookmi_app/features/placeholder/bookings_placeholder_page.dart';
+import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/placeholder/home_placeholder_page.dart';
 import 'package:bookmi_app/features/placeholder/messages_placeholder_page.dart';
 import 'package:bookmi_app/features/placeholder/profile_placeholder_page.dart';
@@ -44,6 +44,7 @@ class _GoRouterRefreshStream extends ChangeNotifier {
 GoRouter buildAppRouter(
   TalentProfileRepository talentProfileRepo,
   AuthBloc authBloc,
+  BookingRepository bookingRepo,
 ) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -117,13 +118,18 @@ GoRouter buildAppRouter(
                     builder: (context, state) {
                       final slug = state.pathParameters['slug'] ?? '';
                       final extra = state.extra as Map<String, dynamic>?;
-                      return BlocProvider(
-                        create: (_) => TalentProfileBloc(
-                          repository: talentProfileRepo,
-                        ),
-                        child: TalentProfilePage(
-                          slug: slug,
-                          initialData: extra,
+                      return MultiRepositoryProvider(
+                        providers: [
+                          RepositoryProvider.value(value: bookingRepo),
+                        ],
+                        child: BlocProvider(
+                          create: (_) => TalentProfileBloc(
+                            repository: talentProfileRepo,
+                          ),
+                          child: TalentProfilePage(
+                            slug: slug,
+                            initialData: extra,
+                          ),
                         ),
                       );
                     },
@@ -137,7 +143,31 @@ GoRouter buildAppRouter(
               GoRoute(
                 path: RoutePaths.bookings,
                 name: RouteNames.bookings,
-                builder: (context, state) => const BookingsPlaceholderPage(),
+                builder: (context, state) => RepositoryProvider.value(
+                  value: bookingRepo,
+                  child: const BookingsPage(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: RoutePaths.bookingDetail,
+                    name: RouteNames.bookingDetail,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) {
+                      final id = int.tryParse(
+                            state.pathParameters['id'] ?? '',
+                          ) ??
+                          0;
+                      final preloaded = state.extra as BookingModel?;
+                      return RepositoryProvider.value(
+                        value: bookingRepo,
+                        child: BookingDetailPage(
+                          bookingId: id,
+                          preloaded: preloaded,
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

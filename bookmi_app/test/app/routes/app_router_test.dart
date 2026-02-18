@@ -4,6 +4,7 @@ import 'package:bookmi_app/core/storage/local_storage.dart';
 import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,6 +30,10 @@ void main() {
       dio: mockDio,
       localStorage: mockLocalStorage,
     );
+    final bookingRepo = BookingRepository.forTesting(
+      dio: mockDio,
+      localStorage: mockLocalStorage,
+    );
 
     final mockAuthRepo = MockAuthRepository();
     final mockSecureStorage = MockSecureStorage();
@@ -37,7 +42,7 @@ void main() {
       secureStorage: mockSecureStorage,
     );
 
-    router = buildAppRouter(repo, authBloc);
+    router = buildAppRouter(repo, authBloc, bookingRepo);
   });
 
   tearDown(() async {
