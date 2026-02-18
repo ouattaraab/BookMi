@@ -40,6 +40,33 @@ class BookingException extends BookmiException
         );
     }
 
+    public static function rescheduleAlreadyPending(): self
+    {
+        return new self(
+            'BOOKING_RESCHEDULE_ALREADY_PENDING',
+            'Une demande de report est déjà en attente pour cette réservation.',
+            422,
+        );
+    }
+
+    public static function rescheduleNotPending(): self
+    {
+        return new self(
+            'BOOKING_RESCHEDULE_NOT_PENDING',
+            'Cette demande de report n\'est plus en attente.',
+            422,
+        );
+    }
+
+    public static function rescheduleSameDate(): self
+    {
+        return new self(
+            'BOOKING_RESCHEDULE_SAME_DATE',
+            'La date proposée est identique à la date actuelle de l\'événement.',
+            422,
+        );
+    }
+
     public static function cancellationNotAllowed(): self
     {
         return new self(

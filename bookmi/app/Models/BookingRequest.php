@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\RescheduleStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BookingRequest extends Model
 {
@@ -69,6 +71,21 @@ class BookingRequest extends Model
     public function servicePackage(): BelongsTo
     {
         return $this->belongsTo(ServicePackage::class);
+    }
+
+    /**
+     * @return HasMany<RescheduleRequest, $this>
+     */
+    public function rescheduleRequests(): HasMany
+    {
+        return $this->hasMany(RescheduleRequest::class);
+    }
+
+    public function hasPendingReschedule(): bool
+    {
+        return $this->rescheduleRequests()
+            ->where('status', RescheduleStatus::Pending)
+            ->exists();
     }
 
     /**

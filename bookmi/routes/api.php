@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\RescheduleController;
 use App\Http\Controllers\Api\V1\BookingRequestController;
 use App\Http\Controllers\Api\V1\CalendarSlotController;
 use App\Http\Controllers\Api\V1\CategoryController;
@@ -77,6 +78,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/booking_requests/{booking}/reject', [BookingRequestController::class, 'reject'])->name('booking_requests.reject');
         Route::post('/booking_requests/{booking}/cancel', [BookingRequestController::class, 'cancel'])->name('booking_requests.cancel');
         Route::get('/booking_requests/{booking}/contract', [BookingRequestController::class, 'contract'])->name('booking_requests.contract');
+        Route::post('/booking_requests/{booking}/reschedule', [RescheduleController::class, 'store'])->name('reschedule_requests.store');
+
+        // Report de réservation
+        Route::post('/reschedule_requests/{reschedule}/accept', [RescheduleController::class, 'accept'])->name('reschedule_requests.accept');
+        Route::post('/reschedule_requests/{reschedule}/reject', [RescheduleController::class, 'reject'])->name('reschedule_requests.reject');
 
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])
