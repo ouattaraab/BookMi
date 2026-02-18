@@ -14,6 +14,7 @@ use App\Models\ServicePackage;
 use App\Models\TalentProfile;
 use App\Models\User;
 use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Support\Facades\DB;
 
 class BookingService
 {
@@ -109,15 +110,17 @@ class BookingService
             throw BookingException::invalidStatusTransition();
         }
 
-        $booking->update(['status' => BookingStatus::Accepted]);
+        DB::transaction(function () use ($booking) {
+            $booking->update(['status' => BookingStatus::Accepted]);
 
-        CalendarSlot::updateOrCreate(
-            [
-                'talent_profile_id' => $booking->talent_profile_id,
-                'date'              => $booking->event_date->toDateString(),
-            ],
-            ['status' => CalendarSlotStatus::Blocked],
-        );
+            CalendarSlot::updateOrCreate(
+                [
+                    'talent_profile_id' => $booking->talent_profile_id,
+                    'date'              => $booking->event_date->toDateString(),
+                ],
+                ['status' => CalendarSlotStatus::Blocked],
+            );
+        });
 
         BookingAccepted::dispatch($booking);
 
@@ -129,10 +132,14 @@ class BookingService
      *
      * Transitions: pending → cancelled
      * Side-effects: stores optional reject_reason, dispatches BookingCancelled.
+     *
+     * Only pending bookings can be rejected via this endpoint (AC3).
+     * Even though the state machine allows accepted→cancelled, that is a different
+     * cancellation flow (not the reject-request action).
      */
     public function rejectBooking(BookingRequest $booking, ?string $reason = null): BookingRequest
     {
-        if (! $booking->status->canTransitionTo(BookingStatus::Cancelled)) {
+        if ($booking->status !== BookingStatus::Pending) {
             throw BookingException::invalidStatusTransition();
         }
 

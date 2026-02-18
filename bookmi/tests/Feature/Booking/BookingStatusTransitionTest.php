@@ -216,7 +216,25 @@ class BookingStatusTransitionTest extends TestCase
     }
 
     #[Test]
-    public function cannot_reject_non_pending_booking(): void
+    public function cannot_reject_accepted_booking(): void
+    {
+        // Accepted→Cancelled is allowed by the state machine in general,
+        // but the /reject endpoint is ONLY for pending bookings (AC3).
+        [$talentUser, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createPendingBooking($client, $talent, $package, [
+            'status' => BookingStatus::Accepted,
+        ]);
+
+        $this->actingAs($talentUser, 'sanctum');
+
+        $this->postJson("/api/v1/booking_requests/{$booking->id}/reject")
+            ->assertStatus(422)
+            ->assertJsonPath('error.code', 'BOOKING_INVALID_TRANSITION');
+    }
+
+    #[Test]
+    public function cannot_reject_cancelled_booking(): void
     {
         [$talentUser, $talent, $package] = $this->createTalentWithPackage();
         $client  = $this->createClientUser();
