@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Repositories\Contracts\FavoriteRepositoryInterface;
 use App\Repositories\Contracts\ServicePackageRepositoryInterface;
 use App\Repositories\Contracts\TalentRepositoryInterface;
 use App\Repositories\Contracts\VerificationRepositoryInterface;
+use App\Repositories\Eloquent\FavoriteRepository;
 use App\Repositories\Eloquent\ServicePackageRepository;
 use App\Repositories\Eloquent\TalentRepository;
 use App\Repositories\Eloquent\VerificationRepository;
@@ -20,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TalentRepositoryInterface::class, TalentRepository::class);
         $this->app->bind(VerificationRepositoryInterface::class, VerificationRepository::class);
         $this->app->bind(ServicePackageRepositoryInterface::class, ServicePackageRepository::class);
+        $this->app->bind(FavoriteRepositoryInterface::class, FavoriteRepository::class);
     }
 
     public function boot(): void
@@ -49,6 +52,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(
                 config('bookmi.rate_limits.auth_endpoints', 10)
             )->by($request->ip());
+        });
+
+        RateLimiter::for('forgot-password', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
         });
     }
 }

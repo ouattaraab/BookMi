@@ -26,13 +26,15 @@ class AdminVerificationResource extends JsonResource
                 'has_document' => $this->stored_path !== null,
                 'user' => [
                     'id' => $this->user->id,
-                    'name' => $this->user->name,
+                    'first_name' => $this->user->first_name,
+                    'last_name' => $this->user->last_name,
                     'email' => $this->user->email,
                 ],
                 'reviewer' => $this->whenLoaded('reviewer', function () {
                     return $this->reviewer !== null ? [
                         'id' => $this->reviewer->id,
-                        'name' => $this->reviewer->name,
+                        'first_name' => $this->reviewer->first_name,
+                        'last_name' => $this->reviewer->last_name,
                     ] : null;
                 }),
             ],

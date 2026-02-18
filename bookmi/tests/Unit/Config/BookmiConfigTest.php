@@ -55,7 +55,7 @@ class BookmiConfigTest extends TestCase
         $this->assertArrayHasKey('levels', $this->config['talent']);
         $this->assertArrayHasKey('nouveau', $this->config['talent']['levels']);
         $this->assertArrayHasKey('confirme', $this->config['talent']['levels']);
-        $this->assertArrayHasKey('premium', $this->config['talent']['levels']);
+        $this->assertArrayHasKey('populaire', $this->config['talent']['levels']);
         $this->assertArrayHasKey('elite', $this->config['talent']['levels']);
     }
 

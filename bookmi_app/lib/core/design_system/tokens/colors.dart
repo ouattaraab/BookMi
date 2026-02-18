@@ -69,4 +69,18 @@ abstract final class BookmiColors {
   static const categoryMcAnimateur = Color(0xFFFFB300);
   static const categoryPhotographe = Color(0xFF536DFE);
   static const categoryDecorateur = Color(0xFFFF6E40);
+
+  /// Returns the accent color for a talent category slug.
+  static Color categoryColor(String? slug) {
+    return switch (slug) {
+      'dj' => categoryDjMusique,
+      'groupe-musical' => categoryGroupeMusical,
+      'humoriste' => categoryHumoriste,
+      'danseur' => categoryDanseur,
+      'mc-animateur' => categoryMcAnimateur,
+      'photographe' => categoryPhotographe,
+      'decorateur' => categoryDecorateur,
+      _ => brandBlueLight,
+    };
+  }
 }

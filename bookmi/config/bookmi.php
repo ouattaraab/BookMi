@@ -14,6 +14,7 @@ return [
         'max_login_attempts' => 5,
         'lockout_minutes' => 15,
         'otp_max_resend_per_hour' => 3,
+        'password_reset_url' => env('PASSWORD_RESET_URL', 'http://localhost:3000/reset-password'),
     ],
 
     'talent' => [
@@ -21,7 +22,7 @@ return [
         'levels' => [
             'nouveau' => ['min_bookings' => 0, 'min_rating' => 0],
             'confirme' => ['min_bookings' => 6, 'min_rating' => 3.5],
-            'premium' => ['min_bookings' => 21, 'min_rating' => 4.0],
+            'populaire' => ['min_bookings' => 21, 'min_rating' => 4.0],
             'elite' => ['min_bookings' => 51, 'min_rating' => 4.5],
         ],
     ],

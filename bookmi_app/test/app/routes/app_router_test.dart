@@ -1,26 +1,82 @@
 import 'package:bookmi_app/app/routes/app_router.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:bookmi_app/core/storage/local_storage.dart';
+import 'package:bookmi_app/core/storage/secure_storage.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/auth/data/repositories/auth_repository.dart';
+import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockDio extends Mock implements Dio {}
+
+class MockLocalStorage extends Mock implements LocalStorage {}
+
+class MockAuthRepository extends Mock implements AuthRepository {}
+
+class MockSecureStorage extends Mock implements SecureStorage {}
 
 void main() {
+  late GoRouter router;
+  late AuthBloc authBloc;
+
+  setUp(() {
+    final mockDio = MockDio();
+    final mockLocalStorage = MockLocalStorage();
+    final repo = TalentProfileRepository.forTesting(
+      dio: mockDio,
+      localStorage: mockLocalStorage,
+    );
+
+    final mockAuthRepo = MockAuthRepository();
+    final mockSecureStorage = MockSecureStorage();
+    authBloc = AuthBloc(
+      authRepository: mockAuthRepo,
+      secureStorage: mockSecureStorage,
+    );
+
+    router = buildAppRouter(repo, authBloc);
+  });
+
+  tearDown(() async {
+    await authBloc.close();
+  });
+
   group('AppRouter', () {
-    test('has initial location set to home', () {
-      expect(appRouter.routeInformationProvider.value.uri.path, '/home');
-    });
-
-    test('contains a StatefulShellRoute', () {
-      final shellRoute = appRouter.configuration.routes.first;
-      expect(shellRoute, isA<StatefulShellRoute>());
-    });
-
-    test('has exactly 5 branches for tab navigation', () {
-      final shellRoute =
-          appRouter.configuration.routes.first as StatefulShellRoute;
-      expect(shellRoute.branches.length, 5);
+    test('has initial location set to splash', () {
+      expect(
+        router.routeInformationProvider.value.uri.path,
+        '/splash',
+      );
     });
 
     group('route paths', () {
+      test('splash path is defined', () {
+        expect(RoutePaths.splash, '/splash');
+      });
+
+      test('onboarding path is defined', () {
+        expect(RoutePaths.onboarding, '/onboarding');
+      });
+
+      test('login path is defined', () {
+        expect(RoutePaths.login, '/login');
+      });
+
+      test('register path is defined', () {
+        expect(RoutePaths.register, '/register');
+      });
+
+      test('otp path is defined', () {
+        expect(RoutePaths.otp, '/otp');
+      });
+
+      test('forgotPassword path is defined', () {
+        expect(RoutePaths.forgotPassword, '/forgot-password');
+      });
+
       test('home path is defined', () {
         expect(RoutePaths.home, '/home');
       });
@@ -41,12 +97,20 @@ void main() {
         expect(RoutePaths.profile, '/profile');
       });
 
-      test('login path is defined', () {
-        expect(RoutePaths.login, '/login');
+      test('talent detail uses slug parameter', () {
+        expect(RoutePaths.talentDetail, 'talent/:slug');
       });
     });
 
     group('route names', () {
+      test('splash name is defined', () {
+        expect(RouteNames.splash, 'splash');
+      });
+
+      test('onboarding name is defined', () {
+        expect(RouteNames.onboarding, 'onboarding');
+      });
+
       test('home name is defined', () {
         expect(RouteNames.home, 'home');
       });

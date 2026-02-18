@@ -1,0 +1,81 @@
+name: CI Flutter
+
+on:
+  push:
+    paths:
+      - 'bookmi_app/**'
+      - '.github/workflows/ci-flutter.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'bookmi_app/**'
+      - '.github/workflows/ci-flutter.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Branch protection: configure in GitHub Settings → Branches → main
+# Require status checks: "analyze", "format", "test" must pass before merge
+
+jobs:
+  analyze:
+    name: Dart Analyze
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bookmi_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.x'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run analyzer
+        run: dart analyze lib/ test/
+
+  format:
+    name: Dart Format
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bookmi_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.x'
+          cache: true
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed lib/ test/
+
+  test:
+    name: Flutter Test
+    runs-on: ubuntu-latest
+    needs: [analyze, format]
+    defaults:
+      run:
+        working-directory: bookmi_app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.x'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test

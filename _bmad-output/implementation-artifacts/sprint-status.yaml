@@ -43,8 +43,8 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 1: Profil Talent & Découverte (12 stories)
   # ──────────────────────────────────────────────
-  epic-1: in-progress
-  1-1-initialisation-projet-backend-laravel: review
+  epic-1: done
+  1-1-initialisation-projet-backend-laravel: done
   1-2-initialisation-projet-mobile-flutter: done
   1-3-modele-talent-et-crud-profil: done
   1-4-verification-didentite: done
@@ -52,22 +52,22 @@ development_status:
   1-6-recherche-par-geolocalisation: done
   1-7-profil-public-talent: done
   1-8-packages-de-prestation: done
-  1-9-favoris: backlog
-  1-10-ecrans-decouverte-flutter: backlog
-  1-11-ecran-profil-talent-flutter: backlog
-  1-12-pipeline-ci-cd-initiale: backlog
+  1-9-favoris: done
+  1-10-ecrans-decouverte-flutter: done
+  1-11-ecran-profil-talent-flutter: done
+  1-12-pipeline-ci-cd-initiale: done
   epic-1-retrospective: optional
 
   # ──────────────────────────────────────────────
   # Epic 2: Authentification (6 stories)
   # ──────────────────────────────────────────────
-  epic-2: backlog
-  2-1-inscription-client-et-talent: backlog
-  2-2-verification-otp-telephone: backlog
-  2-3-connexion-email-mot-de-passe: backlog
-  2-4-reinitialisation-mot-de-passe: backlog
-  2-5-deconnexion-et-gestion-token: backlog
-  2-6-ecrans-authentification-flutter: backlog
+  epic-2: in-progress
+  2-1-inscription-client-et-talent: done
+  2-2-verification-otp-telephone: done
+  2-3-connexion-email-mot-de-passe: done
+  2-4-reinitialisation-mot-de-passe: done
+  2-5-deconnexion-et-gestion-token: done
+  2-6-ecrans-authentification-flutter: review
   epic-2-retrospective: optional
 
   # ──────────────────────────────────────────────

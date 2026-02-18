@@ -1,6 +1,6 @@
 # Story 1.1: Initialisation du projet backend Laravel
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -278,6 +278,56 @@ bookmi/
 - Unit tests pour la configuration et les utilitaires
 - Assertion du format JSON envelope dans CHAQUE test d'endpoint
 
+## Code Review Record
+
+### Review Model Used
+
+Claude Opus 4.6
+
+### Review Date
+
+2026-02-18
+
+### Findings Summary
+
+6 findings total: 4 MEDIUM, 2 LOW — all fixed and verified (165 tests passing).
+
+### Finding 1 — MEDIUM: Docker ports exposed on all interfaces
+
+**File:** `bookmi/docker-compose.yml`
+**Issue:** MySQL (3306) and Redis (6379) ports were mapped as `"3306:3306"` exposing them on `0.0.0.0`, accessible from the network.
+**Fix:** Bound ports to localhost: `"127.0.0.1:3306:3306"` and `"127.0.0.1:6379:6379"`.
+
+### Finding 2 — MEDIUM: MySQL credentials hardcoded in docker-compose.yml
+
+**File:** `bookmi/docker-compose.yml`
+**Issue:** `MYSQL_DATABASE: bookmi`, `MYSQL_USER: bookmi`, `MYSQL_PASSWORD: bookmi_secret`, `MYSQL_ROOT_PASSWORD: root_secret` were hardcoded.
+**Fix:** Replaced with env var references with defaults: `${DB_DATABASE:-bookmi}`, `${DB_USERNAME:-bookmi}`, `${DB_PASSWORD:-bookmi_secret}`, `${DB_ROOT_PASSWORD:-root_secret}`.
+
+### Finding 3 — MEDIUM: Dockerfile missing composer install for production
+
+**File:** `bookmi/docker/php/Dockerfile`
+**Issue:** The Dockerfile was missing the `COPY composer.json composer.lock` + `RUN composer install` step for Docker layer caching and production builds.
+**Fix:** Added proper two-stage composer install: copy manifests first, install dependencies, then copy source and dump-autoload.
+
+### Finding 4 — MEDIUM: Talent level config key mismatch
+
+**Files:** `bookmi/config/bookmi.php`, `bookmi/tests/Unit/Config/BookmiConfigTest.php`
+**Issue:** Config used `'premium'` as talent level key, but the system uses `'populaire'` everywhere else.
+**Fix:** Renamed `'premium'` to `'populaire'` in both config and test.
+
+### Finding 5 — LOW: .env.example contains dev credentials
+
+**File:** `bookmi/.env.example`
+**Issue:** `DB_PASSWORD=bookmi_secret` was pre-filled instead of being empty.
+**Fix:** Changed to `DB_PASSWORD=` (empty placeholder).
+
+### Finding 6 — LOW: .env listed in story File List
+
+**File:** `_bmad-output/implementation-artifacts/1-1-initialisation-projet-backend-laravel.md`
+**Issue:** `bookmi/.env` was listed in the File List section, but `.env` is not versioned.
+**Fix:** Removed `bookmi/.env` from File List, clarified `.env.example` entry.
+
 ## Dev Agent Record
 
 ### Agent Model Used
@@ -302,6 +352,7 @@ Claude Opus 4.6
 ### Change Log
 - 2026-02-17: Story créée par le workflow create-story — analyse exhaustive complète
 - 2026-02-17: Implémentation complète — 9 tâches, 30+ sous-tâches terminées — Status: review
+- 2026-02-18: Code review adversarial — 6 findings (4 MEDIUM, 2 LOW) — tous corrigés — Status: done
 
 ### File List
 - `bookmi/app/Exceptions/BookmiException.php` — Exception métier de base
@@ -320,8 +371,7 @@ Claude Opus 4.6
 - `bookmi/docker/nginx/default.conf` — Reverse proxy Nginx
 - `bookmi/pint.json` — Preset PSR-12
 - `bookmi/phpstan.neon` — Level 5, paths app/
-- `bookmi/.env` — Configuration MySQL/Redis Docker
-- `bookmi/.env.example` — Template complet
+- `bookmi/.env.example` — Template complet (`.env` est local, non versionné)
 - `bookmi/.dockerignore` — Exclusions Docker
 - `bookmi/tests/Feature/Api/V1/HealthCheckTest.php` — Tests health check
 - `bookmi/tests/Unit/Config/BookmiConfigTest.php` — Tests config bookmi

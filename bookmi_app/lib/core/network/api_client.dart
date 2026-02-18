@@ -4,6 +4,8 @@ import 'package:bookmi_app/core/network/interceptors/retry_interceptor.dart';
 import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sentry_dio/sentry_dio.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 class ApiClient {
   /// Initialize and access the singleton ApiClient.
@@ -32,12 +34,17 @@ class ApiClient {
              'Content-Type': 'application/json',
            },
          ),
-       ) {
+       ),
+       _authInterceptor = AuthInterceptor(secureStorage: secureStorage) {
     _dio.interceptors.addAll([
-      AuthInterceptor(secureStorage: secureStorage),
+      _authInterceptor,
       RetryInterceptor(dio: _dio),
       LoggingInterceptor(),
     ]);
+
+    if (Sentry.isEnabled) {
+      _dio.addSentry();
+    }
   }
 
   static ApiClient? _instance;
@@ -58,6 +65,15 @@ class ApiClient {
   }
 
   final Dio _dio;
+  final AuthInterceptor _authInterceptor;
 
   Dio get dio => _dio;
+
+  /// A callback invoked when a 401 response is received.
+  /// Use this to notify the AuthBloc of session expiration.
+  void Function()? get onSessionExpired => _authInterceptor.onSessionExpired;
+
+  set onSessionExpired(void Function()? callback) {
+    _authInterceptor.onSessionExpired = callback;
+  }
 }

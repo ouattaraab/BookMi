@@ -6,6 +6,7 @@ use App\Enums\TalentLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Sluggable\HasSlug;
@@ -153,6 +154,15 @@ class TalentProfile extends Model
     public function servicePackages(): HasMany
     {
         return $this->hasMany(ServicePackage::class);
+    }
+
+    /**
+     * @return BelongsToMany<\App\Models\User, $this>
+     */
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_favorites')
+            ->withTimestamps();
     }
 
     public function hasCoordinates(): bool
