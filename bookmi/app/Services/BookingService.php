@@ -8,6 +8,7 @@ use App\Events\BookingAccepted;
 use App\Events\BookingCancelled;
 use App\Events\BookingCreated;
 use App\Exceptions\BookingException;
+use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
 use App\Models\CalendarSlot;
 use App\Models\ServicePackage;
@@ -123,6 +124,7 @@ class BookingService
         });
 
         BookingAccepted::dispatch($booking);
+        GenerateContractPdf::dispatch($booking)->onQueue('media');
 
         return $booking;
     }

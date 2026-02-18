@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
+use App\Exceptions\BookingException;
 use App\Http\Requests\Api\RejectBookingRequestRequest;
 use App\Http\Requests\Api\StoreBookingRequestRequest;
 use App\Http\Resources\BookingRequestResource;
@@ -10,6 +11,8 @@ use App\Models\BookingRequest;
 use App\Services\BookingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 
 class BookingRequestController extends BaseController
 {
@@ -92,6 +95,26 @@ class BookingRequestController extends BaseController
         $booking->load($this->bookingRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
+    }
+
+    /**
+     * GET /api/v1/booking_requests/{booking}/contract
+     */
+    public function contract(BookingRequest $booking): Response
+    {
+        $this->authorize('downloadContract', $booking);
+
+        if (! $booking->contract_path || ! Storage::disk('local')->exists($booking->contract_path)) {
+            throw BookingException::contractNotReady();
+        }
+
+        $content  = Storage::disk('local')->get($booking->contract_path);
+        $filename = "contrat-booking-{$booking->id}.pdf";
+
+        return response($content, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
+        ]);
     }
 
     /**

@@ -23,6 +23,11 @@ class BookingRequestPolicy
         return $this->isTalentOwner($user, $booking);
     }
 
+    public function downloadContract(User $user, BookingRequest $booking): bool
+    {
+        return $booking->isOwnedByUser($user);
+    }
+
     private function isTalentOwner(User $user, BookingRequest $booking): bool
     {
         return TalentProfile::where('id', $booking->talent_profile_id)

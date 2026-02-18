@@ -39,4 +39,13 @@ class BookingException extends BookmiException
             422,
         );
     }
+
+    public static function contractNotReady(): self
+    {
+        return new self(
+            'BOOKING_CONTRACT_NOT_READY',
+            'Le contrat n\'est pas encore disponible. Veuillez réessayer dans quelques instants.',
+            404,
+        );
+    }
 }

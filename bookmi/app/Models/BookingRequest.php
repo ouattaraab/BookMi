@@ -20,6 +20,7 @@ class BookingRequest extends Model
         'event_location',
         'message',
         'reject_reason',
+        'contract_path',
         'status',
         'cachet_amount',
         'commission_amount',
