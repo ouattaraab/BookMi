@@ -47,6 +47,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         ->middleware('paystack-webhook')
         ->name('webhooks.paystack');
 
+    // Callback Paystack après 3D Secure (redirect — public, pas besoin d'auth)
+    Route::get('/payments/callback', [PaymentController::class, 'callback'])
+        ->name('payments.callback');
+
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
     Route::get('/talents', [TalentController::class, 'index'])->name('talents.index');
@@ -99,6 +103,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/payments/submit_otp', [PaymentController::class, 'submitOtp'])
             ->middleware('throttle:payment')
             ->name('payments.submit_otp');
+
+        Route::get('/payments/{transaction}/status', [PaymentController::class, 'status'])
+            ->name('payments.status');
 
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])

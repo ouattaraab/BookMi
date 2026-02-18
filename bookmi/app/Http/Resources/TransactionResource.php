@@ -24,9 +24,12 @@ class TransactionResource extends JsonResource
             'gateway'           => $this->gateway,
             'gateway_reference' => $this->gateway_reference,
             'status'            => $this->status->value,
-            // Paystack Charge API next-action fields (e.g. send_otp → display prompt)
+            // Paystack Charge API next-action fields (mobile money: send_otp → display prompt)
             'gateway_status'    => $gatewayResponse['status'] ?? null,
             'display_text'      => $gatewayResponse['display_text'] ?? null,
+            // Paystack transaction/initialize fields (card / bank_transfer: 3D Secure redirect)
+            'authorization_url' => $gatewayResponse['authorization_url'] ?? null,
+            'access_code'       => $gatewayResponse['access_code'] ?? null,
             'initiated_at'      => $this->initiated_at?->toISOString(),
             'completed_at'      => $this->completed_at?->toISOString(),
         ];

@@ -254,25 +254,6 @@ class PaymentControllerTest extends TestCase
             ->assertJsonStructure(['error' => ['details' => ['errors' => ['payment_method']]]]);
     }
 
-    public function test_returns_422_for_card_payment_method_on_mobile_money_endpoint(): void
-    {
-        Http::preventStrayRequests();
-
-        $client  = User::factory()->create();
-        $booking = BookingRequest::factory()->accepted()->create(['client_id' => $client->id]);
-
-        // card is a valid PaymentMethod enum but excluded from mobile money endpoint
-        $response = $this->actingAs($client, 'sanctum')
-            ->postJson('/api/v1/payments/initiate', [
-                'booking_id'     => $booking->id,
-                'payment_method' => 'card',
-                'phone_number'   => '+2250700000000',
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonPath('error.code', 'VALIDATION_FAILED');
-    }
-
     public function test_returns_422_for_invalid_phone_number(): void
     {
         Http::preventStrayRequests();

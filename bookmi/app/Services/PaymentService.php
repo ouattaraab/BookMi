@@ -40,11 +40,6 @@ class PaymentService
 
         $paymentMethod = PaymentMethod::from($data['payment_method']);
 
-        // Guard: this endpoint is mobile-money only
-        if (! $paymentMethod->isMobileMoney()) {
-            throw PaymentException::unsupportedMethod($paymentMethod->value);
-        }
-
         // Eager-load client to avoid N+1 inside the gateway call
         $booking->loadMissing('client');
 
@@ -52,6 +47,16 @@ class PaymentService
 
         // ── Short DB transaction: duplicate check (with lock) + record creation ──
         $transaction = DB::transaction(function () use ($booking, $paymentMethod, $idempotencyKey) {
+            // M3 fix: re-check booking status WITH lock inside the transaction to prevent
+            // a concurrent cancellation from creating a payment on a cancelled booking.
+            $lockedBooking = BookingRequest::where('id', $booking->id)
+                ->lockForUpdate()
+                ->first();
+
+            if (! $lockedBooking || $lockedBooking->status !== BookingStatus::Accepted) {
+                throw PaymentException::bookingNotPayable($lockedBooking?->status->value ?? 'unknown');
+            }
+
             $hasPending = Transaction::where('booking_request_id', $booking->id)
                 ->whereIn('status', [TransactionStatus::Initiated->value, TransactionStatus::Processing->value])
                 ->lockForUpdate()
@@ -64,7 +69,7 @@ class PaymentService
             return Transaction::create([
                 'booking_request_id' => $booking->id,
                 'payment_method'     => $paymentMethod->value,
-                'amount'             => $booking->total_amount,
+                'amount'             => $lockedBooking->total_amount,
                 'currency'           => 'XOF',
                 'gateway'            => $this->gateway->name(),
                 'status'             => TransactionStatus::Initiated->value,
@@ -74,19 +79,16 @@ class PaymentService
         });
 
         // ── HTTP call OUTSIDE DB transaction — does not hold DB connection ──
-        $payload = [
-            'email'        => $booking->client->email,
-            'amount'       => $booking->total_amount,
-            'currency'     => 'XOF',
-            'reference'    => $idempotencyKey,
-            'mobile_money' => [
-                'phone'    => $data['phone_number'],
-                'provider' => $paymentMethod->paystackProvider(),
-            ],
-        ];
-
         try {
-            $result = $this->gateway->initiateCharge($payload);
+            if ($paymentMethod->isMobileMoney()) {
+                $result = $this->initiateChargeForMobileMoney(
+                    $booking, $paymentMethod, $idempotencyKey, $data['phone_number'] ?? '',
+                );
+            } else {
+                $result = $this->initializeTransactionForCard(
+                    $booking, $paymentMethod, $idempotencyKey,
+                );
+            }
         } catch (PaymentException $e) {
             // Mark transaction as failed for observability before re-throwing
             $transaction->update(['status' => TransactionStatus::Failed->value]);
@@ -100,6 +102,47 @@ class PaymentService
         ]);
 
         return $transaction->fresh();
+    }
+
+    /** @return array<string, mixed> */
+    private function initiateChargeForMobileMoney(
+        BookingRequest $booking,
+        PaymentMethod $paymentMethod,
+        string $idempotencyKey,
+        string $phoneNumber,
+    ): array {
+        return $this->gateway->initiateCharge([
+            'email'        => $booking->client->email,
+            'amount'       => $booking->total_amount,
+            'currency'     => 'XOF',
+            'reference'    => $idempotencyKey,
+            'mobile_money' => [
+                'phone'    => $phoneNumber,
+                'provider' => $paymentMethod->paystackProvider(),
+            ],
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function initializeTransactionForCard(
+        BookingRequest $booking,
+        PaymentMethod $paymentMethod,
+        string $idempotencyKey,
+    ): array {
+        $channels = match ($paymentMethod) {
+            PaymentMethod::Card         => ['card'],
+            PaymentMethod::BankTransfer => ['bank_transfer'],
+            default                     => ['card'],
+        };
+
+        return $this->gateway->initializeTransaction([
+            'email'        => $booking->client->email,
+            'amount'       => $booking->total_amount,
+            'currency'     => 'XOF',
+            'reference'    => $idempotencyKey,
+            'callback_url' => config('bookmi.payment.callback_url'),
+            'channels'     => $channels,
+        ]);
     }
 
     /**

@@ -35,8 +35,9 @@ return [
     ],
 
     'payment' => [
-        'primary_gateway' => 'paystack',
+        'primary_gateway'  => 'paystack',
         'fallback_gateway' => 'cinetpay',
+        'callback_url'     => env('PAYMENT_CALLBACK_URL', 'http://localhost:8000/api/v1/payments/callback'),
     ],
 
     'rate_limits' => [

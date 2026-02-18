@@ -15,10 +15,22 @@ class PaystackGateway implements PaymentGatewayInterface
         return 'paystack';
     }
 
+    public function initializeTransaction(array $payload): array
+    {
+        $response = $this->http()->post("{$this->baseUrl}/transaction/initialize", $payload);
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Unknown error');
+        }
+
+        return $data['data'];
+    }
+
     public function initiateCharge(array $payload): array
     {
-        $response = Http::withToken($this->secretKey())
-            ->post("{$this->baseUrl}/charge", $payload);
+        $response = $this->http()->post("{$this->baseUrl}/charge", $payload);
 
         $data = $response->json();
 
@@ -31,8 +43,7 @@ class PaystackGateway implements PaymentGatewayInterface
 
     public function verifyTransaction(string $reference): array
     {
-        $response = Http::withToken($this->secretKey())
-            ->get("{$this->baseUrl}/transaction/verify/{$reference}");
+        $response = $this->http()->get("{$this->baseUrl}/transaction/verify/{$reference}");
 
         $data = $response->json();
 
@@ -45,11 +56,10 @@ class PaystackGateway implements PaymentGatewayInterface
 
     public function submitOtp(string $reference, string $otp): array
     {
-        $response = Http::withToken($this->secretKey())
-            ->post("{$this->baseUrl}/charge/submit_otp", [
-                'reference' => $reference,
-                'otp'       => $otp,
-            ]);
+        $response = $this->http()->post("{$this->baseUrl}/charge/submit_otp", [
+            'reference' => $reference,
+            'otp'       => $otp,
+        ]);
 
         $data = $response->json();
 
@@ -62,8 +72,7 @@ class PaystackGateway implements PaymentGatewayInterface
 
     public function initiateTransfer(array $payload): array
     {
-        $response = Http::withToken($this->secretKey())
-            ->post("{$this->baseUrl}/transfer", $payload);
+        $response = $this->http()->post("{$this->baseUrl}/transfer", $payload);
 
         $data = $response->json();
 
@@ -72,6 +81,14 @@ class PaystackGateway implements PaymentGatewayInterface
         }
 
         return $data['data'];
+    }
+
+    /**
+     * Preconfigured HTTP client — timeout enforced per NFR4 (max 15s external calls).
+     */
+    private function http(): \Illuminate\Http\Client\PendingRequest
+    {
+        return Http::withToken($this->secretKey())->timeout(15);
     }
 
     private function secretKey(): string
