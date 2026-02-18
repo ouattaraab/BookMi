@@ -40,6 +40,15 @@ class BookingException extends BookmiException
         );
     }
 
+    public static function expressBookingNotAvailable(): self
+    {
+        return new self(
+            'BOOKING_EXPRESS_NOT_AVAILABLE',
+            'Ce talent n\'a pas activé la réservation express.',
+            422,
+        );
+    }
+
     public static function contractNotReady(): self
     {
         return new self(

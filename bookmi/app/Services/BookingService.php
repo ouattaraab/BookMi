@@ -27,13 +27,19 @@ class BookingService
     /**
      * Create a new booking request from a client.
      *
-     * @param array{talent_profile_id: int, service_package_id: int, event_date: string, event_location: string, message?: string|null} $data
+     * @param array{talent_profile_id: int, service_package_id: int, event_date: string, event_location: string, message?: string|null, is_express?: bool} $data
      */
     public function createBookingRequest(User $client, array $data): BookingRequest
     {
+        $isExpress = (bool) ($data['is_express'] ?? false);
+
         $talentProfile = TalentProfile::find($data['talent_profile_id']);
         if (! $talentProfile) {
             throw BookingException::talentNotFound();
+        }
+
+        if ($isExpress && ! $talentProfile->enable_express_booking) {
+            throw BookingException::expressBookingNotAvailable();
         }
 
         $package = ServicePackage::find($data['service_package_id']);
@@ -57,6 +63,7 @@ class BookingService
             'event_date'         => $data['event_date'],
             'event_location'     => $data['event_location'],
             'message'            => $data['message'] ?? null,
+            'is_express'         => $isExpress,
             'status'             => BookingStatus::Pending,
             'cachet_amount'      => $cachetAmount,
             'commission_amount'  => $commissionAmount,
@@ -64,6 +71,10 @@ class BookingService
         ]);
 
         BookingCreated::dispatch($booking);
+
+        if ($isExpress) {
+            $booking = $this->acceptBooking($booking);
+        }
 
         return $booking;
     }

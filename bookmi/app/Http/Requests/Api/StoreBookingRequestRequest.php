@@ -36,6 +36,7 @@ class StoreBookingRequestRequest extends FormRequest
             'event_date'     => ['required', 'date', 'date_format:Y-m-d', 'after:today'],
             'event_location' => ['required', 'string', 'max:255'],
             'message'        => ['nullable', 'string', 'max:1000'],
+            'is_express'     => ['nullable', 'boolean'],
         ];
     }
 

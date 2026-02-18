@@ -43,6 +43,7 @@ class TalentProfile extends Model
         'talent_level',
         'average_rating',
         'total_bookings',
+        'enable_express_booking',
         'profile_completion_percentage',
     ];
 
@@ -56,6 +57,7 @@ class TalentProfile extends Model
             'longitude' => 'decimal:8',
             'cachet_amount' => 'integer',
             'is_verified' => 'boolean',
+            'enable_express_booking' => 'boolean',
             'talent_level' => TalentLevel::class,
             'average_rating' => 'decimal:2',
             'total_bookings' => 'integer',

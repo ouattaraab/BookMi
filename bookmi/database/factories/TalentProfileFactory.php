@@ -47,6 +47,13 @@ class TalentProfileFactory extends Factory
         ]);
     }
 
+    public function withExpressBooking(): static
+    {
+        return $this->state(fn (): array => [
+            'enable_express_booking' => true,
+        ]);
+    }
+
     public function nouveau(): static
     {
         return $this->state(fn (): array => [

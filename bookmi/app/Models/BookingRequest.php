@@ -19,6 +19,7 @@ class BookingRequest extends Model
         'event_date',
         'event_location',
         'message',
+        'is_express',
         'reject_reason',
         'contract_path',
         'status',
@@ -34,6 +35,7 @@ class BookingRequest extends Model
     {
         return [
             'event_date'        => 'date:Y-m-d',
+            'is_express'        => 'boolean',
             'status'            => BookingStatus::class,
             'reject_reason'     => 'string',
             'cachet_amount'     => 'integer',
