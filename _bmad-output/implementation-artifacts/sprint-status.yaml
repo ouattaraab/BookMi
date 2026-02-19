@@ -56,7 +56,7 @@ development_status:
   1-10-ecrans-decouverte-flutter: done
   1-11-ecran-profil-talent-flutter: done
   1-12-pipeline-ci-cd-initiale: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 2: Authentification (6 stories)
@@ -68,7 +68,7 @@ development_status:
   2-4-reinitialisation-mot-de-passe: done
   2-5-deconnexion-et-gestion-token: done
   2-6-ecrans-authentification-flutter: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 3: Réservation & Contrats (10 stories)
@@ -84,7 +84,7 @@ development_status:
   3-8-report-de-reservation: done
   3-9-flow-de-reservation-flutter: done
   3-10-ecran-reservations-flutter: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 4: Paiement & Séquestre (10 stories)
@@ -100,7 +100,7 @@ development_status:
   4-8-dashboard-financier-talent: done
   4-9-export-rapports-financiers-admin: done
   4-10-ecran-paiement-flutter: done
-  epic-4-retrospective: optional
+  epic-4-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 5: Communication & Notifications (7 stories)
@@ -113,7 +113,7 @@ development_status:
   5-5-rappels-automatiques-j7-et-j2: done
   5-6-acces-admin-messages-en-cas-de-litige: done
   5-7-ecran-messagerie-flutter: done
-  epic-5-retrospective: optional
+  epic-5-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 6: Suivi Jour J & Évaluation (9 stories)
@@ -128,7 +128,7 @@ development_status:
   6-7-enrichissement-portfolio-post-prestation: done
   6-8-ecran-tracker-jour-j-flutter: done
   6-9-ecran-evaluation-flutter: done
-  epic-6-retrospective: optional
+  epic-6-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 7: Gestion Talents & Manager (10 stories)
@@ -144,7 +144,7 @@ development_status:
   7-8-analytics-talent: done
   7-9-attestation-de-revenus-annuelle: done
   7-10-onboarding-gamifie-talent-flutter: done
-  epic-7-retrospective: optional
+  epic-7-retrospective: done
 
   # ──────────────────────────────────────────────
   # Epic 8: Administration & Gouvernance (13 stories)
@@ -163,7 +163,7 @@ development_status:
   8-11-relances-automatiques-admin: done
   8-12-kpis-plateforme: done
   8-13-monitoring-et-logs: done
-  epic-8-retrospective: optional
+  epic-8-retrospective: done
 
   # ──────────────────────────────────────────────
   # Rétrospective Projet Complet
