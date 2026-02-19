@@ -1,8 +1,11 @@
 <?php
 
+use App\Console\Commands\DetectSuspiciousActivity;
 use App\Console\Commands\DetectTalentOverload;
+use App\Console\Commands\FlagLowRatingTalents;
 use App\Console\Commands\RecalculateTalentLevels;
 use App\Console\Commands\ReleaseExpiredEscrows;
+use App\Console\Commands\SendAdminReminders;
 use App\Console\Commands\SendMissingCheckinAlerts;
 use App\Console\Commands\SendReminderNotifications;
 use Illuminate\Foundation\Inspiring;
@@ -27,3 +30,12 @@ Schedule::command(RecalculateTalentLevels::class)->dailyAt('02:00');
 
 // Detect overloaded talents and notify managers (Story 7.3)
 Schedule::command(DetectTalentOverload::class)->dailyAt('09:00');
+
+// Flag talents with low average rating (Story 8.4)
+Schedule::command(FlagLowRatingTalents::class)->dailyAt('03:00');
+
+// Detect suspicious activity patterns (Story 8.5)
+Schedule::command(DetectSuspiciousActivity::class)->dailyAt('04:00');
+
+// Send reminders for overdue admin actions (Story 8.11)
+Schedule::command(SendAdminReminders::class)->dailyAt('07:00');

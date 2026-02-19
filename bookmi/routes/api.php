@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminDisputeController;
+use App\Http\Controllers\Api\V1\AdminReviewModerationController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\CheckInController;
 use App\Http\Controllers\Api\V1\ManagerController;
@@ -170,6 +171,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Évaluations (Stories 6.4 & 6.5)
         Route::get('/booking_requests/{booking}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
         Route::post('/booking_requests/{booking}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+        // Story 8.9 — Report a review (any authenticated user)
+        Route::post('/reviews/{review}/report', [AdminReviewModerationController::class, 'report'])->name('reviews.report');
 
         // Story 7.1 — Manager assignment (talent-side)
         Route::post('/talent_profiles/me/manager', [ManagerController::class, 'assignManager'])->name('talent.manager.assign');

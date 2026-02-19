@@ -37,6 +37,10 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'is_active',
+        'is_suspended',
+        'suspended_at',
+        'suspended_until',
+        'suspension_reason',
         'fcm_token',
     ];
 
@@ -61,8 +65,11 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin' => 'boolean',
-            'is_active' => 'boolean',
+            'is_admin'        => 'boolean',
+            'is_active'       => 'boolean',
+            'is_suspended'    => 'boolean',
+            'suspended_at'    => 'datetime',
+            'suspended_until' => 'datetime',
         ];
     }
 
@@ -115,6 +122,14 @@ class User extends Authenticatable
         return $this->belongsToMany(TalentProfile::class, 'talent_manager', 'manager_id', 'talent_profile_id')
             ->withPivot('assigned_at')
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<\App\Models\AdminWarning, $this>
+     */
+    public function warnings(): HasMany
+    {
+        return $this->hasMany(AdminWarning::class);
     }
 
     public function sendPasswordResetNotification($token): void

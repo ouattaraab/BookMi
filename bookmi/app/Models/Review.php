@@ -19,6 +19,9 @@ class Review extends Model
         'type',
         'rating',
         'comment',
+        'is_reported',
+        'report_reason',
+        'reported_at',
     ];
 
     /**
@@ -27,8 +30,10 @@ class Review extends Model
     protected function casts(): array
     {
         return [
-            'type'   => ReviewType::class,
-            'rating' => 'integer',
+            'type'        => ReviewType::class,
+            'rating'      => 'integer',
+            'is_reported' => 'boolean',
+            'reported_at' => 'datetime',
         ];
     }
 
