@@ -71,7 +71,7 @@ class BookmiConfigTest extends TestCase
     {
         $this->assertArrayHasKey('payment', $this->config);
         $this->assertEquals('paystack', $this->config['payment']['primary_gateway']);
-        $this->assertEquals('cinetpay', $this->config['payment']['fallback_gateway']);
+        $this->assertEquals('fedapay', $this->config['payment']['fallback_gateway']);
     }
 
     public function test_media_settings_are_configured(): void

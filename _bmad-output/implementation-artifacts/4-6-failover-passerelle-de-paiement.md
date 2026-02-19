@@ -9,7 +9,7 @@
 
 ## Objectif
 
-Implémenter CinetPay comme gateway de failover : si Paystack échoue (PAYMENT_GATEWAY_ERROR), le système bascule automatiquement sur CinetPay pour `initiateCharge` / `initializeTransaction` / `verifyTransaction`. Les opérations Paystack-spécifiques (`submitOtp`, `createTransferRecipient`, `initiateTransfer`) ne basculent pas.
+Implémenter FedaPay comme gateway de failover : si Paystack échoue (PAYMENT_GATEWAY_ERROR), le système bascule automatiquement sur FedaPay pour `initiateCharge` / `initializeTransaction` / `verifyTransaction`. Les opérations Paystack-spécifiques (`submitOtp`, `createTransferRecipient`, `initiateTransfer`) ne basculent pas.
 
 ---
 
@@ -17,13 +17,13 @@ Implémenter CinetPay comme gateway de failover : si Paystack échoue (PAYMENT_G
 
 ### Pattern — Decorator `PaymentGatewayResolver`
 
-`PaymentGatewayResolver implements PaymentGatewayInterface` wraps primary (Paystack) + fallback (CinetPay).
+`PaymentGatewayResolver implements PaymentGatewayInterface` wraps primary (Paystack) + fallback (FedaPay).
 
 ```
 initiateCharge(payload)
   → primary.initiateCharge(payload)     ← OK → return
   → PAYMENT_GATEWAY_ERROR caught
-    → Log::warning("Primary [paystack] failed... switching to [cinetpay]")
+    → Log::warning("Primary [paystack] failed... switching to [fedapay]")
     → fallback.initiateCharge(payload)  ← OK → return
     → PAYMENT_GATEWAY_ERROR re-thrown   ← 502 au client
 ```
@@ -31,25 +31,25 @@ initiateCharge(payload)
 **Méthodes sans fallback** (`NO_FALLBACK_METHODS`) :
 - `submitOtp` — spécifique Paystack (OTP flow)
 - `createTransferRecipient` — spécifique Paystack
-- `initiateTransfer` — spécifique Paystack
+- `initiateTransfer` — Payouts restent sur Paystack
 
 Seules les erreurs `PAYMENT_GATEWAY_ERROR` déclenchent le fallback. Les autres exceptions (PAYMENT_DUPLICATE, PAYMENT_BOOKING_NOT_PAYABLE, etc.) sont re-thrown immédiatement.
 
-### Gateway — `CinetPayGateway`
+### Gateway — `FedaPayGateway`
 
-Implémente `PaymentGatewayInterface` :
+Implémente `PaymentGatewayInterface` via l'API FedaPay `https://api.fedapay.com/v1` :
 
 | Méthode | Implémentation |
 |---|---|
-| `name()` | `'cinetpay'` |
-| `initiateCharge()` | POST `/v2/payment` channels=MOBILE_MONEY |
-| `initializeTransaction()` | POST `/v2/payment` channels=ALL → `authorization_url` |
-| `verifyTransaction()` | POST `/v2/payment/check` |
-| `submitOtp()` | `throw PaymentException::unsupportedMethod('cinetpay:submit_otp')` |
+| `name()` | `'fedapay'` |
+| `initiateCharge()` | POST `/transactions` → POST `/transactions/{id}/pay { mobile_money }` |
+| `initializeTransaction()` | POST `/transactions` → GET `/transactions/{id}/token` → `authorization_url` |
+| `verifyTransaction()` | GET `/transactions/{reference}` |
+| `submitOtp()` | `throw PaymentException::unsupportedMethod('fedapay:submit_otp')` |
 | `createTransferRecipient()` | `throw PaymentException::unsupportedMethod(...)` |
 | `initiateTransfer()` | `throw PaymentException::unsupportedMethod(...)` |
 
-CinetPay répond avec `{ code: '201', data: { payment_url } }` (pas de `status: true` comme Paystack).
+Auth : `Authorization: Bearer FEDAPAY_SECRET_KEY`, timeout 15s.
 
 ### Binding IoC — `AppServiceProvider`
 
@@ -57,7 +57,7 @@ CinetPay répond avec `{ code: '201', data: { payment_url } }` (pas de `status: 
 $this->app->bind(PaymentGatewayInterface::class, function ($app) {
     return new PaymentGatewayResolver(
         $app->make(PaystackGateway::class),
-        $app->make(CinetPayGateway::class),
+        $app->make(FedaPayGateway::class),
     );
 });
 ```
@@ -66,13 +66,25 @@ $this->app->bind(PaymentGatewayInterface::class, function ($app) {
 
 ### Configuration
 
-```env
-CINETPAY_API_KEY=
-CINETPAY_SITE_ID=
-CINETPAY_NOTIFY_URL=
+```php
+// config/bookmi.php
+'payment' => [
+    'primary_gateway'  => 'paystack',
+    'fallback_gateway' => 'fedapay',
+    ...
+]
+
+// config/services.php
+'fedapay' => [
+    'secret_key' => env('FEDAPAY_SECRET_KEY'),
+    'public_key'  => env('FEDAPAY_PUBLIC_KEY'),
+]
 ```
 
-(Déjà présents dans `config/services.php` et `.env.example`.)
+```env
+FEDAPAY_SECRET_KEY=sk_sandbox_
+FEDAPAY_PUBLIC_KEY=pk_sandbox_
+```
 
 ---
 
@@ -83,10 +95,10 @@ CINETPAY_NOTIFY_URL=
 | Test | Résultat |
 |---|---|
 | Paystack disponible → transaction via Paystack | ✅ |
-| Paystack échoue → fallback CinetPay + Log::warning | ✅ |
+| Paystack échoue → fallback FedaPay + Log::warning | ✅ |
 | Les deux échouent → 502 PAYMENT_GATEWAY_ERROR | ✅ |
-| Card Paystack échoue → CinetPay fallback | ✅ |
-| submitOtp Paystack échoue → 502 (pas de fallback CinetPay) | ✅ |
+| Card Paystack échoue → FedaPay fallback + authorization_url | ✅ |
+| submitOtp Paystack échoue → 502 (pas de fallback FedaPay) | ✅ |
 
 **Total Story 4.6 : 5 tests, 10 assertions | Suite complète : 457 tests, 1453 assertions**
 
@@ -95,7 +107,8 @@ CINETPAY_NOTIFY_URL=
 ## Décisions d'architecture
 
 - **Decorator pattern** sur `PaymentGatewayInterface` — aucun changement dans `PaymentService`, `PayoutService`, ni les controllers
-- **`NO_FALLBACK_METHODS`** — liste explicite des méthodes Paystack-spécifiques pour éviter des comportements inattendus avec CinetPay
+- **`NO_FALLBACK_METHODS`** — liste explicite des méthodes Paystack-spécifiques pour éviter des comportements inattendus avec FedaPay
 - **Only `PAYMENT_GATEWAY_ERROR`** déclenche le fallback — les autres exceptions (validation, duplicate) passent directement
 - **`Log::warning`** systématique sur chaque basculement — observabilité pour l'équipe ops
-- **CinetPay unsupported methods** → `PaymentException::unsupportedMethod()` — pattern cohérent avec le reste de l'app
+- **FedaPay unsupported methods** → `PaymentException::unsupportedMethod()` — pattern cohérent
+- **Payouts restent sur Paystack** — FedaPay est utilisé uniquement comme fallback de collecte

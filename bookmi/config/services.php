@@ -40,10 +40,9 @@ return [
         'webhook_secret' => env('PAYSTACK_WEBHOOK_SECRET'),
     ],
 
-    'cinetpay' => [
-        'api_key'   => env('CINETPAY_API_KEY'),
-        'site_id'   => env('CINETPAY_SITE_ID'),
-        'notify_url' => env('CINETPAY_NOTIFY_URL', ''),
+    'fedapay' => [
+        'secret_key' => env('FEDAPAY_SECRET_KEY'),
+        'public_key' => env('FEDAPAY_PUBLIC_KEY'),
     ],
 
 ];

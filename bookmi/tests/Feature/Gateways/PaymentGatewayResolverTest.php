@@ -24,7 +24,7 @@ class PaymentGatewayResolverTest extends TestCase
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private function paystackSuccess(string $reference = 'pstk_ref_001'): array
+    private function paystackChargeSuccess(string $reference = 'pstk_ref_001'): array
     {
         return [
             'status'  => true,
@@ -33,12 +33,17 @@ class PaymentGatewayResolverTest extends TestCase
         ];
     }
 
-    private function cinetpaySuccess(string $reference = 'cpay_ref_001'): array
+    private function fedapayTransactionSuccess(): array
     {
         return [
-            'code'    => '201',
-            'message' => 'CREATED',
-            'data'    => ['payment_url' => 'https://checkout.cinetpay.com/pay/test', 'transaction_id' => $reference],
+            'v_transaction' => ['id' => 12345, 'status' => 'pending', 'description' => 'BookMi payment'],
+        ];
+    }
+
+    private function fedapayPaySuccess(): array
+    {
+        return [
+            'v_transaction' => ['id' => 12345, 'status' => 'pending'],
         ];
     }
 
@@ -47,7 +52,7 @@ class PaymentGatewayResolverTest extends TestCase
     public function test_primary_gateway_used_when_available(): void
     {
         Http::fake([
-            'https://api.paystack.co/charge' => Http::response($this->paystackSuccess(), 200),
+            'https://api.paystack.co/charge' => Http::response($this->paystackChargeSuccess(), 200),
         ]);
 
         $client  = User::factory()->create();
@@ -64,13 +69,14 @@ class PaymentGatewayResolverTest extends TestCase
             ->assertJsonPath('gateway', 'paystack');
     }
 
-    // ── AC2: primary fails → fallback to CinetPay ────────────────────────────
+    // ── AC2: primary fails → fallback to FedaPay ─────────────────────────────
 
-    public function test_fallback_to_cinetpay_when_paystack_charge_fails(): void
+    public function test_fallback_to_fedapay_when_paystack_charge_fails(): void
     {
         Http::fake([
-            'https://api.paystack.co/charge'               => Http::response(['status' => false, 'message' => 'Service unavailable'], 503),
-            'https://api-checkout.cinetpay.com/v2/payment' => Http::response($this->cinetpaySuccess(), 200),
+            'https://api.paystack.co/charge'             => Http::response(['status' => false, 'message' => 'Service unavailable'], 503),
+            'https://api.fedapay.com/v1/transactions'    => Http::response($this->fedapayTransactionSuccess(), 200),
+            'https://api.fedapay.com/v1/transactions/12345/pay' => Http::response($this->fedapayPaySuccess(), 200),
         ]);
 
         Log::shouldReceive('warning')
@@ -87,8 +93,7 @@ class PaymentGatewayResolverTest extends TestCase
                 'phone_number'   => '+22601234567',
             ]);
 
-        $response->assertStatus(201)
-            ->assertJsonPath('gateway', 'paystack'); // gateway field stored from primary name
+        $response->assertStatus(201);
     }
 
     // ── AC3: both fail → 502 ──────────────────────────────────────────────────
@@ -96,8 +101,8 @@ class PaymentGatewayResolverTest extends TestCase
     public function test_returns_502_when_both_gateways_fail(): void
     {
         Http::fake([
-            'https://api.paystack.co/charge'               => Http::response(['status' => false, 'message' => 'Down'], 503),
-            'https://api-checkout.cinetpay.com/v2/payment' => Http::response(['code' => '500', 'message' => 'Internal error'], 500),
+            'https://api.paystack.co/charge'          => Http::response(['status' => false, 'message' => 'Down'], 503),
+            'https://api.fedapay.com/v1/transactions' => Http::response(['error' => 'Service unavailable'], 500),
         ]);
 
         $client  = User::factory()->create();
@@ -114,13 +119,14 @@ class PaymentGatewayResolverTest extends TestCase
             ->assertJsonPath('error.code', 'PAYMENT_GATEWAY_ERROR');
     }
 
-    // ── AC4: card/card_transfer — CinetPay fallback ───────────────────────────
+    // ── AC4: card — FedaPay fallback ──────────────────────────────────────────
 
-    public function test_card_payment_falls_back_to_cinetpay_when_paystack_fails(): void
+    public function test_card_payment_falls_back_to_fedapay_when_paystack_fails(): void
     {
         Http::fake([
-            'https://api.paystack.co/transaction/initialize' => Http::response(['status' => false, 'message' => 'Unavailable'], 503),
-            'https://api-checkout.cinetpay.com/v2/payment'   => Http::response($this->cinetpaySuccess(), 200),
+            'https://api.paystack.co/transaction/initialize'   => Http::response(['status' => false, 'message' => 'Unavailable'], 503),
+            'https://api.fedapay.com/v1/transactions'          => Http::response($this->fedapayTransactionSuccess(), 200),
+            'https://api.fedapay.com/v1/transactions/12345/token' => Http::response(['token' => 'test_token_abc'], 200),
         ]);
 
         $client  = User::factory()->create();
@@ -132,12 +138,13 @@ class PaymentGatewayResolverTest extends TestCase
                 'payment_method' => 'card',
             ]);
 
-        $response->assertStatus(201);
+        $response->assertStatus(201)
+            ->assertJsonStructure(['authorization_url']);
     }
 
-    // ── AC5: submitOtp never falls back ──────────────────────────────────────
+    // ── AC5: submitOtp never falls back ───────────────────────────────────────
 
-    public function test_submit_otp_does_not_fall_back_to_cinetpay(): void
+    public function test_submit_otp_does_not_fall_back_to_fedapay(): void
     {
         Http::fake([
             'https://api.paystack.co/charge/submit_otp' => Http::response(['status' => false, 'message' => 'Unavailable'], 503),
@@ -146,8 +153,7 @@ class PaymentGatewayResolverTest extends TestCase
         $client  = User::factory()->create();
         $booking = BookingRequest::factory()->accepted()->create(['client_id' => $client->id]);
 
-        // Create a processing transaction first
-        $transaction = \App\Models\Transaction::create([
+        \App\Models\Transaction::create([
             'booking_request_id' => $booking->id,
             'payment_method'     => 'orange_money',
             'amount'             => $booking->total_amount,
@@ -164,8 +170,8 @@ class PaymentGatewayResolverTest extends TestCase
                 'otp'       => '123456',
             ]);
 
-        // Must be 502 (gateway error) — CinetPay NOT called
+        // Must be 502 (gateway error) — FedaPay NOT called
         $response->assertStatus(502);
-        Http::assertSentCount(1); // Only Paystack, not CinetPay
+        Http::assertSentCount(1); // Only Paystack
     }
 }

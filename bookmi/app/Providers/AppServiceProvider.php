@@ -4,7 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\PaymentGatewayInterface;
 use App\Events\EscrowReleased;
-use App\Gateways\CinetPayGateway;
+use App\Gateways\FedaPayGateway;
 use App\Gateways\PaymentGatewayResolver;
 use App\Gateways\PaystackGateway;
 use App\Listeners\HandleEscrowReleased;
@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PaymentGatewayInterface::class, function ($app) {
             return new PaymentGatewayResolver(
                 $app->make(PaystackGateway::class),
-                $app->make(CinetPayGateway::class),
+                $app->make(FedaPayGateway::class),
             );
         });
     }

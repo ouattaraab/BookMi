@@ -36,7 +36,7 @@ return [
 
     'payment' => [
         'primary_gateway'  => 'paystack',
-        'fallback_gateway' => 'cinetpay',
+        'fallback_gateway' => 'fedapay',
         'callback_url'     => env('PAYMENT_CALLBACK_URL', 'http://localhost:8000/api/v1/payments/callback'),
     ],
 
