@@ -73,12 +73,12 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
-        {/* Logo / Titre */}
+        {/* Logo — calqué sur le logo officiel BookMi */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500 mb-4">
-            <span className="text-white font-bold text-2xl">B</span>
+          <div className="flex items-center justify-center mb-3">
+            <span className="font-extrabold text-4xl text-[#1A2744] tracking-tight">Book</span>
+            <span className="font-extrabold text-4xl text-[#2196F3] tracking-tight">Mi</span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">BookMi</h1>
           <p className="text-gray-500 mt-1 text-sm">
             Espace talents &amp; managers
           </p>
@@ -134,7 +134,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold"
+                className="w-full bg-[#2196F3] hover:bg-[#1976D2] text-white font-semibold"
               >
                 {loading ? 'Connexion...' : 'Se connecter'}
               </Button>

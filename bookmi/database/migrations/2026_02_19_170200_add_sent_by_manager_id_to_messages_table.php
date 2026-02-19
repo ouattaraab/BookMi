@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('messages', function (Blueprint $table) {
             $table->foreignId('sent_by_manager_id')
                 ->nullable()
-                ->after('body')
+                ->after('content')
                 ->constrained('users')
                 ->nullOnDelete();
         });

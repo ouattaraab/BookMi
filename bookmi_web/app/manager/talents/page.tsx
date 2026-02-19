@@ -96,7 +96,7 @@ export default function ManagerTalentsPage() {
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-start gap-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-amber-100 text-amber-700 font-bold">
+                    <AvatarFallback className="bg-[#2196F3]/10 text-[#2196F3] font-bold">
                       {getInitials(talent.stage_name)}
                     </AvatarFallback>
                   </Avatar>
@@ -145,7 +145,7 @@ export default function ManagerTalentsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full gap-1 text-amber-600 border-amber-200 hover:bg-amber-50 hover:border-amber-300"
+                    className="w-full gap-1 text-[#2196F3] border-[#2196F3]/30 hover:bg-[#2196F3]/5 hover:border-[#2196F3]/50"
                   >
                     Voir le profil
                     <ChevronRight size={14} />

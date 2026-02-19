@@ -66,8 +66,8 @@ export default function TalentCertificatePage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-3 text-base">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-              <FileText size={20} className="text-amber-500" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+              <FileText size={20} className="text-[#2196F3]" />
             </div>
             Attestation de revenus (PDF)
           </CardTitle>
@@ -81,19 +81,19 @@ export default function TalentCertificatePage() {
 
           <ul className="space-y-2 text-sm text-gray-600">
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2196F3] shrink-0" />
               Revenus totaux perçus sur la plateforme
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2196F3] shrink-0" />
               Détail mensuel des encaissements
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2196F3] shrink-0" />
               Informations de votre profil talent
             </li>
             <li className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2196F3] shrink-0" />
               Signature numérique BookMi
             </li>
           </ul>
@@ -101,7 +101,7 @@ export default function TalentCertificatePage() {
           <Button
             onClick={handleDownload}
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white gap-2 py-5"
+            className="w-full bg-[#2196F3] hover:bg-[#1976D2] text-white gap-2 py-5"
             size="lg"
           >
             <Download size={18} />

@@ -11,12 +11,18 @@ export const apiClient = axios.create({
   },
 });
 
-// Inject token from localStorage on each request
+// Inject token from Zustand persisted store on each request
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("bookmi_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const raw = localStorage.getItem("bookmi-auth");
+      const parsed = raw ? JSON.parse(raw) : null;
+      const token = parsed?.state?.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      // ignore parse errors
     }
   }
   return config;

@@ -197,6 +197,9 @@ class AuthService
         /** @var \Carbon\Carbon $phoneVerifiedAt */
         $phoneVerifiedAt = $phoneVerifiedAtOverride ?? $user->phone_verified_at;
 
+        $user->loadMissing('talentProfile');
+        $tp = $user->talentProfile;
+
         return [
             'token' => $token,
             'user' => [
@@ -207,6 +210,14 @@ class AuthService
                 'phone' => $user->phone,
                 'phone_verified_at' => $phoneVerifiedAt->toIso8601String(),
                 'is_active' => $user->is_active,
+                'is_admin' => (bool) $user->is_admin,
+                'talentProfile' => $tp ? [
+                    'id' => $tp->id,
+                    'stage_name' => $tp->stage_name,
+                    'slug' => $tp->slug,
+                    'talent_level' => $tp->talent_level instanceof \BackedEnum ? $tp->talent_level->value : $tp->talent_level,
+                    'is_verified' => (bool) $tp->is_verified,
+                ] : null,
             ],
             'roles' => $user->getRoleNames()->toArray(),
         ];

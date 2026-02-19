@@ -7,7 +7,6 @@ import { useAuthStore } from '@/lib/store/auth';
 import { authApi } from '@/lib/api/endpoints';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -48,20 +47,22 @@ export default function ManagerLayout({
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Brand */}
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">B</span>
-          </div>
-          <div>
-            <span className="font-bold text-gray-900 text-lg">BookMi</span>
-            <p className="text-xs text-gray-400 -mt-0.5">Manager</p>
-          </div>
+      {/* Sidebar — Brand Navy #1A2744 */}
+      <aside className="w-64 bg-[#1A2744] flex flex-col">
+        {/* Brand — logo textuel calqué sur le logo officiel */}
+        <div className="px-6 py-5 flex items-center">
+          <span className="font-extrabold text-2xl text-white tracking-tight">Book</span>
+          <span className="font-extrabold text-2xl text-[#2196F3] tracking-tight">Mi</span>
         </div>
 
-        <Separator />
+        <div className="mx-4 border-t border-white/10" />
+
+        {/* Badge manager */}
+        <div className="px-6 py-2">
+          <span className="text-xs font-semibold text-[#2196F3]/70 uppercase tracking-widest">
+            Manager
+          </span>
+        </div>
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1">
@@ -75,13 +76,13 @@ export default function ManagerLayout({
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-[#2196F3]/15 text-white'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white'
                 )}
               >
                 <Icon
                   size={18}
-                  className={isActive ? 'text-amber-600' : 'text-gray-400'}
+                  className={isActive ? 'text-[#2196F3]' : 'text-white/40'}
                 />
                 {label}
               </Link>
@@ -89,28 +90,28 @@ export default function ManagerLayout({
           })}
         </nav>
 
-        <Separator />
+        <div className="mx-4 border-t border-white/10" />
 
         {/* User + Logout */}
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3">
             <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-amber-100 text-amber-700 text-xs font-semibold">
+              <AvatarFallback className="bg-[#2196F3]/20 text-[#2196F3] text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-medium text-white truncate">
                 {displayName}
               </p>
-              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              <p className="text-xs text-white/50 truncate">{user?.email}</p>
             </div>
           </div>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={handleLogout}
-            className="w-full gap-2 text-gray-600 hover:text-red-600 hover:border-red-200"
+            className="w-full gap-2 text-white/60 hover:text-red-400 hover:bg-white/5"
           >
             <LogOut size={15} />
             Déconnexion
@@ -129,7 +130,7 @@ export default function ManagerLayout({
             </h2>
           </div>
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-amber-100 text-amber-700 text-xs font-semibold">
+            <AvatarFallback className="bg-[#2196F3]/10 text-[#2196F3] text-xs font-semibold">
               {initials}
             </AvatarFallback>
           </Avatar>

@@ -65,7 +65,7 @@ const CustomTooltip = ({
     return (
       <div className="bg-white border border-gray-200 rounded-lg shadow-lg px-4 py-3">
         <p className="text-sm font-semibold text-gray-700">{label}</p>
-        <p className="text-amber-600 font-bold text-sm mt-1">
+        <p className="text-[#2196F3] font-bold text-sm mt-1">
           {formatAmount(payload[0].value)}
         </p>
       </div>
@@ -125,7 +125,7 @@ export default function TalentAnalyticsPage() {
             <CardTitle className="text-sm font-medium text-gray-500">
               CA Total
             </CardTitle>
-            <DollarSign size={18} className="text-amber-500" />
+            <DollarSign size={18} className="text-[#2196F3]" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -144,7 +144,7 @@ export default function TalentAnalyticsPage() {
             <CardTitle className="text-sm font-medium text-gray-500">
               CA ce mois
             </CardTitle>
-            <TrendingUp size={18} className="text-amber-500" />
+            <TrendingUp size={18} className="text-[#2196F3]" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -163,7 +163,7 @@ export default function TalentAnalyticsPage() {
             <CardTitle className="text-sm font-medium text-gray-500">
               Réservations
             </CardTitle>
-            <BookCheck size={18} className="text-amber-500" />
+            <BookCheck size={18} className="text-[#2196F3]" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -182,7 +182,7 @@ export default function TalentAnalyticsPage() {
             <CardTitle className="text-sm font-medium text-gray-500">
               Note moyenne
             </CardTitle>
-            <Star size={18} className="text-amber-500" />
+            <Star size={18} className="text-[#2196F3]" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -202,16 +202,16 @@ export default function TalentAnalyticsPage() {
       {/* Financial summary */}
       {financial && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <Card className="border-amber-100 bg-amber-50">
+          <Card className="border-blue-100 bg-blue-50">
             <CardHeader className="pb-2 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium text-amber-700">
+              <CardTitle className="text-sm font-medium text-[#1A2744]">
                 Solde disponible
               </CardTitle>
-              <Wallet size={18} className="text-amber-600" />
+              <Wallet size={18} className="text-[#2196F3]" />
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-bold text-amber-900">
-                {formatAmount(financial.balance)}
+              <p className="text-xl font-bold text-[#1A2744]">
+                {formatAmount(Number(financial.balance) || 0)}
               </p>
             </CardContent>
           </Card>
@@ -225,7 +225,7 @@ export default function TalentAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold text-gray-800">
-                {formatAmount(financial.pending_payouts)}
+                {formatAmount(Number(financial.pending_payouts) || 0)}
               </p>
             </CardContent>
           </Card>
@@ -239,7 +239,7 @@ export default function TalentAnalyticsPage() {
             </CardHeader>
             <CardContent>
               <p className="text-xl font-bold text-gray-800">
-                {formatAmount(financial.total_earned)}
+                {formatAmount(Number(financial.total_earned) || 0)}
               </p>
             </CardContent>
           </Card>
@@ -284,7 +284,7 @@ export default function TalentAnalyticsPage() {
                 <Tooltip content={<CustomTooltip />} />
                 <Bar
                   dataKey="amount"
-                  fill="#f59e0b"
+                  fill="#2196F3"
                   radius={[6, 6, 0, 0]}
                   maxBarSize={48}
                 />

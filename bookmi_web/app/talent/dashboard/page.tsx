@@ -117,7 +117,7 @@ export default function TalentDashboardPage() {
             <CardTitle className="text-sm font-medium text-gray-500">
               CA du mois
             </CardTitle>
-            <TrendingUp size={18} className="text-amber-500" />
+            <TrendingUp size={18} className="text-[#2196F3]" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -136,7 +136,7 @@ export default function TalentDashboardPage() {
             <CardTitle className="text-sm font-medium text-gray-500">
               Note moyenne
             </CardTitle>
-            <Star size={18} className="text-amber-500" />
+            <Star size={18} className="text-[#2196F3]" />
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -157,12 +157,12 @@ export default function TalentDashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <BookCheck size={18} className="text-amber-500" />
+            <BookCheck size={18} className="text-[#2196F3]" />
             Dernières réservations
           </CardTitle>
           <Link
             href="/talent/bookings"
-            className="text-sm text-amber-600 hover:underline font-medium"
+            className="text-sm text-[#2196F3] hover:underline font-medium"
           >
             Voir toutes
           </Link>
