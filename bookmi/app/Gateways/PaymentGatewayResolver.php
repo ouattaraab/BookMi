@@ -64,8 +64,14 @@ class PaymentGatewayResolver implements PaymentGatewayInterface
 
     public function initiateTransfer(array $payload): array
     {
-        // Payouts are Paystack-specific — no CinetPay fallback
+        // Payouts are Paystack-specific — no FedaPay fallback
         return $this->primary->initiateTransfer($payload);
+    }
+
+    public function refundTransaction(string $gatewayReference, int $amount, string $reason = ''): array
+    {
+        // Refunds are Paystack-specific — no FedaPay fallback
+        return $this->primary->refundTransaction($gatewayReference, $amount, $reason);
     }
 
     /**

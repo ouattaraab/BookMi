@@ -96,6 +96,24 @@ class PaystackGateway implements PaymentGatewayInterface
         return $data['data'];
     }
 
+    public function refundTransaction(string $gatewayReference, int $amount, string $reason = ''): array
+    {
+        $response = $this->http()->post("{$this->baseUrl}/refund", [
+            'transaction'     => $gatewayReference,
+            'amount'          => $amount,
+            'merchant_note'   => $reason,
+            'customer_note'   => $reason,
+        ]);
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Refund failed');
+        }
+
+        return $data['data'];
+    }
+
     /**
      * Preconfigured HTTP client — timeout enforced per NFR4 (max 15s external calls).
      */

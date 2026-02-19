@@ -111,6 +111,14 @@ class FedaPayGateway implements PaymentGatewayInterface
         throw PaymentException::unsupportedMethod('fedapay:initiate_transfer');
     }
 
+    /**
+     * Refunds are processed via Paystack (primary gateway).
+     */
+    public function refundTransaction(string $gatewayReference, int $amount, string $reason = ''): array
+    {
+        throw PaymentException::unsupportedMethod('fedapay:refund_transaction');
+    }
+
     // ── Private helpers ────────────────────────────────────────────────────────
 
     /**

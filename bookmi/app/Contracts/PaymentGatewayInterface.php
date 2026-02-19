@@ -55,4 +55,14 @@ interface PaymentGatewayInterface
      * @return array<string, mixed>            { transfer_code, status, ... }
      */
     public function initiateTransfer(array $payload): array;
+
+    /**
+     * Refund a transaction (admin dispute resolution).
+     *
+     * @param  string  $gatewayReference  The gateway's transaction reference
+     * @param  int     $amount            Amount to refund in XOF
+     * @param  string  $reason            Reason for refund
+     * @return array<string, mixed>       { id, status, ... }
+     */
+    public function refundTransaction(string $gatewayReference, int $amount, string $reason = ''): array;
 }

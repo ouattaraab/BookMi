@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminRefundController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\PaymentController;
@@ -119,5 +120,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->name('favorites.destroy');
         Route::get('/talents/{talentProfileId}/favorite', [FavoriteController::class, 'check'])
             ->name('favorites.check');
+
+        // Administration
+        Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+            Route::post('/booking_requests/{booking}/refund', [AdminRefundController::class, 'refund'])
+                ->name('booking_requests.refund');
+        });
     });
 });

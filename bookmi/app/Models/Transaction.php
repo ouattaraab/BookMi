@@ -22,6 +22,10 @@ class Transaction extends Model
         'idempotency_key',
         'initiated_at',
         'completed_at',
+        'refund_amount',
+        'refund_reference',
+        'refund_reason',
+        'refunded_at',
     ];
 
     protected $casts = [
@@ -30,6 +34,8 @@ class Transaction extends Model
         'payment_method'   => PaymentMethod::class,
         'initiated_at'     => 'datetime',
         'completed_at'     => 'datetime',
+        'refunded_at'      => 'datetime',
+        'refund_amount'    => 'integer',
     ];
 
     // ─── Relations ──────────────────────────────────────────────────────────
