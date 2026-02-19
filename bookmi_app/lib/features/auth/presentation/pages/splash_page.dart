@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
@@ -16,10 +18,25 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  static const _kTimeoutSeconds = 10;
+  Timer? _timeoutTimer;
+
   @override
   void initState() {
     super.initState();
-    context.read<AuthBloc>().add(const AuthCheckRequested());
+    final bloc = context.read<AuthBloc>()..add(const AuthCheckRequested());
+    _timeoutTimer = Timer(const Duration(seconds: _kTimeoutSeconds), () {
+      final state = bloc.state;
+      if (state is AuthInitial || state is AuthLoading) {
+        bloc.add(const AuthSessionExpired());
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timeoutTimer?.cancel();
+    super.dispose();
   }
 
   @override

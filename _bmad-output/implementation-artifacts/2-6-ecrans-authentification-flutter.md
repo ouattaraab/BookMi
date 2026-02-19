@@ -1,6 +1,6 @@
 # Story 2.6: Écrans d'authentification Flutter (mobile)
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -472,6 +472,12 @@ Claude Opus 4.6
 - `lib/features/auth/presentation/widgets/otp_input.dart`
 - `test/features/auth/bloc/auth_bloc_test.dart`
 - `test/features/auth/data/repositories/auth_repository_test.dart`
+- `test/features/auth/presentation/pages/login_page_test.dart`
+- `test/features/auth/presentation/pages/register_page_test.dart`
+- `test/features/auth/presentation/pages/otp_page_test.dart`
+
+**Created (Code Review fixes — 2026-02-19):**
+- `lib/core/validators/form_validators.dart` (regex email partagée)
 
 **Modified:**
 - `lib/core/network/api_endpoints.dart` (5 endpoints ajoutés)
@@ -480,5 +486,28 @@ Claude Opus 4.6
 - `lib/app/routes/route_names.dart` (6 routes auth ajoutées)
 - `lib/app/routes/app_router.dart` (auth routes, splash initial, redirect, GoRouterRefreshStream)
 - `lib/app/routes/guards/auth_guard.dart` (implémenté avec AuthBloc state checking)
-- `lib/app/view/app.dart` (AuthBloc dans MultiBlocProvider, settings box, session expired wiring)
+- `lib/app/view/app.dart` (AuthBloc dans MultiBlocProvider, settings box, session expired wiring + fix H1 constructeur)
 - `test/app/routes/app_router_test.dart` (adapté à nouvelle signature buildAppRouter)
+
+## Code Review Record (2026-02-19)
+
+**Reviewer :** BMAD Adversarial Code Review
+**Résultat :** Approuvé après corrections
+
+### Corrections appliquées
+
+| ID | Sévérité | Problème | Fix |
+|----|----------|----------|-----|
+| H1 | 🔴 HIGH | `_AppDependencies` : `onboardingRepo` absent du constructeur (compile error) | Ajouté `required this.onboardingRepo,` dans `app.dart` |
+| M3 | 🟡 MEDIUM | Regex email dupliquée dans `login_page.dart` et `register_page.dart` | Extrait dans `lib/core/validators/form_validators.dart` |
+| L1 | 🟢 LOW | `_isSubmitting` dans `OtpPage` bloqué sur états inattendus | Reset ajouté dans le `default:` du switch BlocListener |
+| L2 | 🟢 LOW | Pas de timeout fallback dans `SplashPage` | `Timer(10s)` ajouté → emit `AuthSessionExpired` si BLoC bloqué |
+
+### Dettes techniques acceptées (action items)
+
+| ID | Sévérité | Description | Priorité |
+|----|----------|-------------|----------|
+| M1 | 🟡 MEDIUM | `RegisterPage._loadCategories()` appelle `AuthRepository` directement (viole BLoC) → créer `AuthCategoriesRequested` event | P2 |
+| M2 | 🟡 MEDIUM | `getProfile()` retourne `AuthResponse(token: '')` — sémantique incorrecte pour GET /me → rendre `token` nullable ou créer `UserProfile` model | P2 |
+| M4 | 🟡 MEDIUM | AC9 (dark mode) non couvert par les tests widget | P3 |
+| L3 | 🟢 LOW | `AuthRegisterSubmitted.data` est `Map<String, dynamic>` — manque un `RegisterRequest` value object typé | P3 |

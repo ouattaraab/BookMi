@@ -2,6 +2,7 @@ import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/core/validators/form_validators.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
@@ -111,19 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                               prefixIcon: Icons.email_outlined,
                               autofillHints: const [AutofillHints.email],
                               textInputAction: TextInputAction.next,
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return "L'email est requis.";
-                                }
-                                final emailRegex = RegExp(
-                                  r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                                );
-                                if (!emailRegex.hasMatch(value.trim())) {
-                                  return 'Veuillez entrer une adresse '
-                                      'e-mail valide.';
-                                }
-                                return null;
-                              },
+                              validator: validateEmail,
                             ),
                             const SizedBox(height: BookmiSpacing.spaceBase),
                             AuthTextField(

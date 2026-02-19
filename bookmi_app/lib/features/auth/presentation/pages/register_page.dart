@@ -6,6 +6,7 @@ import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/core/validators/form_validators.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
@@ -173,19 +174,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             keyboardType: TextInputType.emailAddress,
                             prefixIcon: Icons.email_outlined,
                             textInputAction: TextInputAction.next,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return "L'email est requis.";
-                              }
-                              final emailRegex = RegExp(
-                                r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                              );
-                              if (!emailRegex.hasMatch(value.trim())) {
-                                return 'Veuillez entrer une adresse '
-                                    'e-mail valide.';
-                              }
-                              return null;
-                            },
+                            validator: validateEmail,
                           ),
                           const SizedBox(height: BookmiSpacing.spaceBase),
                           PhoneField(

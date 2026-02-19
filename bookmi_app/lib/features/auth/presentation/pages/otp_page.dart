@@ -112,7 +112,7 @@ class _OtpPageState extends State<OtpPage> {
                 ),
               );
           default:
-            break;
+            _isSubmitting = false;
         }
       },
       child: Scaffold(

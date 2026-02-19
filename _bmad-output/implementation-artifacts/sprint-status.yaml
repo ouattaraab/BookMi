@@ -61,13 +61,13 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 2: Authentification (6 stories)
   # ──────────────────────────────────────────────
-  epic-2: in-progress
+  epic-2: done
   2-1-inscription-client-et-talent: done
   2-2-verification-otp-telephone: done
   2-3-connexion-email-mot-de-passe: done
   2-4-reinitialisation-mot-de-passe: done
   2-5-deconnexion-et-gestion-token: done
-  2-6-ecrans-authentification-flutter: review
+  2-6-ecrans-authentification-flutter: done
   epic-2-retrospective: optional
 
   # ──────────────────────────────────────────────
