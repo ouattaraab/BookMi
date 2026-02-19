@@ -12,6 +12,8 @@ abstract final class RouteNames {
   static const profile = 'profile';
   static const talentDetail = 'talentDetail';
   static const bookingDetail = 'bookingDetail';
+  static const tracking = 'tracking';
+  static const evaluation = 'evaluation';
 }
 
 abstract final class RoutePaths {
@@ -25,6 +27,8 @@ abstract final class RoutePaths {
   static const search = '/search';
   static const bookings = '/bookings';
   static const bookingDetail = 'booking/:id';
+  static const tracking = 'tracking';
+  static const evaluation = 'evaluation';
   static const messages = '/messages';
   static const profile = '/profile';
   static const talentDetail = 'talent/:slug';

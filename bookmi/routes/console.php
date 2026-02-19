@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\ReleaseExpiredEscrows;
+use App\Console\Commands\SendMissingCheckinAlerts;
 use App\Console\Commands\SendReminderNotifications;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -15,3 +16,6 @@ Schedule::command(ReleaseExpiredEscrows::class)->dailyAt('00:00');
 
 // Reminder push notifications J-7 and J-2 before booking events (Story 5.5)
 Schedule::command(SendReminderNotifications::class)->dailyAt('08:00');
+
+// Missing check-in alerts for events happening today (Story 6.3)
+Schedule::command(SendMissingCheckinAlerts::class)->dailyAt('10:00');

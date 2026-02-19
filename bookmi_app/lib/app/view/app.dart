@@ -12,7 +12,9 @@ import 'package:bookmi_app/features/favorites/bloc/favorites_bloc.dart';
 import 'package:bookmi_app/features/favorites/data/local/favorites_local_source.dart';
 import 'package:bookmi_app/features/favorites/data/repositories/favorites_repository.dart';
 import 'package:bookmi_app/features/booking/booking.dart';
+import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
+import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
 import 'package:bookmi_app/l10n/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -71,6 +73,8 @@ class _AppDependencies {
     required this.discoveryRepo,
     required this.talentProfileRepo,
     required this.bookingRepo,
+    required this.trackingRepo,
+    required this.reviewRepo,
     required this.router,
   });
 
@@ -80,6 +84,8 @@ class _AppDependencies {
   final DiscoveryRepository discoveryRepo;
   final TalentProfileRepository talentProfileRepo;
   final BookingRepository bookingRepo;
+  final TrackingRepository trackingRepo;
+  final ReviewRepository reviewRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -132,7 +138,16 @@ class _AppDependencies {
       localStorage: bookingLocalStorage,
     );
 
-    final router = buildAppRouter(talentProfileRepo, authBloc, bookingRepo);
+    final trackingRepo = TrackingRepository(apiClient: apiClient);
+    final reviewRepo = ReviewRepository(apiClient: apiClient);
+
+    final router = buildAppRouter(
+      talentProfileRepo,
+      authBloc,
+      bookingRepo,
+      trackingRepo,
+      reviewRepo,
+    );
 
     return _AppDependencies(
       authBloc: authBloc,
@@ -141,6 +156,8 @@ class _AppDependencies {
       discoveryRepo: discoveryRepo,
       talentProfileRepo: talentProfileRepo,
       bookingRepo: bookingRepo,
+      trackingRepo: trackingRepo,
+      reviewRepo: reviewRepo,
       router: router,
     );
   }

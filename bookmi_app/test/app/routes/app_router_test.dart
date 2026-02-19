@@ -5,7 +5,9 @@ import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
+import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
+import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -42,7 +44,10 @@ void main() {
       secureStorage: mockSecureStorage,
     );
 
-    router = buildAppRouter(repo, authBloc, bookingRepo);
+    final trackingRepo = TrackingRepository.forTesting(dio: mockDio);
+    final reviewRepo = ReviewRepository.forTesting(dio: mockDio);
+
+    router = buildAppRouter(repo, authBloc, bookingRepo, trackingRepo, reviewRepo);
   });
 
   tearDown(() async {

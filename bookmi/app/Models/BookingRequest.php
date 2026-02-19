@@ -98,6 +98,14 @@ class BookingRequest extends Model
     }
 
     /**
+     * @return HasMany<TrackingEvent, $this>
+     */
+    public function trackingEvents(): HasMany
+    {
+        return $this->hasMany(TrackingEvent::class)->orderBy('occurred_at');
+    }
+
+    /**
      * Returns true if the user is the client or the talent owner of this booking.
      */
     public function isOwnedByUser(User $user): bool

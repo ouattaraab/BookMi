@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminDisputeController;
+use App\Http\Controllers\Api\V1\CheckInController;
+use App\Http\Controllers\Api\V1\PortfolioController;
+use App\Http\Controllers\Api\V1\ReportController;
+use App\Http\Controllers\Api\V1\ReviewController;
+use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\AdminRefundController;
 use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NotificationController;
@@ -145,6 +150,23 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/conversations/{conversation}/messages', [MessageController::class, 'messages'])->name('conversations.messages');
         Route::post('/conversations/{conversation}/messages', [MessageController::class, 'send'])->name('conversations.send');
         Route::post('/conversations/{conversation}/read', [MessageController::class, 'read'])->name('conversations.read');
+
+        // Suivi Jour J (Stories 6.1 & 6.2)
+        Route::get('/booking_requests/{booking}/tracking', [TrackingController::class, 'index'])->name('tracking.index');
+        Route::post('/booking_requests/{booking}/tracking', [TrackingController::class, 'update'])->name('tracking.update');
+        Route::post('/booking_requests/{booking}/checkin', [CheckInController::class, 'store'])->name('checkin.store');
+
+        // Portfolio post-prestation (Story 6.7)
+        Route::get('/talent_profiles/{talentProfile}/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+        Route::post('/talent_profiles/me/portfolio', [PortfolioController::class, 'store'])->name('portfolio.store');
+        Route::delete('/talent_profiles/me/portfolio/{portfolioItem}', [PortfolioController::class, 'destroy'])->name('portfolio.destroy');
+
+        // Signalement problème (Story 6.6)
+        Route::post('/booking_requests/{booking}/reports', [ReportController::class, 'store'])->name('reports.store');
+
+        // Évaluations (Stories 6.4 & 6.5)
+        Route::get('/booking_requests/{booking}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
+        Route::post('/booking_requests/{booking}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
 
         // Administration
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

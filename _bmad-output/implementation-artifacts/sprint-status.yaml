@@ -118,16 +118,16 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 6: Suivi Jour J & Évaluation (9 stories)
   # ──────────────────────────────────────────────
-  epic-6: backlog
-  6-1-tracker-jour-j-temps-reel: backlog
-  6-2-check-in-geolocalisation-jour-j: backlog
-  6-3-alerte-check-in-manquant: backlog
-  6-4-evaluation-talent-par-client: backlog
-  6-5-evaluation-client-par-talent: backlog
-  6-6-signalement-de-probleme: backlog
-  6-7-enrichissement-portfolio-post-prestation: backlog
-  6-8-ecran-tracker-jour-j-flutter: backlog
-  6-9-ecran-evaluation-flutter: backlog
+  epic-6: done
+  6-1-tracker-jour-j-temps-reel: done
+  6-2-check-in-geolocalisation-jour-j: done
+  6-3-alerte-check-in-manquant: done
+  6-4-evaluation-talent-par-client: done
+  6-5-evaluation-client-par-talent: done
+  6-6-signalement-de-probleme: done
+  6-7-enrichissement-portfolio-post-prestation: done
+  6-8-ecran-tracker-jour-j-flutter: done
+  6-9-ecran-evaluation-flutter: done
   epic-6-retrospective: optional
 
   # ──────────────────────────────────────────────

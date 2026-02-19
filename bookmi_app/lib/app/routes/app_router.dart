@@ -5,6 +5,10 @@ import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/app/view/shell_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
+import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
+import 'package:bookmi_app/features/evaluation/presentation/pages/evaluation_page.dart';
+import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
+import 'package:bookmi_app/features/tracking/presentation/pages/tracking_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/login_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/onboarding_page.dart';
@@ -45,6 +49,8 @@ GoRouter buildAppRouter(
   TalentProfileRepository talentProfileRepo,
   AuthBloc authBloc,
   BookingRepository bookingRepo,
+  TrackingRepository trackingRepo,
+  ReviewRepository reviewRepo,
 ) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -166,6 +172,42 @@ GoRouter buildAppRouter(
                         ),
                       );
                     },
+                    routes: [
+                      GoRoute(
+                        path: RoutePaths.tracking,
+                        name: RouteNames.tracking,
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) {
+                          final id = int.tryParse(
+                                state.pathParameters['id'] ?? '',
+                              ) ??
+                              0;
+                          return TrackingPage(
+                            bookingId: id,
+                            repository: trackingRepo,
+                          );
+                        },
+                      ),
+                      GoRoute(
+                        path: RoutePaths.evaluation,
+                        name: RouteNames.evaluation,
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) {
+                          final id = int.tryParse(
+                                state.pathParameters['id'] ?? '',
+                              ) ??
+                              0;
+                          final type =
+                              state.uri.queryParameters['type'] ??
+                              'client_to_talent';
+                          return EvaluationPage(
+                            bookingId: id,
+                            type: type,
+                            repository: reviewRepo,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

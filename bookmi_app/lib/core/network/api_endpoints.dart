@@ -29,4 +29,27 @@ abstract final class ApiEndpoints {
       '/talents/$talentId/calendar';
   static const categories = '/categories';
   static String talentFavorite(int talentId) => '/talents/$talentId/favorite';
+
+  // Story 6.1 — Tracking
+  static String bookingTracking(int bookingId) =>
+      '/booking_requests/$bookingId/tracking';
+
+  // Story 6.2 — Check-in
+  static String bookingCheckin(int bookingId) =>
+      '/booking_requests/$bookingId/checkin';
+
+  // Stories 6.4 & 6.5 — Reviews
+  static String bookingReviews(int bookingId) =>
+      '/booking_requests/$bookingId/reviews';
+
+  // Story 6.6 — Reports
+  static String bookingReports(int bookingId) =>
+      '/booking_requests/$bookingId/reports';
+
+  // Story 6.7 — Portfolio
+  static String talentPortfolio(int profileId) =>
+      '/talent_profiles/$profileId/portfolio';
+  static const mePortfolio = '/talent_profiles/me/portfolio';
+  static String mePortfolioItem(int itemId) =>
+      '/talent_profiles/me/portfolio/$itemId';
 }
