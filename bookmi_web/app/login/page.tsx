@@ -7,16 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { authApi } from '@/lib/api/endpoints';
 import { useAuthStore } from '@/lib/store/auth';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Alert } from '@/components/ui/alert';
 
 const loginSchema = z.object({
@@ -47,13 +39,9 @@ export default function LoginPage() {
       const res = await authApi.login(data);
       const { token, user } = res.data.data;
 
-      // Store in Zustand
       setAuth(token, user);
-
-      // Store token in cookie for SSR middleware
       document.cookie = `bookmi_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
 
-      // Redirect based on role
       if (user.talentProfile) {
         router.push('/talent/dashboard');
       } else {
@@ -71,76 +59,117 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background:
+          'linear-gradient(135deg, #FF6B35 0%, #C85A20 40%, #E87040 70%, #FF8C42 100%)',
+      }}
+    >
       <div className="w-full max-w-md">
-        {/* Logo — calqué sur le logo officiel BookMi */}
+        {/* Logo — bicolore adapté au fond orange */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-3">
-            <span className="font-extrabold text-4xl text-[#1A2744] tracking-tight">Book</span>
-            <span className="font-extrabold text-4xl text-[#2196F3] tracking-tight">Mi</span>
+            <span className="font-extrabold text-4xl text-white tracking-tight leading-none">
+              Book
+            </span>
+            <span
+              className="font-extrabold text-4xl tracking-tight leading-none"
+              style={{ color: 'rgba(255,235,180,0.95)' }}
+            >
+              Mi
+            </span>
           </div>
-          <p className="text-gray-500 mt-1 text-sm">
+          <p style={{ color: 'rgba(255,255,255,0.72)' }} className="text-sm mt-1">
             Espace talents &amp; managers
           </p>
         </div>
 
-        <Card className="shadow-lg border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl">Connexion</CardTitle>
-            <CardDescription>
-              Accédez à votre espace de gestion
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-              {error && (
-                <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">
-                  {error}
-                </Alert>
+        {/* Card glassmorphism iOS 26 */}
+        <div
+          className="rounded-2xl p-8"
+          style={{
+            background: 'rgba(255,255,255,0.96)',
+            backdropFilter: 'blur(40px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+            border: '1px solid rgba(255,255,255,0.85)',
+            boxShadow:
+              '0 24px 64px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.95)',
+          }}
+        >
+          <h1 className="text-xl font-extrabold text-gray-900 mb-1">
+            Connexion
+          </h1>
+          <p className="text-sm text-gray-500 mb-6">
+            Accédez à votre espace de gestion
+          </p>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {error && (
+              <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">
+                {error}
+              </Alert>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Adresse email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="votre@email.com"
+                autoComplete="email"
+                {...register('email')}
+                className={errors.email ? 'border-red-400' : ''}
+              />
+              {errors.email && (
+                <p className="text-xs text-red-500">{errors.email.message}</p>
               )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">Adresse email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  autoComplete="email"
-                  {...register('email')}
-                  className={errors.email ? 'border-red-400' : ''}
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-500">{errors.email.message}</p>
-                )}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                autoComplete="current-password"
+                {...register('password')}
+                className={errors.password ? 'border-red-400' : ''}
+              />
+              {errors.password && (
+                <p className="text-xs text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  {...register('password')}
-                  className={errors.password ? 'border-red-400' : ''}
-                />
-                {errors.password && (
-                  <p className="text-xs text-red-500">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-[#2196F3] hover:bg-[#1976D2] text-white font-semibold"
-              >
-                {loading ? 'Connexion...' : 'Se connecter'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all duration-150 disabled:opacity-60"
+              style={{
+                background: loading
+                  ? 'rgba(255,107,53,0.6)'
+                  : 'linear-gradient(135deg, #FF6B35, #C85A20)',
+                boxShadow: loading
+                  ? 'none'
+                  : '0 4px 16px rgba(255,107,53,0.40)',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading)
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    '0 6px 24px rgba(255,107,53,0.55)';
+              }}
+              onMouseLeave={(e) => {
+                if (!loading)
+                  (e.currentTarget as HTMLElement).style.boxShadow =
+                    '0 4px 16px rgba(255,107,53,0.40)';
+              }}
+            >
+              {loading ? 'Connexion...' : 'Se connecter'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

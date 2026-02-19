@@ -1,12 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Users, BookCheck, MessageSquare, LogOut } from 'lucide-react';
+import { Users, BookCheck, MessageSquare, LogOut, Menu, X } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/auth';
 import { authApi } from '@/lib/api/endpoints';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -24,6 +24,7 @@ export default function ManagerLayout({
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -46,26 +47,69 @@ export default function ManagerLayout({
     : 'Manager';
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar — Brand Navy #1A2744 */}
-      <aside className="w-64 bg-[#1A2744] flex flex-col">
-        {/* Brand — logo textuel calqué sur le logo officiel */}
-        <div className="px-6 py-5 flex items-center">
-          <span className="font-extrabold text-2xl text-white tracking-tight">Book</span>
-          <span className="font-extrabold text-2xl text-[#2196F3] tracking-tight">Mi</span>
+    <div
+      className="flex h-screen"
+      style={{
+        background:
+          'linear-gradient(135deg, #dbeafe 0%, #e8e4ff 30%, #ddf4ff 65%, #d1fae5 100%)',
+      }}
+    >
+      {/* ── Mobile overlay ── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 md:hidden"
+          style={{ background: 'rgba(0,0,0,0.45)' }}
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar — Brand Navy #1A2744 ── */}
+      <aside
+        className={cn(
+          'fixed md:relative z-50 md:z-auto w-64 flex flex-col h-full',
+          'transition-transform duration-300 ease-in-out',
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        )}
+        style={{
+          background: 'linear-gradient(180deg, #1A2744 0%, #0F1E3A 100%)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        {/* Logo */}
+        <div className="px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center">
+            <span className="font-extrabold text-2xl text-white tracking-tight leading-none">
+              Book
+            </span>
+            <span
+              className="font-extrabold text-2xl tracking-tight leading-none"
+              style={{ color: '#2196F3' }}
+            >
+              Mi
+            </span>
+          </div>
+          <button
+            className="md:hidden text-white/70 hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <X size={20} />
+          </button>
         </div>
 
-        <div className="mx-4 border-t border-white/10" />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.10)', margin: '0 1rem' }} />
 
-        {/* Badge manager */}
+        {/* Manager badge */}
         <div className="px-6 py-2">
-          <span className="text-xs font-semibold text-[#2196F3]/70 uppercase tracking-widest">
+          <span
+            className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: 'rgba(33,150,243,0.75)' }}
+          >
             Manager
           </span>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ href, label, icon: Icon }) => {
             const isActive =
               pathname === href || pathname.startsWith(href + '/');
@@ -73,16 +117,36 @@ export default function ManagerLayout({
               <Link
                 key={href}
                 href={href}
+                onClick={() => setSidebarOpen(false)}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-[#2196F3]/15 text-white'
-                    : 'text-white/60 hover:bg-white/5 hover:text-white'
+                    ? 'text-white font-semibold'
+                    : 'text-white/65 hover:text-white'
                 )}
+                style={
+                  isActive
+                    ? {
+                        background:
+                          'linear-gradient(90deg, rgba(33,150,243,0.22), rgba(33,150,243,0.08))',
+                        borderLeft: '3px solid #2196F3',
+                        padding: '0.625rem 0.75rem 0.625rem calc(0.75rem - 3px)',
+                      }
+                    : { padding: '0.625rem 0.75rem' }
+                }
+                onMouseEnter={(e) => {
+                  if (!isActive)
+                    (e.currentTarget as HTMLElement).style.background =
+                      'rgba(255,255,255,0.06)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive)
+                    (e.currentTarget as HTMLElement).style.background = '';
+                }}
               >
                 <Icon
                   size={18}
-                  className={isActive ? 'text-[#2196F3]' : 'text-white/40'}
+                  style={{ color: isActive ? '#2196F3' : 'rgba(255,255,255,0.40)' }}
                 />
                 {label}
               </Link>
@@ -90,54 +154,98 @@ export default function ManagerLayout({
           })}
         </nav>
 
-        <div className="mx-4 border-t border-white/10" />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.10)', margin: '0 1rem 0.75rem' }} />
 
         {/* User + Logout */}
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback className="bg-[#2196F3]/20 text-[#2196F3] text-xs font-semibold">
+            <Avatar className="h-9 w-9 flex-shrink-0">
+              <AvatarFallback
+                className="text-xs font-bold"
+                style={{
+                  background: 'rgba(33,150,243,0.22)',
+                  color: '#ffffff',
+                  border: '1.5px solid rgba(33,150,243,0.4)',
+                }}
+              >
                 {initials}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">
+              <p className="text-sm font-semibold text-white truncate">
                 {displayName}
               </p>
-              <p className="text-xs text-white/50 truncate">{user?.email}</p>
+              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                Manager
+              </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
             onClick={handleLogout}
-            className="w-full gap-2 text-white/60 hover:text-red-400 hover:bg-white/5"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+            style={{
+              color: 'rgba(252,165,165,0.85)',
+              border: '1px solid rgba(239,68,68,0.25)',
+              background: 'rgba(239,68,68,0.06)',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background =
+                'rgba(239,68,68,0.14)';
+              (e.currentTarget as HTMLElement).style.borderColor =
+                'rgba(239,68,68,0.45)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background =
+                'rgba(239,68,68,0.06)';
+              (e.currentTarget as HTMLElement).style.borderColor =
+                'rgba(239,68,68,0.25)';
+            }}
           >
             <LogOut size={15} />
             Déconnexion
-          </Button>
+          </button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm text-gray-500">
-              Espace manager —{' '}
-              <span className="font-semibold text-gray-900">{displayName}</span>
-            </h2>
+      {/* ── Main content ── */}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        {/* Header — glassmorphism */}
+        <header
+          className="flex-shrink-0 px-4 md:px-8 py-4 flex items-center justify-between"
+          style={{
+            background: 'rgba(255,255,255,0.85)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            borderBottom: '1px solid rgba(26,39,68,0.08)',
+            boxShadow: '0 1px 8px rgba(26,39,68,0.06)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <button
+              className="md:hidden text-gray-600 hover:text-gray-900 p-1"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu size={22} />
+            </button>
+            <div>
+              <h2 className="text-sm text-gray-500">
+                Espace manager —{' '}
+                <span className="font-semibold text-gray-900">{displayName}</span>
+              </h2>
+            </div>
           </div>
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-[#2196F3]/10 text-[#2196F3] text-xs font-semibold">
+            <AvatarFallback
+              className="text-xs font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #1A2744, #2196F3)' }}
+            >
               {initials}
             </AvatarFallback>
           </Avatar>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
       </div>
     </div>
   );

@@ -125,5 +125,54 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-nunito), 'Nunito', sans-serif;
   }
+}
+
+/* ================================================================
+   BookMi — iOS 26 Glassmorphism cards (talent & manager backoffice)
+   ================================================================ */
+
+/* Cards glassmorphism */
+.bookmi-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 1rem;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.06),
+    0 1px 4px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Stat/KPI cards with hover */
+.bookmi-stat-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 0.875rem;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+
+.bookmi-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+/* Override shadcn Card to glassmorphism in talent/manager contexts */
+.talent-content .rounded-xl,
+.talent-content [class*="rounded-xl"],
+.manager-content .rounded-xl,
+.manager-content [class*="rounded-xl"] {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-color: rgba(255, 255, 255, 0.82) !important;
 }

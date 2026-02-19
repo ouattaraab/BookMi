@@ -60,13 +60,19 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(fn () => view('filament.logo'))
             ->brandLogoHeight('2rem')
 
-            // ── CSS custom BookMi (sidebar navy, styles globaux) ──
+            // ── CSS custom BookMi (sidebar navy, glassmorphism, responsive) ──
             ->renderHook(
                 'panels::head.end',
                 fn () => view('filament.custom-styles'),
             )
 
-            // ── Layout ──
+            // ── Footer sidebar : utilisateur connecté + déconnexion ──
+            ->renderHook(
+                'panels::sidebar.footer',
+                fn () => view('filament.sidebar-footer'),
+            )
+
+            // ── Layout — plein écran, sidebar collapsible ──
             ->maxContentWidth(MaxWidth::Full)
             ->sidebarCollapsibleOnDesktop()
 
@@ -77,7 +83,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                // AccountWidget retiré du dashboard — déplacé dans le footer sidebar
                 \App\Filament\Widgets\BookingsOverviewWidget::class,
                 \App\Filament\Widgets\RevenueWidget::class,
                 \App\Filament\Widgets\AlertsWidget::class,
