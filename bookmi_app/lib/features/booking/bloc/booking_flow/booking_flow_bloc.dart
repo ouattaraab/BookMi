@@ -9,6 +9,7 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
     : _repository = repository,
       super(const BookingFlowInitial()) {
     on<BookingFlowSubmitted>(_onSubmitted);
+    on<BookingFlowPaymentInitiated>(_onPaymentInitiated);
     on<BookingFlowReset>(_onReset);
   }
 
@@ -34,6 +35,28 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
     switch (result) {
       case ApiSuccess(:final data):
         emit(BookingFlowSuccess(booking: data));
+      case ApiFailure(:final code, :final message):
+        emit(BookingFlowFailure(code: code, message: message));
+    }
+  }
+
+  Future<void> _onPaymentInitiated(
+    BookingFlowPaymentInitiated event,
+    Emitter<BookingFlowState> emit,
+  ) async {
+    if (state is BookingFlowPaymentSubmitting) return;
+
+    emit(const BookingFlowPaymentSubmitting());
+
+    final result = await _repository.initiatePayment(
+      bookingId: event.bookingId,
+      paymentMethod: event.paymentMethod,
+      phoneNumber: event.phoneNumber,
+    );
+
+    switch (result) {
+      case ApiSuccess():
+        emit(const BookingFlowPaymentSuccess());
       case ApiFailure(:final code, :final message):
         emit(BookingFlowFailure(code: code, message: message));
     }

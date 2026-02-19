@@ -5,9 +5,11 @@ import 'package:bookmi_app/features/booking/bloc/booking_flow/booking_flow_bloc.
 import 'package:bookmi_app/features/booking/bloc/booking_flow/booking_flow_event.dart';
 import 'package:bookmi_app/features/booking/bloc/booking_flow/booking_flow_state.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
+import 'package:bookmi_app/core/design_system/components/celebration_overlay.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step1_package_selection.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step2_date_location.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step3_recap.dart';
+import 'package:bookmi_app/features/booking/presentation/widgets/step4_payment.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/stepper_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -61,7 +63,7 @@ class BookingFlowSheet extends StatefulWidget {
 
 class _BookingFlowSheetState extends State<BookingFlowSheet> {
   int _currentStep = 0;
-  static const int _totalSteps = 3;
+  static const int _totalSteps = 4;
 
   // Step 1
   int? _selectedPackageId;
@@ -74,6 +76,11 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   // Step 3
   bool _isExpress = false;
   String _message = '';
+
+  // Step 4 — Payment
+  int? _createdBookingId;
+  String? _selectedPaymentMethod;
+  String _paymentPhone = '';
 
   // Computed devis (set after step 1 selection)
   int get _cachetAmount {
@@ -102,16 +109,22 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       0 => _selectedPackageId != null,
       1 => _selectedDate != null && _location.trim().isNotEmpty,
       2 => true,
+      3 => _selectedPaymentMethod != null && _paymentPhone.trim().length >= 8,
       _ => false,
     };
   }
 
   void _onNext() {
     if (!_canProceed) return;
-    if (_currentStep < _totalSteps - 1) {
-      setState(() => _currentStep++);
-    } else {
-      _submit();
+    switch (_currentStep) {
+      case 0:
+      case 1:
+        setState(() => _currentStep++);
+      case 2:
+        // Submit booking request — listener advances to step 3 on success
+        _submit();
+      case 3:
+        _pay();
     }
   }
 
@@ -121,6 +134,17 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     } else {
       Navigator.of(context).pop();
     }
+  }
+
+  void _pay() {
+    if (_createdBookingId == null || _selectedPaymentMethod == null) return;
+    context.read<BookingFlowBloc>().add(
+      BookingFlowPaymentInitiated(
+        bookingId: _createdBookingId!,
+        paymentMethod: _selectedPaymentMethod!,
+        phoneNumber: _paymentPhone.trim(),
+      ),
+    );
   }
 
   void _submit() {
@@ -153,16 +177,23 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     return BlocListener<BookingFlowBloc, BookingFlowState>(
       listener: (context, state) {
         if (state is BookingFlowSuccess) {
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                state.booking.status == 'accepted'
-                    ? 'Réservation confirmée ! 🎉'
-                    : 'Demande de réservation envoyée !',
-              ),
-              backgroundColor: BookmiColors.success,
-            ),
+          // Booking created — store ID and advance to payment step
+          setState(() {
+            _createdBookingId = state.booking.id;
+            _currentStep = 3;
+          });
+        } else if (state is BookingFlowPaymentSuccess) {
+          // Payment initiated — celebrate then close
+          CelebrationOverlay.show(
+            context,
+            title: 'Paiement initié !',
+            subtitle:
+                'Approuvez la notification Mobile Money sur votre téléphone '
+                'dans les 15 secondes.',
+            // Guard against popping if widget is disposed before 2.5 s (M1-FIX).
+            onDismiss: () {
+              if (context.mounted) Navigator.of(context).pop();
+            },
           );
         } else if (state is BookingFlowFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -203,7 +234,9 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
               ),
               child: Row(
                 children: [
-                  if (_currentStep > 0)
+                  // Hide back button on payment step — booking already created,
+                  // going back would risk re-submitting it (H1-FIX).
+                  if (_currentStep > 0 && _currentStep < 3)
                     IconButton(
                       icon: const Icon(
                         Icons.arrow_back_ios_new,
@@ -276,6 +309,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     0 => 'Choisir un package',
     1 => 'Date & lieu',
     2 => 'Récapitulatif',
+    3 => 'Paiement',
     _ => '',
   };
 
@@ -327,6 +361,14 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           );
         },
       ),
+      3 => Step4Payment(
+        totalAmount: _totalAmount,
+        selectedMethod: _selectedPaymentMethod,
+        phoneNumber: _paymentPhone,
+        onMethodSelected: (method) =>
+            setState(() => _selectedPaymentMethod = method),
+        onPhoneChanged: (v) => setState(() => _paymentPhone = v),
+      ),
       _ => const SizedBox.shrink(),
     };
   }
@@ -351,9 +393,14 @@ class _BottomCta extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BookingFlowBloc, BookingFlowState>(
       builder: (context, state) {
-        final isSubmitting = state is BookingFlowSubmitting;
+        final isSubmitting = state is BookingFlowSubmitting ||
+            state is BookingFlowPaymentSubmitting;
         final isLastStep = currentStep == totalSteps - 1;
-        final label = isLastStep ? 'Envoyer la demande' : 'Continuer';
+        final label = switch (currentStep) {
+          2 => 'Confirmer la réservation',
+          _ when isLastStep => 'Payer maintenant',
+          _ => 'Continuer',
+        };
 
         return Padding(
           padding: EdgeInsets.fromLTRB(
@@ -366,7 +413,7 @@ class _BottomCta extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               gradient: canProceed && !isSubmitting
-                  ? (isLastStep
+                  ? (isLastStep || currentStep == 2
                       ? BookmiColors.gradientCta
                       : BookmiColors.gradientBrand)
                   : null,

@@ -97,9 +97,9 @@ development_status:
   4-5-versement-automatique-au-talent: done
   4-6-failover-passerelle-de-paiement: done
   4-7-remboursement-en-cas-de-litige: done
-  4-8-dashboard-financier-talent: backlog
-  4-9-export-rapports-financiers-admin: backlog
-  4-10-ecran-paiement-flutter: backlog
+  4-8-dashboard-financier-talent: done
+  4-9-export-rapports-financiers-admin: done
+  4-10-ecran-paiement-flutter: done
   epic-4-retrospective: optional
 
   # ──────────────────────────────────────────────

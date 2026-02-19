@@ -27,6 +27,15 @@ final class BookingFlowSuccess extends BookingFlowState {
   int get hashCode => booking.hashCode;
 }
 
+final class BookingFlowPaymentSubmitting extends BookingFlowState {
+  const BookingFlowPaymentSubmitting();
+}
+
+/// Payment was successfully initiated (mobile money push sent to user's phone).
+final class BookingFlowPaymentSuccess extends BookingFlowState {
+  const BookingFlowPaymentSuccess();
+}
+
 @immutable
 final class BookingFlowFailure extends BookingFlowState {
   const BookingFlowFailure({required this.code, required this.message});

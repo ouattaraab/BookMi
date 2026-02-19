@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminRefundController;
+use App\Http\Controllers\Api\V1\AdminReportController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\FinancialDashboardController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaystackWebhookController;
@@ -111,6 +113,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/payments/{transaction}/status', [PaymentController::class, 'status'])
             ->name('payments.status');
 
+        // Dashboard financier talent (Story 4.8)
+        Route::get('/me/financial_dashboard', [FinancialDashboardController::class, 'dashboard'])
+            ->name('me.financial_dashboard');
+        Route::get('/me/payouts', [FinancialDashboardController::class, 'payouts'])
+            ->name('me.payouts');
+
         // Favoris
         Route::get('/me/favorites', [FavoriteController::class, 'index'])
             ->name('favorites.index');
@@ -125,6 +133,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
             Route::post('/booking_requests/{booking}/refund', [AdminRefundController::class, 'refund'])
                 ->name('booking_requests.refund');
+            Route::get('/reports/financial', [AdminReportController::class, 'financial'])
+                ->name('reports.financial');
         });
     });
 });

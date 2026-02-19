@@ -135,4 +135,84 @@ void main() {
       expect: () => [isA<BookingFlowInitial>()],
     );
   });
+
+  // ── BookingFlowPaymentInitiated (Story 4.10) ───────────────────────────────
+
+  group('BookingFlowPaymentInitiated', () {
+    const paymentEvent = BookingFlowPaymentInitiated(
+      bookingId: 42,
+      paymentMethod: 'orange_money',
+      phoneNumber: '+2250700000000',
+    );
+
+    blocTest<BookingFlowBloc, BookingFlowState>(
+      'emits [PaymentSubmitting, PaymentSuccess] on successful payment',
+      build: () {
+        when(
+          () => repository.initiatePayment(
+            bookingId: any(named: 'bookingId'),
+            paymentMethod: any(named: 'paymentMethod'),
+            phoneNumber: any(named: 'phoneNumber'),
+          ),
+        ).thenAnswer((_) async => const ApiSuccess(<String, dynamic>{}));
+        return BookingFlowBloc(repository: repository);
+      },
+      act: (bloc) => bloc.add(paymentEvent),
+      expect: () => [
+        isA<BookingFlowPaymentSubmitting>(),
+        isA<BookingFlowPaymentSuccess>(),
+      ],
+    );
+
+    blocTest<BookingFlowBloc, BookingFlowState>(
+      'emits [PaymentSubmitting, Failure] on payment API error',
+      build: () {
+        when(
+          () => repository.initiatePayment(
+            bookingId: any(named: 'bookingId'),
+            paymentMethod: any(named: 'paymentMethod'),
+            phoneNumber: any(named: 'phoneNumber'),
+          ),
+        ).thenAnswer(
+          (_) async => const ApiFailure(
+            code: 'PAYMENT_FAILED',
+            message: 'Solde insuffisant',
+          ),
+        );
+        return BookingFlowBloc(repository: repository);
+      },
+      act: (bloc) => bloc.add(paymentEvent),
+      expect: () => [
+        isA<BookingFlowPaymentSubmitting>(),
+        isA<BookingFlowFailure>(),
+      ],
+      verify: (bloc) {
+        expect(
+          (bloc.state as BookingFlowFailure).code,
+          equals('PAYMENT_FAILED'),
+        );
+      },
+    );
+
+    blocTest<BookingFlowBloc, BookingFlowState>(
+      'ignores duplicate payment event when already submitting',
+      build: () {
+        when(
+          () => repository.initiatePayment(
+            bookingId: any(named: 'bookingId'),
+            paymentMethod: any(named: 'paymentMethod'),
+            phoneNumber: any(named: 'phoneNumber'),
+          ),
+        ).thenAnswer((_) async {
+          await Future<void>.delayed(const Duration(milliseconds: 100));
+          return const ApiSuccess(<String, dynamic>{});
+        });
+        return BookingFlowBloc(repository: repository);
+      },
+      seed: () => const BookingFlowPaymentSubmitting(),
+      act: (bloc) => bloc.add(paymentEvent),
+      // No state changes expected — guard in _onPaymentInitiated returns early
+      expect: () => <BookingFlowState>[],
+    );
+  });
 }

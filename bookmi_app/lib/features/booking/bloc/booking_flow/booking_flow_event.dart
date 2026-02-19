@@ -45,6 +45,31 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
   );
 }
 
+/// Initiate the Mobile Money payment for the created booking (step 4).
+@immutable
+final class BookingFlowPaymentInitiated extends BookingFlowEvent {
+  const BookingFlowPaymentInitiated({
+    required this.bookingId,
+    required this.paymentMethod,
+    required this.phoneNumber,
+  });
+
+  final int bookingId;
+  final String paymentMethod;
+  final String phoneNumber;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookingFlowPaymentInitiated &&
+          bookingId == other.bookingId &&
+          paymentMethod == other.paymentMethod &&
+          phoneNumber == other.phoneNumber;
+
+  @override
+  int get hashCode => Object.hash(bookingId, paymentMethod, phoneNumber);
+}
+
 /// Reset the flow to initial state.
 final class BookingFlowReset extends BookingFlowEvent {
   const BookingFlowReset();
