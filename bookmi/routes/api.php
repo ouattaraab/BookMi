@@ -69,6 +69,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::post('/talent_profiles', [TalentProfileController::class, 'store'])->name('talent_profiles.store');
         Route::get('/talent_profiles/me', [TalentProfileController::class, 'showOwn'])->name('talent_profiles.me');
+        Route::patch('/talent_profiles/me/payout_method', [TalentProfileController::class, 'updatePayoutMethod'])->name('talent_profiles.payout_method');
         Route::patch('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'update'])->name('talent_profiles.update');
         Route::delete('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'destroy'])->name('talent_profiles.destroy');
 

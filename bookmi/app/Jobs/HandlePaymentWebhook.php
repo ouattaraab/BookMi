@@ -4,10 +4,12 @@ namespace App\Jobs;
 
 use App\Enums\BookingStatus;
 use App\Enums\EscrowStatus;
+use App\Enums\PayoutStatus;
 use App\Enums\TransactionStatus;
 use App\Events\PaymentReceived;
 use App\Models\BookingRequest;
 use App\Models\EscrowHold;
+use App\Models\Payout;
 use App\Models\Transaction;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -38,9 +40,11 @@ class HandlePaymentWebhook implements ShouldQueue
     public function handle(): void
     {
         match ($this->event) {
-            'charge.success' => $this->handleChargeSuccess(),
-            'charge.failed'  => $this->handleChargeFailure(),
-            default          => null, // unknown events are silently ignored
+            'charge.success'   => $this->handleChargeSuccess(),
+            'charge.failed'    => $this->handleChargeFailure(),
+            'transfer.success' => $this->handleTransferSuccess(),
+            'transfer.failed'  => $this->handleTransferFailure(),
+            default            => null, // unknown events are silently ignored
         };
     }
 
@@ -111,6 +115,53 @@ class HandlePaymentWebhook implements ShouldQueue
         if ($escrowHold) {
             PaymentReceived::dispatch($transaction->fresh(), $escrowHold);
         }
+    }
+
+    // ── transfer.success ──────────────────────────────────────────────────
+
+    private function handleTransferSuccess(): void
+    {
+        $transferCode = $this->data['transfer_code'] ?? null;
+
+        if (! $transferCode) {
+            return;
+        }
+
+        $payout = Payout::where('gateway_reference', $transferCode)->first();
+
+        if (! $payout) {
+            return;
+        }
+
+        // Idempotency: already in terminal state
+        if ($payout->status === PayoutStatus::Succeeded) {
+            return;
+        }
+
+        $payout->update(['status' => PayoutStatus::Succeeded->value]);
+    }
+
+    // ── transfer.failed ───────────────────────────────────────────────────
+
+    private function handleTransferFailure(): void
+    {
+        $transferCode = $this->data['transfer_code'] ?? null;
+
+        if (! $transferCode) {
+            return;
+        }
+
+        $payout = Payout::where('gateway_reference', $transferCode)->first();
+
+        if (! $payout) {
+            return;
+        }
+
+        if (in_array($payout->status, [PayoutStatus::Succeeded, PayoutStatus::Failed], strict: true)) {
+            return;
+        }
+
+        $payout->update(['status' => PayoutStatus::Failed->value]);
     }
 
     // ── charge.failed ─────────────────────────────────────────────────────

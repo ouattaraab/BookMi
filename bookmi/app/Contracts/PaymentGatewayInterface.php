@@ -41,10 +41,18 @@ interface PaymentGatewayInterface
     public function submitOtp(string $reference, string $otp): array;
 
     /**
+     * Create a transfer recipient (bank or mobile money account).
+     *
+     * @param  array<string, mixed>  $payload  { type, name, account_number, bank_code, currency }
+     * @return array<string, mixed>            { recipient_code, ... }
+     */
+    public function createTransferRecipient(array $payload): array;
+
+    /**
      * Initiate a transfer (talent payout).
      *
-     * @param  array<string, mixed>  $payload
-     * @return array<string, mixed>
+     * @param  array<string, mixed>  $payload  { source, amount, recipient, reason }
+     * @return array<string, mixed>            { transfer_code, status, ... }
      */
     public function initiateTransfer(array $payload): array;
 }

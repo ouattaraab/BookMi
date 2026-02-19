@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Events\EscrowReleased;
 use App\Gateways\PaystackGateway;
+use App\Listeners\HandleEscrowReleased;
 use App\Repositories\Contracts\FavoriteRepositoryInterface;
 use App\Repositories\Contracts\ServicePackageRepositoryInterface;
 use App\Repositories\Contracts\TalentRepositoryInterface;
@@ -14,6 +16,7 @@ use App\Repositories\Eloquent\TalentRepository;
 use App\Repositories\Eloquent\VerificationRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -31,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiting();
+        Event::listen(EscrowReleased::class, HandleEscrowReleased::class);
     }
 
     protected function configureRateLimiting(): void

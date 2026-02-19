@@ -70,6 +70,19 @@ class PaystackGateway implements PaymentGatewayInterface
         return $data['data'];
     }
 
+    public function createTransferRecipient(array $payload): array
+    {
+        $response = $this->http()->post("{$this->baseUrl}/transferrecipient", $payload);
+
+        $data = $response->json();
+
+        if (! $response->successful() || ! ($data['status'] ?? false)) {
+            throw PaymentException::gatewayError('paystack', $data['message'] ?? 'Unknown error');
+        }
+
+        return $data['data'];
+    }
+
     public function initiateTransfer(array $payload): array
     {
         $response = $this->http()->post("{$this->baseUrl}/transfer", $payload);
