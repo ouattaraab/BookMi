@@ -47,6 +47,8 @@ class TalentProfile extends Model
         'profile_completion_percentage',
         'payout_method',
         'payout_details',
+        'auto_reply_message',
+        'auto_reply_is_active',
     ];
 
     /**
@@ -65,7 +67,8 @@ class TalentProfile extends Model
             'total_bookings' => 'integer',
             'profile_completion_percentage' => 'integer',
             'social_links'    => 'array',
-            'payout_details'  => 'array',
+            'payout_details'       => 'array',
+            'auto_reply_is_active' => 'boolean',
         ];
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Exceptions\BookmiException;
 use App\Http\Requests\Api\StoreTalentProfileRequest;
+use App\Http\Requests\Api\UpdateAutoReplyRequest;
 use App\Http\Requests\Api\UpdatePayoutMethodRequest;
 use App\Http\Requests\Api\UpdateTalentProfileRequest;
 use App\Http\Resources\TalentProfileResource;
@@ -95,6 +96,36 @@ class TalentProfileController extends BaseController
         return $this->successResponse([
             'payout_method'  => $profile->fresh()->payout_method,
             'payout_details' => $profile->fresh()->payout_details,
+        ]);
+    }
+
+    /**
+     * PUT /v1/talent_profiles/me/auto_reply
+     *
+     * Talent configures their automatic reply message.
+     */
+    public function updateAutoReply(UpdateAutoReplyRequest $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user    = $request->user();
+        $profile = $this->service->getByUserId($user->id);
+
+        if (! $profile) {
+            return $this->errorResponse(
+                'TALENT_PROFILE_NOT_FOUND',
+                'Aucun profil talent trouvé pour cet utilisateur.',
+                404,
+            );
+        }
+
+        $profile->update([
+            'auto_reply_message'   => $request->validated('auto_reply_message'),
+            'auto_reply_is_active' => $request->validated('auto_reply_is_active'),
+        ]);
+
+        return $this->successResponse([
+            'auto_reply_message'   => $profile->fresh()->auto_reply_message,
+            'auto_reply_is_active' => $profile->fresh()->auto_reply_is_active,
         ]);
     }
 

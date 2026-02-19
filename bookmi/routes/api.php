@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AdminDisputeController;
 use App\Http\Controllers\Api\V1\AdminRefundController;
+use App\Http\Controllers\Api\V1\MessageController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\AdminReportController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\FinancialDashboardController;
@@ -73,6 +76,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/talent_profiles', [TalentProfileController::class, 'store'])->name('talent_profiles.store');
         Route::get('/talent_profiles/me', [TalentProfileController::class, 'showOwn'])->name('talent_profiles.me');
         Route::patch('/talent_profiles/me/payout_method', [TalentProfileController::class, 'updatePayoutMethod'])->name('talent_profiles.payout_method');
+        Route::put('/talent_profiles/me/auto_reply', [TalentProfileController::class, 'updateAutoReply'])->name('talent_profiles.auto_reply');
         Route::patch('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'update'])->name('talent_profiles.update');
         Route::delete('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'destroy'])->name('talent_profiles.destroy');
 
@@ -129,12 +133,27 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/talents/{talentProfileId}/favorite', [FavoriteController::class, 'check'])
             ->name('favorites.check');
 
+        // Notifications push (Story 5.4)
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::put('/me/fcm_token', [NotificationController::class, 'updateFcmToken'])->name('me.fcm_token');
+
+        // Messagerie interne (Story 5.1)
+        Route::get('/conversations', [MessageController::class, 'index'])->name('conversations.index');
+        Route::post('/conversations', [MessageController::class, 'store'])->name('conversations.store');
+        Route::get('/conversations/{conversation}/messages', [MessageController::class, 'messages'])->name('conversations.messages');
+        Route::post('/conversations/{conversation}/messages', [MessageController::class, 'send'])->name('conversations.send');
+        Route::post('/conversations/{conversation}/read', [MessageController::class, 'read'])->name('conversations.read');
+
         // Administration
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
             Route::post('/booking_requests/{booking}/refund', [AdminRefundController::class, 'refund'])
                 ->name('booking_requests.refund');
             Route::get('/reports/financial', [AdminReportController::class, 'financial'])
                 ->name('reports.financial');
+            Route::get('/disputes/{booking}/messages', [AdminDisputeController::class, 'messages'])
+                ->name('disputes.messages');
         });
     });
 });

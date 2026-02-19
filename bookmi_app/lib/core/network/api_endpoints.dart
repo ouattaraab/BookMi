@@ -13,7 +13,13 @@ abstract final class ApiEndpoints {
   static String bookingRequest(int id) => '/booking_requests/$id';
   static String bookingContract(int id) => '/booking_requests/$id/contract';
   static const payments = '/payments';
-  static const messages = '/messages';
+  static const conversations = '/conversations';
+  static String conversationMessages(int id) => '/conversations/$id/messages';
+  static String conversationRead(int id) => '/conversations/$id/read';
+  static const meUpdateFcmToken = '/me/fcm_token';
+  static const notifications = '/notifications';
+  static const notificationsReadAll = '/notifications/read-all';
+  static String notificationRead(int id) => '/notifications/$id/read';
   static const myFavorites = '/me/favorites';
   static const paymentsInitiate = '/payments/initiate';
   static const meFinancialDashboard = '/me/financial_dashboard';

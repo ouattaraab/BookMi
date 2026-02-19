@@ -105,14 +105,14 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 5: Communication & Notifications (7 stories)
   # ──────────────────────────────────────────────
-  epic-5: backlog
-  5-1-messagerie-interne-temps-reel: backlog
-  5-2-detection-anti-desintermediation: backlog
-  5-3-reponses-automatiques-talent: backlog
-  5-4-notifications-push-fcm: backlog
-  5-5-rappels-automatiques-j7-et-j2: backlog
-  5-6-acces-admin-messages-en-cas-de-litige: backlog
-  5-7-ecran-messagerie-flutter: backlog
+  epic-5: done
+  5-1-messagerie-interne-temps-reel: done
+  5-2-detection-anti-desintermediation: done
+  5-3-reponses-automatiques-talent: done
+  5-4-notifications-push-fcm: done
+  5-5-rappels-automatiques-j7-et-j2: done
+  5-6-acces-admin-messages-en-cas-de-litige: done
+  5-7-ecran-messagerie-flutter: done
   epic-5-retrospective: optional
 
   # ──────────────────────────────────────────────

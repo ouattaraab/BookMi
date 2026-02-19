@@ -37,6 +37,7 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'is_active',
+        'fcm_token',
     ];
 
     /**
