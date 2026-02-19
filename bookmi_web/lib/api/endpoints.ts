@@ -21,8 +21,8 @@ export const talentApi = {
 // ─── CALENDAR ───────────────────────────────────────────────────────────────
 
 export const calendarApi = {
-  getSlots: (talentId: number) =>
-    apiClient.get(`/talents/${talentId}/calendar`),
+  getSlots: (talentId: number, month?: string) =>
+    apiClient.get(`/talents/${talentId}/calendar`, { params: month ? { month } : {} }),
   createSlot: (data: Record<string, unknown>) =>
     apiClient.post("/calendar_slots", data),
   updateSlot: (id: number, data: Record<string, unknown>) =>

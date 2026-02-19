@@ -6,11 +6,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { packageApi } from '@/lib/api/endpoints';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert } from '@/components/ui/alert';
 import {
@@ -20,6 +21,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -34,30 +42,45 @@ type ServicePackage = {
   id: number;
   name: string;
   description?: string;
-  duration_minutes: number;
-  price: number;
+  duration_minutes: number | null;
+  cachet_amount: number;
+  type: 'essentiel' | 'standard' | 'premium' | 'micro';
+  is_active: boolean;
+};
+
+const packageTypes = [
+  { value: 'essentiel', label: 'Essentiel' },
+  { value: 'standard', label: 'Standard' },
+  { value: 'premium', label: 'Premium' },
+  { value: 'micro', label: 'Micro' },
+] as const;
+
+const typeColors: Record<string, string> = {
+  essentiel: 'bg-gray-100 text-gray-700 border border-gray-200',
+  standard:  'bg-blue-100 text-blue-700 border border-blue-200',
+  premium:   'bg-amber-100 text-amber-700 border border-amber-200',
+  micro:     'bg-purple-100 text-purple-700 border border-purple-200',
 };
 
 const packageSchema = z.object({
   name: z.string().min(2, 'Nom requis (2 caractères minimum)'),
   description: z.string().optional(),
-  duration_minutes: z
+  type: z.enum(['essentiel', 'standard', 'premium', 'micro']),
+  cachet_amount_fcfa: z
     .string()
-    .min(1, 'Durée requise')
-    .refine((v) => !isNaN(Number(v)) && Number(v) >= 1, 'Durée minimum 1 minute'),
-  price: z
-    .string()
-    .min(1, 'Prix requis')
-    .refine((v) => !isNaN(Number(v)) && Number(v) >= 0, 'Prix invalide'),
+    .min(1, 'Cachet requis')
+    .refine((v) => !isNaN(Number(v)) && Number(v) >= 10, 'Minimum 10 FCFA'),
+  duration_minutes: z.string().optional(),
 });
 
 type PackageFormData = z.infer<typeof packageSchema>;
 
-function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+function formatAmount(centimes: number): string {
+  return new Intl.NumberFormat('fr-FR').format(Math.round(centimes / 100)) + ' FCFA';
 }
 
-function formatDuration(minutes: number): string {
+function formatDuration(minutes: number | null): string {
+  if (!minutes) return '—';
   if (minutes < 60) return `${minutes} min`;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
@@ -77,42 +100,59 @@ export default function TalentPackagesPage() {
     queryFn: () => packageApi.list(),
   });
 
-  const packages: ServicePackage[] = data?.data?.data ?? [];
+  const rawPackages: { id: number; attributes: Omit<ServicePackage, 'id'> }[] =
+    data?.data?.data ?? [];
+  const packages: ServicePackage[] = rawPackages.map((item) => ({
+    id: item.id,
+    ...item.attributes,
+  }));
 
   const {
     register,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<PackageFormData>({
     resolver: zodResolver(packageSchema),
-    defaultValues: { name: '', description: '', duration_minutes: '60', price: '0' },
+    defaultValues: { name: '', description: '', type: 'standard', cachet_amount_fcfa: '', duration_minutes: '60' },
   });
+
+  const typeValue = watch('type');
 
   const openEdit = (pkg: ServicePackage) => {
     setEditPkg(pkg);
     setValue('name', pkg.name);
     setValue('description', pkg.description ?? '');
-    setValue('duration_minutes', String(pkg.duration_minutes));
-    setValue('price', String(pkg.price));
+    setValue('type', pkg.type);
+    setValue('cachet_amount_fcfa', String(Math.round(pkg.cachet_amount / 100)));
+    setValue('duration_minutes', pkg.duration_minutes ? String(pkg.duration_minutes) : '');
     setApiError(null);
   };
 
   const openAdd = () => {
-    reset({ name: '', description: '', duration_minutes: '60', price: '0' });
+    reset({ name: '', description: '', type: 'standard', cachet_amount_fcfa: '', duration_minutes: '60' });
     setEditPkg(null);
     setAddOpen(true);
     setApiError(null);
   };
 
+  function buildPayload(data: PackageFormData) {
+    const payload: Record<string, unknown> = {
+      name: data.name,
+      description: data.description || undefined,
+      type: data.type,
+      cachet_amount: Math.round(Number(data.cachet_amount_fcfa) * 100),
+    };
+    if (data.type !== 'micro' && data.duration_minutes) {
+      payload.duration_minutes = Number(data.duration_minutes);
+    }
+    return payload;
+  }
+
   const createMutation = useMutation({
-    mutationFn: (data: PackageFormData) =>
-      packageApi.create({
-        ...data,
-        duration_minutes: Number(data.duration_minutes),
-        price: Number(data.price),
-      }),
+    mutationFn: (data: PackageFormData) => packageApi.create(buildPayload(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packages'] });
       setAddOpen(false);
@@ -120,18 +160,18 @@ export default function TalentPackagesPage() {
       setApiError(null);
     },
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { message?: string } } };
-      setApiError(e?.response?.data?.message ?? 'Erreur lors de la création');
+      const e = err as { response?: { data?: { error?: { message?: string }; message?: string } } };
+      setApiError(
+        e?.response?.data?.error?.message ??
+        e?.response?.data?.message ??
+        'Erreur lors de la création'
+      );
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: (data: PackageFormData) =>
-      packageApi.update(editPkg!.id, {
-        ...data,
-        duration_minutes: Number(data.duration_minutes),
-        price: Number(data.price),
-      }),
+      packageApi.update(editPkg!.id, buildPayload(data)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['packages'] });
       setEditPkg(null);
@@ -139,8 +179,12 @@ export default function TalentPackagesPage() {
       setApiError(null);
     },
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { message?: string } } };
-      setApiError(e?.response?.data?.message ?? 'Erreur lors de la mise à jour');
+      const e = err as { response?: { data?: { error?: { message?: string }; message?: string } } };
+      setApiError(
+        e?.response?.data?.error?.message ??
+        e?.response?.data?.message ??
+        'Erreur lors de la mise à jour'
+      );
     },
   });
 
@@ -151,8 +195,12 @@ export default function TalentPackagesPage() {
       setDeleteId(null);
     },
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { message?: string } } };
-      setApiError(e?.response?.data?.message ?? 'Erreur lors de la suppression');
+      const e = err as { response?: { data?: { error?: { message?: string }; message?: string } } };
+      setApiError(
+        e?.response?.data?.error?.message ??
+        e?.response?.data?.message ??
+        'Erreur lors de la suppression'
+      );
       setDeleteId(null);
     },
   });
@@ -173,16 +221,13 @@ export default function TalentPackagesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Packages de services
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Définissez vos offres et tarifs
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Packages de services</h1>
+          <p className="text-gray-500 text-sm mt-1">Définissez vos offres et tarifs</p>
         </div>
         <Button
           onClick={openAdd}
-          className="bg-amber-500 hover:bg-amber-600 text-white gap-2"
+          className="gap-2 text-white"
+          style={{ background: 'linear-gradient(135deg, #FF6B35, #C85A20)' }}
         >
           <Plus size={16} />
           Ajouter un package
@@ -190,9 +235,7 @@ export default function TalentPackagesPage() {
       </div>
 
       {apiError && (
-        <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">
-          {apiError}
-        </Alert>
+        <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">{apiError}</Alert>
       )}
 
       <Card>
@@ -215,32 +258,35 @@ export default function TalentPackagesPage() {
               <TableHeader>
                 <TableRow className="bg-gray-50">
                   <TableHead className="font-semibold text-gray-600">Nom</TableHead>
-                  <TableHead className="font-semibold text-gray-600">Description</TableHead>
-                  <TableHead className="font-semibold text-gray-600 text-center">
-                    Durée
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-600 text-right">
-                    Prix
-                  </TableHead>
-                  <TableHead className="font-semibold text-gray-600 text-right">
-                    Actions
-                  </TableHead>
+                  <TableHead className="font-semibold text-gray-600">Type</TableHead>
+                  <TableHead className="font-semibold text-gray-600 text-center">Durée</TableHead>
+                  <TableHead className="font-semibold text-gray-600 text-right">Cachet</TableHead>
+                  <TableHead className="font-semibold text-gray-600 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {packages.map((pkg) => (
                   <TableRow key={pkg.id} className="hover:bg-gray-50">
                     <TableCell className="font-medium text-gray-800">
-                      {pkg.name}
+                      <div>
+                        <p>{pkg.name}</p>
+                        {pkg.description && (
+                          <p className="text-xs text-gray-400 truncate max-w-[200px]">
+                            {pkg.description}
+                          </p>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-gray-500 text-sm max-w-[220px] truncate">
-                      {pkg.description ?? '—'}
+                    <TableCell>
+                      <Badge className={`text-xs ${typeColors[pkg.type] ?? typeColors.essentiel}`}>
+                        {packageTypes.find((t) => t.value === pkg.type)?.label ?? pkg.type}
+                      </Badge>
                     </TableCell>
                     <TableCell className="text-center text-gray-600">
                       {formatDuration(pkg.duration_minutes)}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-gray-800">
-                      {formatAmount(pkg.price)}
+                      {formatAmount(pkg.cachet_amount)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -248,7 +294,7 @@ export default function TalentPackagesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => openEdit(pkg)}
-                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50"
+                          className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 h-8 w-8 p-0"
                         >
                           <Pencil size={14} />
                         </Button>
@@ -256,7 +302,7 @@ export default function TalentPackagesPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setDeleteId(pkg.id)}
-                          className="text-red-400 hover:text-red-600 hover:bg-red-50"
+                          className="text-red-400 hover:text-red-600 hover:bg-red-50 h-8 w-8 p-0"
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -274,24 +320,16 @@ export default function TalentPackagesPage() {
       <Dialog
         open={isDialogOpen}
         onOpenChange={(open) => {
-          if (!open) {
-            setAddOpen(false);
-            setEditPkg(null);
-            reset();
-          }
+          if (!open) { setAddOpen(false); setEditPkg(null); reset(); }
         }}
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {editPkg ? 'Modifier le package' : 'Nouveau package'}
-            </DialogTitle>
+            <DialogTitle>{editPkg ? 'Modifier le package' : 'Nouveau package'}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
             {apiError && (
-              <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">
-                {apiError}
-              </Alert>
+              <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">{apiError}</Alert>
             )}
             <div className="space-y-2">
               <Label htmlFor="name">Nom</Label>
@@ -301,10 +339,26 @@ export default function TalentPackagesPage() {
                 {...register('name')}
                 className={errors.name ? 'border-red-400' : ''}
               />
-              {errors.name && (
-                <p className="text-xs text-red-500">{errors.name.message}</p>
-              )}
+              {errors.name && <p className="text-xs text-red-500">{errors.name.message}</p>}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">Type de package</Label>
+              <Select
+                value={typeValue}
+                onValueChange={(val) => setValue('type', val as PackageFormData['type'])}
+              >
+                <SelectTrigger id="type">
+                  <SelectValue placeholder="Choisir un type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {packageTypes.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -312,63 +366,54 @@ export default function TalentPackagesPage() {
                 placeholder="Description du package..."
                 {...register('description')}
                 className="resize-none"
-                rows={3}
+                rows={2}
               />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="duration_minutes">Durée (minutes)</Label>
+                <Label htmlFor="cachet_amount_fcfa">Cachet (FCFA)</Label>
                 <Input
-                  id="duration_minutes"
+                  id="cachet_amount_fcfa"
                   type="number"
-                  min="1"
-                  placeholder="60"
-                  {...register('duration_minutes')}
-                  className={errors.duration_minutes ? 'border-red-400' : ''}
+                  min="10"
+                  placeholder="150000"
+                  {...register('cachet_amount_fcfa')}
+                  className={errors.cachet_amount_fcfa ? 'border-red-400' : ''}
                 />
-                {errors.duration_minutes && (
-                  <p className="text-xs text-red-500">
-                    {errors.duration_minutes.message}
-                  </p>
+                {errors.cachet_amount_fcfa && (
+                  <p className="text-xs text-red-500">{errors.cachet_amount_fcfa.message}</p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="price">Prix (FCFA)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min="0"
-                  placeholder="50000"
-                  {...register('price')}
-                  className={errors.price ? 'border-red-400' : ''}
-                />
-                {errors.price && (
-                  <p className="text-xs text-red-500">{errors.price.message}</p>
-                )}
-              </div>
+              {typeValue !== 'micro' && (
+                <div className="space-y-2">
+                  <Label htmlFor="duration_minutes">Durée (min)</Label>
+                  <Input
+                    id="duration_minutes"
+                    type="number"
+                    min="1"
+                    placeholder="60"
+                    {...register('duration_minutes')}
+                  />
+                </div>
+              )}
             </div>
+
             <DialogFooter>
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => {
-                  setAddOpen(false);
-                  setEditPkg(null);
-                  reset();
-                }}
+                onClick={() => { setAddOpen(false); setEditPkg(null); reset(); }}
               >
                 Annuler
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="text-white"
+                style={{ background: 'linear-gradient(135deg, #FF6B35, #C85A20)' }}
               >
-                {isSubmitting
-                  ? 'Enregistrement...'
-                  : editPkg
-                    ? 'Mettre à jour'
-                    : 'Créer'}
+                {isSubmitting ? 'Enregistrement...' : editPkg ? 'Mettre à jour' : 'Créer'}
               </Button>
             </DialogFooter>
           </form>
@@ -382,13 +427,11 @@ export default function TalentPackagesPage() {
             <DialogTitle>Supprimer le package</DialogTitle>
           </DialogHeader>
           <p className="text-sm text-gray-600 mt-2">
-            Êtes-vous sûr de vouloir supprimer ce package ? Les réservations
-            existantes ne seront pas affectées.
+            Êtes-vous sûr de vouloir supprimer ce package ? Les réservations existantes ne seront
+            pas affectées.
           </p>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setDeleteId(null)}>
-              Annuler
-            </Button>
+            <Button variant="outline" onClick={() => setDeleteId(null)}>Annuler</Button>
             <Button
               variant="destructive"
               disabled={deleteMutation.isPending}

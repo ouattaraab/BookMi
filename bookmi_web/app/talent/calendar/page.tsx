@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { calendarApi } from '@/lib/api/endpoints';
 import { useAuthStore } from '@/lib/store/auth';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,54 +21,62 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Plus, Trash2, Calendar } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Plus, Trash2, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type CalendarSlot = {
-  id: number;
-  date_from: string;
-  date_to: string;
-  type: 'available' | 'unavailable';
+  slot_id: number | null;
+  date: string;
+  status: 'available' | 'blocked' | 'rest' | 'confirmed';
 };
 
-const slotSchema = z
-  .object({
-    date_from: z.string().min(1, 'Date de début requise'),
-    date_to: z.string().min(1, 'Date de fin requise'),
-  })
-  .refine((data) => new Date(data.date_to) > new Date(data.date_from), {
-    message: 'La date de fin doit être après la date de début',
-    path: ['date_to'],
-  });
+const slotSchema = z.object({
+  date: z.string().min(1, 'Date requise'),
+  status: z.enum(['available', 'blocked', 'rest']),
+});
 
 type SlotFormData = z.infer<typeof slotSchema>;
 
-function formatDateTime(dateStr: string): string {
+const statusConfig = {
+  available:  { label: 'Disponible', classes: 'bg-green-100 text-green-800 border border-green-200' },
+  blocked:    { label: 'Bloqué',     classes: 'bg-red-100 text-red-800 border border-red-200' },
+  rest:       { label: 'Repos',      classes: 'bg-gray-100 text-gray-600 border border-gray-200' },
+  confirmed:  { label: 'Confirmé',   classes: 'bg-blue-100 text-blue-800 border border-blue-200' },
+};
+
+function formatDate(dateStr: string): string {
   if (!dateStr) return '—';
-  return new Date(dateStr).toLocaleString('fr-FR', {
-    weekday: 'short',
+  return new Date(dateStr + 'T12:00:00').toLocaleDateString('fr-FR', {
+    weekday: 'long',
     day: '2-digit',
-    month: 'short',
+    month: 'long',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   });
 }
 
-function groupByDate(
-  slots: CalendarSlot[]
-): Record<string, CalendarSlot[]> {
-  const grouped: Record<string, CalendarSlot[]> = {};
-  slots.forEach((slot) => {
-    const dateKey = new Date(slot.date_from).toLocaleDateString('fr-FR', {
-      weekday: 'long',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-    if (!grouped[dateKey]) grouped[dateKey] = [];
-    grouped[dateKey].push(slot);
+function formatMonthLabel(yearMonth: string): string {
+  const [year, month] = yearMonth.split('-');
+  return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString('fr-FR', {
+    month: 'long',
+    year: 'numeric',
   });
-  return grouped;
+}
+
+function addMonths(yearMonth: string, delta: number): string {
+  const [year, month] = yearMonth.split('-').map(Number);
+  const d = new Date(year, month - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function todayYearMonth(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
 export default function TalentCalendarPage() {
@@ -76,42 +84,54 @@ export default function TalentCalendarPage() {
   const user = useAuthStore((s) => s.user);
   const talentId = user?.talentProfile?.id;
 
+  const [currentMonth, setCurrentMonth] = useState(todayYearMonth);
   const [addOpen, setAddOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['calendar_slots', talentId],
-    queryFn: () => calendarApi.getSlots(talentId!),
+    queryKey: ['calendar_slots', talentId, currentMonth],
+    queryFn: () => calendarApi.getSlots(talentId!, currentMonth),
     enabled: !!talentId,
   });
 
   const slots: CalendarSlot[] = data?.data?.data ?? [];
   const sorted = [...slots].sort(
-    (a, b) => new Date(a.date_from).getTime() - new Date(b.date_from).getTime()
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-  const grouped = groupByDate(sorted);
 
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<SlotFormData>({
     resolver: zodResolver(slotSchema),
+    defaultValues: { status: 'available' },
   });
+
+  const statusValue = watch('status');
 
   const createMutation = useMutation({
     mutationFn: (formData: SlotFormData) => calendarApi.createSlot(formData),
-    onSuccess: () => {
+    onSuccess: (_, formData) => {
+      // Navigate to the month of the newly created slot
+      const slotMonth = formData.date.substring(0, 7);
+      setCurrentMonth(slotMonth);
       queryClient.invalidateQueries({ queryKey: ['calendar_slots'] });
       setAddOpen(false);
       reset();
       setApiError(null);
     },
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { message?: string } } };
-      setApiError(e?.response?.data?.message ?? 'Erreur lors de la création');
+      const e = err as { response?: { data?: { error?: { message?: string }; message?: string } } };
+      setApiError(
+        e?.response?.data?.error?.message ??
+        e?.response?.data?.message ??
+        'Erreur lors de la création'
+      );
     },
   });
 
@@ -121,9 +141,8 @@ export default function TalentCalendarPage() {
       queryClient.invalidateQueries({ queryKey: ['calendar_slots'] });
       setDeleteId(null);
     },
-    onError: (err: unknown) => {
-      const e = err as { response?: { data?: { message?: string } } };
-      setApiError(e?.response?.data?.message ?? 'Erreur lors de la suppression');
+    onError: () => {
+      setApiError('Erreur lors de la suppression');
       setDeleteId(null);
     },
   });
@@ -133,9 +152,12 @@ export default function TalentCalendarPage() {
     createMutation.mutate(data);
   };
 
+  const isCurrentMonth = currentMonth === todayYearMonth();
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Calendrier</h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -144,7 +166,8 @@ export default function TalentCalendarPage() {
         </div>
         <Button
           onClick={() => { setAddOpen(true); setApiError(null); }}
-          className="bg-amber-500 hover:bg-amber-600 text-white gap-2"
+          className="gap-2 text-white"
+          style={{ background: 'linear-gradient(135deg, #FF6B35, #C85A20)' }}
         >
           <Plus size={16} />
           Ajouter un créneau
@@ -157,10 +180,50 @@ export default function TalentCalendarPage() {
         </Alert>
       )}
 
+      {/* Month navigation */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCurrentMonth((m) => addMonths(m, -1))}
+            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-base font-semibold text-gray-800 capitalize min-w-[160px] text-center">
+            {formatMonthLabel(currentMonth)}
+          </span>
+          <button
+            onClick={() => setCurrentMonth((m) => addMonths(m, 1))}
+            className="p-1.5 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        {!isCurrentMonth && (
+          <button
+            onClick={() => setCurrentMonth(todayYearMonth())}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors"
+            style={{ color: '#FF6B35', borderColor: 'rgba(255,107,53,0.3)', background: 'rgba(255,107,53,0.06)' }}
+          >
+            Aujourd&apos;hui
+          </button>
+        )}
+      </div>
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-2">
+        {Object.entries(statusConfig).map(([key, { label, classes }]) => (
+          <span key={key} className={`text-xs px-2.5 py-1 rounded-full font-medium ${classes}`}>
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {/* Slots list */}
       {isLoading ? (
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Skeleton key={i} className="h-24 w-full" />
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-xl" />
           ))}
         </div>
       ) : sorted.length === 0 ? (
@@ -168,92 +231,84 @@ export default function TalentCalendarPage() {
           <CardContent className="py-16 text-center">
             <Calendar size={40} className="text-gray-300 mx-auto mb-4" />
             <p className="text-gray-400">
-              Aucun créneau défini. Ajoutez votre première disponibilité.
+              Aucun créneau pour ce mois. Ajoutez votre première disponibilité.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-6">
-          {Object.entries(grouped).map(([dateLabel, daySlots]) => (
-            <div key={dateLabel}>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 capitalize">
-                {dateLabel}
-              </h3>
-              <div className="space-y-2">
-                {daySlots.map((slot) => (
-                  <Card key={slot.id} className="hover:shadow-sm transition-shadow">
-                    <CardContent className="py-4 flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <Badge
-                          className={
-                            slot.type === 'available'
-                              ? 'bg-green-100 text-green-800 border-green-200 border'
-                              : 'bg-red-100 text-red-800 border-red-200 border'
-                          }
-                        >
-                          {slot.type === 'available' ? 'Disponible' : 'Indisponible'}
-                        </Badge>
-                        <div>
-                          <p className="text-sm font-medium text-gray-800">
-                            {formatDateTime(slot.date_from)}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            jusqu&apos;au {formatDateTime(slot.date_to)}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(slot.id)}
-                        className="text-red-400 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 size={15} />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="space-y-2">
+          {sorted.map((slot) => {
+            const cfg = statusConfig[slot.status] ?? statusConfig.blocked;
+            return (
+              <Card key={slot.slot_id ?? slot.date} className="hover:shadow-sm transition-shadow">
+                <CardContent className="py-3 px-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Badge className={`text-xs ${cfg.classes}`}>
+                      {cfg.label}
+                    </Badge>
+                    <p className="text-sm font-medium text-gray-800 capitalize">
+                      {formatDate(slot.date)}
+                    </p>
+                  </div>
+                  {slot.slot_id !== null && slot.status !== 'confirmed' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => slot.slot_id !== null && setDeleteId(slot.slot_id)}
+                      className="text-red-400 hover:text-red-600 hover:bg-red-50 h-8 w-8 p-0"
+                    >
+                      <Trash2 size={15} />
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 
       {/* Add slot dialog */}
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      <Dialog open={addOpen} onOpenChange={(open) => { setAddOpen(open); if (!open) reset(); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Ajouter un créneau</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
             {apiError && (
               <Alert className="bg-red-50 border-red-200 text-red-800 text-sm">
                 {apiError}
               </Alert>
             )}
             <div className="space-y-2">
-              <Label htmlFor="date_from">Début</Label>
+              <Label htmlFor="date">Date</Label>
               <Input
-                id="date_from"
-                type="datetime-local"
-                {...register('date_from')}
-                className={errors.date_from ? 'border-red-400' : ''}
+                id="date"
+                type="date"
+                {...register('date')}
+                className={errors.date ? 'border-red-400' : ''}
+                min={new Date().toISOString().split('T')[0]}
               />
-              {errors.date_from && (
-                <p className="text-xs text-red-500">{errors.date_from.message}</p>
+              {errors.date && (
+                <p className="text-xs text-red-500">{errors.date.message}</p>
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="date_to">Fin</Label>
-              <Input
-                id="date_to"
-                type="datetime-local"
-                {...register('date_to')}
-                className={errors.date_to ? 'border-red-400' : ''}
-              />
-              {errors.date_to && (
-                <p className="text-xs text-red-500">{errors.date_to.message}</p>
-              )}
+              <Label htmlFor="status">Statut</Label>
+              <Select
+                value={statusValue}
+                onValueChange={(val) =>
+                  setValue('status', val as 'available' | 'blocked' | 'rest')
+                }
+              >
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Choisir un statut" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="available">Disponible</SelectItem>
+                  <SelectItem value="blocked">Bloqué</SelectItem>
+                  <SelectItem value="rest">Repos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <DialogFooter>
               <Button
@@ -266,7 +321,8 @@ export default function TalentCalendarPage() {
               <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600 text-white"
+                className="text-white"
+                style={{ background: 'linear-gradient(135deg, #FF6B35, #C85A20)' }}
               >
                 {createMutation.isPending ? 'Enregistrement...' : 'Enregistrer'}
               </Button>
