@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Enums\BookingStatus;
+use App\Filament\Resources\BookingRequestResource\Pages;
+use App\Models\BookingRequest;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class BookingRequestResource extends Resource
+{
+    protected static ?string $model = BookingRequest::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+
+    protected static ?string $navigationLabel = 'Réservations';
+
+    protected static ?string $modelLabel = 'Réservation';
+
+    protected static ?string $pluralModelLabel = 'Réservations';
+
+    protected static ?string $navigationGroup = 'Activité';
+
+    protected static ?int $navigationSort = 1;
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Section::make('Parties')
+                ->schema([
+                    Forms\Components\TextInput::make('client.email')
+                        ->label('Client')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.stage_name')
+                        ->label('Talent')
+                        ->disabled(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Détails de la prestation')
+                ->schema([
+                    Forms\Components\DatePicker::make('event_date')
+                        ->label("Date de l'événement")
+                        ->disabled(),
+                    Forms\Components\TextInput::make('event_location')
+                        ->label("Lieu de l'événement")
+                        ->disabled(),
+                    Forms\Components\Toggle::make('is_express')
+                        ->label('Express')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('status')
+                        ->label('Statut')
+                        ->disabled(),
+                    Forms\Components\Textarea::make('message')
+                        ->label('Message du client')
+                        ->disabled()
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('reject_reason')
+                        ->label('Motif de refus')
+                        ->disabled()
+                        ->columnSpanFull(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Montants')
+                ->schema([
+                    Forms\Components\TextInput::make('cachet_amount')
+                        ->label('Cachet (FCFA)')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('commission_amount')
+                        ->label('Commission (FCFA)')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('total_amount')
+                        ->label('Total (FCFA)')
+                        ->disabled(),
+                ])->columns(3),
+        ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->label('#')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('client.email')
+                    ->label('Client')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('talentProfile.stage_name')
+                    ->label('Talent')
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('event_date')
+                    ->label('Date événement')
+                    ->date('d/m/Y')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('event_location')
+                    ->label('Lieu')
+                    ->limit(30)
+                    ->tooltip(fn ($state) => $state),
+
+                Tables\Columns\BadgeColumn::make('status')
+                    ->label('Statut')
+                    ->formatStateUsing(fn ($state): string => match (true) {
+                        $state === BookingStatus::Pending || $state === 'pending'     => 'En attente',
+                        $state === BookingStatus::Accepted || $state === 'accepted'   => 'Acceptée',
+                        $state === BookingStatus::Paid || $state === 'paid'           => 'Payée',
+                        $state === BookingStatus::Confirmed || $state === 'confirmed' => 'Confirmée',
+                        $state === BookingStatus::Completed || $state === 'completed' => 'Terminée',
+                        $state === BookingStatus::Cancelled || $state === 'cancelled' => 'Annulée',
+                        $state === BookingStatus::Disputed || $state === 'disputed'   => 'Litige',
+                        default => (string) $state,
+                    })
+                    ->color(fn ($state): string => match (true) {
+                        $state === BookingStatus::Pending || $state === 'pending'     => 'warning',
+                        $state === BookingStatus::Accepted || $state === 'accepted'   => 'info',
+                        $state === BookingStatus::Paid || $state === 'paid'           => 'info',
+                        $state === BookingStatus::Confirmed || $state === 'confirmed' => 'primary',
+                        $state === BookingStatus::Completed || $state === 'completed' => 'success',
+                        $state === BookingStatus::Cancelled || $state === 'cancelled' => 'danger',
+                        $state === BookingStatus::Disputed || $state === 'disputed'   => 'danger',
+                        default => 'gray',
+                    }),
+
+                Tables\Columns\TextColumn::make('total_amount')
+                    ->label('Total')
+                    ->formatStateUsing(fn ($state): string => number_format((int) $state, 0, ',', ' ') . ' FCFA')
+                    ->sortable(),
+
+                Tables\Columns\IconColumn::make('is_express')
+                    ->label('Express')
+                    ->boolean()
+                    ->trueColor('warning')
+                    ->falseColor('gray'),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Créé le')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->label('Statut')
+                    ->options([
+                        'pending'   => 'En attente',
+                        'accepted'  => 'Acceptée',
+                        'paid'      => 'Payée',
+                        'confirmed' => 'Confirmée',
+                        'completed' => 'Terminée',
+                        'cancelled' => 'Annulée',
+                        'disputed'  => 'Litige',
+                    ]),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Voir'),
+            ])
+            ->defaultSort('created_at', 'desc');
+    }
+
+    public static function getRelations(): array
+    {
+        return [];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListBookingRequests::route('/'),
+            'view'  => Pages\ViewBookingRequest::route('/{record}'),
+        ];
+    }
+}

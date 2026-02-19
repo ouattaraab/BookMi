@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Notifications\ResetPasswordNotification;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens;
 
@@ -130,6 +132,11 @@ class User extends Authenticatable
     public function warnings(): HasMany
     {
         return $this->hasMany(AdminWarning::class);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_admin === true && $this->is_active === true;
     }
 
     public function sendPasswordResetNotification($token): void
