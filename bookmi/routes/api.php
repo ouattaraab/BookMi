@@ -1,10 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdminDisputeController;
+use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\CheckInController;
+use App\Http\Controllers\Api\V1\ManagerController;
 use App\Http\Controllers\Api\V1\PortfolioController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReviewController;
+use App\Http\Controllers\Api\V1\RevenueCertificateController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\AdminRefundController;
 use App\Http\Controllers\Api\V1\MessageController;
@@ -167,6 +170,39 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Évaluations (Stories 6.4 & 6.5)
         Route::get('/booking_requests/{booking}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
         Route::post('/booking_requests/{booking}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+        // Story 7.1 — Manager assignment (talent-side)
+        Route::post('/talent_profiles/me/manager', [ManagerController::class, 'assignManager'])->name('talent.manager.assign');
+        Route::delete('/talent_profiles/me/manager', [ManagerController::class, 'unassignManager'])->name('talent.manager.unassign');
+
+        // Story 7.3 — Overload settings (talent-side)
+        Route::put('/talent_profiles/me/overload_settings', [ManagerController::class, 'updateOverloadSettings'])->name('talent.overload_settings');
+
+        // Story 7.8 — Analytics talent
+        Route::get('/me/analytics', [AnalyticsController::class, 'dashboard'])->name('me.analytics');
+
+        // Story 7.9 — Revenue certificate
+        Route::get('/me/revenue_certificate', [RevenueCertificateController::class, 'download'])->name('me.revenue_certificate');
+
+        // Stories 7.2 / 7.4 / 7.5 / 7.6 — Manager interface (manager-side)
+        Route::middleware('manager')->prefix('manager')->name('manager.')->group(function () {
+            // 7.2 — Interface multi-talents
+            Route::get('/talents', [ManagerController::class, 'myTalents'])->name('talents.index');
+            Route::get('/talents/{talent}', [ManagerController::class, 'talentStats'])->name('talents.stats');
+            Route::get('/talents/{talent}/bookings', [ManagerController::class, 'talentBookings'])->name('talents.bookings');
+
+            // 7.4 — Calendar management
+            Route::post('/talents/{talent}/calendar_slots', [ManagerController::class, 'storeCalendarSlot'])->name('calendar.store');
+            Route::put('/talents/{talent}/calendar_slots/{slot}', [ManagerController::class, 'updateCalendarSlot'])->name('calendar.update');
+            Route::delete('/talents/{talent}/calendar_slots/{slot}', [ManagerController::class, 'destroyCalendarSlot'])->name('calendar.destroy');
+
+            // 7.5 — Booking validation
+            Route::post('/talents/{talent}/bookings/{booking}/accept', [ManagerController::class, 'acceptBooking'])->name('bookings.accept');
+            Route::post('/talents/{talent}/bookings/{booking}/reject', [ManagerController::class, 'rejectBooking'])->name('bookings.reject');
+
+            // 7.6 — Messages as talent
+            Route::post('/conversations/{conversation}/messages', [ManagerController::class, 'sendMessage'])->name('conversations.send');
+        });
 
         // Administration
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

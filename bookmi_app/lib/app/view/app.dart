@@ -13,6 +13,7 @@ import 'package:bookmi_app/features/favorites/data/local/favorites_local_source.
 import 'package:bookmi_app/features/favorites/data/repositories/favorites_repository.dart';
 import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
+import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
 import 'package:bookmi_app/l10n/l10n.dart';
@@ -86,6 +87,7 @@ class _AppDependencies {
   final BookingRepository bookingRepo;
   final TrackingRepository trackingRepo;
   final ReviewRepository reviewRepo;
+  final OnboardingRepository onboardingRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -140,6 +142,7 @@ class _AppDependencies {
 
     final trackingRepo = TrackingRepository(apiClient: apiClient);
     final reviewRepo = ReviewRepository(apiClient: apiClient);
+    final onboardingRepo = OnboardingRepository(apiClient: apiClient);
 
     final router = buildAppRouter(
       talentProfileRepo,
@@ -147,6 +150,7 @@ class _AppDependencies {
       bookingRepo,
       trackingRepo,
       reviewRepo,
+      onboardingRepo,
     );
 
     return _AppDependencies(
@@ -158,6 +162,7 @@ class _AppDependencies {
       bookingRepo: bookingRepo,
       trackingRepo: trackingRepo,
       reviewRepo: reviewRepo,
+      onboardingRepo: onboardingRepo,
       router: router,
     );
   }

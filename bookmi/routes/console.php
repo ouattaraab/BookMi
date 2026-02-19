@@ -1,5 +1,7 @@
 <?php
 
+use App\Console\Commands\DetectTalentOverload;
+use App\Console\Commands\RecalculateTalentLevels;
 use App\Console\Commands\ReleaseExpiredEscrows;
 use App\Console\Commands\SendMissingCheckinAlerts;
 use App\Console\Commands\SendReminderNotifications;
@@ -19,3 +21,9 @@ Schedule::command(SendReminderNotifications::class)->dailyAt('08:00');
 
 // Missing check-in alerts for events happening today (Story 6.3)
 Schedule::command(SendMissingCheckinAlerts::class)->dailyAt('10:00');
+
+// Recalculate talent levels daily (Story 7.7)
+Schedule::command(RecalculateTalentLevels::class)->dailyAt('02:00');
+
+// Detect overloaded talents and notify managers (Story 7.3)
+Schedule::command(DetectTalentOverload::class)->dailyAt('09:00');

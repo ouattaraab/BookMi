@@ -107,6 +107,16 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    /**
+     * @return BelongsToMany<\App\Models\TalentProfile, $this>
+     */
+    public function managedTalents(): BelongsToMany
+    {
+        return $this->belongsToMany(TalentProfile::class, 'talent_manager', 'manager_id', 'talent_profile_id')
+            ->withPivot('assigned_at')
+            ->withTimestamps();
+    }
+
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));

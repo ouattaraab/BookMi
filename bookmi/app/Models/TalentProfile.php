@@ -49,6 +49,8 @@ class TalentProfile extends Model
         'payout_details',
         'auto_reply_message',
         'auto_reply_is_active',
+        'overload_threshold',
+        'overload_notified_at',
     ];
 
     /**
@@ -69,6 +71,8 @@ class TalentProfile extends Model
             'social_links'    => 'array',
             'payout_details'       => 'array',
             'auto_reply_is_active' => 'boolean',
+            'overload_threshold' => 'integer',
+            'overload_notified_at' => 'datetime',
         ];
     }
 
@@ -170,6 +174,16 @@ class TalentProfile extends Model
     public function favoritedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_favorites')
+            ->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<\App\Models\User, $this>
+     */
+    public function managers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'talent_manager', 'talent_profile_id', 'manager_id')
+            ->withPivot('assigned_at')
             ->withTimestamps();
     }
 

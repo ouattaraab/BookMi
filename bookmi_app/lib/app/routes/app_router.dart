@@ -7,6 +7,8 @@ import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
 import 'package:bookmi_app/features/evaluation/presentation/pages/evaluation_page.dart';
+import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:bookmi_app/features/onboarding/presentation/pages/talent_onboarding_page.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
 import 'package:bookmi_app/features/tracking/presentation/pages/tracking_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/forgot_password_page.dart';
@@ -51,6 +53,7 @@ GoRouter buildAppRouter(
   BookingRepository bookingRepo,
   TrackingRepository trackingRepo,
   ReviewRepository reviewRepo,
+  OnboardingRepository onboardingRepo,
 ) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -94,6 +97,12 @@ GoRouter buildAppRouter(
         path: RoutePaths.forgotPassword,
         name: RouteNames.forgotPassword,
         builder: (context, state) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: RoutePaths.talentOnboarding,
+        name: RouteNames.talentOnboarding,
+        builder: (context, state) =>
+            TalentOnboardingPage(repository: onboardingRepo),
       ),
 
       // ── Main app shell (authenticated) ───────────────────

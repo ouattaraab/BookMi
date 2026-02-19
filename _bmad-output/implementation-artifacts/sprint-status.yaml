@@ -133,17 +133,17 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 7: Gestion Talents & Manager (10 stories)
   # ──────────────────────────────────────────────
-  epic-7: backlog
-  7-1-assignation-manager-a-un-talent: backlog
-  7-2-interface-unifiee-manager-multi-talents: backlog
-  7-3-alertes-surcharge-talent: backlog
-  7-4-gestion-calendrier-par-le-manager: backlog
-  7-5-validation-reservation-par-le-manager: backlog
-  7-6-messages-manager-au-nom-du-talent: backlog
-  7-7-niveaux-automatiques-talent: backlog
-  7-8-analytics-talent: backlog
-  7-9-attestation-de-revenus-annuelle: backlog
-  7-10-onboarding-gamifie-talent-flutter: backlog
+  epic-7: done
+  7-1-assignation-manager-a-un-talent: done
+  7-2-interface-unifiee-manager-multi-talents: done
+  7-3-alertes-surcharge-talent: done
+  7-4-gestion-calendrier-par-le-manager: done
+  7-5-validation-reservation-par-le-manager: done
+  7-6-messages-manager-au-nom-du-talent: done
+  7-7-niveaux-automatiques-talent: done
+  7-8-analytics-talent: done
+  7-9-attestation-de-revenus-annuelle: done
+  7-10-onboarding-gamifie-talent-flutter: done
   epic-7-retrospective: optional
 
   # ──────────────────────────────────────────────
