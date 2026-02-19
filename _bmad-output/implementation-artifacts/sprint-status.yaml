@@ -95,7 +95,7 @@ development_status:
   4-3-paiement-carte-bancaire-et-virement: done
   4-4-systeme-de-sequestre-escrow: done
   4-5-versement-automatique-au-talent: done
-  4-6-failover-passerelle-de-paiement: backlog
+  4-6-failover-passerelle-de-paiement: done
   4-7-remboursement-en-cas-de-litige: backlog
   4-8-dashboard-financier-talent: backlog
   4-9-export-rapports-financiers-admin: backlog

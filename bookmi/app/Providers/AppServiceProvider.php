@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Contracts\PaymentGatewayInterface;
 use App\Events\EscrowReleased;
+use App\Gateways\CinetPayGateway;
+use App\Gateways\PaymentGatewayResolver;
 use App\Gateways\PaystackGateway;
 use App\Listeners\HandleEscrowReleased;
 use App\Repositories\Contracts\FavoriteRepositoryInterface;
@@ -28,7 +30,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(VerificationRepositoryInterface::class, VerificationRepository::class);
         $this->app->bind(ServicePackageRepositoryInterface::class, ServicePackageRepository::class);
         $this->app->bind(FavoriteRepositoryInterface::class, FavoriteRepository::class);
-        $this->app->bind(PaymentGatewayInterface::class, PaystackGateway::class);
+        $this->app->bind(PaymentGatewayInterface::class, function ($app) {
+            return new PaymentGatewayResolver(
+                $app->make(PaystackGateway::class),
+                $app->make(CinetPayGateway::class),
+            );
+        });
     }
 
     public function boot(): void
