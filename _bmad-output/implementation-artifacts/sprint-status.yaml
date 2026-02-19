@@ -89,7 +89,7 @@ development_status:
   # ──────────────────────────────────────────────
   # Epic 4: Paiement & Séquestre (10 stories)
   # ──────────────────────────────────────────────
-  epic-4: in-progress
+  epic-4: done
   4-1-integration-paystack-paiement-mobile-money: done
   4-2-webhooks-paiement-idempotents: done
   4-3-paiement-carte-bancaire-et-virement: done
@@ -164,3 +164,8 @@ development_status:
   8-12-kpis-plateforme: done
   8-13-monitoring-et-logs: done
   epic-8-retrospective: optional
+
+  # ──────────────────────────────────────────────
+  # Rétrospective Projet Complet
+  # ──────────────────────────────────────────────
+  project-retrospective: done
