@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\FontProviders\GoogleFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,6 +11,7 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -27,9 +29,47 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+
+            // ── Charte BookMi — Brand Blue #2196F3 (palette Material Design) ──
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => [
+                    50  => '227, 242, 253',
+                    100 => '187, 222, 251',
+                    200 => '144, 202, 249',
+                    300 => '100, 181, 246',
+                    400 => '66, 165, 245',
+                    500 => '33, 150, 243',
+                    600 => '30, 136, 229',
+                    700 => '25, 118, 210',
+                    800 => '21, 101, 192',
+                    900 => '13, 71, 161',
+                    950 => '8, 46, 100',
+                ],
+                'danger'  => Color::Red,
+                'warning' => Color::Amber,
+                'success' => Color::Green,
+                'info'    => Color::Sky,
+                'gray'    => Color::Slate,
             ])
+
+            // ── Typographie — Nunito (police officielle BookMi) ──
+            ->font('Nunito', provider: GoogleFontProvider::class)
+
+            // ── Logo textuel bicolore "Book" blanc + "Mi" bleu ──
+            ->brandName('BookMi')
+            ->brandLogo(fn () => view('filament.logo'))
+            ->brandLogoHeight('2rem')
+
+            // ── CSS custom BookMi (sidebar navy, styles globaux) ──
+            ->renderHook(
+                'panels::head.end',
+                fn () => view('filament.custom-styles'),
+            )
+
+            // ── Layout ──
+            ->maxContentWidth(MaxWidth::Full)
+            ->sidebarCollapsibleOnDesktop()
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

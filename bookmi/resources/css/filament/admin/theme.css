@@ -1,0 +1,170 @@
+@import '/vendor/filament/filament/resources/css/theme.css';
+
+/* ============================================================
+   BookMi Admin Theme — Charte graphique officielle
+   Navy #1A2744 (Book) | Blue #2196F3 (Mi) | Orange #FF6B35 (CTA)
+   Font: Nunito (Google Fonts)
+   ============================================================ */
+
+/* Import Nunito from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
+
+/* ── Typography ── */
+*, body, .fi-body {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* ── Sidebar — fond Navy #1A2744 ── */
+.fi-sidebar {
+    background-color: #1A2744 !important;
+    border-right: none !important;
+}
+
+.fi-sidebar-header {
+    background-color: #1A2744 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding: 1.25rem 1.5rem !important;
+}
+
+/* Sidebar nav items — texte blanc */
+.fi-sidebar-nav-groups {
+    padding-top: 0.5rem;
+}
+
+.fi-sidebar-group-label {
+    color: rgba(255, 255, 255, 0.45) !important;
+    font-size: 0.65rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.1em !important;
+    text-transform: uppercase !important;
+    padding-left: 1rem !important;
+}
+
+.fi-sidebar-item-button {
+    color: rgba(255, 255, 255, 0.65) !important;
+    border-radius: 0.5rem !important;
+    transition: all 150ms ease !important;
+}
+
+.fi-sidebar-item-button:hover {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+}
+
+.fi-sidebar-item-button.fi-active,
+.fi-sidebar-item-button[aria-current="page"] {
+    background-color: rgba(33, 150, 243, 0.18) !important;
+    color: #ffffff !important;
+}
+
+.fi-sidebar-item-button.fi-active .fi-sidebar-item-icon,
+.fi-sidebar-item-button[aria-current="page"] .fi-sidebar-item-icon {
+    color: #2196F3 !important;
+}
+
+.fi-sidebar-item-icon {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Sidebar sub-group collapse icon */
+.fi-sidebar-group-collapse-button svg {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* ── Topbar / Header ── */
+.fi-topbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    box-shadow: 0 1px 4px 0 rgba(26, 39, 68, 0.06) !important;
+}
+
+.fi-topbar-breadcrumbs {
+    color: #6b7280 !important;
+}
+
+/* ── Login page ── */
+.fi-simple-page {
+    background: linear-gradient(135deg, #1A2744 0%, #0F3460 100%) !important;
+}
+
+.fi-simple-main {
+    background: #ffffff !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 20px 60px rgba(26, 39, 68, 0.25) !important;
+}
+
+/* Logo on login page */
+.fi-logo {
+    margin-bottom: 0.5rem;
+}
+
+/* ── Cards / Widgets ── */
+.fi-wi-stats-overview-stat {
+    border-radius: 0.75rem !important;
+    border: 1px solid #e5e7eb !important;
+}
+
+.fi-wi-stats-overview-stat-description {
+    font-size: 0.75rem !important;
+}
+
+/* ── Tables ── */
+.fi-ta-header-cell {
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    color: #374151 !important;
+}
+
+.fi-ta-row:hover td {
+    background-color: #f0f7ff !important;
+}
+
+/* ── Buttons ── */
+.fi-btn-color-primary {
+    background-color: #2196F3 !important;
+    border-color: #2196F3 !important;
+}
+
+.fi-btn-color-primary:hover {
+    background-color: #1976D2 !important;
+    border-color: #1976D2 !important;
+}
+
+/* CTA / Danger / Success stay their own colors */
+
+/* ── Badges ── */
+.fi-badge-color-primary {
+    background-color: rgba(33, 150, 243, 0.12) !important;
+    color: #1565C0 !important;
+}
+
+/* ── Forms / Inputs ── */
+.fi-input:focus {
+    border-color: #2196F3 !important;
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2) !important;
+}
+
+/* ── Page titles ── */
+.fi-header-heading {
+    font-weight: 800 !important;
+    color: #1A2744 !important;
+    font-family: 'Nunito', sans-serif !important;
+}
+
+.fi-header-subheading {
+    color: #6b7280 !important;
+}
+
+/* ── Scroll bar subtle styling ── */
+.fi-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+.fi-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.fi-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+}
