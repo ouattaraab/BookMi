@@ -193,19 +193,47 @@
     </footer>
 
     <style>
-        /* ─── FOOTER : pattern africain/musical ─── */
+        /* ─── FOOTER : Midnight Stage ─── */
+        /* Concept : scène de concert nocturne — bloom orange chaud en bas (feux de scène),
+           vignette navy profonde en haut (ciel nocturne), hairlines diagonaux (angles de lumière) */
         .footer-bg {
-            background-color: #060912;
-            /* Couche 1 : séparateur dégradé en haut pour distinguer du bloc précédent */
-            /* Couche 2 : notes de musique flottantes (160×80) */
-            /* Couche 3 : diamants kente / adinkra (60×60) */
+            position: relative;
+            background-color: #04080F;
             background-image:
-                linear-gradient(to bottom, rgba(26,39,68,0.85) 0%, transparent 70px),
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80'%3E%3Cline x1='44' y1='18' x2='44' y2='50' stroke='rgba(255,107,53,0.22)' stroke-width='1.5'/%3E%3Cellipse cx='40' cy='52' rx='6' ry='4' transform='rotate(-20 40 52)' fill='rgba(255,107,53,0.25)'/%3E%3Cpath d='M44 18 Q64 12 57 28' fill='none' stroke='rgba(255,107,53,0.22)' stroke-width='1.5'/%3E%3Cline x1='122' y1='28' x2='122' y2='60' stroke='rgba(255,107,53,0.18)' stroke-width='1.5'/%3E%3Cellipse cx='118' cy='62' rx='6' ry='4' transform='rotate(-20 118 62)' fill='rgba(255,107,53,0.20)'/%3E%3Cpath d='M122 28 Q142 22 135 38' fill='none' stroke='rgba(255,107,53,0.18)' stroke-width='1.5'/%3E%3C/svg%3E"),
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 3 L57 30 L30 57 L3 30 Z' fill='none' stroke='rgba(255,140,50,0.20)' stroke-width='1'/%3E%3Cpath d='M30 18 L42 30 L30 42 L18 30 Z' fill='rgba(255,107,53,0.10)'/%3E%3Cline x1='30' y1='3' x2='30' y2='57' stroke='rgba(255,140,50,0.10)' stroke-width='0.5'/%3E%3Cline x1='3' y1='30' x2='57' y2='30' stroke='rgba(255,140,50,0.10)' stroke-width='0.5'/%3E%3Ccircle cx='30' cy='3' r='2' fill='rgba(255,180,50,0.28)'/%3E%3Ccircle cx='57' cy='30' r='2' fill='rgba(255,180,50,0.28)'/%3E%3Ccircle cx='30' cy='57' r='2' fill='rgba(255,180,50,0.28)'/%3E%3Ccircle cx='3' cy='30' r='2' fill='rgba(255,180,50,0.28)'/%3E%3C/svg%3E");
-            background-size: 100% 70px, 160px 80px, 60px 60px;
-            background-repeat: no-repeat, repeat, repeat;
-            background-position: top center, 20px 30px, 0 0;
+                /* Hairlines diagonaux ultra-subtils — angles de lumière de scène */
+                repeating-linear-gradient(
+                    -55deg,
+                    rgba(255,255,255,0.013) 0px,
+                    rgba(255,255,255,0.013) 1px,
+                    transparent 1px,
+                    transparent 48px
+                ),
+                /* Bloom orange chaud montant du bas — lumières de scène */
+                radial-gradient(ellipse 90% 40% at 50% 110%, rgba(255,107,53,0.18) 0%, rgba(200,70,20,0.08) 45%, transparent 70%),
+                /* Vignette navy en haut — ciel nocturne profond */
+                radial-gradient(ellipse 140% 55% at 50% -5%, rgba(26,39,68,0.80) 0%, transparent 55%),
+                /* Accent bleu — coin supérieur droit, profondeur */
+                radial-gradient(ellipse 50% 35% at 98% 5%, rgba(33,150,243,0.06) 0%, transparent 55%);
+            background-repeat: repeat, no-repeat, no-repeat, no-repeat;
+            background-size: auto, 100%, 100%, 100%;
+        }
+        /* Ligne de séparation orange→bleu en haut du footer */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255,107,53,0.35) 8%,
+                rgba(255,130,60,0.85) 30%,
+                rgba(255,107,53,1)    48%,
+                rgba(80,170,255,0.75) 68%,
+                rgba(33,150,243,0.3)  85%,
+                transparent 100%
+            );
+            pointer-events: none;
+            z-index: 1;
         }
 
         @media (max-width: 768px) {
