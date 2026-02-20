@@ -675,18 +675,16 @@ nav[aria-label="Pagination"] svg { display: none; }
             @endforeach
         </form>
 
-        {{-- Category pills --}}
+        {{-- Category pills — dynamiques depuis la DB --}}
         <div class="disc-cats ha-4">
-            @php
-                $cats = ['Tous', 'DJ', 'Musicien', 'Chanteur', 'Danseur', 'Animateur', 'Comédien', 'Photographe', 'Vidéaste'];
-                $catEmoji = ['Tous'=>'✦','DJ'=>'🎧','Musicien'=>'🎸','Chanteur'=>'🎤','Danseur'=>'💃','Animateur'=>'🎙️','Comédien'=>'🎭','Photographe'=>'📷','Vidéaste'=>'🎬'];
-            @endphp
-            @foreach($cats as $cat)
-            <a href="{{ $cat === 'Tous'
-                ? route('talents.index', request()->except('category','page'))
-                : route('talents.index', ['category' => $cat] + request()->except('category','page')) }}"
-               class="disc-cat-pill {{ (request('category') === $cat || ($cat === 'Tous' && !request('category'))) ? 'active' : '' }}">
-                {{ $catEmoji[$cat] ?? '' }} {{ $cat }}
+            <a href="{{ route('talents.index', request()->except('category','page')) }}"
+               class="disc-cat-pill {{ !request('category') ? 'active' : '' }}">
+                ✦ Tous
+            </a>
+            @foreach($categories as $cat)
+            <a href="{{ route('talents.index', ['category' => $cat->name] + request()->except('category','page')) }}"
+               class="disc-cat-pill {{ request('category') === $cat->name ? 'active' : '' }}">
+                {{ $cat->name }}
             </a>
             @endforeach
         </div>
@@ -715,8 +713,8 @@ nav[aria-label="Pagination"] svg { display: none; }
                 {{-- Catégorie --}}
                 <select name="category" class="disc-select" onchange="document.getElementById('filterForm').submit()">
                     <option value="">🎭 Toutes catégories</option>
-                    @foreach(['DJ','Musicien','Chanteur','Danseur','Animateur','Comédien','Photographe','Vidéaste'] as $cat)
-                    <option value="{{ $cat }}" {{ request('category') === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                    @foreach($categories as $cat)
+                    <option value="{{ $cat->name }}" {{ request('category') === $cat->name ? 'selected' : '' }}>{{ $cat->name }}</option>
                     @endforeach
                 </select>
 
