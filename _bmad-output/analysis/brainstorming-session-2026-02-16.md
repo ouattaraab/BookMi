@@ -22,7 +22,7 @@ context_file: ''
 
 ## Session Overview
 
-**Sujet:** Plateforme de réservation de talents BookMe (BookMi_v2) - marketplace multi-catégories en Côte d'Ivoire avec ambition mondiale
+**Sujet:** Plateforme de réservation de talents BookMi - marketplace multi-catégories en Côte d'Ivoire avec ambition mondiale
 
 **Objectifs:**
 - Faciliter la mise en relation client-talent avec transparence totale
@@ -32,7 +32,7 @@ context_file: ''
 
 ### Contexte Projet
 
-**Description:** BookMe est une plateforme web et mobile de réservation de talents en Côte d'Ivoire. Elle fédère artistes, danseurs, chorégraphes, influenceurs, présentateurs, chefs d'entreprise, électriciens, mécaniciens, dessinateurs et autres sur une marketplace transparente et sécurisée.
+**Description:** BookMi est une plateforme web et mobile de réservation de talents en Côte d'Ivoire. Elle fédère artistes, danseurs, chorégraphes, influenceurs, présentateurs, chefs d'entreprise, électriciens, mécaniciens, dessinateurs et autres sur une marketplace transparente et sécurisée.
 
 **Trois piliers:**
 1. Consultation & sélection des talents (profils riches, transparence tarifaire)

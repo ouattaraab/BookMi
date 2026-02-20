@@ -45,6 +45,10 @@ class User extends Authenticatable implements FilamentUser, HasName
         'suspended_until',
         'suspension_reason',
         'fcm_token',
+        'two_factor_enabled',
+        'two_factor_method',
+        'two_factor_secret',
+        'two_factor_confirmed_at',
     ];
 
     /**
@@ -55,6 +59,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
     ];
 
     /**
@@ -68,11 +73,13 @@ class User extends Authenticatable implements FilamentUser, HasName
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_admin'        => 'boolean',
-            'is_active'       => 'boolean',
-            'is_suspended'    => 'boolean',
-            'suspended_at'    => 'datetime',
-            'suspended_until' => 'datetime',
+            'is_admin'                => 'boolean',
+            'is_active'               => 'boolean',
+            'is_suspended'            => 'boolean',
+            'suspended_at'            => 'datetime',
+            'suspended_until'         => 'datetime',
+            'two_factor_enabled'      => 'boolean',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 

@@ -90,8 +90,8 @@ class BookingService
     public function getBookingsForUser(User $user, array $filters = []): CursorPaginator
     {
         $query = BookingRequest::with([
-            'client:id,name',
-            'talentProfile:id,stage_name',
+            'client:id,first_name,last_name',
+            'talentProfile:id,stage_name,slug',
             'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
 

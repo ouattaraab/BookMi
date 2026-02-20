@@ -60,9 +60,10 @@ class ReviewService
      */
     private function assertBookingCompleted(BookingRequest $booking): void
     {
-        if ($booking->status !== BookingStatus::Completed) {
+        $reviewable = [BookingStatus::Confirmed, BookingStatus::Completed];
+        if (! in_array($booking->status, $reviewable, strict: true)) {
             throw ValidationException::withMessages([
-                'booking' => 'Reviews can only be submitted for completed bookings.',
+                'booking' => 'Reviews can only be submitted for confirmed or completed bookings.',
             ]);
         }
     }

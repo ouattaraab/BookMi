@@ -16,12 +16,14 @@ class BookingRequestResource extends JsonResource
             'status'          => $this->status->value,
             'client'          => [
                 'id'   => $this->client->id,
-                'name' => $this->client->name,
+                'name' => trim($this->client->first_name . ' ' . $this->client->last_name),
             ],
             'talent_profile'  => [
                 'id'         => $this->talentProfile->id,
                 'stage_name' => $this->talentProfile->stage_name,
+                'slug'       => $this->talentProfile->slug,
             ],
+            'created_at'      => $this->created_at?->toIso8601String(),
             'service_package' => [
                 'id'               => $this->servicePackage->id,
                 'name'             => $this->servicePackage->name,

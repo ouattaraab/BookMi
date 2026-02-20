@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin'             => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'manager'           => \App\Http\Middleware\EnsureUserIsManager::class,
+            'role'              => \App\Http\Middleware\EnsureRole::class,
             'paystack-webhook'  => \App\Http\Middleware\ValidatePaystackSignature::class,
         ]);
     })

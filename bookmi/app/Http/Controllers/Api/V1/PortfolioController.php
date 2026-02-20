@@ -31,13 +31,18 @@ class PortfolioController extends Controller
     /**
      * POST /talent_profiles/me/portfolio
      *
-     * Talent uploads a portfolio item (image or video).
+     * Talent uploads a portfolio item (image or video) OR adds an external link.
      * Images are queued for compression.
+     *
+     * For file uploads: send multipart/form-data with 'file' field.
+     * For external links: send JSON with 'link_url' and 'link_platform' fields.
      */
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'file'               => ['required', 'file', 'max:20480', 'mimes:jpg,jpeg,png,gif,mp4,mov'],
+        $request->validate([
+            'file'               => ['required_without:link_url', 'file', 'max:20480', 'mimes:jpg,jpeg,png,gif,mp4,mov'],
+            'link_url'           => ['required_without:file', 'nullable', 'url', 'max:500'],
+            'link_platform'      => ['required_with:link_url', 'nullable', 'in:youtube,deezer,apple_music,facebook,tiktok,soundcloud'],
             'caption'            => ['nullable', 'string', 'max:255'],
             'booking_request_id' => ['nullable', 'integer', 'exists:booking_requests,id'],
         ]);
@@ -45,6 +50,23 @@ class PortfolioController extends Controller
         $user    = $request->user();
         $profile = TalentProfile::where('user_id', $user->id)->firstOrFail();
 
+        // External link (no file upload)
+        if ($request->filled('link_url')) {
+            $item = PortfolioItem::create([
+                'talent_profile_id'  => $profile->id,
+                'booking_request_id' => $request->input('booking_request_id'),
+                'media_type'         => 'link',
+                'original_path'      => $request->input('link_url'),
+                'link_url'           => $request->input('link_url'),
+                'link_platform'      => $request->input('link_platform'),
+                'caption'            => $request->input('caption'),
+                'is_compressed'      => false,
+            ]);
+
+            return response()->json(['data' => $this->format($item)], 201);
+        }
+
+        // File upload (image or video)
         /** @var \Illuminate\Http\UploadedFile $file */
         $file      = $request->file('file');
         $mediaType = str_starts_with($file->getMimeType(), 'video') ? 'video' : 'image';
@@ -58,10 +80,10 @@ class PortfolioController extends Controller
 
         $item = PortfolioItem::create([
             'talent_profile_id'  => $profile->id,
-            'booking_request_id' => $validated['booking_request_id'] ?? null,
+            'booking_request_id' => $request->input('booking_request_id'),
             'media_type'         => $mediaType,
             'original_path'      => $path,
-            'caption'            => $validated['caption'] ?? null,
+            'caption'            => $request->input('caption'),
             'is_compressed'      => false,
         ]);
 
@@ -89,9 +111,11 @@ class PortfolioController extends Controller
             ], 403);
         }
 
-        Storage::disk('public')->delete($portfolioItem->original_path);
-        if ($portfolioItem->compressed_path) {
-            Storage::disk('public')->delete($portfolioItem->compressed_path);
+        if ($portfolioItem->media_type !== 'link') {
+            Storage::disk('public')->delete($portfolioItem->original_path);
+            if ($portfolioItem->compressed_path) {
+                Storage::disk('public')->delete($portfolioItem->compressed_path);
+            }
         }
 
         $portfolioItem->delete();
@@ -109,7 +133,11 @@ class PortfolioController extends Controller
             'talent_profile_id'  => $item->talent_profile_id,
             'booking_request_id' => $item->booking_request_id,
             'media_type'         => $item->media_type,
-            'url'                => Storage::disk('public')->url($item->displayPath()),
+            'url'                => $item->media_type === 'link'
+                ? $item->link_url
+                : Storage::disk('public')->url($item->displayPath()),
+            'link_url'           => $item->link_url,
+            'link_platform'      => $item->link_platform,
             'caption'            => $item->caption,
             'is_compressed'      => $item->is_compressed,
             'created_at'         => $item->created_at?->toISOString(),

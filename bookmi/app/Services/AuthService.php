@@ -16,6 +16,7 @@ class AuthService
 {
     public function __construct(
         private readonly SmsService $smsService,
+        private readonly TwoFactorService $twoFactorService,
     ) {
     }
 
@@ -138,7 +139,10 @@ class AuthService
     /**
      * Authenticate user with email and password.
      *
+     * Returns either a full auth response OR a 2FA challenge if 2FA is enabled.
+     *
      * @return array{token: string, user: array<string, mixed>, roles: array<int, string>}
+     *       | array{two_factor_required: true, challenge_token: string, method: string}
      */
     public function login(string $email, string $password): array
     {
@@ -175,12 +179,40 @@ class AuthService
             throw AuthException::accountDisabled();
         }
 
-        // 6. Success — clear counters, create token, dispatch event
+        // 6. Clear counters
         Cache::forget("login_attempts:{$email}");
         Cache::forget($lockoutKey);
 
+        // 7. 2FA check — if enabled, issue challenge token instead of a session token
+        if ($user->two_factor_enabled) {
+            $challengeToken = $this->twoFactorService->generateChallengeToken($user);
+
+            if ($user->two_factor_method === 'email') {
+                $this->twoFactorService->sendEmailOtp($user);
+            }
+
+            return [
+                'two_factor_required' => true,
+                'challenge_token'     => $challengeToken,
+                'method'              => $user->two_factor_method,
+            ];
+        }
+
+        // 8. No 2FA — success, create token, dispatch event
         UserLoggedIn::dispatch($user);
 
+        return $this->buildAuthResponse($user);
+    }
+
+    /**
+     * Build standardized auth response with token, user data, and roles.
+     * Alias for external callers (e.g. TwoFactorController after challenge validation).
+     *
+     * @return array{token: string, user: array<string, mixed>, roles: array<int, string>}
+     */
+    public function buildAuthResponsePublic(User $user): array
+    {
+        UserLoggedIn::dispatch($user);
         return $this->buildAuthResponse($user);
     }
 

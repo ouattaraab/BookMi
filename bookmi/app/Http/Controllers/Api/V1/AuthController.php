@@ -54,6 +54,11 @@ class AuthController extends BaseController
             $request->validated('password'),
         );
 
+        // 2FA challenge: return 200 with two_factor_required flag (not a full token)
+        if (isset($result['two_factor_required']) && $result['two_factor_required'] === true) {
+            return $this->successResponse($result);
+        }
+
         return $this->successResponse($result);
     }
 

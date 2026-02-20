@@ -19,6 +19,8 @@ class PortfolioItem extends Model
         'compressed_path',
         'caption',
         'is_compressed',
+        'link_url',
+        'link_platform',
     ];
 
     /**
