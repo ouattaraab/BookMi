@@ -26,9 +26,10 @@
         <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem; height:64px; display:flex; align-items:center; justify-content:space-between; gap:2rem;">
 
             {{-- Logo --}}
-            <a href="{{ route('home') }}" style="display:flex; align-items:center; gap:10px; text-decoration:none; flex-shrink:0;">
-                <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#FF6B35,#E55A2B); display:flex; align-items:center; justify-content:center; font-weight:900; color:white; font-size:14px; font-family:'Nunito',sans-serif;">B</div>
-                <span style="font-weight:900; font-size:1.25rem; color:white; letter-spacing:-0.02em;">BookMi</span>
+            <a href="{{ route('home') }}" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
+                <span style="font-weight:900; font-size:1.4rem; letter-spacing:-0.03em; line-height:1; font-family:'Nunito',sans-serif;">
+                    <span style="color:white;">Book</span><span style="color:#2196F3;">Mi</span>
+                </span>
             </a>
 
             {{-- Liens centre (desktop) --}}
@@ -107,9 +108,10 @@
 
                 {{-- Col 1 : logo + desc + réseaux --}}
                 <div>
-                    <a href="{{ route('home') }}" style="display:inline-flex; align-items:center; gap:10px; text-decoration:none; margin-bottom:1rem;">
-                        <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#FF6B35,#E55A2B); display:flex; align-items:center; justify-content:center; font-weight:900; color:white; font-size:13px;">B</div>
-                        <span style="font-weight:900; font-size:1.2rem; color:white;">BookMi</span>
+                    <a href="{{ route('home') }}" style="display:inline-flex; align-items:center; text-decoration:none; margin-bottom:1rem;">
+                        <span style="font-weight:900; font-size:1.3rem; letter-spacing:-0.03em; font-family:'Nunito',sans-serif;">
+                            <span style="color:white;">Book</span><span style="color:#2196F3;">Mi</span>
+                        </span>
                     </a>
                     <p style="color:rgba(255,255,255,0.4); font-size:0.85rem; line-height:1.65; margin-bottom:1.5rem; max-width:220px;">
                         La plateforme N°1 en Côte d'Ivoire qui révolutionne le booking artistique. Simple, Sécurisé, Pro.

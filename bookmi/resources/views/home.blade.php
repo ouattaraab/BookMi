@@ -34,68 +34,102 @@
     background-size: 60px 60px;
 }
 
-/* ─── SEARCH BAR ─── */
-.search-bar {
-    background: white;
-    border-radius: 100px;
-    display: flex;
-    align-items: center;
-    padding: 7px 7px 7px 24px;
-    box-shadow: 0 24px 64px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08);
-    max-width: 640px;
+/* ─── SEARCH WRAPPER (conteneur glossy) ─── */
+.search-wrapper {
+    max-width: 720px;
     margin: 0 auto;
-    gap: 0;
+    background: rgba(10, 14, 26, 0.55);
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 22px;
+    padding: 14px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.10),
+        inset 0 -1px 0 rgba(255,255,255,0.04),
+        0 28px 70px rgba(0,0,0,0.6),
+        0 0 0 1px rgba(255,255,255,0.04);
 }
+.search-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+}
+
+/* Champs blancs internes */
 .search-field {
     flex: 1;
     min-width: 0;
+    background: white;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
+.search-field-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+.search-field-text { flex: 1; min-width: 0; }
 .search-field label {
     display: block;
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 800;
-    color: #6b7280;
+    color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 2px;
+    letter-spacing: 0.09em;
+    margin-bottom: 3px;
     font-family: 'Nunito', sans-serif;
+    line-height: 1;
 }
 .search-field input {
     border: none;
     outline: none;
-    font-size: 0.875rem;
-    color: #111;
+    font-size: 0.9rem;
+    color: #1f2937;
     width: 100%;
     background: transparent;
     font-weight: 600;
     font-family: 'Nunito', sans-serif;
+    padding: 0;
+    line-height: 1.3;
 }
 .search-field input::placeholder { color: #9ca3af; font-weight: 500; }
-.search-divider {
-    width: 1px;
-    background: #e5e7eb;
-    height: 38px;
-    margin: 0 18px;
-    flex-shrink: 0;
-}
+
+/* Bouton Rechercher iOS-glossy */
 .search-btn {
-    background: linear-gradient(135deg, #FF6B35, #E55A2B);
+    flex-shrink: 0;
+    background: linear-gradient(160deg, #FF7A45 0%, #FF6B35 40%, #E55A2B 100%);
     color: white;
     border: none;
-    border-radius: 100px;
-    padding: 11px 22px;
+    border-radius: 12px;
+    padding: 0 24px;
     font-weight: 800;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 7px;
-    flex-shrink: 0;
+    gap: 8px;
     font-family: 'Nunito', sans-serif;
     transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 16px rgba(255,107,53,0.4);
+    box-shadow: 0 4px 18px rgba(255,107,53,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+    position: relative;
+    overflow: hidden;
+    min-height: 52px;
 }
-.search-btn:hover { transform: scale(1.04); box-shadow: 0 6px 20px rgba(255,107,53,0.5); }
+/* Effet gloss iOS : reflet blanc en haut */
+.search-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 100%);
+    border-radius: 12px 12px 50% 50%;
+    pointer-events: none;
+}
+.search-btn:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(255,107,53,0.6), inset 0 1px 0 rgba(255,255,255,0.18); }
 
 /* ─── CATEGORY CARDS ─── */
 .cat-grid {
@@ -290,36 +324,47 @@
             Paiement via Mobile Money.
         </p>
 
-        {{-- Barre de recherche --}}
-        <form action="{{ route('talents.index') }}" method="GET" class="search-bar">
-            {{-- Champ talent --}}
-            <div class="search-field">
-                <label>Quel talent ?</label>
-                <input type="text" name="search" placeholder="DJ, Pianiste, Groupe..." value="{{ request('search') }}">
-            </div>
+        {{-- Barre de recherche (contour glossy) --}}
+        <div class="search-wrapper">
+            <form action="{{ route('talents.index') }}" method="GET" class="search-bar">
+                {{-- Champ talent --}}
+                <div class="search-field">
+                    <div class="search-field-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                    </div>
+                    <div class="search-field-text">
+                        <label>Quel talent ?</label>
+                        <input type="text" name="search" placeholder="DJ, Pianiste, Groupe..." value="{{ request('search') }}">
+                    </div>
+                </div>
 
-            <div class="search-divider"></div>
+                {{-- Champ date --}}
+                <div class="search-field">
+                    <div class="search-field-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                    <div class="search-field-text">
+                        <label>Pour Quand ?</label>
+                        <input type="date" name="date" style="color:#6b7280;">
+                    </div>
+                </div>
 
-            {{-- Champ date --}}
-            <div class="search-field">
-                <label>Pour Quand ?</label>
-                <input type="date" name="date" style="color:#6b7280;" placeholder="Date de l'événement">
-            </div>
-
-            <button type="submit" class="search-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                Rechercher
-            </button>
-        </form>
+                <button type="submit" class="search-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    Rechercher
+                </button>
+            </form>
+        </div>
 
         {{-- Tags populaires --}}
-        <div style="margin-top:1.5rem; color:rgba(255,255,255,0.35); font-size:0.82rem; font-weight:500;">
-            Populaire&nbsp;/&nbsp;
+        <div style="margin-top:1.25rem; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; font-size:0.8rem;">
+            <span style="color:rgba(255,255,255,0.35); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:0.7rem;">Populaire&nbsp;:</span>
             @foreach(['Orchestres Zouglou'=>'Musicien', 'DJ Mariage'=>'DJ', 'Maître de Cérémonie'=>'Animateur'] as $label => $cat)
             <a href="{{ route('talents.index', ['category'=>$cat]) }}"
-               style="color:rgba(255,255,255,0.6); text-decoration:none; transition:color 0.15s;"
-               onmouseover="this.style.color='rgba(255,107,53,0.9)'" onmouseout="this.style.color='rgba(255,255,255,0.6)'">{{ $label }}</a>
-            @if(!$loop->last)<span style="margin:0 6px; color:rgba(255,255,255,0.25);">/</span>@endif
+               style="color:#FF6B35; font-weight:600; text-decoration:underline; text-underline-offset:3px; text-decoration-color:rgba(255,107,53,0.35); transition:color 0.15s, text-decoration-color 0.15s;"
+               onmouseover="this.style.color='white'; this.style.textDecorationColor='rgba(255,255,255,0.35)'"
+               onmouseout="this.style.color='#FF6B35'; this.style.textDecorationColor='rgba(255,107,53,0.35)'">{{ $label }}</a>
+            @if(!$loop->last)<span style="color:rgba(255,255,255,0.18); font-size:0.75rem;">·</span>@endif
             @endforeach
         </div>
     </div>
