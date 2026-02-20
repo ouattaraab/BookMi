@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyBookingsInbox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+    <style type="text/tailwindcss">
+
+      @theme inline {
+        --color-background: var(--background);
+        --color-foreground: var(--foreground);
+        --color-primary: var(--primary);
+        --color-primary-foreground: var(--primary-foreground);
+        --color-secondary: var(--secondary);
+        --color-secondary-foreground: var(--secondary-foreground);
+        --color-muted: var(--muted);
+        --color-muted-foreground: var(--muted-foreground);
+        --color-accent: var(--accent);
+        --color-accent-foreground: var(--accent-foreground);
+        --color-destructive: var(--destructive);
+        --color-card: var(--card);
+        --color-card-foreground: var(--card-foreground);
+        --color-popover: var(--popover);
+        --color-popover-foreground: var(--popover-foreground);
+        --color-border: var(--border);
+        --color-input: var(--input);
+        --color-ring: var(--ring);
+        --color-chart-1: var(--chart-1);
+        --color-chart-2: var(--chart-2);
+        --color-chart-3: var(--chart-3);
+        --color-chart-4: var(--chart-4);
+        --color-chart-5: var(--chart-5);
+
+        --font-font-sans: var(--font-sans);
+        --font-font-heading: var(--font-heading);
+        --font-font-serif: var(--font-serif);
+        --font-font-mono: var(--font-mono);
+
+        --radius-sm: calc(var(--radius) - 4px);
+        --radius-md: calc(var(--radius) - 2px);
+        --radius-lg: var(--radius);
+        --radius-xl: calc(var(--radius) + 4px);
+      }
+
+      :root {
+          --background: #ffffff;
+        --foreground: #0b224c;
+        --primary: #1e90ff;
+        --primary-foreground: #ffffff;
+        --secondary: #0b224c;
+        --secondary-foreground: #ffffff;
+        --muted: #f8fafc;
+        --muted-foreground: #64748b;
+        --accent: #e0f2ff;
+        --accent-foreground: #0b224c;
+        --destructive: #ef4444;
+        --card: #ffffff;
+        --card-foreground: #1a1f3a;
+        --popover: #ffffff;
+        --popover-foreground: #1a1f3a;
+        --border: #e2e8f0;
+        --input: #e2e8f0;
+        --ring: #1e90ff;
+        --chart-1: #1e90ff;
+        --chart-2: #0b224c;
+        --chart-3: #fbbf24;
+        --chart-4: #14b8a6;
+        --chart-5: #ef4444;
+
+        --font-sans: "Manrope";
+        --font-heading: "Plus Jakarta Sans";
+        --font-serif: "Playfair Display";
+        --font-mono: "JetBrains Mono";
+
+        --radius: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-muted min-h-screen pb-24 font-sans">
+      <header class="bg-white px-5 pt-8 pb-4 shadow-sm border-b border-border/50">
+        <h1 class="text-2xl font-bold font-heading text-secondary mb-6">Mes Activités</h1>
+        <div class="flex bg-muted p-1 rounded-2xl">
+          <button
+            class="flex-1 py-2.5 text-sm font-bold bg-white text-secondary rounded-xl shadow-sm transition-all"
+          >
+            Réservations</button
+          ><button
+            class="flex-1 py-2.5 text-sm font-bold text-muted-foreground hover:text-secondary transition-colors"
+          >
+            Messages
+          </button>
+        </div>
+        <div class="flex gap-6 mt-6 border-b border-border">
+          <button class="pb-3 text-sm font-bold text-primary border-b-2 border-primary">
+            À venir</button
+          ><button class="pb-3 text-sm font-bold text-muted-foreground hover:text-secondary">
+            Passées</button
+          ><button class="pb-3 text-sm font-bold text-muted-foreground hover:text-secondary">
+            Annulées
+          </button>
+        </div>
+      </header>
+      <main class="p-5 flex flex-col gap-5">
+        <div class="bg-white rounded-2xl shadow-sm border border-border overflow-hidden">
+          <div class="p-4 flex items-center gap-4 border-b border-border/50">
+            <div
+              class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-border/30"
+            >
+              <img
+                src="https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/yvEoL5t6WEU/components/hqOw4cERjGO.png"
+                alt="DJ Kerozen"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between items-start">
+                <h3 class="font-bold text-secondary">DJ Kerozen</h3>
+                <span
+                  class="px-2 py-0.5 bg-accent text-primary text-[10px] font-black uppercase rounded border border-primary/20"
+                  >Confirmé</span
+                >
+              </div>
+              <p class="text-xs text-muted-foreground mt-0.5">Mariage • 24 Mars 2024</p>
+              <div class="flex items-center gap-1.5 mt-2">
+                <div
+                  class="flex items-center gap-1 text-[10px] font-bold text-chart-4 bg-chart-4/5 px-1.5 py-0.5 rounded"
+                >
+                  <iconify-icon icon="solar:shield-check-bold" class="size-3"></iconify-icon
+                  >SÉQUESTRE ACTIF
+                </div>
+                <div
+                  class="flex items-center gap-1 text-[10px] font-bold text-secondary bg-secondary/5 px-1.5 py-0.5 rounded"
+                >
+                  <iconify-icon icon="solar:document-bold" class="size-3"></iconify-icon>CONTRAT
+                  GÉNÉRÉ
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="px-4 py-3 bg-muted/30 flex items-center justify-between">
+            <div class="flex -space-x-2">
+              <img
+                src="https://randomuser.me/api/portraits/men/1.jpg"
+                class="w-6 h-6 rounded-full border-2 border-white"
+              /><img
+                src="https://randomuser.me/api/portraits/women/2.jpg"
+                class="w-6 h-6 rounded-full border-2 border-white"
+              />
+              <div
+                class="w-6 h-6 rounded-full border-2 border-white bg-secondary flex items-center justify-center text-[8px] font-bold text-white"
+              >
+                +2
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                class="p-2 bg-white text-secondary rounded-xl border border-border hover:bg-accent hover:text-primary transition-colors"
+              >
+                <iconify-icon
+                  icon="solar:chat-round-line-bold"
+                  class="size-5"
+                ></iconify-icon></button
+              ><button
+                class="px-4 py-2 bg-secondary text-white text-xs font-bold rounded-xl shadow-md"
+              >
+                Détails
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border-2 border-primary/10 overflow-hidden">
+          <div class="bg-accent px-4 py-2.5 flex items-center justify-between">
+            <p class="text-[10px] font-black text-primary uppercase flex items-center gap-1">
+              <iconify-icon icon="solar:clock-circle-bold" class="size-3"></iconify-icon>En attente
+              de paiement
+            </p>
+            <span class="text-[10px] font-bold text-primary">Expire dans 4h</span>
+          </div>
+          <div class="p-4 flex items-center gap-4">
+            <div
+              class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-border/30"
+            >
+              <img
+                src="https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/yvEoL5t6WEU/components/UttJPAylzuI.png"
+                alt="Willy Dumbo"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div class="flex-1">
+              <h3 class="font-bold text-secondary">Willy Dumbo</h3>
+              <p class="text-xs text-muted-foreground mt-0.5">Anniversaire • 12 Avril 2024</p>
+              <p class="text-base font-black text-secondary mt-1">300,000 CFA</p>
+            </div>
+          </div>
+          <div class="p-4 pt-0 flex gap-2">
+            <button
+              class="flex-1 py-3 bg-primary text-white text-xs font-black uppercase rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-95"
+            >
+              Payer maintenant</button
+            ><button
+              class="flex-1 py-3 bg-white text-secondary border border-border text-xs font-black uppercase rounded-xl"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+        <div
+          class="bg-secondary text-white p-5 rounded-2xl flex gap-4 items-start shadow-xl shadow-secondary/20"
+        >
+          <div class="bg-white/20 p-2.5 rounded-xl">
+            <iconify-icon icon="solar:map-point-wave-bold" class="size-6"></iconify-icon>
+          </div>
+          <div class="flex-1">
+            <p class="font-bold text-sm">Le talent arrive !</p>
+            <p class="text-xs opacity-80 mt-1">
+              Sarah B. a effectué son check-in à 2.5km de votre lieu de prestation.
+            </p>
+            <button
+              class="mt-4 bg-primary text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20"
+            >
+              Suivre en temps réel
+            </button>
+          </div>
+        </div>
+      </main>
+      <nav
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-border px-6 py-3 pb-8 flex justify-between items-center z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]"
+      >
+        <button class="flex flex-col items-center gap-1 text-muted-foreground hover:text-secondary">
+          <iconify-icon icon="solar:home-2-linear" class="size-6"></iconify-icon
+          ><span class="text-[10px] font-medium">Accueil</span></button
+        ><button class="flex flex-col items-center gap-1 text-primary">
+          <iconify-icon icon="solar:calendar-bold" class="size-6"></iconify-icon
+          ><span class="text-[10px] font-bold">Activités</span></button
+        ><button
+          class="flex flex-col items-center gap-1 text-muted-foreground hover:text-secondary transition-colors relative"
+        >
+          <iconify-icon icon="solar:chat-round-line-linear" class="size-6"></iconify-icon
+          ><span class="text-[10px] font-medium">Messages</span
+          ><span
+            class="absolute top-0 right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white"
+          ></span></button
+        ><button
+          class="flex flex-col items-center gap-1 text-muted-foreground hover:text-secondary"
+        >
+          <iconify-icon icon="solar:user-circle-linear" class="size-6"></iconify-icon
+          ><span class="text-[10px] font-medium">Profil</span>
+        </button>
+      </nav>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TalentProfile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;200;300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+    <style type="text/tailwindcss">
+
+      @theme inline {
+        --color-background: var(--background);
+        --color-foreground: var(--foreground);
+        --color-primary: var(--primary);
+        --color-primary-foreground: var(--primary-foreground);
+        --color-secondary: var(--secondary);
+        --color-secondary-foreground: var(--secondary-foreground);
+        --color-muted: var(--muted);
+        --color-muted-foreground: var(--muted-foreground);
+        --color-accent: var(--accent);
+        --color-accent-foreground: var(--accent-foreground);
+        --color-destructive: var(--destructive);
+        --color-card: var(--card);
+        --color-card-foreground: var(--card-foreground);
+        --color-popover: var(--popover);
+        --color-popover-foreground: var(--popover-foreground);
+        --color-border: var(--border);
+        --color-input: var(--input);
+        --color-ring: var(--ring);
+        --color-chart-1: var(--chart-1);
+        --color-chart-2: var(--chart-2);
+        --color-chart-3: var(--chart-3);
+        --color-chart-4: var(--chart-4);
+        --color-chart-5: var(--chart-5);
+
+        --font-font-sans: var(--font-sans);
+        --font-font-heading: var(--font-heading);
+        --font-font-serif: var(--font-serif);
+        --font-font-mono: var(--font-mono);
+
+        --radius-sm: calc(var(--radius) - 4px);
+        --radius-md: calc(var(--radius) - 2px);
+        --radius-lg: var(--radius);
+        --radius-xl: calc(var(--radius) + 4px);
+      }
+
+      :root {
+          --background: #ffffff;
+        --foreground: #0b224c;
+        --primary: #1e90ff;
+        --primary-foreground: #ffffff;
+        --secondary: #0b224c;
+        --secondary-foreground: #ffffff;
+        --muted: #f8fafc;
+        --muted-foreground: #64748b;
+        --accent: #e0f2ff;
+        --accent-foreground: #0b224c;
+        --destructive: #ef4444;
+        --card: #ffffff;
+        --card-foreground: #1a1f3a;
+        --popover: #ffffff;
+        --popover-foreground: #1a1f3a;
+        --border: #e2e8f0;
+        --input: #e2e8f0;
+        --ring: #1e90ff;
+        --chart-1: #1e90ff;
+        --chart-2: #0b224c;
+        --chart-3: #fbbf24;
+        --chart-4: #14b8a6;
+        --chart-5: #ef4444;
+
+        --font-sans: "Manrope";
+        --font-heading: "Plus Jakarta Sans";
+        --font-serif: "Playfair Display";
+        --font-mono: "JetBrains Mono";
+
+        --radius: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-background text-foreground min-h-screen pb-32 font-sans relative">
+      <div
+        class="absolute top-0 left-0 right-0 z-20 flex justify-between items-center px-5 pt-8 pointer-events-none"
+      >
+        <button
+          class="pointer-events-auto w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center text-secondary"
+        >
+          <iconify-icon icon="solar:arrow-left-linear" class="size-6"></iconify-icon>
+        </button>
+        <div
+          class="pointer-events-auto bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-md border border-border/50"
+        >
+          <img
+            src="https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/yvEoL5t6WEU/ai/Logo-removebg-preview-QWFNYFih3Tv.png"
+            alt="BookMi"
+            class="h-5 w-auto"
+          />
+        </div>
+        <button
+          class="pointer-events-auto w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full shadow-md flex items-center justify-center text-red-500"
+        >
+          <iconify-icon icon="solar:heart-linear" class="size-6"></iconify-icon>
+        </button>
+      </div>
+      <div class="h-80 relative">
+        <img
+          src="https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/yvEoL5t6WEU/components/hqOw4cERjGO.png"
+          alt="DJ Kerozen"
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-secondary/80 to-transparent"></div>
+        <div class="absolute bottom-6 left-5 right-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span
+              class="bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg shadow-primary/20"
+              >Elite Talent</span
+            >
+            <div
+              class="bg-accent text-primary text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
+            >
+              <iconify-icon icon="solar:verified-check-bold" class="size-3"></iconify-icon>VÉRIFIÉ
+            </div>
+          </div>
+          <h1 class="text-3xl font-bold font-heading text-white mb-1">DJ Kerozen</h1>
+          <p class="text-white/80 text-sm font-medium flex items-center gap-2">
+            Musique Live • Coupé-Décalé • Abidjan, CI
+          </p>
+        </div>
+      </div>
+      <div
+        class="px-5 py-4 bg-white flex items-center justify-between border-b border-border shadow-sm"
+      >
+        <div class="text-center flex-1">
+          <p class="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Note</p>
+          <div class="flex items-center justify-center gap-1 mt-1">
+            <span class="font-bold text-secondary">4.9</span
+            ><iconify-icon icon="solar:star-bold" class="text-orange-400 size-4"></iconify-icon>
+          </div>
+        </div>
+        <div class="w-px h-8 bg-border"></div>
+        <div class="text-center flex-1">
+          <p class="text-xs text-muted-foreground uppercase font-bold tracking-tighter">
+            Fiabilité
+          </p>
+          <div class="flex items-center justify-center gap-1 mt-1">
+            <span class="font-bold text-chart-4">98%</span
+            ><iconify-icon
+              icon="solar:shield-check-bold"
+              class="text-chart-4 size-4"
+            ></iconify-icon>
+          </div>
+        </div>
+        <div class="w-px h-8 bg-border"></div>
+        <div class="text-center flex-1">
+          <p class="text-xs text-muted-foreground uppercase font-bold tracking-tighter">Avis</p>
+          <div class="flex items-center justify-center gap-1 mt-1">
+            <span class="font-bold text-secondary">124</span>
+          </div>
+        </div>
+      </div>
+      <div class="p-5 flex flex-col gap-8">
+        <section>
+          <h2 class="text-lg font-bold font-heading text-secondary mb-3">À propos</h2>
+          <p class="text-muted-foreground text-sm leading-relaxed">
+            Véritable icône de la musique ivoirienne, DJ Kerozen apporte une énergie électrisante à
+            chaque événement.<button class="text-primary font-bold ml-1">Lire plus</button>
+          </p>
+        </section>
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold font-heading text-secondary">Portfolio</h2>
+            <button class="text-sm font-semibold text-primary">Tout voir</button>
+          </div>
+          <div class="flex gap-3 overflow-x-auto no-scrollbar -mx-5 px-5">
+            <img
+              src="https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/yvEoL5t6WEU/components/7oZw8AIj7Lh.png"
+              class="w-64 h-40 object-cover rounded-xl shadow-sm flex-shrink-0"
+            /><img
+              src="https://ggrhecslgdflloszjkwl.supabase.co/storage/v1/object/public/user-assets/yvEoL5t6WEU/components/PUOLUKmwIRQ.png"
+              class="w-40 h-40 object-cover rounded-xl shadow-sm flex-shrink-0"
+            />
+          </div>
+        </section>
+        <section>
+          <h2 class="text-lg font-bold font-heading text-secondary mb-4">Formules de prestation</h2>
+          <div class="flex flex-col gap-4">
+            <div class="p-4 bg-white border border-border rounded-xl shadow-sm relative">
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="font-bold text-secondary">Essentiel</h3>
+                  <p class="text-xs text-muted-foreground">Prestation de 1h30 solo</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold text-secondary">500K</span>
+                  <p class="text-[10px] text-muted-foreground uppercase font-bold">CFA</p>
+                </div>
+              </div>
+              <button
+                class="w-full py-2 bg-accent text-secondary font-bold text-sm rounded-lg hover:bg-border transition-colors mt-2"
+              >
+                Choisir ce pack
+              </button>
+            </div>
+            <div
+              class="p-4 bg-white border-2 border-primary rounded-xl shadow-md relative overflow-hidden"
+            >
+              <div
+                class="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-[10px] font-black rounded-bl-lg uppercase"
+              >
+                Populaire
+              </div>
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="font-bold text-secondary">Premium Elite</h3>
+                  <p class="text-xs text-muted-foreground">Soirée complète + 4 danseurs</p>
+                </div>
+                <div class="text-right">
+                  <span class="text-lg font-bold text-secondary">1.2M</span>
+                  <p class="text-[10px] text-muted-foreground uppercase font-bold">CFA</p>
+                </div>
+              </div>
+              <button
+                class="w-full py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 mt-2"
+              >
+                Choisir ce pack
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <div
+        class="fixed bottom-0 left-0 right-0 bg-white border-t border-border px-5 py-4 flex gap-4 items-center z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]"
+      >
+        <button
+          class="flex flex-col items-center justify-center text-muted-foreground hover:text-secondary"
+        >
+          <iconify-icon icon="solar:chat-round-line-bold" class="size-6"></iconify-icon
+          ><span class="text-[10px] font-bold">Message</span></button
+        ><button
+          class="flex-1 bg-primary text-white py-4 rounded-2xl font-black text-base shadow-xl shadow-primary/20 transition-all active:scale-95 hover:brightness-110"
+        >
+          Réserver maintenant
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
