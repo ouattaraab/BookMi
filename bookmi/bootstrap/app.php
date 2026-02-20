@@ -28,7 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'error' => [
                         'code' => 'UNAUTHENTICATED',
@@ -41,13 +41,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (BookmiException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json($e->toArray(), $e->getStatusCode());
             }
         });
 
         $exceptions->render(function (ValidationException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'error' => [
                         'code' => 'VALIDATION_FAILED',
@@ -62,7 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'error' => [
                         'code' => 'NOT_FOUND',
@@ -75,7 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (HttpException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
                     'error' => [
                         'code' => 'HTTP_ERROR',
@@ -88,7 +88,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (\Throwable $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*') || $request->is('admin/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 $statusCode = 500;
 
                 return response()->json([
