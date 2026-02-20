@@ -2,6 +2,17 @@
 
 @section('title', 'Calendrier — BookMi Talent')
 
+@section('head')
+<style>
+main.page-content { background: #F2EFE9 !important; }
+.cal-grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-cell { min-height: 64px; border-bottom: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6; position: relative; }
+.cal-cell-past { opacity: 0.5; }
+.cal-cell-active { cursor: pointer; transition: box-shadow 0.15s; }
+.cal-cell-active:hover { box-shadow: inset 0 0 0 2px #FF6B35; }
+</style>
+@endsection
+
 @section('content')
 <div class="space-y-6" x-data="calendarApp()">
 
@@ -62,17 +73,17 @@
         @endphp
 
         {{-- En-têtes jours --}}
-        <div class="grid grid-cols-7 border-b border-gray-100">
+        <div class="cal-grid-7" style="border-bottom: 1px solid #f3f4f6;">
             @foreach($daysOfWeek as $day)
-                <div class="py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ $day }}</div>
+                <div style="padding:10px 0;text-align:center;font-size:0.72rem;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.06em;">{{ $day }}</div>
             @endforeach
         </div>
 
         {{-- Cases jours --}}
-        <div class="grid grid-cols-7">
+        <div class="cal-grid-7">
             {{-- Padding début --}}
             @for($p = 0; $p < $startPad; $p++)
-                <div class="h-16 border-b border-r border-gray-50 bg-gray-50/50"></div>
+                <div class="cal-cell" style="background:#FAFAFA;"></div>
             @endfor
 
             @for($d = 1; $d <= $daysInMonth; $d++)
@@ -103,22 +114,21 @@
                     };
                 @endphp
                 <div
-                    class="h-16 border-b border-r border-gray-100 relative {{ !$isPast ? 'cursor-pointer hover:ring-2 hover:ring-orange-400 hover:ring-inset transition-all' : 'opacity-50' }}"
+                    class="cal-cell {{ !$isPast ? 'cal-cell-active' : 'cal-cell-past' }}"
                     style="background:{{ $bgColor }}"
                     @if(!$isPast)
                     @click="openModal('{{ $dateStr }}', '{{ $slotStatus ?? '' }}', {{ $slot ? $slot->id : 'null' }})"
                     @endif
                 >
                     {{-- Numéro jour --}}
-                    <span class="absolute top-1.5 left-2 text-xs font-bold {{ $isToday ? 'text-white w-5 h-5 rounded-full flex items-center justify-center' : 'text-gray-700' }}"
-                          @if($isToday) style="background:#FF6B35" @endif>
+                    <span style="position:absolute;top:6px;left:8px;font-size:0.72rem;font-weight:700;{{ $isToday ? 'background:#FF6B35;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;' : 'color:#374151;' }}">
                         {{ $d }}
                     </span>
 
                     {{-- Indicateur statut --}}
                     @if($dotColor)
-                    <div class="absolute bottom-1.5 left-0 right-0 flex justify-center">
-                        <span class="w-1.5 h-1.5 rounded-full" style="background:{{ $dotColor }}"></span>
+                    <div style="position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;">
+                        <span style="width:6px;height:6px;border-radius:50%;background:{{ $dotColor }};display:inline-block;"></span>
                     </div>
                     @endif
                 </div>
@@ -130,7 +140,7 @@
                 $endPad = 7 - $lastDayOfMonth->isoWeekday();
             @endphp
             @for($p = 0; $p < $endPad; $p++)
-                <div class="h-16 border-b border-r border-gray-50 bg-gray-50/50"></div>
+                <div class="cal-cell" style="background:#FAFAFA;"></div>
             @endfor
         </div>
     </div>
