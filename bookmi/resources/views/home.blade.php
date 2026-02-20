@@ -38,17 +38,18 @@
 .search-wrapper {
     max-width: 720px;
     margin: 0 auto;
-    background: rgba(10, 14, 26, 0.55);
-    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(10, 14, 26, 0.65);
+    border: 1.5px solid rgba(255,255,255,0.32);
     border-radius: 22px;
     padding: 14px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.10),
-        inset 0 -1px 0 rgba(255,255,255,0.04),
+        inset 0 1px 0 rgba(255,255,255,0.22),
+        inset 0 -1px 0 rgba(255,255,255,0.06),
         0 28px 70px rgba(0,0,0,0.6),
-        0 0 0 1px rgba(255,255,255,0.04);
+        0 0 0 1px rgba(255,255,255,0.10),
+        0 0 40px rgba(255,107,53,0.08);
 }
 .search-bar {
     display: flex;
