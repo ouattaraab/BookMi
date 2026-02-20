@@ -240,7 +240,7 @@
             <div class="hidden md:block" style="flex-shrink:0;">
                 @auth
                     @if(auth()->user()->hasRole('client'))
-                        <a href="{{ route('talents.index') }}#booking-{{ $profile->id }}"
+                        <a href="{{ route('client.bookings.create', ['talent' => $profile->slug ?? $profile->id]) }}"
                            class="tp-cta-btn" style="display:inline-flex; align-items:center; gap:8px; width:auto; padding:12px 28px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                             Réserver ce talent
@@ -552,7 +552,7 @@
 
                 @auth
                     @if(auth()->user()->hasRole('client'))
-                        <a href="{{ route('client.bookings') }}" class="tp-cta-btn">
+                        <a href="{{ route('client.bookings.create', ['talent' => $profile->slug ?? $profile->id]) }}" class="tp-cta-btn">
                             Demander une prestation →
                         </a>
                     @else

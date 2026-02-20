@@ -12,6 +12,8 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 
 // Réservations
 Route::get('/bookings', [BookingController::class, 'index'])->name('bookings');
+Route::get('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
 Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
 Route::get('/bookings/{id}/pay', [BookingController::class, 'pay'])->name('bookings.pay');

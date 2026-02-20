@@ -6,6 +6,7 @@ use App\Enums\PaymentMethod;
 use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
+use App\Models\TalentProfile;
 use App\Models\Transaction;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
@@ -29,6 +30,64 @@ class BookingController extends Controller
 
         $bookings = $query->paginate(10)->withQueryString();
         return view('client.bookings.index', compact('bookings'));
+    }
+
+    public function create(Request $request): View|RedirectResponse
+    {
+        $slug = $request->string('talent')->trim()->value();
+
+        $talent = TalentProfile::with(['user', 'category', 'servicePackages' => function ($q) {
+            $q->where('is_active', true)->orderBy('sort_order')->orderBy('cachet_amount');
+        }])->where('slug', $slug)->orWhere('id', $slug)->first();
+
+        if (! $talent) {
+            return redirect()->route('talents.index')
+                ->with('error', 'Talent introuvable. Veuillez sélectionner un talent depuis la liste.');
+        }
+
+        return view('client.bookings.create', compact('talent'));
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'talent_profile_id'  => ['required', 'integer', 'exists:talent_profiles,id'],
+            'service_package_id' => ['nullable', 'integer', 'exists:service_packages,id'],
+            'event_date'         => ['required', 'date', 'after:today'],
+            'event_location'     => ['required', 'string', 'max:255'],
+            'message'            => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $talent = TalentProfile::with('servicePackages')->findOrFail($validated['talent_profile_id']);
+
+        // Calcul du montant
+        $cachetAmount = $talent->cachet_amount ?? 0;
+        if (! empty($validated['service_package_id'])) {
+            $pkg = $talent->servicePackages->firstWhere('id', $validated['service_package_id']);
+            if ($pkg) {
+                $cachetAmount = $pkg->cachet_amount;
+            }
+        }
+
+        $commissionRate   = (int) config('bookmi.commission_rate', 15);
+        $commissionAmount = (int) round($cachetAmount * $commissionRate / 100);
+        $totalAmount      = $cachetAmount + $commissionAmount;
+
+        BookingRequest::create([
+            'client_id'          => auth()->id(),
+            'talent_profile_id'  => $validated['talent_profile_id'],
+            'service_package_id' => $validated['service_package_id'] ?? null,
+            'event_date'         => $validated['event_date'],
+            'event_location'     => $validated['event_location'],
+            'message'            => $validated['message'] ?? null,
+            'status'             => 'pending',
+            'cachet_amount'      => $cachetAmount,
+            'commission_amount'  => $commissionAmount,
+            'total_amount'       => $totalAmount,
+        ]);
+
+        return redirect()->route('client.bookings')
+            ->with('success', 'Votre demande de réservation a été envoyée ! Le talent vous répondra sous 24h.');
     }
 
     public function show(int $id): View
