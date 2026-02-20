@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\User;
 use App\Services\AuthService;
 use App\Services\SmsService;
+use App\Services\TwoFactorService;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -26,7 +27,8 @@ class AuthServiceTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
 
         $this->smsService = $this->mock(SmsService::class);
-        $this->authService = new AuthService($this->smsService);
+        $twoFactorService = $this->mock(TwoFactorService::class);
+        $this->authService = new AuthService($this->smsService, $twoFactorService);
     }
 
     #[Test]
