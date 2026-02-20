@@ -11,7 +11,7 @@
     </p>
     <p style="margin:0; color:#d1d5db; font-size:11px;">
         &copy; {{ date('Y') }} BookMi. Tous droits réservés. &nbsp;|&nbsp;
-        <a href="{{ config('app.url') }}" style="color:#9ca3af; text-decoration:underline;">bookmi.app</a>
+        <a href="{{ config('app.url') }}" style="color:#9ca3af; text-decoration:underline;">bookmi.ci</a>
     </p>
 </td>
 </tr>
