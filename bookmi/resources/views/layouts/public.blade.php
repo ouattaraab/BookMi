@@ -36,7 +36,6 @@
             <div class="hidden md:flex" style="gap:2.5rem; flex:1; justify-content:center;">
                 <a href="{{ route('home') }}"       style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.875rem; font-weight:600; transition:color 0.15s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Accueil</a>
                 <a href="{{ route('talents.index') }}" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.875rem; font-weight:600; transition:color 0.15s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Talents</a>
-                <a href="#clients" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.875rem; font-weight:600; transition:color 0.15s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Clients</a>
             </div>
 
             {{-- Boutons auth (desktop) --}}
@@ -84,7 +83,6 @@
             <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
                 <a href="{{ route('home') }}"        @click="open=false" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.6rem 0;">Accueil</a>
                 <a href="{{ route('talents.index') }}" @click="open=false" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.6rem 0;">Talents</a>
-                <a href="#clients"                  @click="open=false" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.6rem 0;">Clients</a>
             </div>
             @guest
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
