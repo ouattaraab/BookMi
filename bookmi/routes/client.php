@@ -16,6 +16,7 @@ Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings
 Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
 Route::get('/bookings/{id}/pay', [BookingController::class, 'pay'])->name('bookings.pay');
 Route::post('/bookings/{id}/pay', [BookingController::class, 'processPayment'])->name('bookings.pay.process');
+Route::post('/bookings/{id}/pay/otp', [BookingController::class, 'submitOtp'])->name('bookings.pay.otp');
 Route::get('/bookings/payment/callback', [BookingController::class, 'paymentCallback'])->name('bookings.payment.callback');
 
 // Favoris

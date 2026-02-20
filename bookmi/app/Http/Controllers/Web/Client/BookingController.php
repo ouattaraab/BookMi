@@ -2,14 +2,21 @@
 
 namespace App\Http\Controllers\Web\Client;
 
+use App\Enums\PaymentMethod;
+use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
+use App\Models\Transaction;
+use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
+    public function __construct(private readonly PaymentService $paymentService) {}
+
     public function index(Request $request): View
     {
         $query = BookingRequest::where('client_id', auth()->id())
@@ -52,11 +59,116 @@ class BookingController extends Controller
 
     public function processPayment(int $id, Request $request): RedirectResponse
     {
-        return back()->with('info', 'Intégration Paystack en cours de développement.');
+        $request->validate([
+            'payment_method' => ['required', Rule::in(array_column(PaymentMethod::cases(), 'value'))],
+            'phone_number'   => ['nullable', 'regex:/^\+?[0-9]{8,15}$/'],
+        ]);
+
+        $booking = BookingRequest::where('client_id', auth()->id())
+            ->where('status', 'accepted')
+            ->with('client')
+            ->findOrFail($id);
+
+        $method = PaymentMethod::from($request->payment_method);
+
+        // For card/bank transfer, override callback URL to the web callback route
+        if (! $method->isMobileMoney()) {
+            config(['bookmi.payment.callback_url' => route('client.bookings.payment.callback')]);
+        }
+
+        try {
+            $transaction = $this->paymentService->initiatePayment($booking, [
+                'payment_method' => $request->payment_method,
+                'phone_number'   => $request->phone_number ?? '',
+            ]);
+
+            if ($method->isMobileMoney()) {
+                session(['_pay_ref' => $transaction->idempotency_key, '_pay_booking' => $id]);
+                return redirect()->route('client.bookings.pay', $id)
+                    ->with('payment_pending', true)
+                    ->with('payment_method_label', $this->methodLabel($method));
+            }
+
+            // Card / Bank Transfer → redirect to Paystack hosted checkout
+            $authUrl = $transaction->gateway_response['data']['authorization_url']
+                ?? $transaction->gateway_response['authorization_url']
+                ?? null;
+
+            if ($authUrl) {
+                return redirect()->away($authUrl);
+            }
+
+            return back()->with('error', 'Impossible d\'initialiser le paiement. Veuillez réessayer.');
+        } catch (PaymentException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Exception) {
+            return back()->with('error', 'Erreur de paiement inattendue. Veuillez réessayer.');
+        }
     }
 
-    public function paymentCallback(): RedirectResponse
+    public function submitOtp(int $id, Request $request): RedirectResponse
     {
-        return redirect()->route('client.bookings')->with('info', 'Callback de paiement traité.');
+        $request->validate(['otp' => 'required|string|min:4|max:8']);
+
+        $reference = session('_pay_ref');
+        if (! $reference) {
+            return redirect()->route('client.bookings.pay', $id)
+                ->with('error', 'Session expirée. Veuillez recommencer le paiement.');
+        }
+
+        try {
+            $this->paymentService->submitOtp($reference, $request->otp);
+            session()->forget(['_pay_ref', '_pay_booking']);
+            return redirect()->route('client.bookings.show', $id)
+                ->with('success', 'Code OTP validé ! Votre paiement est en cours de traitement.');
+        } catch (PaymentException) {
+            return back()->with('error', 'Code OTP invalide ou expiré. Veuillez réessayer.');
+        }
+    }
+
+    public function paymentCallback(Request $request): RedirectResponse
+    {
+        $reference = $request->string('trxref')->value()
+            ?: $request->string('reference')->value();
+
+        if (! $reference) {
+            return redirect()->route('client.bookings')
+                ->with('error', 'Référence de paiement manquante.');
+        }
+
+        $transaction = Transaction::where('gateway_reference', $reference)
+            ->orWhere('idempotency_key', $reference)
+            ->first();
+
+        if (! $transaction) {
+            return redirect()->route('client.bookings')
+                ->with('info', 'Paiement en cours de vérification. Votre réservation sera mise à jour sous peu.');
+        }
+
+        $status   = $transaction->status instanceof \BackedEnum
+            ? $transaction->status->value
+            : (string) $transaction->status;
+        $bookingId = $transaction->booking_request_id;
+
+        return match ($status) {
+            'succeeded' => redirect()->route('client.bookings.show', $bookingId)
+                ->with('success', 'Paiement effectué avec succès ! Votre réservation est confirmée.'),
+            'failed'    => redirect()->route('client.bookings.pay', $bookingId)
+                ->with('error', 'Le paiement a échoué. Veuillez réessayer avec une autre méthode.'),
+            default     => redirect()->route('client.bookings.show', $bookingId)
+                ->with('info', 'Paiement en cours de traitement, votre réservation sera mise à jour.'),
+        };
+    }
+
+    private function methodLabel(PaymentMethod $method): string
+    {
+        return match ($method) {
+            PaymentMethod::OrangeMoney  => 'Orange Money',
+            PaymentMethod::Wave         => 'Wave',
+            PaymentMethod::MtnMomo      => 'MTN MoMo',
+            PaymentMethod::MoovMoney    => 'Moov Money',
+            PaymentMethod::Card         => 'Carte bancaire',
+            PaymentMethod::BankTransfer => 'Virement bancaire',
+        };
     }
 }
