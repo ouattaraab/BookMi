@@ -18,6 +18,7 @@
         }
         .page-content { animation: pageIn 0.52s cubic-bezier(0.16,1,0.3,1) both; }
     </style>
+    @yield('head')
 </head>
 <body>
 @php
