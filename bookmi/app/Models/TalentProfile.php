@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -33,6 +34,7 @@ class TalentProfile extends Model
         'category_id',
         'subcategory_id',
         'stage_name',
+        'profile_photo',
         'bio',
         'city',
         'latitude',
@@ -74,6 +76,18 @@ class TalentProfile extends Model
             'overload_threshold' => 'integer',
             'overload_notified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Returns the public URL of the profile photo, or null if none uploaded.
+     */
+    public function getCoverPhotoUrlAttribute(): ?string
+    {
+        if ($this->profile_photo) {
+            return Storage::disk('public')->url($this->profile_photo);
+        }
+
+        return null;
     }
 
     public function getSlugOptions(): SlugOptions

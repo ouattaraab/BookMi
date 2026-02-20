@@ -172,8 +172,15 @@
     <div style="max-width:1200px; margin:0 auto;">
         <div class="tp-hero-inner" style="display:flex; align-items:flex-end; gap:1.5rem; padding-bottom:2rem; flex-wrap:wrap;">
 
-            {{-- Avatar --}}
-            <div class="tp-avatar">{{ $initial }}</div>
+            {{-- Avatar / Photo de profil --}}
+            @if($profile->cover_photo_url)
+                <img src="{{ $profile->cover_photo_url }}"
+                     alt="{{ $profile->stage_name }}"
+                     class="tp-avatar"
+                     style="object-fit:cover;font-size:0">
+            @else
+                <div class="tp-avatar">{{ $initial }}</div>
+            @endif
 
             {{-- Infos --}}
             <div style="flex:1; min-width:200px;">

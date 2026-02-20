@@ -33,19 +33,29 @@
 
     {{-- Photo --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-5">
-        <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0"
-             style="background:linear-gradient(135deg,#FF6B35,#C85A20)">
-            {{ strtoupper(substr($user->first_name ?? 'T', 0, 1)) }}
-        </div>
+        {{-- Avatar / Photo actuelle --}}
+        @if($profile?->cover_photo_url)
+            <img src="{{ $profile->cover_photo_url }}" alt="Photo de profil"
+                 class="w-20 h-20 rounded-2xl object-cover flex-shrink-0"
+                 style="box-shadow:0 4px 16px rgba(255,107,53,0.25)">
+        @else
+            <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-2xl flex-shrink-0"
+                 style="background:linear-gradient(135deg,#FF6B35,#C85A20)">
+                {{ strtoupper(substr($user->first_name ?? 'T', 0, 1)) }}
+            </div>
+        @endif
+
         <div class="flex-1 min-w-0">
             <p class="font-semibold text-gray-900">{{ $profile->stage_name ?? ($user->first_name . ' ' . $user->last_name) }}</p>
             <p class="text-sm text-gray-400 mb-3">{{ $user->email }}</p>
-            <form method="POST" action="{{ route('talent.profile.photo') }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('talent.profile.photo') }}" enctype="multipart/form-data" class="flex items-center gap-3 flex-wrap">
                 @csrf
-                <button type="submit"
-                        class="px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600 transition-colors">
+                <label class="cursor-pointer px-4 py-2 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600 transition-colors">
                     Changer la photo
-                </button>
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="hidden"
+                           onchange="this.closest('form').submit()">
+                </label>
+                <span class="text-xs text-gray-400">JPG, PNG ou WebP · max 4 Mo</span>
             </form>
         </div>
     </div>
