@@ -101,7 +101,7 @@
     </main>
 
     {{-- ═══════════════════ FOOTER ═══════════════════ --}}
-    <footer style="background:#060912; color:white;">
+    <footer class="footer-bg" style="color:white;">
         <div style="max-width:1200px; margin:0 auto; padding:4rem 1.5rem 2rem;">
             <div style="display:grid; grid-template-columns:1.6fr 1fr 1fr 1.4fr; gap:2.5rem; margin-bottom:3rem;"
                  class="footer-grid">
@@ -193,6 +193,21 @@
     </footer>
 
     <style>
+        /* ─── FOOTER : pattern africain/musical ─── */
+        .footer-bg {
+            background-color: #060912;
+            /* Couche 1 : séparateur dégradé en haut pour distinguer du bloc précédent */
+            /* Couche 2 : notes de musique flottantes (160×80) */
+            /* Couche 3 : diamants kente / adinkra (60×60) */
+            background-image:
+                linear-gradient(to bottom, rgba(26,39,68,0.85) 0%, transparent 70px),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='80'%3E%3Cline x1='44' y1='18' x2='44' y2='50' stroke='rgba(255,107,53,0.07)' stroke-width='1.5'/%3E%3Cellipse cx='40' cy='52' rx='6' ry='4' transform='rotate(-20 40 52)' fill='rgba(255,107,53,0.08)'/%3E%3Cpath d='M44 18 Q64 12 57 28' fill='none' stroke='rgba(255,107,53,0.07)' stroke-width='1.5'/%3E%3Cline x1='122' y1='28' x2='122' y2='60' stroke='rgba(255,107,53,0.055)' stroke-width='1.5'/%3E%3Cellipse cx='118' cy='62' rx='6' ry='4' transform='rotate(-20 118 62)' fill='rgba(255,107,53,0.065)'/%3E%3Cpath d='M122 28 Q142 22 135 38' fill='none' stroke='rgba(255,107,53,0.055)' stroke-width='1.5'/%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 3 L57 30 L30 57 L3 30 Z' fill='none' stroke='rgba(255,140,50,0.07)' stroke-width='1'/%3E%3Cpath d='M30 18 L42 30 L30 42 L18 30 Z' fill='rgba(255,107,53,0.03)'/%3E%3Cline x1='30' y1='3' x2='30' y2='57' stroke='rgba(255,140,50,0.035)' stroke-width='0.5'/%3E%3Cline x1='3' y1='30' x2='57' y2='30' stroke='rgba(255,140,50,0.035)' stroke-width='0.5'/%3E%3Ccircle cx='30' cy='3' r='2' fill='rgba(255,180,50,0.1)'/%3E%3Ccircle cx='57' cy='30' r='2' fill='rgba(255,180,50,0.1)'/%3E%3Ccircle cx='30' cy='57' r='2' fill='rgba(255,180,50,0.1)'/%3E%3Ccircle cx='3' cy='30' r='2' fill='rgba(255,180,50,0.1)'/%3E%3C/svg%3E");
+            background-size: 100% 70px, 160px 80px, 60px 60px;
+            background-repeat: no-repeat, repeat, repeat;
+            background-position: top center, 20px 30px, 0 0;
+        }
+
         @media (max-width: 768px) {
             .footer-grid { grid-template-columns: 1fr 1fr !important; }
         }

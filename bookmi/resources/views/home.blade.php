@@ -36,25 +36,25 @@
 
 /* ─── SEARCH WRAPPER (conteneur glossy) ─── */
 .search-wrapper {
-    max-width: 720px;
+    max-width: 760px;
     margin: 0 auto;
     background: rgba(10, 14, 26, 0.65);
-    border: 1.5px solid rgba(255,255,255,0.32);
-    border-radius: 22px;
-    padding: 14px;
+    border: 1.5px solid rgba(255,255,255,0.20);
+    border-radius: 26px;
+    padding: 18px;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.22),
-        inset 0 -1px 0 rgba(255,255,255,0.06),
+        inset 0 1px 0 rgba(255,255,255,0.16),
+        inset 0 -1px 0 rgba(255,255,255,0.05),
         0 28px 70px rgba(0,0,0,0.6),
-        0 0 0 1px rgba(255,255,255,0.10),
-        0 0 40px rgba(255,107,53,0.08);
+        0 0 0 1px rgba(255,255,255,0.07),
+        0 0 40px rgba(255,107,53,0.07);
 }
 .search-bar {
     display: flex;
     align-items: stretch;
-    gap: 10px;
+    gap: 12px;
 }
 
 /* Champs blancs internes */
@@ -62,11 +62,11 @@
     flex: 1;
     min-width: 0;
     background: white;
-    border-radius: 12px;
-    padding: 10px 14px;
+    border-radius: 14px;
+    padding: 14px 18px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 .search-field-icon {
     flex-shrink: 0;
@@ -76,19 +76,19 @@
 .search-field-text { flex: 1; min-width: 0; }
 .search-field label {
     display: block;
-    font-size: 9.5px;
+    font-size: 11px;
     font-weight: 800;
     color: #9ca3af;
     text-transform: uppercase;
     letter-spacing: 0.09em;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     font-family: 'Nunito', sans-serif;
     line-height: 1;
 }
 .search-field input {
     border: none;
     outline: none;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: #1f2937;
     width: 100%;
     background: transparent;
@@ -105,20 +105,20 @@
     background: linear-gradient(160deg, #FF7A45 0%, #FF6B35 40%, #E55A2B 100%);
     color: white;
     border: none;
-    border-radius: 12px;
-    padding: 0 24px;
+    border-radius: 14px;
+    padding: 0 30px;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 1rem;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 9px;
     font-family: 'Nunito', sans-serif;
     transition: transform 0.15s, box-shadow 0.15s;
     box-shadow: 0 4px 18px rgba(255,107,53,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
     position: relative;
     overflow: hidden;
-    min-height: 52px;
+    min-height: 62px;
 }
 /* Effet gloss iOS : reflet blanc en haut */
 .search-btn::before {
@@ -127,7 +127,7 @@
     top: 0; left: 0; right: 0;
     height: 50%;
     background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 100%);
-    border-radius: 12px 12px 50% 50%;
+    border-radius: 14px 14px 50% 50%;
     pointer-events: none;
 }
 .search-btn:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(255,107,53,0.6), inset 0 1px 0 rgba(255,255,255,0.18); }
@@ -331,7 +331,7 @@
                 {{-- Champ talent --}}
                 <div class="search-field">
                     <div class="search-field-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                     </div>
                     <div class="search-field-text">
                         <label>Quel talent ?</label>
@@ -342,7 +342,7 @@
                 {{-- Champ date --}}
                 <div class="search-field">
                     <div class="search-field-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </div>
                     <div class="search-field-text">
                         <label>Pour Quand ?</label>
