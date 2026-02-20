@@ -7,6 +7,7 @@ use App\Events\UserLoggedIn;
 use App\Events\UserLoggedOut;
 use App\Exceptions\AuthException;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -43,6 +44,8 @@ class AuthService
             $user->assignRole($data['role']);
 
             $this->sendOtp($user->phone);
+
+            $user->notify(new WelcomeNotification($data['role']));
 
             return $user;
         });

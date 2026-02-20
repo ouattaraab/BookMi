@@ -48,6 +48,8 @@
                         <a href="{{ route('talent.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
                     @elseif($u->hasRole('manager'))
                         <a href="{{ route('manager.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
+                    @elseif($u->is_admin)
+                        <a href="/admin" style="color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,107,53,0.5);">Admin ↗</a>
                     @endif
                 @else
                     <a href="{{ route('login') }}"
@@ -84,12 +86,25 @@
                 <a href="{{ route('home') }}"        @click="open=false" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.6rem 0;">Accueil</a>
                 <a href="{{ route('talents.index') }}" @click="open=false" style="color:rgba(255,255,255,0.75); text-decoration:none; font-size:0.9rem; font-weight:600; padding:0.6rem 0;">Talents</a>
             </div>
-            @guest
+            @auth
+                @php $mu = auth()->user(); @endphp
+                <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                    @if($mu->hasRole('client'))
+                        <a href="{{ route('client.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
+                    @elseif($mu->hasRole('talent'))
+                        <a href="{{ route('talent.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
+                    @elseif($mu->hasRole('manager'))
+                        <a href="{{ route('manager.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
+                    @elseif($mu->is_admin)
+                        <a href="/admin" style="color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,107,53,0.5);">Admin ↗</a>
+                    @endif
+                </div>
+            @else
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
                     <a href="{{ route('login') }}"    style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Connexion</a>
                     <a href="{{ route('register') }}" style="color:#0D1117; background:white; text-decoration:none; font-size:0.875rem; font-weight:800; padding:8px 20px; border-radius:100px;">Inscription</a>
                 </div>
-            @endguest
+            @endauth
         </div>
     </nav>
 

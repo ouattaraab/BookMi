@@ -15,7 +15,7 @@ class WebRegisterController extends Controller
 
     public function showForm(): View|RedirectResponse
     {
-        if (Auth::check()) {
+        if (Auth::check() && !auth()->user()->is_admin) {
             return redirect('/');
         }
 
