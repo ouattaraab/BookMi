@@ -149,10 +149,19 @@
     background: rgba(255,107,53,0.05);
 }
 
+/* ── Lightbox ── */
+[x-cloak] { display: none !important; }
+.scale-95 { transform: scale(0.95); }
+.scale-100 { transform: scale(1); }
+.opacity-0 { opacity: 0; }
+.opacity-100 { opacity: 1; }
+
 /* ── Page entry animation ── */
+/* IMPORTANT: 'to' uses transform:none (not translateY(0)) to avoid creating
+   a stacking context that would trap position:fixed descendants (lightbox). */
 @keyframes tpFadeUp {
     from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: none; }
 }
 .tp-hero-inner { animation: tpFadeUp 0.75s cubic-bezier(0.16,1,0.3,1) both; }
 .tp-body       { animation: tpFadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.12s both; }
@@ -333,39 +342,72 @@
 
             {{-- Portfolio --}}
             @if($profile->portfolioItems->isNotEmpty())
-                <div class="tp-section" id="portfolio">
+                <div class="tp-section" id="portfolio" x-data="portfolioLightbox()" @keydown.escape.window="close()">
                     <h2 class="tp-section-title">Portfolio</h2>
                     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:1rem;">
                         @foreach($profile->portfolioItems as $item)
                             @if($item->media_type === 'image')
-                                {{-- Image --}}
-                                <div style="border-radius:14px; overflow:hidden; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); aspect-ratio:4/3;">
+                                {{-- Image cliquable → lightbox --}}
+                                <div @click="openImage('{{ $item->publicUrl() }}', '{{ addslashes($item->caption ?? 'Portfolio') }}')"
+                                     style="border-radius:14px; overflow:hidden; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); aspect-ratio:4/3; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
+                                     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(255,107,53,0.3)'"
+                                     onmouseout="this.style.transform='';this.style.boxShadow=''">
                                     <img src="{{ $item->publicUrl() }}"
                                          alt="{{ $item->caption ?? 'Portfolio' }}"
                                          style="width:100%; height:100%; object-fit:cover; display:block;">
+                                    {{-- Icône loupe au survol --}}
+                                    <div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background 0.2s;"
+                                         onmouseover="this.style.background='rgba(0,0,0,0.35)'"
+                                         onmouseout="this.style.background='rgba(0,0,0,0)'">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" style="opacity:0;transition:opacity 0.2s"
+                                             onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                            <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                                        </svg>
+                                    </div>
                                 </div>
 
                             @elseif($item->media_type === 'video')
-                                {{-- Vidéo native --}}
-                                <div style="border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(255,255,255,0.07); aspect-ratio:16/9;">
+                                {{-- Vidéo native cliquable → lightbox --}}
+                                <div @click="openVideo('{{ $item->publicUrl() }}', '{{ addslashes($item->caption ?? 'Vidéo') }}')"
+                                     style="border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(255,255,255,0.07); aspect-ratio:16/9; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
+                                     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(255,107,53,0.3)'"
+                                     onmouseout="this.style.transform='';this.style.boxShadow=''">
                                     <video src="{{ $item->publicUrl() }}"
-                                           controls preload="metadata"
-                                           style="width:100%; height:100%; object-fit:cover; display:block;">
+                                           preload="metadata"
+                                           style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">
                                     </video>
+                                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);">
+                                        <div style="width:52px;height:52px;background:rgba(255,107,53,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                        </div>
+                                    </div>
                                 </div>
 
                             @elseif($item->media_type === 'link')
-                                @php $embedUrl = $item->youtubeEmbedUrl(); @endphp
-                                @if($embedUrl)
-                                    {{-- YouTube embed --}}
-                                    <div style="border-radius:14px; overflow:hidden; border:1px solid rgba(255,107,53,0.2); aspect-ratio:16/9; background:#000;">
-                                        <iframe src="{{ $embedUrl }}"
-                                                style="width:100%; height:100%; border:none; display:block;"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                allowfullscreen
-                                                loading="lazy"
-                                                title="{{ $item->caption ?? 'Vidéo YouTube' }}">
-                                        </iframe>
+                                @php
+                                    $embedUrl = $item->youtubeEmbedUrl();
+                                    $videoId  = null;
+                                    if ($embedUrl) {
+                                        preg_match('/embed\/([a-zA-Z0-9_-]{11})/', $embedUrl, $vm);
+                                        $videoId = $vm[1] ?? null;
+                                    }
+                                @endphp
+                                @if($embedUrl && $videoId)
+                                    {{-- YouTube : miniature cliquable → lightbox --}}
+                                    <div @click="openYoutube('{{ $embedUrl }}')"
+                                         style="border-radius:14px; overflow:hidden; border:1px solid rgba(255,107,53,0.2); aspect-ratio:16/9; background:#000; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
+                                         onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(255,107,53,0.35)'"
+                                         onmouseout="this.style.transform='';this.style.boxShadow=''">
+                                        <img src="https://img.youtube.com/vi/{{ $videoId }}/hqdefault.jpg"
+                                             alt="{{ $item->caption ?? 'Vidéo YouTube' }}"
+                                             style="width:100%; height:100%; object-fit:cover; display:block;">
+                                        {{-- Bouton play YouTube --}}
+                                        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.25);">
+                                            <div style="width:60px;height:60px;background:rgba(255,0,0,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                            </div>
+                                        </div>
                                     </div>
                                 @else
                                     {{-- Autre lien --}}
@@ -382,10 +424,80 @@
                             @endif
                             {{-- Caption --}}
                             @if($item->caption && $item->media_type !== 'link')
-                                <p style="color:rgba(255,255,255,0.35); font-size:0.75rem; margin:0; text-align:center; grid-column:span 1;">{{ $item->caption }}</p>
+                                <p style="color:rgba(255,255,255,0.35); font-size:0.75rem; margin:0.4rem 0 0; text-align:center;">{{ $item->caption }}</p>
                             @endif
                         @endforeach
                     </div>
+
+                    {{-- ── LIGHTBOX MODAL ──
+                         Téléporté à <body> pour échapper aux stacking contexts (animations).
+                         Architecture deux niveaux :
+                         - Niveau 1 (x-show shell) : position:fixed couvrant le viewport, togglé par Alpine
+                         - Niveau 2 (flex inner) : jamais touché par Alpine → display:flex garanti
+                    --}}
+                    <template x-teleport="body">
+                        {{-- Shell : Alpine ne fait que toggle display:none ↔ display:block ici --}}
+                        <div x-show="open" x-cloak
+                             @keydown.escape.window="close()"
+                             style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;">
+
+                            {{-- Flex centering : jamais touché par Alpine, display:flex garanti --}}
+                            <div @click.self="close()"
+                                 style="position:absolute;top:0;left:0;width:100%;height:100%;
+                                        background:rgba(0,0,0,0.92);
+                                        display:flex;align-items:center;justify-content:center;
+                                        padding:1.5rem;box-sizing:border-box;">
+
+                                {{-- Bouton ✕ Fermer --}}
+                                <button @click="close()"
+                                        style="position:absolute;top:1rem;right:1rem;
+                                               width:48px;height:48px;border-radius:50%;
+                                               background:rgba(255,255,255,0.15);
+                                               border:2px solid rgba(255,255,255,0.3);
+                                               color:#fff;font-size:1.4rem;font-weight:700;line-height:1;
+                                               cursor:pointer;display:flex;align-items:center;justify-content:center;"
+                                        onmouseover="this.style.background='rgba(255,107,53,0.85)';this.style.borderColor='#FF6B35'"
+                                        onmouseout="this.style.background='rgba(255,255,255,0.15)';this.style.borderColor='rgba(255,255,255,0.3)'">
+                                    ✕
+                                </button>
+
+                                {{-- Image --}}
+                                <div x-show="type === 'image'"
+                                     style="width:100%;max-width:920px;text-align:center;flex-shrink:0;">
+                                    <img :src="src" :alt="alt"
+                                         style="max-width:100%;max-height:80vh;object-fit:contain;
+                                                border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,0.8);
+                                                display:block;margin:0 auto;">
+                                    <p x-show="alt" x-text="alt"
+                                       style="color:rgba(255,255,255,0.6);font-size:0.9rem;font-weight:600;margin:0.75rem 0 0;"></p>
+                                </div>
+
+                                {{-- Vidéo native --}}
+                                <div x-show="type === 'video'"
+                                     style="width:100%;max-width:920px;flex-shrink:0;">
+                                    <video :src="src" controls autoplay
+                                           style="width:100%;max-height:80vh;border-radius:16px;
+                                                  box-shadow:0 24px 80px rgba(0,0,0,0.8);background:#000;display:block;">
+                                    </video>
+                                </div>
+
+                                {{-- YouTube (ratio 16/9 garanti par padding-top) --}}
+                                <div x-show="type === 'youtube'"
+                                     style="width:100%;max-width:920px;flex-shrink:0;">
+                                    <div style="position:relative;width:100%;padding-top:56.25%;">
+                                        <iframe :src="src"
+                                                style="position:absolute;top:0;left:0;width:100%;height:100%;
+                                                       border:none;border-radius:16px;
+                                                       box-shadow:0 24px 80px rgba(0,0,0,0.8);"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allowfullscreen>
+                                        </iframe>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </template>
                 </div>
             @endif
 
@@ -503,4 +615,48 @@
         </div>
     @endif
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function portfolioLightbox() {
+    return {
+        open: false,
+        type: '',   // 'image' | 'video' | 'youtube'
+        src:  '',
+        alt:  '',
+
+        openImage(src, alt) {
+            this.type = 'image';
+            this.src  = src;
+            this.alt  = alt;
+            this.open = true;
+            document.body.style.overflow = 'hidden';
+        },
+
+        openVideo(src, alt) {
+            this.type = 'video';
+            this.src  = src;
+            this.alt  = alt;
+            this.open = true;
+            document.body.style.overflow = 'hidden';
+        },
+
+        openYoutube(embedUrl) {
+            this.type = 'youtube';
+            // Ajouter autoplay=1 pour lancer la vidéo immédiatement
+            this.src  = embedUrl.replace('?rel=0', '?rel=0&autoplay=1');
+            this.open = true;
+            document.body.style.overflow = 'hidden';
+        },
+
+        close() {
+            this.open = false;
+            this.src  = '';
+            this.alt  = '';
+            document.body.style.overflow = '';
+        }
+    }
+}
+</script>
 @endsection
