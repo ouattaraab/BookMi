@@ -38,21 +38,13 @@ class WebLoginController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        // Check phone verified
-        if ($user->phone_verified_at === null) {
-            session(['pending_phone_verify' => $user->phone]);
-            Auth::logout();
-            return redirect()->route('auth.verify-phone')
-                ->withErrors(['phone' => 'Veuillez vérifier votre numéro de téléphone.']);
-        }
-
         // Check account active
         if (! $user->is_active) {
             Auth::logout();
             return back()->withErrors(['email' => 'Votre compte a été désactivé.'])->onlyInput('email');
         }
 
-        // Check 2FA
+        // Check 2FA (only if explicitly enabled by the user)
         if ($user->two_factor_enabled) {
             $token = $this->twoFactorService->generateChallengeToken($user);
 

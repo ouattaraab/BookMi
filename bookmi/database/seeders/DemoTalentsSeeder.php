@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\ServicePackage;
 use App\Models\TalentProfile;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -133,7 +134,7 @@ class DemoTalentsSeeder extends Seeder
         ];
 
         foreach ($talents as $data) {
-            $user = User::firstOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $data['user']['email']],
                 [
                     'first_name'        => $data['user']['first_name'],
@@ -141,6 +142,7 @@ class DemoTalentsSeeder extends Seeder
                     'phone'             => $data['user']['phone'],
                     'password'          => Hash::make('Password123!'),
                     'email_verified_at' => now(),
+                    'phone_verified_at' => now(),
                     'is_active'         => true,
                 ]
             );
@@ -164,6 +166,63 @@ class DemoTalentsSeeder extends Seeder
             }
         }
 
-        $this->command->info('✓ 5 catégories et 5 talents créés.');
+        // ── 3. Packages par talent ────────────────────────────────────────
+        $packages = [
+            'kofi.mensah@bookmi.test' => [
+                ['name' => 'Set 2h',        'type' => 'essentiel', 'cachet_amount' => 100000, 'duration_minutes' => 120, 'description' => 'Set DJ de 2 heures, parfait pour les cocktails et afterworks.', 'inclusions' => ['Matériel son inclus', 'Playlist personnalisée', '1 déplacement Abidjan'], 'sort_order' => 1],
+                ['name' => 'Set 4h',        'type' => 'standard',  'cachet_amount' => 150000, 'duration_minutes' => 240, 'description' => 'Set DJ de 4 heures pour mariages, anniversaires et soirées privées.', 'inclusions' => ['Matériel son + lumières', 'Playlist personnalisée', 'Prise en charge déplacement', 'Animation micro incluse'], 'sort_order' => 2],
+                ['name' => 'Soirée complète','type' => 'premium',  'cachet_amount' => 250000, 'duration_minutes' => 360, 'description' => 'Prestation complète 6h avec DJ set, animations et effets spéciaux.', 'inclusions' => ['Son & lumières premium', 'Machine à fumée', 'Animation DJ + MC', 'Prise en charge déplacement CI', 'Séance de répétition offerte'], 'sort_order' => 3],
+            ],
+            'ibrahim.kone@bookmi.test' => [
+                ['name' => 'Duo acoustique', 'type' => 'essentiel', 'cachet_amount' => 60000,  'duration_minutes' => 60,  'description' => 'Duo guitare + voix pour ambiance feutrée lors de vos événements.', 'inclusions' => ['Guitare acoustique', 'Répertoire varié', 'Déplacement Abidjan inclus'], 'sort_order' => 1],
+                ['name' => 'Groupe live 3h', 'type' => 'standard',  'cachet_amount' => 120000, 'duration_minutes' => 180, 'description' => 'Groupe de 3 musiciens pour 3h de live jazz et afrobeat.', 'inclusions' => ['Guitare, basse, percussions', 'Matériel son', 'Setlist personnalisée', 'Prise en charge déplacement'], 'sort_order' => 2],
+                ['name' => 'Concert privé',  'type' => 'premium',   'cachet_amount' => 200000, 'duration_minutes' => 300, 'description' => 'Concert live privé complet avec groupe de 5 musiciens.', 'inclusions' => ['5 musiciens professionnels', 'Son & lumières scène', 'Backline inclus', 'Répétition générale', 'Prise en charge nationale'], 'sort_order' => 3],
+            ],
+            'aya.toure@bookmi.test' => [
+                ['name' => 'Mini-concert',   'type' => 'essentiel', 'cachet_amount' => 80000,  'duration_minutes' => 45,  'description' => 'Performance vocale de 45 min, idéale pour cérémonies et cocktails.', 'inclusions' => ['Prestation vocale solo', 'Accompagnement musical (piste)', 'Déplacement Bouaké inclus'], 'sort_order' => 1],
+                ['name' => 'Récital 1h30',   'type' => 'standard',  'cachet_amount' => 150000, 'duration_minutes' => 90,  'description' => 'Récital gospel & R&B de 1h30 avec musicien accompagnateur.', 'inclusions' => ['Voix + pianiste', 'Répertoire sur mesure', 'Déplacement national', 'Répétition offerte'], 'sort_order' => 2],
+                ['name' => 'Soirée gala',    'type' => 'premium',   'cachet_amount' => 300000, 'duration_minutes' => 180, 'description' => 'Prestation gala premium 3h avec musiciens live et choristes.', 'inclusions' => ['Groupe de 4 musiciens', '2 choristes', 'Son scène professionnel', 'Mise en scène lumières', 'Coordination technique'], 'sort_order' => 3],
+            ],
+            'mariama.diallo@bookmi.test' => [
+                ['name' => 'Show 30 min',    'type' => 'essentiel', 'cachet_amount' => 40000,  'duration_minutes' => 30,  'description' => 'Show de danse contemporaine ou traditionnelle de 30 minutes.', 'inclusions' => ['Prestation solo', 'Costume inclus', 'Déplacement Abidjan'], 'sort_order' => 1],
+                ['name' => 'Duo 1h',         'type' => 'standard',  'cachet_amount' => 80000,  'duration_minutes' => 60,  'description' => 'Duo de danseuses pour 1h d\'animation lors de vos événements.', 'inclusions' => ['2 danseuses', 'Costumes variés', 'Mise en scène', 'Déplacement national'], 'sort_order' => 2],
+                ['name' => 'Troupe 2h',      'type' => 'premium',   'cachet_amount' => 180000, 'duration_minutes' => 120, 'description' => 'Troupe de 5 danseuses pour spectacle complet 2h, idéal mariage & gala.', 'inclusions' => ['5 danseuses', 'Costumes professionnels', 'Chorégraphie personnalisée', 'Répétition incluse', 'Prise en charge nationale'], 'sort_order' => 3],
+            ],
+            'alex.brou@bookmi.test' => [
+                ['name' => 'Reportage 3h',   'type' => 'essentiel', 'cachet_amount' => 50000,  'duration_minutes' => 180, 'description' => 'Reportage photo événementiel de 3h, livraison sous 48h.', 'inclusions' => ['100 photos retouchées', 'Galerie en ligne privée', 'Déplacement San-Pédro inclus'], 'sort_order' => 1],
+                ['name' => 'Journée complète','type' => 'standard',  'cachet_amount' => 100000, 'duration_minutes' => 480, 'description' => 'Couverture photo de toute la journée (8h), idéal pour mariages.', 'inclusions' => ['300+ photos retouchées', 'Galerie en ligne', 'Album numérique HD', 'Déplacement national', 'Livraison 72h'], 'sort_order' => 2],
+                ['name' => 'Pack mariage',   'type' => 'premium',   'cachet_amount' => 200000, 'duration_minutes' => 600, 'description' => 'Couverture photo+vidéo mariage complète, du matin à la nuit.', 'inclusions' => ['500+ photos retouchées', 'Vidéo souvenir 5 min', 'Album physique 30 pages', '2 photographes', 'Livraison clé USB', 'Prise en charge nationale'], 'sort_order' => 3],
+            ],
+        ];
+
+        foreach ($packages as $email => $pkgList) {
+            $user = User::where('email', $email)->first();
+            if (! $user) {
+                continue;
+            }
+            $talentProfile = TalentProfile::where('user_id', $user->id)->first();
+            if (! $talentProfile) {
+                continue;
+            }
+
+            // Only add if no packages exist yet
+            if ($talentProfile->servicePackages()->count() === 0) {
+                foreach ($pkgList as $pkg) {
+                    ServicePackage::create([
+                        'talent_profile_id' => $talentProfile->id,
+                        'name'              => $pkg['name'],
+                        'type'              => $pkg['type'],
+                        'cachet_amount'     => $pkg['cachet_amount'],
+                        'duration_minutes'  => $pkg['duration_minutes'],
+                        'description'       => $pkg['description'],
+                        'inclusions'        => $pkg['inclusions'],
+                        'is_active'         => true,
+                        'sort_order'        => $pkg['sort_order'],
+                    ]);
+                }
+            }
+        }
+
+        $this->command->info('✓ 5 catégories, 5 talents et leurs packages créés.');
     }
 }
