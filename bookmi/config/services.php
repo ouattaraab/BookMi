@@ -45,4 +45,9 @@ return [
         'public_key' => env('FEDAPAY_PUBLIC_KEY'),
     ],
 
+    'fcm' => [
+        'project_id'  => env('FCM_PROJECT_ID', 'bookmi-app'),
+        'server_key'  => env('FCM_SERVER_KEY'),
+    ],
+
 ];

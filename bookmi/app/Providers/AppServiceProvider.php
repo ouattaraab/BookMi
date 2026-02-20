@@ -3,11 +3,19 @@
 namespace App\Providers;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Events\BookingAccepted;
+use App\Events\BookingCancelled;
+use App\Events\BookingCreated;
 use App\Events\EscrowReleased;
+use App\Events\PaymentReceived;
 use App\Gateways\FedaPayGateway;
 use App\Gateways\PaymentGatewayResolver;
 use App\Gateways\PaystackGateway;
 use App\Listeners\HandleEscrowReleased;
+use App\Listeners\NotifyClientOfBookingAccepted;
+use App\Listeners\NotifyPartyOfBookingCancelled;
+use App\Listeners\NotifyTalentOfNewBooking;
+use App\Listeners\NotifyTalentOfPaymentReceived;
 use App\Repositories\Contracts\FavoriteRepositoryInterface;
 use App\Repositories\Contracts\ServicePackageRepositoryInterface;
 use App\Repositories\Contracts\TalentRepositoryInterface;
@@ -41,7 +49,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureRateLimiting();
-        Event::listen(EscrowReleased::class, HandleEscrowReleased::class);
+        Event::listen(EscrowReleased::class,   HandleEscrowReleased::class);
+        Event::listen(BookingCreated::class,   NotifyTalentOfNewBooking::class);
+        Event::listen(BookingAccepted::class,  NotifyClientOfBookingAccepted::class);
+        Event::listen(BookingCancelled::class, NotifyPartyOfBookingCancelled::class);
+        Event::listen(PaymentReceived::class,  NotifyTalentOfPaymentReceived::class);
     }
 
     protected function configureRateLimiting(): void
