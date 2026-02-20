@@ -147,6 +147,11 @@ class DemoTalentsSeeder extends Seeder
                 ]
             );
 
+            // Assign talent role (guard api) if not already assigned
+            if (! $user->hasRole('talent', 'api')) {
+                $user->assignRole('talent');
+            }
+
             $category = $catModels[$data['profile']['category']];
 
             if (! TalentProfile::where('user_id', $user->id)->exists()) {

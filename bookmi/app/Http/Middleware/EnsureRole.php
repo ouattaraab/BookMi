@@ -10,7 +10,7 @@ class EnsureRole
 {
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (! auth()->check() || ! auth()->user()->hasRole($role)) {
+        if (! auth()->check() || ! auth()->user()->hasRole($role, 'api')) {
             abort(403, 'Accès non autorisé.');
         }
 

@@ -79,9 +79,9 @@ class WebLoginController extends Controller
 
     private function redirectToDashboard(\App\Models\User $user): RedirectResponse
     {
-        if ($user->hasRole('client'))  return redirect()->route('client.dashboard');
-        if ($user->hasRole('talent'))  return redirect()->route('talent.dashboard');
-        if ($user->hasRole('manager')) return redirect()->route('manager.dashboard');
+        if ($user->hasRole('client', 'api'))  return redirect()->route('client.dashboard');
+        if ($user->hasRole('talent', 'api'))  return redirect()->route('talent.dashboard');
+        if ($user->hasRole('manager', 'api')) return redirect()->route('manager.dashboard');
 
         return redirect('/');
     }
