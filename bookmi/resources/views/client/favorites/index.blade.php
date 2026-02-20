@@ -2,85 +2,160 @@
 
 @section('title', 'Mes favoris — BookMi Client')
 
+@section('head')
+<style>
+/* ── Favorite card ── */
+.fav-card {
+    border-radius: 1.125rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s, border-color 0.3s;
+    position: relative;
+}
+.fav-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(255,107,53,0.25);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,107,53,0.12);
+}
+/* ── Photo area ── */
+.fav-photo {
+    position: relative;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+}
+.fav-photo-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,17,23,0.85) 0%, rgba(13,17,23,0.10) 50%, transparent 100%);
+}
+.fav-photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.16,1,0.3,1); }
+.fav-card:hover .fav-photo img { transform: scale(1.07); }
+/* ── Monogram fallback ── */
+.fav-mono {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1A2744 0%, #0F1E3A 100%);
+}
+.fav-mono-circle {
+    width: 4.5rem; height: 4.5rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.75rem; font-weight: 900; color: white;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--orange) 100%);
+    box-shadow: 0 0 30px rgba(255,107,53,0.35);
+}
+/* ── Remove fav button ── */
+.fav-remove {
+    position: absolute; top: 0.625rem; right: 0.625rem;
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: rgba(13,17,23,0.70); backdrop-filter: blur(8px);
+    border: 1px solid rgba(244,67,54,0.30);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(252,165,165,0.85);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+.fav-remove:hover { background: rgba(244,67,54,0.25); transform: scale(1.1); }
+/* ── Reveal ── */
+.reveal-item { opacity:0; transform:translateY(20px); transition:opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1); }
+.reveal-item.visible { opacity:1; transform:none; }
+</style>
+@endsection
+
 @section('content')
 <div class="space-y-6">
 
     {{-- Flash messages --}}
     @if(session('success'))
-    <div class="mb-4 bg-green-50 border border-green-200 rounded-xl p-4 text-green-800 text-sm font-medium">{{ session('success') }}</div>
+    <div class="p-3 rounded-xl text-sm font-medium" style="background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.25);color:rgba(134,239,172,0.95)">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-    <div class="mb-4 bg-red-50 border border-red-200 rounded-xl p-4 text-red-800 text-sm font-medium">{{ session('error') }}</div>
-    @endif
-    @if(session('info'))
-    <div class="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800 text-sm font-medium">{{ session('info') }}</div>
+    <div class="p-3 rounded-xl text-sm font-medium" style="background:rgba(244,67,54,0.12);border:1px solid rgba(244,67,54,0.25);color:rgba(252,165,165,0.95)">{{ session('error') }}</div>
     @endif
 
     {{-- Header --}}
-    <div>
-        <h1 class="text-2xl font-black text-gray-900">Mes favoris</h1>
-        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Talents que vous avez enregistrés</p>
+    <div class="reveal-item">
+        <h1 class="section-title">Mes favoris</h1>
+        <p class="section-sub">{{ $favorites->count() }} talent{{ $favorites->count() > 1 ? 's' : '' }} enregistré{{ $favorites->count() > 1 ? 's' : '' }}</p>
     </div>
 
     @if($favorites->isEmpty())
-        <div class="flex flex-col items-center justify-center py-20 text-center bg-white rounded-2xl border border-gray-100">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-            </svg>
-            <p class="text-gray-500 text-lg font-medium mb-2">Aucun talent en favori</p>
-            <p class="text-gray-400 text-sm mb-6">Explorez les talents et ajoutez-les à vos favoris !</p>
-            <a href="{{ route('home') }}" class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white" style="background:#2196F3">
+        {{-- Empty state --}}
+        <div class="glass-card flex flex-col items-center justify-center py-20 text-center reveal-item" style="transition-delay:0.06s">
+            <div class="relative mb-6">
+                <div class="w-20 h-20 rounded-3xl flex items-center justify-center"
+                     style="background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.15);box-shadow:0 0 40px rgba(255,107,53,0.10)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#FF6B35" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" opacity="0.3"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="font-black text-base mb-2" style="color:var(--text)">Aucun talent en favori</p>
+            <p class="text-sm mb-7 max-w-xs" style="color:var(--text-muted)">Explorez les talents et cliquez sur ❤ pour les sauvegarder ici.</p>
+            <a href="{{ route('talents.index') }}"
+               class="px-7 py-3 rounded-xl text-sm font-bold text-white"
+               style="background:linear-gradient(135deg,var(--orange),#ff8c5a);box-shadow:0 4px 16px rgba(255,107,53,0.35)">
                 Découvrir les talents
             </a>
         </div>
     @else
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            @foreach($favorites as $talent)
-            <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-blue-200 hover:shadow-md transition-all group">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            @foreach($favorites as $i => $talent)
+            @php
+                $tName = $talent->stage_name ?? trim(($talent->user->first_name ?? '') . ' ' . ($talent->user->last_name ?? '')) ?: '?';
+                $catColors = ['DJ' => '#5865F2', 'Musicien' => '#9B59B6', 'Danseur' => '#E91E63', 'Photographe' => '#00BCD4', 'Vidéaste' => '#FF5722', 'Animateur' => '#FF6B35', 'Chanteur' => '#4CAF50'];
+                $catName = $talent->category->name ?? '';
+                $catColor = $catColors[$catName] ?? '#FF6B35';
+            @endphp
+            <div class="fav-card reveal-item" style="transition-delay:{{ min($i * 0.08, 0.4) }}s">
 
-                {{-- Avatar / Photo --}}
-                @php
-                    $tName = $talent->stage_name
-                        ?? trim(($talent->user->first_name ?? '') . ' ' . ($talent->user->last_name ?? ''))
-                        ?: '?';
-                @endphp
-                <div class="relative h-40 flex items-center justify-center" style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)">
+                {{-- Photo --}}
+                <div class="fav-photo">
                     @if($talent->user->profile_photo_url ?? false)
-                        <img src="{{ $talent->user->profile_photo_url }}" alt="{{ $tName }}" class="w-full h-full object-cover">
+                        <img src="{{ $talent->user->profile_photo_url }}" alt="{{ $tName }}" loading="lazy">
                     @else
-                        <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-white font-bold text-3xl" style="background:#2196F3">
-                            {{ strtoupper(substr($tName, 0, 1)) }}
+                        <div class="fav-mono">
+                            <div class="fav-mono-circle">{{ strtoupper(substr($tName, 0, 1)) }}</div>
                         </div>
                     @endif
-                    {{-- Bouton retirer favori --}}
+                    <div class="fav-photo-overlay"></div>
+
+                    {{-- Category badge (bottom-left over photo) --}}
+                    @if($catName)
+                    <span class="absolute bottom-2.5 left-3 badge-status"
+                          style="background:{{ $catColor }}30;color:{{ $catColor }};border:1px solid {{ $catColor }}50;backdrop-filter:blur(6px);font-size:0.65rem">
+                        {{ $catName }}
+                    </span>
+                    @endif
+
+                    {{-- Remove button --}}
                     <form action="{{ route('client.favorites.destroy', $talent->id) }}" method="POST"
-                          class="absolute top-3 right-3"
                           onsubmit="return confirm('Retirer ce talent de vos favoris ?')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit"
-                            class="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center text-red-500 hover:bg-red-50 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                        <button type="submit" class="fav-remove">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                             </svg>
                         </button>
                     </form>
                 </div>
 
-                {{-- Infos --}}
+                {{-- Info --}}
                 <div class="p-4">
-                    <h3 class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{{ $tName }}</h3>
-                    <p class="text-sm text-gray-500 mb-3">{{ $talent->category->name ?? '—' }}</p>
+                    <h3 class="font-black text-sm mb-0.5" style="color:var(--text)">{{ $tName }}</h3>
                     @if($talent->bio)
-                        <p class="text-xs text-gray-400 line-clamp-2 mb-3">{{ $talent->bio }}</p>
+                        <p class="text-xs leading-relaxed mb-3 line-clamp-2" style="color:var(--text-muted)">{{ $talent->bio }}</p>
+                    @else
+                        <p class="mb-3"></p>
                     @endif
-                    <div class="flex gap-2">
-                        <a href="{{ route('talent.show', $talent->id) }}"
-                           class="flex-1 text-center px-3 py-2 rounded-xl text-xs font-semibold text-white transition-opacity hover:opacity-90"
-                           style="background:#2196F3">
-                            Voir le profil
-                        </a>
-                    </div>
+                    <a href="{{ route('talent.show', $talent->slug ?? $talent->id) }}"
+                       class="block w-full text-center px-3 py-2.5 rounded-xl text-xs font-bold text-white transition-all hover:scale-105"
+                       style="background:linear-gradient(135deg,var(--navy),var(--blue));box-shadow:0 3px 10px rgba(33,150,243,0.25)">
+                        Voir le profil →
+                    </a>
                 </div>
 
             </div>
@@ -89,4 +164,13 @@
     @endif
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.reveal-item').forEach(el => io.observe(el));
+});
+</script>
 @endsection

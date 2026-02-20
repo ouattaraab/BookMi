@@ -11,13 +11,67 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>
+        :root {
+            --bg: #0D1117;
+            --navy: #1A2744;
+            --orange: #FF6B35;
+            --blue: #2196F3;
+            --blue-light: #64B5F6;
+            --glass-bg: rgba(255,255,255,0.04);
+            --glass-border: rgba(255,255,255,0.09);
+            --glass-bg-hover: rgba(255,255,255,0.07);
+            --text: rgba(255,255,255,0.92);
+            --text-muted: rgba(255,255,255,0.50);
+            --text-faint: rgba(255,255,255,0.30);
+        }
         body, button, input, select, textarea { font-family: 'Nunito', sans-serif; }
+        body { background: var(--bg); color: var(--text); }
         @keyframes pageIn {
             from { opacity: 0; transform: translateY(14px); }
             to   { opacity: 1; transform: translateY(0); }
         }
         .page-content { animation: pageIn 0.52s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* ─── Shared dark glass card ─── */
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .glass-card-hover:hover {
+            background: var(--glass-bg-hover);
+            border-color: rgba(100,181,246,0.22);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 0 0 1px rgba(100,181,246,0.12);
+            transform: translateY(-2px);
+        }
+        /* ─── Dark inputs ─── */
+        .dark-input {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.10);
+            color: rgba(255,255,255,0.90);
+            border-radius: 0.75rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            outline: none;
+            transition: border-color 0.15s;
+            width: 100%;
+        }
+        .dark-input::placeholder { color: rgba(255,255,255,0.30); }
+        .dark-input:focus { border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(100,181,246,0.12); }
+        /* ─── Status badges ─── */
+        .badge-status {
+            font-size: 0.7rem; font-weight: 700;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            letter-spacing: 0.02em;
+        }
+        /* ─── Section header ─── */
+        .section-title { font-size: 1.4rem; font-weight: 900; color: var(--text); }
+        .section-sub { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; margin-top: 0.15rem; }
     </style>
+    @yield('head')
 </head>
 <body>
 @php
@@ -30,7 +84,7 @@
 
 <div
     class="flex h-screen"
-    style="background: #EFF3FA"
+    style="background: #0D1117"
     x-data="{ sidebarOpen: false }"
 >
     {{-- Mobile overlay --}}
@@ -138,15 +192,15 @@
         {{-- Header --}}
         <header
             class="flex-shrink-0 px-4 md:px-8 py-4 flex items-center justify-between"
-            style="background:rgba(255,255,255,0.85);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(26,39,68,0.08);box-shadow:0 1px 8px rgba(26,39,68,0.06)"
+            style="background:rgba(13,17,23,0.80);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.07);box-shadow:0 1px 16px rgba(0,0,0,0.3)"
         >
             <div class="flex items-center gap-3">
-                <button class="md:hidden text-gray-600 hover:text-gray-900 p-1" @click="sidebarOpen = true">
+                <button class="md:hidden p-1" style="color:rgba(255,255,255,0.65)" @click="sidebarOpen = true">
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
                 </button>
                 <div class="hidden md:block">
-                    <h2 class="text-sm text-gray-500">
-                        Espace client — <span class="font-semibold text-gray-900">{{ $displayName }}</span>
+                    <h2 class="text-sm" style="color:rgba(255,255,255,0.45)">
+                        Espace client — <span class="font-semibold" style="color:rgba(255,255,255,0.90)">{{ $displayName }}</span>
                     </h2>
                 </div>
             </div>
@@ -161,14 +215,14 @@
         </header>
 
         {{-- Page content --}}
-        <main class="flex-1 overflow-auto p-4 md:p-8 page-content">
+        <main class="flex-1 overflow-auto p-4 md:p-8 page-content" style="background:#0D1117">
             @if(session('success'))
-                <div class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+                <div class="mb-4 p-3 rounded-xl text-sm font-medium" style="background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.25);color:rgba(134,239,172,0.95)">
                     {{ session('success') }}
                 </div>
             @endif
             @if(session('error'))
-                <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+                <div class="mb-4 p-3 rounded-xl text-sm font-medium" style="background:rgba(244,67,54,0.12);border:1px solid rgba(244,67,54,0.25);color:rgba(252,165,165,0.95)">
                     {{ session('error') }}
                 </div>
             @endif
