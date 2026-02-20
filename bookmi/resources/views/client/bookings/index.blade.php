@@ -19,8 +19,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Mes réservations</h1>
-            <p class="text-sm text-gray-500 mt-1">Gérez toutes vos demandes de prestation</p>
+            <h1 class="text-2xl font-black text-gray-900">Mes réservations</h1>
+            <p class="text-sm text-gray-400 mt-0.5 font-semibold">Gérez toutes vos demandes de prestation</p>
         </div>
         <a href="{{ route('home') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white" style="background:#2196F3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>

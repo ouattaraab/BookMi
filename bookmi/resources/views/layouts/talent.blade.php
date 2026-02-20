@@ -10,7 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
-    <style>body, button, input, select, textarea { font-family: 'Nunito', sans-serif; }</style>
+    <style>
+        body, button, input, select, textarea { font-family: 'Nunito', sans-serif; }
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .page-content { animation: pageIn 0.52s cubic-bezier(0.16,1,0.3,1) both; }
+    </style>
 </head>
 <body>
 @php
@@ -23,7 +30,7 @@
 
 <div
     class="flex h-screen"
-    style="background:linear-gradient(135deg,#fff3e0 0%,#ffe8d6 25%,#fef3e2 60%,#fff8f0 100%)"
+    style="background: #FDF8F3"
     x-data="{ sidebarOpen: false }"
 >
     {{-- Mobile overlay --}}
@@ -43,9 +50,7 @@
     >
         {{-- Logo --}}
         <div class="px-6 py-5 flex items-center justify-between">
-            <a href="{{ route('home') }}" class="flex items-center gap-2">
-                <div class="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs flex-shrink-0"
-                     style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4)">B</div>
+            <a href="{{ route('home') }}" class="flex items-center gap-0.5">
                 <span class="font-extrabold text-xl text-white tracking-tight leading-none">Book</span><span class="font-extrabold text-xl tracking-tight leading-none" style="color:rgba(255,235,180,0.95)">Mi</span>
             </a>
             <button class="md:hidden text-white/70 hover:text-white" @click="sidebarOpen = false">
@@ -153,7 +158,7 @@
         </header>
 
         {{-- Page content --}}
-        <main class="flex-1 overflow-auto p-4 md:p-8">
+        <main class="flex-1 overflow-auto p-4 md:p-8 page-content">
             @if(session('success'))
                 <div class="mb-4 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
                     {{ session('success') }}

@@ -7,8 +7,8 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Analytiques</h1>
-        <p class="text-sm text-gray-500 mt-1">Vue d'ensemble de vos performances</p>
+        <h1 class="text-2xl font-black text-gray-900">Analytiques</h1>
+        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Vue d'ensemble de vos performances</p>
     </div>
 
     {{-- Stats cards --}}
@@ -57,7 +57,7 @@
     {{-- Tableau mensuel --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-base font-bold text-gray-900">Activité des 6 derniers mois</h2>
+            <h2 class="text-base font-black text-gray-900">Activité des 6 derniers mois</h2>
         </div>
 
         @if($monthly->isEmpty())

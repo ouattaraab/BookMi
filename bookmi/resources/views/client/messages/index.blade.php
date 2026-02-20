@@ -15,8 +15,8 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Messages</h1>
-        <p class="text-sm text-gray-500 mt-1">Vos conversations avec les talents</p>
+        <h1 class="text-2xl font-black text-gray-900">Messages</h1>
+        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Vos conversations avec les talents</p>
     </div>
 
     @if($conversations->isEmpty())

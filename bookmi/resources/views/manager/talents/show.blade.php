@@ -25,7 +25,7 @@
             {{-- Info --}}
             <div class="flex-1 min-w-0">
                 <div class="flex flex-wrap items-center gap-3">
-                    <h1 class="text-2xl font-bold text-gray-900">
+                    <h1 class="text-2xl font-black text-gray-900">
                         {{ $talent->stage_name ?? ($talent->user?->first_name . ' ' . $talent->user?->last_name) }}
                     </h1>
                     @if($talent->is_verified)

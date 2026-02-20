@@ -18,15 +18,15 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Paramètres</h1>
-        <p class="text-sm text-gray-500 mt-1">Sécurité et configuration de votre compte</p>
+        <h1 class="text-2xl font-black text-gray-900">Paramètres</h1>
+        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Sécurité et configuration de votre compte</p>
     </div>
 
     {{-- Statut 2FA --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
-                <h2 class="text-base font-bold text-gray-900">Double authentification (2FA)</h2>
+                <h2 class="text-base font-black text-gray-900">Double authentification (2FA)</h2>
                 <p class="text-xs text-gray-400 mt-0.5">Renforcez la sécurité de votre compte</p>
             </div>
             @if($user->two_factor_enabled ?? false)
@@ -175,7 +175,7 @@
     {{-- Infos compte --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-base font-bold text-gray-900">Informations du compte</h2>
+            <h2 class="text-base font-black text-gray-900">Informations du compte</h2>
         </div>
         <div class="p-6 space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">

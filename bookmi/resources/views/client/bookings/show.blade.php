@@ -24,7 +24,7 @@
             </svg>
         </a>
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Réservation #{{ $booking->id }}</h1>
+            <h1 class="text-2xl font-black text-gray-900">Réservation #{{ $booking->id }}</h1>
             <p class="text-sm text-gray-500">Détails de votre demande de prestation</p>
         </div>
     </div>

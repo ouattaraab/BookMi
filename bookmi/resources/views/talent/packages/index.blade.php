@@ -16,8 +16,8 @@
     {{-- Header --}}
     <div class="flex items-center justify-between flex-wrap gap-3">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Packages & Offres</h1>
-            <p class="text-sm text-gray-500 mt-1">Gérez vos prestations et tarifs</p>
+            <h1 class="text-2xl font-black text-gray-900">Packages & Offres</h1>
+            <p class="text-sm text-gray-400 mt-0.5 font-semibold">Gérez vos prestations et tarifs</p>
         </div>
         <button
             @click="showCreate = !showCreate"
@@ -31,7 +31,7 @@
     {{-- Form création inline --}}
     <div x-show="showCreate" x-cloak x-transition class="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-orange-100 flex items-center justify-between" style="background:#fff8f5">
-            <h2 class="text-base font-bold text-gray-900">Nouveau package</h2>
+            <h2 class="text-base font-black text-gray-900">Nouveau package</h2>
             <button type="button" @click="showCreate = false" class="text-gray-400 hover:text-gray-600">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
@@ -122,7 +122,7 @@
                             @endif
                         </div>
                         @if($package->description)
-                            <p class="text-sm text-gray-500 mt-1 leading-relaxed">{{ $package->description }}</p>
+                            <p class="text-sm text-gray-400 mt-0.5 font-semibold leading-relaxed">{{ $package->description }}</p>
                         @endif
                         <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
                             @if($package->duration_minutes)
@@ -176,7 +176,7 @@
     >
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden" @click.stop>
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-                <h3 class="text-base font-bold text-gray-900">Modifier le package</h3>
+                <h3 class="text-base font-black text-gray-900">Modifier le package</h3>
                 <button type="button" @click="editId = null" class="text-gray-400 hover:text-gray-600">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>

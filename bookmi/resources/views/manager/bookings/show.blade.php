@@ -129,7 +129,7 @@
                         </span>
                     </div>
                     <div class="border-t border-gray-100 pt-3 flex justify-between items-center">
-                        <span class="text-base font-bold text-gray-900">Total</span>
+                        <span class="text-base font-black text-gray-900">Total</span>
                         <span class="text-lg font-extrabold" style="color:#1A2744">
                             {{ $booking->total_amount ? number_format($booking->total_amount, 0, ',', ' ') . ' XOF' : '—' }}
                         </span>

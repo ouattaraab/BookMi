@@ -29,8 +29,8 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Paiement sécurisé</h1>
-        <p class="text-sm text-gray-500 mt-1">Complétez votre paiement pour confirmer la réservation</p>
+        <h1 class="text-2xl font-black text-gray-900">Paiement sécurisé</h1>
+        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Complétez votre paiement pour confirmer la réservation</p>
     </div>
 
     {{-- Récapitulatif réservation --}}

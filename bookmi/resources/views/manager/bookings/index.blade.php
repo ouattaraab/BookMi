@@ -7,7 +7,7 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Réservations</h1>
+        <h1 class="text-2xl font-black text-gray-900">Réservations</h1>
         <p class="text-gray-500 text-sm mt-1">Toutes les réservations de vos talents</p>
     </div>
 

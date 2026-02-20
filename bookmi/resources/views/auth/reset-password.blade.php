@@ -5,65 +5,188 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nouveau mot de passe — BookMi</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen flex items-center justify-center" style="background:linear-gradient(135deg,#dbeafe 0%,#e8e4ff 30%,#ddf4ff 65%,#d1fae5 100%)">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        html, body { margin: 0; padding: 0; }
+        body {
+            font-family: 'Nunito', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background-color: #070B14;
+            background-image:
+                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(255,107,53,0.26) 0%, rgba(200,60,20,0.10) 45%, transparent 68%),
+                radial-gradient(ellipse 110% 55% at 50% -8%, rgba(20,35,70,0.98) 0%, transparent 62%),
+                radial-gradient(ellipse 55% 38% at 96% 2%, rgba(33,150,243,0.07) 0%, transparent 55%);
+            overflow-x: hidden;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
+            background-size: 200px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .auth-wrapper { position: relative; z-index: 1; width: 100%; max-width: 420px; }
 
-    <div class="w-full max-w-sm mx-4">
-        <div class="text-center mb-8">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-1">
-                <span class="font-extrabold text-3xl tracking-tight" style="color:#1A2744">Book</span>
-                <span class="font-extrabold text-3xl tracking-tight" style="color:#FF6B35">Mi</span>
+        .auth-logo { text-align: center; margin-bottom: 2rem; }
+        .auth-logo a { display: inline-flex; align-items: center; gap: 1px; text-decoration: none; }
+        .auth-logo .logo-book { font-weight: 900; font-size: 2.1rem; color: #fff; letter-spacing: -0.02em; line-height: 1; }
+        .auth-logo .logo-mi   { font-weight: 900; font-size: 2.1rem; color: #2196F3; letter-spacing: -0.02em; line-height: 1; }
+        .auth-logo p { color: rgba(255,255,255,0.40); font-size: 0.875rem; margin-top: 0.5rem; font-weight: 600; }
+
+        @keyframes authCardIn {
+            from { opacity: 0; transform: translateY(38px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .auth-card {
+            background: #fff;
+            border-radius: 22px;
+            padding: 2.25rem 2.25rem 2rem;
+            box-shadow: 0 48px 110px rgba(0,0,0,0.60), 0 0 0 1px rgba(255,255,255,0.06);
+            animation: authCardIn 0.78s cubic-bezier(0.16,1,0.3,1) 0.06s both;
+        }
+        .auth-card h2 { font-size: 1.25rem; font-weight: 900; color: #111827; margin-bottom: 0.25rem; }
+        .auth-card .subtitle { font-size: 0.8125rem; color: #9CA3AF; margin-bottom: 1.5rem; font-weight: 600; }
+
+        .form-group { margin-bottom: 1.125rem; }
+        .auth-label { display: block; font-size: 0.78rem; font-weight: 800; color: #374151; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.04em; }
+        .auth-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #E9EAEC;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            color: #111827;
+            background: #F9FAFB;
+            transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .auth-input:focus {
+            border-color: #2196F3;
+            background: #fff;
+            box-shadow: 0 0 0 3.5px rgba(33,150,243,0.13);
+        }
+        .input-wrap { position: relative; }
+        .input-wrap .auth-input { padding-right: 3rem; }
+        .eye-btn {
+            position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+            background: none; border: none; cursor: pointer; color: #9CA3AF; padding: 0;
+            display: flex; align-items: center; transition: color 0.15s;
+        }
+        .eye-btn:hover { color: #374151; }
+        .auth-btn {
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 13px;
+            font-size: 1rem;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 0.375rem;
+            transition: opacity 0.15s, transform 0.15s;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1A2744 0%, #2563EB 100%);
+            letter-spacing: 0.01em;
+        }
+        .auth-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0 0 50% 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        .auth-btn:hover { opacity: 0.91; transform: translateY(-1px); }
+        .auth-btn:active { transform: translateY(0); }
+
+        .auth-alert { padding: 0.75rem 1rem; border-radius: 10px; font-size: 0.825rem; font-weight: 700; margin-bottom: 1.25rem; }
+        .auth-alert.error { background: #FEE2E2; border: 1.5px solid #FCA5A5; color: #991B1B; }
+
+        .back-link {
+            display: flex; align-items: center; justify-content: center; gap: 0.375rem;
+            font-size: 0.875rem; font-weight: 700;
+            color: rgba(255,255,255,0.38);
+            margin-top: 1.5rem;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .back-link:hover { color: rgba(255,255,255,0.75); }
+    </style>
+</head>
+<body>
+
+    <div class="auth-wrapper" x-data="{ show1: false, show2: false }">
+        <div class="auth-logo">
+            <a href="{{ route('home') }}">
+                <span class="logo-book">Book</span><span class="logo-mi">Mi</span>
             </a>
-            <p class="text-gray-500 text-sm mt-2">Choisissez un nouveau mot de passe</p>
+            <p>Choisissez un nouveau mot de passe</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <div class="auth-card">
+            <h2>Nouveau mot de passe</h2>
+            <p class="subtitle">Votre nouveau mot de passe doit contenir au moins 8 caractères</p>
 
             @if($errors->any())
-                <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">{{ $errors->first() }}</div>
+                <div class="auth-alert error">{{ $errors->first() }}</div>
             @endif
 
-            <form method="POST" action="{{ route('password.update') }}" class="space-y-5">
+            <form method="POST" action="{{ route('password.update') }}">
                 @csrf
                 <input type="hidden" name="token" value="{{ $token }}">
 
-                <div class="space-y-1">
-                    <label class="text-sm font-medium text-gray-700">Adresse email</label>
+                <div class="form-group">
+                    <label class="auth-label">Adresse email</label>
                     <input type="email" name="email" value="{{ request()->query('email', old('email')) }}" required
-                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="vous@exemple.com">
+                        class="auth-input" placeholder="vous@exemple.com">
                 </div>
 
-                <div class="space-y-1" x-data="{ show: false }">
-                    <label class="text-sm font-medium text-gray-700">Nouveau mot de passe</label>
-                    <div class="relative">
-                        <input :type="show ? 'text' : 'password'" name="password" required minlength="8"
-                            class="w-full px-3 py-2.5 pr-10 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="8 caractères minimum">
-                        <button type="button" @click="show = !show" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                            <svg x-show="!show" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                            <svg x-show="show" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" x2="22" y1="2" y2="22"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/></svg>
+                <div class="form-group">
+                    <label class="auth-label">Nouveau mot de passe</label>
+                    <div class="input-wrap">
+                        <input :type="show1 ? 'text' : 'password'" name="password" required minlength="8"
+                            class="auth-input" placeholder="8 caractères minimum">
+                        <button type="button" class="eye-btn" @click="show1 = !show1">
+                            <svg x-show="!show1" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="show1" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-sm font-medium text-gray-700">Confirmer le mot de passe</label>
-                    <input type="password" name="password_confirmation" required
-                        class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="••••••••">
+                <div class="form-group">
+                    <label class="auth-label">Confirmer le mot de passe</label>
+                    <div class="input-wrap">
+                        <input :type="show2 ? 'text' : 'password'" name="password_confirmation" required
+                            class="auth-input" placeholder="••••••••">
+                        <button type="button" class="eye-btn" @click="show2 = !show2">
+                            <svg x-show="!show2" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg x-show="show2" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                        </button>
+                    </div>
                 </div>
 
-                <button
-                    type="submit"
-                    class="w-full py-3 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90"
-                    style="background:linear-gradient(135deg,#1A2744,#2563eb)"
-                >
-                    Réinitialiser le mot de passe
-                </button>
+                <button type="submit" class="auth-btn">Réinitialiser le mot de passe</button>
             </form>
         </div>
+
+        <a href="{{ route('login') }}" class="back-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            Retour à la connexion
+        </a>
     </div>
 
 </body>

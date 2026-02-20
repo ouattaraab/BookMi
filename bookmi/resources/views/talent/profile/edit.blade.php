@@ -27,8 +27,8 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Mon profil</h1>
-        <p class="text-sm text-gray-500 mt-1">Informations visibles par les clients</p>
+        <h1 class="text-2xl font-black text-gray-900">Mon profil</h1>
+        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Informations visibles par les clients</p>
     </div>
 
     {{-- Photo --}}
@@ -55,7 +55,7 @@
         @csrf
 
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-base font-bold text-gray-900">Informations personnelles</h2>
+            <h2 class="text-base font-black text-gray-900">Informations personnelles</h2>
         </div>
 
         <div class="p-6 space-y-5">

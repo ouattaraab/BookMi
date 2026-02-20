@@ -22,8 +22,8 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Vérification d'identité</h1>
-        <p class="text-sm text-gray-500 mt-1">Soumettez un document officiel pour obtenir le badge vérifié</p>
+        <h1 class="text-2xl font-black text-gray-900">Vérification d'identité</h1>
+        <p class="text-sm text-gray-400 mt-0.5 font-semibold">Soumettez un document officiel pour obtenir le badge vérifié</p>
     </div>
 
     {{-- Statut global --}}
@@ -56,7 +56,7 @@
     {{-- Formulaire soumission --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-base font-bold text-gray-900">Soumettre un document</h2>
+            <h2 class="text-base font-black text-gray-900">Soumettre un document</h2>
             <p class="text-xs text-gray-400 mt-1">Formats acceptés : JPG, PNG, PDF — max 10 Mo</p>
         </div>
         <form method="POST" action="{{ route('talent.verification.submit') }}" enctype="multipart/form-data" class="p-6 space-y-5">
@@ -123,7 +123,7 @@
     @if($verifications->count() > 0)
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-            <h2 class="text-base font-bold text-gray-900">Historique des soumissions</h2>
+            <h2 class="text-base font-black text-gray-900">Historique des soumissions</h2>
         </div>
         <div class="divide-y divide-gray-50">
             @foreach($verifications as $v)

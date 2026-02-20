@@ -8,7 +8,7 @@
     {{-- Header --}}
     <div class="flex items-center justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-900">Mes talents</h1>
+            <h1 class="text-2xl font-black text-gray-900">Mes talents</h1>
             <p class="text-gray-500 text-sm mt-1">{{ $talents->count() }} talent(s) sous votre gestion</p>
         </div>
     </div>

@@ -7,7 +7,7 @@
 
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Messages</h1>
+        <h1 class="text-2xl font-black text-gray-900">Messages</h1>
         <p class="text-gray-500 text-sm mt-1">Conversations de vos talents avec leurs clients</p>
     </div>
 

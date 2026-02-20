@@ -2,6 +2,37 @@
 
 @section('title', 'Découvrir les talents — BookMi')
 
+@section('head')
+<style>
+    /* Discovery page animations */
+    @keyframes discoverSlideUp {
+        from { opacity: 0; transform: translateY(32px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .disc-tag   { animation: discoverSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
+    .disc-title { animation: discoverSlideUp 0.85s cubic-bezier(0.16,1,0.3,1) 0.18s both; }
+    .disc-sub   { animation: discoverSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.34s both; }
+    .disc-pills { animation: discoverSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.50s both; }
+
+    /* Card cascade reveal */
+    .tc-reveal {
+        opacity: 0;
+        transform: translateY(44px);
+        transition: opacity 0.72s cubic-bezier(0.16,1,0.3,1), transform 0.72s cubic-bezier(0.16,1,0.3,1);
+        will-change: transform, opacity;
+    }
+    .tc-reveal.is-visible { opacity: 1; transform: translateY(0); }
+    .tc-d1  { transition-delay: 0.00s; }
+    .tc-d2  { transition-delay: 0.08s; }
+    .tc-d3  { transition-delay: 0.16s; }
+    .tc-d4  { transition-delay: 0.24s; }
+    .tc-d5  { transition-delay: 0.00s; }
+    .tc-d6  { transition-delay: 0.08s; }
+    .tc-d7  { transition-delay: 0.16s; }
+    .tc-d8  { transition-delay: 0.24s; }
+</style>
+@endsection
+
 @section('content')
 <div class="min-h-screen" style="background:#f8fafc">
 
@@ -9,18 +40,18 @@
     <div class="relative overflow-hidden py-16"
          style="background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 50%, #C84B1E 100%)">
         <div class="absolute inset-0 pointer-events-none"
-             style="background-image:radial-gradient(circle at 80% 50%, rgba(255,255,255,0.06) 0%, transparent 50%)"></div>
+             style="background-image:radial-gradient(circle at 80% 50%, rgba(255,255,255,0.06) 0%, transparent 50%),radial-gradient(circle at 20% 80%, rgba(0,0,0,0.08) 0%, transparent 45%)"></div>
         <div class="max-w-6xl mx-auto px-4 text-center relative">
-            <p class="text-white/70 text-xs font-extrabold uppercase tracking-widest mb-3">Plateforme BookMi</p>
-            <h1 class="text-4xl md:text-5xl font-black text-white mb-3" style="letter-spacing:-0.02em">
+            <p class="disc-tag text-white/70 text-xs font-extrabold uppercase tracking-widest mb-3">Plateforme BookMi</p>
+            <h1 class="disc-title text-4xl md:text-5xl font-black text-white mb-3" style="letter-spacing:-0.02em">
                 Découvrez nos talents
             </h1>
-            <p class="text-white/75 font-medium">
+            <p class="disc-sub text-white/75 font-medium">
                 {{ $talents->total() }} talent{{ $talents->total() > 1 ? 's' : '' }} disponible{{ $talents->total() > 1 ? 's' : '' }} en Côte d'Ivoire
             </p>
 
             {{-- Catégories pills --}}
-            <div class="mt-6 flex flex-wrap justify-center gap-2">
+            <div class="disc-pills mt-6 flex flex-wrap justify-center gap-2">
                 <a href="{{ route('talents.index') }}"
                    class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all {{ !request('category') ? 'bg-white text-[#FF6B35]' : 'bg-white/20 text-white hover:bg-white/30' }}">
                     Tous
@@ -119,7 +150,8 @@
         @else
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             @foreach($talents as $talent)
-            <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col">
+            @php $dClass = 'tc-d' . (($loop->index % 4) + 1); @endphp
+            <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col tc-reveal {{ $dClass }}">
 
                 {{-- Cover --}}
                 <a href="{{ route('talent.show', $talent->slug ?? $talent->id) }}" class="block">
@@ -195,4 +227,23 @@
         @endif
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+(function() {
+    var obs = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.10 });
+
+    document.querySelectorAll('.tc-reveal').forEach(function(el) {
+        obs.observe(el);
+    });
+})();
+</script>
 @endsection

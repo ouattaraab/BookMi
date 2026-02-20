@@ -5,21 +5,24 @@
 @section('content')
 <div class="space-y-6">
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard Manager</h1>
-        <p class="text-gray-500 text-sm mt-1">Vue d'ensemble de vos talents</p>
+        <h1 class="text-2xl font-black text-gray-900">Tableau de bord</h1>
+        <p class="text-gray-400 text-sm mt-0.5 font-semibold">Vue d'ensemble de vos talents gérés</p>
     </div>
 
     {{-- Stats --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         @foreach([
-            ['label' => 'Talents gérés',      'value' => $stats['talents'], 'color' => '#2196F3'],
-            ['label' => 'Total réservations', 'value' => $stats['bookings'], 'color' => '#FF9800'],
-            ['label' => 'En attente',          'value' => $stats['pending'], 'color' => '#FF6B35'],
-            ['label' => 'Terminées',           'value' => $stats['completed'], 'color' => '#4CAF50'],
+            ['label' => 'Talents gérés',      'value' => $stats['talents'], 'color' => '#2196F3', 'bg' => '#EFF8FF'],
+            ['label' => 'Total réservations', 'value' => $stats['bookings'], 'color' => '#FF9800', 'bg' => '#FFF8EE'],
+            ['label' => 'En attente',          'value' => $stats['pending'], 'color' => '#FF6B35', 'bg' => '#FFF4EF'],
+            ['label' => 'Terminées',           'value' => $stats['completed'], 'color' => '#4CAF50', 'bg' => '#F0FDF4'],
         ] as $stat)
-        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <p class="text-2xl font-extrabold" style="color:{{ $stat['color'] }}">{{ $stat['value'] }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ $stat['label'] }}</p>
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm overflow-hidden relative"
+             style="border-top: 3px solid {{ $stat['color'] }}">
+            <div class="absolute top-0 right-0 w-20 h-20 rounded-full -translate-y-8 translate-x-8 opacity-60"
+                 style="background: {{ $stat['bg'] }}"></div>
+            <p class="text-2xl font-black relative" style="color:{{ $stat['color'] }}">{{ $stat['value'] }}</p>
+            <p class="text-xs text-gray-500 mt-1 font-semibold relative">{{ $stat['label'] }}</p>
         </div>
         @endforeach
     </div>
