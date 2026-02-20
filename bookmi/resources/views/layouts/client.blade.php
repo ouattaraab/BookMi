@@ -5,8 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'BookMi - Espace client')</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+    <style>body, button, input, select, textarea { font-family: 'Nunito', sans-serif; }</style>
 </head>
 <body>
 @php
@@ -39,9 +43,10 @@
     >
         {{-- Logo --}}
         <div class="px-6 py-5 flex items-center justify-between">
-            <a href="{{ route('home') }}" class="flex items-center">
-                <span class="font-extrabold text-2xl text-white tracking-tight leading-none">Book</span>
-                <span class="font-extrabold text-2xl tracking-tight leading-none" style="color:#64B5F6">Mi</span>
+            <a href="{{ route('home') }}" class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center font-black text-white text-xs flex-shrink-0"
+                     style="background:linear-gradient(135deg,#FF6B35,#E55A2B)">B</div>
+                <span class="font-extrabold text-xl text-white tracking-tight leading-none">Book</span><span class="font-extrabold text-xl tracking-tight leading-none" style="color:#64B5F6">Mi</span>
             </a>
             <button class="md:hidden text-white/70 hover:text-white" @click="sidebarOpen = false">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>

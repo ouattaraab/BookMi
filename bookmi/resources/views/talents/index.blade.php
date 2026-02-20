@@ -6,12 +6,32 @@
 <div class="min-h-screen" style="background:#f8fafc">
 
     {{-- ═══════ Header ═══════ --}}
-    <div style="background: linear-gradient(135deg, #1A2744 0%, #0F1E3A 100%)" class="py-14">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <h1 class="text-4xl font-black text-white mb-2">Découvrez nos talents</h1>
-            <p class="text-white/60">
+    <div class="relative overflow-hidden py-16"
+         style="background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 50%, #C84B1E 100%)">
+        <div class="absolute inset-0 pointer-events-none"
+             style="background-image:radial-gradient(circle at 80% 50%, rgba(255,255,255,0.06) 0%, transparent 50%)"></div>
+        <div class="max-w-6xl mx-auto px-4 text-center relative">
+            <p class="text-white/70 text-xs font-extrabold uppercase tracking-widest mb-3">Plateforme BookMi</p>
+            <h1 class="text-4xl md:text-5xl font-black text-white mb-3" style="letter-spacing:-0.02em">
+                Découvrez nos talents
+            </h1>
+            <p class="text-white/75 font-medium">
                 {{ $talents->total() }} talent{{ $talents->total() > 1 ? 's' : '' }} disponible{{ $talents->total() > 1 ? 's' : '' }} en Côte d'Ivoire
             </p>
+
+            {{-- Catégories pills --}}
+            <div class="mt-6 flex flex-wrap justify-center gap-2">
+                <a href="{{ route('talents.index') }}"
+                   class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all {{ !request('category') ? 'bg-white text-[#FF6B35]' : 'bg-white/20 text-white hover:bg-white/30' }}">
+                    Tous
+                </a>
+                @foreach(['DJ', 'Musicien', 'Chanteur', 'Animateur', 'Danseur', 'Comédien', 'Photographe', 'Vidéaste'] as $cat)
+                <a href="{{ route('talents.index', ['category' => $cat] + request()->except('category', 'page')) }}"
+                   class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all {{ request('category') === $cat ? 'bg-white text-[#FF6B35]' : 'bg-white/20 text-white hover:bg-white/30' }}">
+                    {{ $cat }}
+                </a>
+                @endforeach
+            </div>
         </div>
     </div>
 
@@ -99,10 +119,10 @@
         @else
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             @foreach($talents as $talent)
-            <a href="{{ route('talent.show', $talent->slug ?? $talent->id) }}"
-               class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 overflow-hidden">
+            <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col">
 
                 {{-- Cover --}}
+                <a href="{{ route('talent.show', $talent->slug ?? $talent->id) }}" class="block">
                 <div class="h-44 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
                     @if($talent->cover_photo_url)
                         <img src="{{ $talent->cover_photo_url }}"
@@ -128,31 +148,40 @@
                     </div>
                     @endif
                 </div>
+                </a>
 
                 {{-- Info --}}
-                <div class="p-4">
-                    <p class="font-bold text-gray-900 group-hover:text-[#FF6B35] transition-colors truncate">
-                        {{ $talent->stage_name ?? ($talent->user->first_name ?? 'Artiste') }}
-                    </p>
-                    <p class="text-xs text-gray-500 mt-0.5">{{ $talent->category?->name ?? 'Artiste' }}</p>
+                <div class="p-4 flex flex-col flex-1">
+                    <a href="{{ route('talent.show', $talent->slug ?? $talent->id) }}" class="block">
+                        <p class="font-extrabold text-gray-900 group-hover:text-[#FF6B35] transition-colors truncate text-sm">
+                            {{ $talent->stage_name ?? ($talent->user->first_name ?? 'Artiste') }}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-0.5 font-semibold uppercase tracking-wide">{{ $talent->category?->name ?? 'Artiste' }}</p>
+                    </a>
 
-                    <div class="flex items-center justify-between mt-3">
+                    <div class="flex items-center justify-between mt-2 mb-3">
                         <div class="flex items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="#FF9800" viewBox="0 0 24 24">
                                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                             </svg>
-                            <span class="text-xs font-semibold text-gray-600">
+                            <span class="text-xs font-bold text-gray-600">
                                 {{ number_format($talent->average_rating ?? 0, 1) }}
                             </span>
                         </div>
                         @if($talent->cachet_amount)
-                        <span class="text-xs font-semibold" style="color:#FF6B35">
-                            {{ number_format($talent->cachet_amount, 0, ',', ' ') }} F
+                        <span class="text-xs font-extrabold" style="color:#1A2744">
+                            Dès {{ number_format($talent->cachet_amount, 0, ',', ' ') }} F
                         </span>
                         @endif
                     </div>
+
+                    <a href="{{ route('talent.show', $talent->slug ?? $talent->id) }}"
+                       class="mt-auto block w-full text-center py-2 rounded-xl font-extrabold text-white text-xs transition-all hover:scale-[1.02]"
+                       style="background:linear-gradient(135deg,#FF6B35,#E55A2B);box-shadow:0 3px 10px rgba(255,107,53,0.35)">
+                        Réserver →
+                    </a>
                 </div>
-            </a>
+            </div>
             @endforeach
         </div>
 
