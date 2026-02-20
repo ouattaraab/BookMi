@@ -24,19 +24,28 @@ class BookingCancelledNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $eventDate   = $this->booking->event_date?->translatedFormat('d F Y') ?? '—';
-        $packageName = $this->booking->servicePackage?->name ?? '—';
+        $booking          = $this->booking;
+        $packageName      = $booking->servicePackage?->name ?? '—';
+        $eventDate        = $booking->event_date?->translatedFormat('d F Y') ?? '—';
+        $cancelledByLabel = $this->cancelledByRole === 'client' ? 'Le client' : 'Le talent';
 
-        $who = $this->cancelledByRole === 'client' ? 'Le client' : 'Le talent';
+        $recipientName = trim(($notifiable->first_name ?? '') . ' ' . ($notifiable->last_name ?? '')) ?: 'Utilisateur';
+
+        // Show refund info only if client cancelled after payment
+        $refundInfo = null;
+        if ($this->cancelledByRole === 'client' && in_array($booking->status?->value ?? $booking->status, ['paid', 'confirmed'])) {
+            $refundInfo = 'Si un paiement a été effectué, le remboursement sera traité sous 5 à 10 jours ouvrés selon la politique d\'annulation applicable.';
+        }
 
         return (new MailMessage())
             ->subject('Réservation annulée — BookMi')
-            ->greeting('Information importante')
-            ->line("{$who} a annulé la réservation suivante :")
-            ->line("**Prestation :** {$packageName}")
-            ->line("**Date prévue :** {$eventDate}")
-            ->action('Voir les détails', url('/client/bookings/' . $this->booking->id))
-            ->line('Si vous avez des questions, contactez notre support.')
-            ->salutation("L'équipe BookMi");
+            ->markdown('emails.booking-cancelled', [
+                'recipientName'    => $recipientName,
+                'packageName'      => $packageName,
+                'eventDate'        => $eventDate,
+                'cancelledByLabel' => $cancelledByLabel,
+                'refundInfo'       => $refundInfo,
+                'actionUrl'        => url('/client/bookings/' . $booking->id),
+            ]);
     }
 }

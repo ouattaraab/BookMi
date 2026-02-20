@@ -23,21 +23,28 @@ class PaymentReceivedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $booking     = $this->transaction->bookingRequest;
-        $amount      = number_format($this->transaction->amount ?? 0, 0, ',', ' ');
-        $eventDate   = $booking?->event_date?->translatedFormat('d F Y') ?? '—';
+        $transaction = $this->transaction;
+        $booking     = $transaction->bookingRequest;
+
+        $talentName  = $booking?->talentProfile?->stage_name
+            ?? trim(($booking?->talentProfile?->user?->first_name ?? '') . ' ' . ($booking?->talentProfile?->user?->last_name ?? ''))
+            ?: 'Talent';
+        $clientName  = trim(($booking?->client?->first_name ?? '') . ' ' . ($booking?->client?->last_name ?? '')) ?: 'Client';
         $packageName = $booking?->servicePackage?->name ?? '—';
-        $ref         = $this->transaction->idempotency_key ?? $this->transaction->gateway_reference ?? '—';
+        $eventDate   = $booking?->event_date?->translatedFormat('d F Y') ?? '—';
+        $amount      = number_format($transaction->amount ?? 0, 0, ',', ' ');
+        $reference   = $transaction->idempotency_key ?? $transaction->gateway_reference ?? '—';
 
         return (new MailMessage())
             ->subject('Paiement reçu et sécurisé — BookMi')
-            ->greeting('Bonne nouvelle !')
-            ->line("Le paiement de **{$amount} XOF** a été reçu et placé en séquestre.")
-            ->line("**Prestation :** {$packageName}")
-            ->line("**Date :** {$eventDate}")
-            ->line("**Référence :** `{$ref}`")
-            ->line('Le montant vous sera versé après confirmation de la prestation.')
-            ->action('Voir la réservation', url('/talent/bookings/' . ($booking?->id ?? '')))
-            ->salutation("L'équipe BookMi");
+            ->markdown('emails.payment-received', [
+                'talentName'    => $talentName,
+                'clientName'    => $clientName,
+                'packageName'   => $packageName,
+                'eventDate'     => $eventDate,
+                'escrowAmount'  => $amount,
+                'reference'     => $reference,
+                'actionUrl'     => url('/talent/bookings/' . ($booking?->id ?? '')),
+            ]);
     }
 }

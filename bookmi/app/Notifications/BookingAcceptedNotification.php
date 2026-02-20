@@ -23,22 +23,29 @@ class BookingAcceptedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $talentName  = $this->booking->talentProfile?->stage_name
-            ?? trim(($this->booking->talentProfile?->user?->first_name ?? '') . ' ' . ($this->booking->talentProfile?->user?->last_name ?? ''))
+        $booking     = $this->booking;
+        $talentName  = $booking->talentProfile?->stage_name
+            ?? trim(($booking->talentProfile?->user?->first_name ?? '') . ' ' . ($booking->talentProfile?->user?->last_name ?? ''))
             ?: 'Le talent';
-        $eventDate   = $this->booking->event_date?->translatedFormat('d F Y') ?? '—';
-        $packageName = $this->booking->servicePackage?->name ?? '—';
-        $amount      = number_format($this->booking->total_amount ?? 0, 0, ',', ' ');
+        $clientName  = trim(($booking->client?->first_name ?? '') . ' ' . ($booking->client?->last_name ?? '')) ?: 'Client';
+        $packageName = $booking->servicePackage?->name ?? '—';
+        $eventDate   = $booking->event_date?->translatedFormat('d F Y') ?? '—';
+
+        $artistFee   = number_format($booking->artist_fee ?? ($booking->total_amount ?? 0), 0, ',', ' ');
+        $commission  = number_format($booking->platform_commission ?? 0, 0, ',', ' ');
+        $total       = number_format($booking->total_amount ?? 0, 0, ',', ' ');
 
         return (new MailMessage())
-            ->subject('Votre réservation a été acceptée — BookMi')
-            ->greeting('Bonne nouvelle !')
-            ->line("**{$talentName}** a accepté votre demande de prestation.")
-            ->line("**Prestation :** {$packageName}")
-            ->line("**Date :** {$eventDate}")
-            ->line("**Total à payer :** {$amount} XOF")
-            ->action('Procéder au paiement', url('/client/bookings/' . $this->booking->id . '/pay'))
-            ->line('Finalisez votre réservation en effectuant le paiement sécurisé.')
-            ->salutation("L'équipe BookMi");
+            ->subject('Votre réservation est acceptée — BookMi')
+            ->markdown('emails.booking-accepted', [
+                'clientName'  => $clientName,
+                'talentName'  => $talentName,
+                'packageName' => $packageName,
+                'eventDate'   => $eventDate,
+                'artistFee'   => $artistFee,
+                'commission'  => $commission,
+                'total'       => $total,
+                'actionUrl'   => url('/client/bookings/' . $booking->id . '/pay'),
+            ]);
     }
 }
