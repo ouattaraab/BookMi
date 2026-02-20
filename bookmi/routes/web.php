@@ -8,12 +8,14 @@ use App\Http\Controllers\Web\Auth\WebResetPasswordController;
 use App\Http\Controllers\Web\Auth\WebTwoFactorController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\TalentDiscoveryController;
+use App\Http\Controllers\Web\TalentNotificationController;
 use App\Http\Controllers\Web\TalentPageController;
 use Illuminate\Support\Facades\Route;
 
 // ── Public ─────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/talents', [TalentDiscoveryController::class, 'index'])->name('talents.index');
+Route::post('/talents/notify', [TalentNotificationController::class, 'store'])->name('talents.notify');
 Route::get('/talents/{slug}', [TalentPageController::class, 'show'])->name('talent.show');
 
 // ── Auth (guest only) ───────────────────────────────────────────────────────

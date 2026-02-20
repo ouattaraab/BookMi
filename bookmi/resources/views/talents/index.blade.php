@@ -576,6 +576,139 @@
     box-shadow: 0 8px 24px var(--orange-glow);
 }
 
+/* ─── NOTIFICATION FORM ──────────────────────────────────────────────────── */
+.notif-card {
+    width: 100%;
+    max-width: 440px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,107,53,0.25);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem 1rem;
+    margin-top: 1.25rem;
+    backdrop-filter: blur(12px);
+}
+.notif-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.notif-toggle button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 100px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.notif-toggle button:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.notif-toggle-active {
+    background: rgba(255,107,53,0.18) !important;
+    border-color: rgba(255,107,53,0.6) !important;
+    color: #FF6B35 !important;
+}
+.notif-input-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: stretch;
+}
+.notif-input {
+    flex: 1;
+    padding: 0.65rem 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.88rem;
+    outline: none;
+    transition: border-color 0.2s;
+    min-width: 0;
+}
+.notif-input::placeholder { color: rgba(255,255,255,0.35); }
+.notif-input:focus { border-color: rgba(255,107,53,0.6); }
+.notif-btn {
+    padding: 0.65rem 1.2rem;
+    border-radius: 10px;
+    border: none;
+    background: var(--orange);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px var(--orange-glow);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+.notif-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 18px var(--orange-glow); }
+.notif-btn:disabled { opacity: 0.6; cursor: wait; }
+.notif-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.notif-error {
+    color: #f87171;
+    font-size: 0.78rem;
+    margin-top: 0.6rem;
+    font-weight: 600;
+}
+.notif-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.73rem;
+    margin-top: 0.75rem;
+}
+.notif-success {
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(74,222,128,0.07);
+    border: 1px solid rgba(74,222,128,0.25);
+    border-radius: 16px;
+    margin-top: 1.25rem;
+}
+.notif-success-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(74,222,128,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+}
+.notif-success h4 {
+    color: #4ade80;
+    font-size: 1rem;
+    font-weight: 800;
+    margin: 0 0 0.4rem;
+}
+.notif-success p {
+    color: rgba(255,255,255,0.6);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
 /* ─── PAGINATION ────────────────────────────────────────────────────────── */
 .disc-pagination {
     display: flex;
@@ -748,16 +881,107 @@ nav[aria-label="Pagination"] svg { display: none; }
         <div class="disc-grid">
 
             @if($talents->isEmpty())
-            <div class="disc-empty">
+            @php $searchQuery = request('search', ''); @endphp
+            <div class="disc-empty"
+                 x-data="{
+                    contact: 'email',
+                    email: '',
+                    phone: '',
+                    loading: false,
+                    success: false,
+                    error: '',
+                    async submit() {
+                        this.error = '';
+                        if (this.contact === 'email' && !this.email) { this.error = 'Veuillez saisir votre adresse email.'; return; }
+                        if (this.contact === 'phone' && !this.phone) { this.error = 'Veuillez saisir votre numéro de téléphone.'; return; }
+                        this.loading = true;
+                        try {
+                            const body = new FormData();
+                            body.append('_token', document.querySelector('meta[name=csrf-token]').content);
+                            body.append('search_query', '{{ addslashes($searchQuery) }}');
+                            if (this.contact === 'email') body.append('email', this.email);
+                            else body.append('phone', this.phone);
+                            const res = await fetch('{{ route('talents.notify') }}', { method: 'POST', body });
+                            const json = await res.json();
+                            if (json.success) { this.success = true; }
+                            else { this.error = json.message || 'Une erreur est survenue.'; }
+                        } catch(e) { this.error = 'Une erreur réseau est survenue.'; }
+                        this.loading = false;
+                    }
+                 }">
+
+                {{-- Icône et titre --}}
                 <div class="disc-empty-orb">
                     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"
                          fill="none" stroke="#FF6B35" stroke-width="1.5" viewBox="0 0 24 24">
                         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                 </div>
-                <h3>Aucun talent trouvé</h3>
-                <p>Essayez d'autres filtres ou explorez tous nos artistes.</p>
-                <a href="{{ route('talents.index') }}" class="disc-empty-btn">
+
+                @if($searchQuery)
+                    <h3>« {{ $searchQuery }} » n'est pas encore sur BookMi</h3>
+                    <p>Cet artiste n'est pas encore disponible sur la plateforme.<br>
+                       Laissez votre contact et nous vous préviendrons dès qu'il rejoint BookMi !</p>
+                @else
+                    <h3>Aucun talent trouvé</h3>
+                    <p>Essayez d'autres filtres ou explorez tous nos artistes.</p>
+                @endif
+
+                @if($searchQuery)
+                {{-- ── Formulaire de notification ── --}}
+                <div class="notif-card" x-show="!success">
+                    <div class="notif-toggle">
+                        <button type="button"
+                                :class="contact === 'email' ? 'notif-toggle-active' : ''"
+                                @click="contact = 'email'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
+                            Email
+                        </button>
+                        <button type="button"
+                                :class="contact === 'phone' ? 'notif-toggle-active' : ''"
+                                @click="contact = 'phone'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            Téléphone
+                        </button>
+                    </div>
+
+                    <div class="notif-input-row">
+                        <div x-show="contact === 'email'" style="width:100%">
+                            <input type="email" x-model="email"
+                                   class="notif-input"
+                                   placeholder="votre@email.com"
+                                   @keydown.enter="submit()">
+                        </div>
+                        <div x-show="contact === 'phone'" style="width:100%">
+                            <input type="tel" x-model="phone"
+                                   class="notif-input"
+                                   placeholder="+225 07 00 00 00 00"
+                                   @keydown.enter="submit()">
+                        </div>
+                        <button type="button" class="notif-btn" @click="submit()" :disabled="loading">
+                            <span x-show="!loading">Me notifier</span>
+                            <span x-show="loading" class="notif-spinner"></span>
+                        </button>
+                    </div>
+
+                    <p x-show="error" x-text="error" class="notif-error"></p>
+                    <p class="notif-hint">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Vos données ne seront jamais partagées avec des tiers.
+                    </p>
+                </div>
+
+                {{-- ── État succès ── --}}
+                <div class="notif-success" x-show="success" x-cloak>
+                    <div class="notif-success-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="#4ade80" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <h4>Parfait, vous êtes sur la liste !</h4>
+                    <p>Nous vous contacterons dès que <strong>{{ $searchQuery }}</strong> rejoint BookMi.</p>
+                </div>
+                @endif
+
+                <a href="{{ route('talents.index') }}" class="disc-empty-btn" style="margin-top:1.5rem;">
                     Voir tous les talents →
                 </a>
             </div>
