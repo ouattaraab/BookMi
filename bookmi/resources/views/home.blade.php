@@ -283,6 +283,59 @@
 .path-btn-white { background: white; color: #0D1117; box-shadow: 0 2px 12px rgba(255,255,255,0.1); }
 .path-btn-dark  { background: #0D1117; color: white; }
 
+/* ══════════════════════════════════════════════════
+   ANIMATION SYSTEM — Apple-style cinematic reveals
+══════════════════════════════════════════════════ */
+
+/* Hero — keyframes jouées au chargement */
+@keyframes heroSlideUp {
+    from { opacity: 0; transform: translateY(64px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroScale {
+    from { opacity: 0; transform: scale(0.95) translateY(22px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+
+.hero-title-1 { animation: heroSlideUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.10s both; }
+.hero-title-2 { animation: heroSlideUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.28s both; }
+.hero-sub     { animation: heroSlideUp 0.85s cubic-bezier(0.16,1,0.3,1) 0.48s both; }
+.hero-search  { animation: heroScale   0.90s cubic-bezier(0.16,1,0.3,1) 0.65s both; }
+.hero-tags    { animation: heroSlideUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.82s both; }
+
+/* Scroll reveal — états initiaux */
+.reveal, .reveal-left, .reveal-right {
+    will-change: transform, opacity;
+}
+.reveal {
+    opacity: 0;
+    transform: translateY(54px);
+    transition: opacity .85s cubic-bezier(0.16,1,0.3,1),
+                transform .85s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-left {
+    opacity: 0;
+    transform: translateX(-72px);
+    transition: opacity .9s cubic-bezier(0.16,1,0.3,1),
+                transform .9s cubic-bezier(0.16,1,0.3,1);
+}
+.reveal-right {
+    opacity: 0;
+    transform: translateX(72px);
+    transition: opacity .9s cubic-bezier(0.16,1,0.3,1),
+                transform .9s cubic-bezier(0.16,1,0.3,1);
+}
+/* États visibles */
+.reveal.is-visible       { opacity: 1; transform: translateY(0); }
+.reveal-left.is-visible  { opacity: 1; transform: translateX(0); }
+.reveal-right.is-visible { opacity: 1; transform: translateX(0); }
+
+/* Délais de stagger */
+.d-1 { transition-delay: .12s; }
+.d-2 { transition-delay: .24s; }
+.d-3 { transition-delay: .36s; }
+.d-4 { transition-delay: .48s; }
+
 /* ─── RESPONSIVE ─── */
 @media (max-width: 768px) {
     .cat-grid { grid-template-columns: 1fr !important; }
@@ -312,21 +365,21 @@
     <div style="max-width:960px; margin:0 auto; padding:5rem 1.5rem; text-align:center; position:relative; z-index:10; width:100%;">
 
         {{-- Titre --}}
-        <h1 style="font-weight:900; color:white; line-height:1.08; margin:0 0 0.1em; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
+        <h1 class="hero-title-1" style="font-weight:900; color:white; line-height:1.08; margin:0 0 0.1em; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
             Connectez-vous aux
         </h1>
-        <h1 style="font-weight:900; color:#FF6B35; line-height:1.08; margin:0 0 1.4rem; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
+        <h1 class="hero-title-2" style="font-weight:900; color:#FF6B35; line-height:1.08; margin:0 0 1.4rem; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
             Talents Ivoiriens
         </h1>
 
         {{-- Sous-titre --}}
-        <p style="color:rgba(255,255,255,0.65); font-size:1.05rem; line-height:1.65; margin:0 auto 2.5rem; max-width:460px; font-weight:500;">
+        <p class="hero-sub" style="color:rgba(255,255,255,0.65); font-size:1.05rem; line-height:1.65; margin:0 auto 2.5rem; max-width:460px; font-weight:500;">
             La première plateforme pour réserver des talents vérifiés en toute sécurité.<br>
             Paiement via Mobile Money.
         </p>
 
         {{-- Barre de recherche (contour glossy) --}}
-        <div class="search-wrapper">
+        <div class="search-wrapper hero-search">
             <form action="{{ route('talents.index') }}" method="GET" class="search-bar">
                 {{-- Champ talent --}}
                 <div class="search-field">
@@ -358,7 +411,7 @@
         </div>
 
         {{-- Tags populaires --}}
-        <div style="margin-top:1.25rem; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; font-size:0.8rem;">
+        <div class="hero-tags" style="margin-top:1.25rem; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px; font-size:0.8rem;">
             <span style="color:rgba(255,255,255,0.35); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:0.7rem;">Populaire&nbsp;:</span>
             @foreach(['Orchestres Zouglou'=>'Musicien', 'DJ Mariage'=>'DJ', 'Maître de Cérémonie'=>'Animateur'] as $label => $cat)
             <a href="{{ route('talents.index', ['category'=>$cat]) }}"
@@ -376,7 +429,7 @@
      2. CATÉGORIES DE TALENTS
 ════════════════════════════════════════════════ --}}
 <section style="background:white; padding:5rem 1.5rem;">
-    <div style="text-align:center; margin-bottom:3rem;">
+    <div class="reveal" style="text-align:center; margin-bottom:3rem;">
         <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#111; margin:0 0 0.5rem;">Catégories de Talents</h2>
         <p style="color:#6b7280; font-size:0.95rem; font-weight:500; margin:0 0 0.75rem;">Explorez la richesse artistique ivoirienne.</p>
         <div style="width:36px; height:3px; background:#FF6B35; border-radius:2px; margin:0 auto;"></div>
@@ -384,7 +437,7 @@
 
     <div class="cat-grid">
         {{-- DJs --}}
-        <a href="{{ route('talents.index', ['category'=>'DJ']) }}" class="cat-card cat-card-blue">
+        <a href="{{ route('talents.index', ['category'=>'DJ']) }}" class="cat-card cat-card-blue reveal">
             <div class="cat-icon-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
             </div>
@@ -393,7 +446,7 @@
         </a>
 
         {{-- Musiciens --}}
-        <a href="{{ route('talents.index', ['category'=>'Musicien']) }}" class="cat-card cat-card-purple">
+        <a href="{{ route('talents.index', ['category'=>'Musicien']) }}" class="cat-card cat-card-purple reveal d-1">
             <div class="cat-icon-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
             </div>
@@ -402,7 +455,7 @@
         </a>
 
         {{-- Danseurs --}}
-        <a href="{{ route('talents.index', ['category'=>'Danseur']) }}" class="cat-card cat-card-pink">
+        <a href="{{ route('talents.index', ['category'=>'Danseur']) }}" class="cat-card cat-card-pink reveal d-2">
             <div class="cat-icon-wrap">
                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" stroke="white" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="4" r="2"/><path d="M15.09 8.26L12 10l-3.09-1.74A2 2 0 0 0 7 10v5h2v7h2v-5h2v5h2v-7h2v-5a2 2 0 0 0-1.91-1.74z"/></svg>
             </div>
@@ -420,28 +473,35 @@
     <div class="stats-grid">
         @foreach([
             [
-                'value' => '9+',
-                'label' => 'Talents Vérifiés',
-                'svg'   => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+                'value'  => '9+',
+                'count'  => 9,
+                'suffix' => '+',
+                'label'  => 'Talents Vérifiés',
+                'svg'    => '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
             ],
             [
-                'value' => '16+',
-                'label' => 'Événements Réussis',
-                'svg'   => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+                'value'  => '16+',
+                'count'  => 16,
+                'suffix' => '+',
+                'label'  => 'Événements Réussis',
+                'svg'    => '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
             ],
             [
-                'value' => '100%',
-                'label' => 'Satisfaction Client',
-                'svg'   => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
+                'value'  => '100%',
+                'count'  => 100,
+                'suffix' => '%',
+                'label'  => 'Satisfaction Client',
+                'svg'    => '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
             ],
         ] as $stat)
-        <div>
+        <div class="reveal" style="transition-delay: {{ $loop->index * 0.14 }}s;">
             <div class="stat-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                     {!! $stat['svg'] !!}
                 </svg>
             </div>
-            <div style="font-size:clamp(2.5rem,5vw,3.5rem); font-weight:900; color:white; line-height:1; margin-bottom:0.5rem; letter-spacing:-0.02em;">
+            <div class="stat-count" data-count="{{ $stat['count'] }}" data-suffix="{{ $stat['suffix'] }}"
+                 style="font-size:clamp(2.5rem,5vw,3.5rem); font-weight:900; color:white; line-height:1; margin-bottom:0.5rem; letter-spacing:-0.02em;">
                 {{ $stat['value'] }}
             </div>
             <div style="font-size:0.72rem; font-weight:800; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.12em;">
@@ -457,7 +517,7 @@
      4. POURQUOI BOOKMI
 ════════════════════════════════════════════════ --}}
 <section style="background:white; padding:5rem 1.5rem;">
-    <div style="text-align:center; margin-bottom:3rem;">
+    <div class="reveal" style="text-align:center; margin-bottom:3rem;">
         <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#111; margin:0 0 0.5rem;">Pourquoi choisir BookMi&nbsp;?</h2>
         <div style="width:36px; height:3px; background:#FF6B35; border-radius:2px; margin:0 auto 0.75rem;"></div>
         <p style="color:#6b7280; font-size:0.95rem; font-weight:500; margin:0; max-width:480px; margin-left:auto; margin-right:auto;">
@@ -489,7 +549,7 @@
                 'icon_color'=> '#16a34a',
             ],
         ] as $why)
-        <div class="why-card">
+        <div class="why-card reveal" style="transition-delay: {{ $loop->index * 0.13 }}s;">
             <div class="why-icon" style="background:{{ $why['icon_bg'] }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="{{ $why['icon_color'] }}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                     {!! $why['icon'] !!}
@@ -514,7 +574,7 @@
     <div class="cta-inner">
 
         {{-- Gauche --}}
-        <div>
+        <div class="reveal-left">
             <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,107,53,0.12); border:1px solid rgba(255,107,53,0.25); border-radius:100px; padding:5px 14px; margin-bottom:1.5rem;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#FF6B35" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
                 <span style="font-size:0.7rem; font-weight:800; color:#FF6B35; text-transform:uppercase; letter-spacing:0.1em;">Réservation Sécurisée · Mobile Money</span>
@@ -538,7 +598,7 @@
         </div>
 
         {{-- Droite : 2 cartes --}}
-        <div>
+        <div class="reveal-right">
             {{-- Carte Client --}}
             <div class="path-card path-card-dark" style="position:relative;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
@@ -568,4 +628,49 @@
     </div>
 </section>
 
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    /* ── Scroll reveal (fade-up / slide-left / slide-right) ── */
+    var revealObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                revealObs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
+        .forEach(function (el) { revealObs.observe(el); });
+
+    /* ── Count-up pour les stats ── */
+    var countObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var el     = entry.target;
+            var end    = parseInt(el.dataset.count, 10);
+            var suffix = el.dataset.suffix || '';
+            var dur    = 1700;
+            var t0     = performance.now();
+
+            (function tick(now) {
+                var progress = Math.min((now - t0) / dur, 1);
+                var eased    = 1 - Math.pow(1 - progress, 3); /* ease-out cubic */
+                el.textContent = Math.round(eased * end) + suffix;
+                if (progress < 1) requestAnimationFrame(tick);
+            })(t0);
+
+            countObs.unobserve(el);
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('[data-count]')
+        .forEach(function (el) { countObs.observe(el); });
+
+});
+</script>
 @endsection
