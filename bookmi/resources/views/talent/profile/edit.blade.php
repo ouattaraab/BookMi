@@ -125,6 +125,27 @@
                 </div>
             </div>
 
+            {{-- Liens sociaux --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Réseaux sociaux</label>
+                <div class="space-y-3">
+                    @foreach([
+                        'instagram' => ['label'=>'Instagram','placeholder'=>'https://instagram.com/votre_compte','color'=>'#E1306C'],
+                        'facebook'  => ['label'=>'Facebook', 'placeholder'=>'https://facebook.com/votre_page',  'color'=>'#1877F2'],
+                        'youtube'   => ['label'=>'YouTube',  'placeholder'=>'https://youtube.com/@votre_chaine','color'=>'#FF0000'],
+                        'tiktok'    => ['label'=>'TikTok',   'placeholder'=>'https://tiktok.com/@votre_compte', 'color'=>'#000000'],
+                    ] as $key => $meta)
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold w-20 flex-shrink-0" style="color:{{ $meta['color'] }}">{{ $meta['label'] }}</span>
+                        <input type="url" name="social_links[{{ $key }}]"
+                               value="{{ old('social_links.'.$key, ($profile->social_links[$key] ?? '')) }}"
+                               placeholder="{{ $meta['placeholder'] }}"
+                               class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+
             {{-- Email (readonly) --}}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1.5">Email</label>

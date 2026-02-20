@@ -58,4 +58,33 @@ class PortfolioItem extends Model
     {
         return $this->compressed_path ?? $this->original_path;
     }
+
+    /**
+     * Returns the YouTube embed URL if this is a YouTube link, null otherwise.
+     */
+    public function youtubeEmbedUrl(): ?string
+    {
+        if ($this->media_type !== 'link' || $this->link_platform !== 'youtube') {
+            return null;
+        }
+
+        preg_match(
+            '/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/',
+            $this->link_url ?? '',
+            $matches,
+        );
+
+        return isset($matches[1])
+            ? 'https://www.youtube.com/embed/' . $matches[1] . '?rel=0'
+            : null;
+    }
+
+    /**
+     * Returns the public URL for file-based items (images, videos).
+     */
+    public function publicUrl(): ?string
+    {
+        $path = $this->displayPath();
+        return $path ? \Illuminate\Support\Facades\Storage::disk('public')->url($path) : null;
+    }
 }

@@ -183,6 +183,14 @@ class TalentProfile extends Model
     }
 
     /**
+     * @return HasMany<PortfolioItem, $this>
+     */
+    public function portfolioItems(): HasMany
+    {
+        return $this->hasMany(PortfolioItem::class);
+    }
+
+    /**
      * @return BelongsToMany<\App\Models\User, $this>
      */
     public function favoritedBy(): BelongsToMany

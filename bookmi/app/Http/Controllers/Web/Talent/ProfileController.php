@@ -19,12 +19,25 @@ class ProfileController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'stage_name'    => 'required|string|max:100',
-            'bio'           => 'nullable|string|max:2000',
-            'city'          => 'nullable|string|max:100',
-            'cachet_amount' => 'nullable|integer|min:0',
-            'social_links'  => 'nullable|array',
+            'stage_name'              => 'required|string|max:100',
+            'bio'                     => 'nullable|string|max:2000',
+            'city'                    => 'nullable|string|max:100',
+            'cachet_amount'           => 'nullable|integer|min:0',
+            'social_links.instagram'  => 'nullable|url|max:300',
+            'social_links.facebook'   => 'nullable|url|max:300',
+            'social_links.youtube'    => 'nullable|url|max:300',
+            'social_links.tiktok'     => 'nullable|url|max:300',
         ]);
+
+        // Build social_links array (only non-empty values)
+        $socialLinks = array_filter($request->input('social_links', []), fn ($v) => ! empty($v));
+        $data['social_links'] = $socialLinks ?: null;
+        unset(
+            $data['social_links.instagram'],
+            $data['social_links.facebook'],
+            $data['social_links.youtube'],
+            $data['social_links.tiktok'],
+        );
 
         $profile = auth()->user()->talentProfile;
 
@@ -53,14 +66,74 @@ class ProfileController extends Controller
             return back()->withErrors(['photo' => 'Profil introuvable.']);
         }
 
-        // Delete old photo if exists
+        // Delete old photo
         if ($profile->profile_photo) {
             Storage::disk('public')->delete($profile->profile_photo);
         }
 
-        $path = $request->file('photo')->store('profiles', 'public');
-        $profile->update(['profile_photo' => $path]);
+        // Store original temporarily to get the path
+        $uploaded = $request->file('photo');
+        $filename = 'profiles/' . $profile->id . '_' . time() . '.jpg';
+        $storagePath = storage_path('app/public/' . $filename);
+
+        // Ensure directory exists
+        @mkdir(dirname($storagePath), 0755, true);
+
+        // Optimize with GD (resize to max 800px wide, JPEG quality 85)
+        $this->optimizeImage($uploaded->getRealPath(), $storagePath, 800, 85);
+
+        $profile->update(['profile_photo' => $filename]);
 
         return back()->with('success', 'Photo de profil mise à jour.');
+    }
+
+    /**
+     * Resize and re-encode an image using GD.
+     * Always outputs JPEG for consistency and compression efficiency.
+     */
+    private function optimizeImage(string $source, string $dest, int $maxWidth, int $quality): void
+    {
+        $info = @getimagesize($source);
+        if (! $info) {
+            // Unreadable image — copy as-is
+            copy($source, $dest);
+            return;
+        }
+
+        [$width, $height, $type] = $info;
+
+        $src = match ($type) {
+            IMAGETYPE_JPEG => imagecreatefromjpeg($source),
+            IMAGETYPE_PNG  => imagecreatefrompng($source),
+            IMAGETYPE_WEBP => imagecreatefromwebp($source),
+            IMAGETYPE_GIF  => imagecreatefromgif($source),
+            default        => null,
+        };
+
+        if (! $src) {
+            copy($source, $dest);
+            return;
+        }
+
+        // Calculate target dimensions
+        if ($width > $maxWidth) {
+            $newWidth  = $maxWidth;
+            $newHeight = (int) round($height * $maxWidth / $width);
+        } else {
+            $newWidth  = $width;
+            $newHeight = $height;
+        }
+
+        $dst = imagecreatetruecolor($newWidth, $newHeight);
+
+        // White background for transparency (PNG/GIF)
+        $white = imagecolorallocate($dst, 255, 255, 255);
+        imagefill($dst, 0, 0, $white);
+
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagejpeg($dst, $dest, $quality);
+
+        imagedestroy($src);
+        imagedestroy($dst);
     }
 }

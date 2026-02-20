@@ -61,9 +61,12 @@ class TalentProfileService
             return null;
         }
 
-        $profile->load(['category', 'subcategory', 'servicePackages' => function ($query) {
-            $query->active()->ordered();
-        }]);
+        $profile->load([
+            'category',
+            'subcategory',
+            'servicePackages' => fn ($q) => $q->active()->ordered(),
+            'portfolioItems'  => fn ($q) => $q->where('is_approved', true)->latest(),
+        ]);
 
         $similarTalents = $this->repository->findSimilar($profile);
 
