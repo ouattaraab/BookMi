@@ -2,6 +2,12 @@
 
 @section('title', 'Réservation #' . $booking->id . ' — BookMi Manager')
 
+@section('head')
+<style>
+main.page-content { background: #F2EFE9 !important; }
+</style>
+@endsection
+
 @section('content')
 @php
     $sk = $booking->status instanceof \BackedEnum ? $booking->status->value : (string) $booking->status;

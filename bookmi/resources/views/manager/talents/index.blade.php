@@ -2,6 +2,12 @@
 
 @section('title', 'Mes talents — BookMi Manager')
 
+@section('head')
+<style>
+main.page-content { background: #F2EFE9 !important; }
+</style>
+@endsection
+
 @section('content')
 <div class="space-y-6">
 

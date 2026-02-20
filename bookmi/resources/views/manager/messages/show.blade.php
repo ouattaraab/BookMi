@@ -2,6 +2,12 @@
 
 @section('title', 'Conversation — BookMi Manager')
 
+@section('head')
+<style>
+main.page-content { background: #F2EFE9 !important; }
+</style>
+@endsection
+
 @section('content')
 @php
     $talentName = $conversation->talentProfile?->stage_name
