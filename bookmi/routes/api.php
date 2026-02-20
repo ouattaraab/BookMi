@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\AdminReportController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\TwoFactorController;
 use App\Http\Controllers\Api\V1\FinancialDashboardController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\PaymentController;
@@ -58,6 +59,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         ->middleware('throttle:auth')
         ->name('auth.reset-password');
 
+    // 2FA — public endpoint (challenge verification)
+    Route::post('/auth/2fa/verify', [TwoFactorController::class, 'verify'])
+        ->middleware('throttle:auth')
+        ->name('auth.2fa.verify');
+
     // Webhook Paystack (public — signature validée par middleware)
     Route::post('/webhooks/paystack', [PaystackWebhookController::class, 'handle'])
         ->middleware('paystack-webhook')
@@ -77,6 +83,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/auth/logout', [AuthController::class, 'logout'])
             ->middleware('throttle:auth')
             ->name('auth.logout');
+
+        // 2FA — protected management endpoints
+        Route::get('/auth/2fa/status',        [TwoFactorController::class, 'status'])->name('auth.2fa.status');
+        Route::post('/auth/2fa/setup/totp',   [TwoFactorController::class, 'setupTotp'])->name('auth.2fa.setup.totp');
+        Route::post('/auth/2fa/enable/totp',  [TwoFactorController::class, 'enableTotp'])->name('auth.2fa.enable.totp');
+        Route::post('/auth/2fa/setup/email',  [TwoFactorController::class, 'setupEmail'])->name('auth.2fa.setup.email');
+        Route::post('/auth/2fa/enable/email', [TwoFactorController::class, 'enableEmail'])->name('auth.2fa.enable.email');
+        Route::post('/auth/2fa/disable',      [TwoFactorController::class, 'disable'])->name('auth.2fa.disable');
 
         Route::get('/me', [AuthController::class, 'me'])
             ->middleware('throttle:auth')
