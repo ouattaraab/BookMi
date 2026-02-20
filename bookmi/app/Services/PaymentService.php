@@ -113,7 +113,7 @@ class PaymentService
     ): array {
         return $this->gateway->initiateCharge([
             'email'        => $booking->client->email,
-            'amount'       => $booking->total_amount,
+            'amount'       => $booking->total_amount * 100,
             'currency'     => 'XOF',
             'reference'    => $idempotencyKey,
             'mobile_money' => [
@@ -137,7 +137,7 @@ class PaymentService
 
         return $this->gateway->initializeTransaction([
             'email'        => $booking->client->email,
-            'amount'       => $booking->total_amount,
+            'amount'       => $booking->total_amount * 100,
             'currency'     => 'XOF',
             'reference'    => $idempotencyKey,
             'callback_url' => config('bookmi.payment.callback_url'),
