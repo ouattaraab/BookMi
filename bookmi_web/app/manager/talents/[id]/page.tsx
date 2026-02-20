@@ -28,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { calendarApi } from '@/lib/api/endpoints';
 import {
   ArrowLeft,
   Star,
@@ -36,6 +37,9 @@ import {
   CheckCircle,
   XCircle,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -59,9 +63,9 @@ type Booking = {
   id: number;
   status: string;
   event_date: string;
-  location: string;
-  total_amount: number;
-  client?: { first_name: string; last_name: string; email: string };
+  event_location?: string;
+  devis?: { cachet_amount: number; total_amount: number };
+  client?: { name?: string; first_name?: string; last_name?: string; email?: string };
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -80,8 +84,9 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: 'bg-red-100 text-red-800 border-red-200',
 };
 
-function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+function formatAmount(amount?: number): string {
+  if (!amount) return '—';
+  return new Intl.NumberFormat('fr-FR').format(Math.round(amount / 100)) + ' FCFA';
 }
 
 function formatDate(dateStr: string): string {
@@ -114,6 +119,20 @@ export default function ManagerTalentDetailPage({
   const [rejectBookingId, setRejectBookingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [apiError, setApiError] = useState<string | null>(null);
+
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  });
+
+  const { data: calendarData } = useQuery({
+    queryKey: ['manager_calendar', talentId, calendarMonth],
+    queryFn: () => calendarApi.getSlots(talentId, calendarMonth),
+    enabled: !isNaN(talentId),
+  });
+
+  type CalendarSlot = { date: string; status: string };
+  const calendarSlots: CalendarSlot[] = calendarData?.data?.data ?? [];
 
   const { data: statsData, isLoading: loadingStats } = useQuery({
     queryKey: ['manager_talent', talentId],
@@ -342,7 +361,7 @@ export default function ManagerTalentDetailPage({
                     </TableCell>
                     <TableCell className="text-gray-700">
                       {booking.client
-                        ? `${booking.client.first_name} ${booking.client.last_name}`
+                        ? (booking.client.name ?? (`${booking.client.first_name ?? ''} ${booking.client.last_name ?? ''}`.trim() || '—'))
                         : '—'}
                       {booking.client?.email && (
                         <p className="text-xs text-gray-400">
@@ -354,10 +373,10 @@ export default function ManagerTalentDetailPage({
                       {formatDate(booking.event_date)}
                     </TableCell>
                     <TableCell className="text-gray-600 max-w-[120px] truncate">
-                      {booking.location ?? '—'}
+                      {booking.event_location ?? '—'}
                     </TableCell>
                     <TableCell className="text-right font-medium text-gray-800">
-                      {formatAmount(booking.total_amount)}
+                      {formatAmount(booking.devis?.cachet_amount)}
                     </TableCell>
                     <TableCell className="text-center">
                       <span
@@ -398,6 +417,91 @@ export default function ManagerTalentDetailPage({
               </TableBody>
             </Table>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Calendar section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
+              <CalendarIcon size={16} className="text-amber-500" />
+              Calendrier des disponibilités
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const [y, m] = calendarMonth.split('-').map(Number);
+                  const prev = new Date(y, m - 2, 1);
+                  setCalendarMonth(`${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`);
+                }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="text-sm font-semibold text-gray-700 capitalize w-28 text-center">
+                {new Date(calendarMonth + '-01').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+              </span>
+              <button
+                onClick={() => {
+                  const [y, m] = calendarMonth.split('-').map(Number);
+                  const next = new Date(y, m, 1);
+                  setCalendarMonth(`${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`);
+                }}
+                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const [y, m] = calendarMonth.split('-').map(Number);
+            const firstDay = new Date(y, m - 1, 1).getDay();
+            const daysInMonth = new Date(y, m, 0).getDate();
+            const offset = firstDay === 0 ? 6 : firstDay - 1;
+            const slotMap = Object.fromEntries(calendarSlots.map((s) => [s.date, s.status]));
+            const today = new Date().toISOString().split('T')[0];
+
+            return (
+              <div>
+                <div className="grid grid-cols-7 mb-2">
+                  {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((d) => (
+                    <div key={d} className="text-xs font-semibold text-gray-400 text-center py-1">{d}</div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-7 gap-1">
+                  {[...Array(offset)].map((_, i) => <div key={`e-${i}`} />)}
+                  {[...Array(daysInMonth)].map((_, i) => {
+                    const day = i + 1;
+                    const dateStr = `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const slotStatus = slotMap[dateStr];
+                    const isToday = dateStr === today;
+                    let bg = 'bg-gray-50 text-gray-600';
+                    if (slotStatus === 'available') bg = 'bg-green-100 text-green-700';
+                    else if (slotStatus === 'blocked') bg = 'bg-red-100 text-red-600';
+                    else if (slotStatus === 'booked') bg = 'bg-blue-100 text-blue-700';
+                    return (
+                      <div
+                        key={day}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-xs font-medium ${bg} ${isToday ? 'ring-2 ring-amber-400 ring-offset-1' : ''}`}
+                        title={slotStatus ?? 'Pas de statut'}
+                      >
+                        {day}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-4 mt-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-green-100 border border-green-200" /> Disponible</div>
+                  <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-blue-100 border border-blue-200" /> Réservé</div>
+                  <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-100 border border-red-200" /> Bloqué</div>
+                  <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-gray-50 border border-gray-200" /> Non défini</div>
+                </div>
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 

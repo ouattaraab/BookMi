@@ -23,9 +23,9 @@ type Booking = {
   id: number;
   status: string;
   event_date: string;
-  location: string;
-  total_amount: number;
-  client?: { email: string; first_name: string; last_name: string };
+  event_location?: string;
+  devis?: { cachet_amount: number; total_amount: number };
+  client?: { id: number; name?: string; email?: string; first_name?: string; last_name?: string };
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -52,8 +52,9 @@ const TABS = [
   { value: 'cancelled', label: 'Annulées' },
 ];
 
-function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+function formatAmount(amount?: number): string {
+  if (!amount) return '—';
+  return new Intl.NumberFormat('fr-FR').format(Math.round(amount / 100)) + ' FCFA';
 }
 
 function formatDate(dateStr: string): string {
@@ -143,7 +144,7 @@ export default function TalentBookingsPage() {
                     </TableCell>
                     <TableCell className="text-gray-700">
                       {booking.client
-                        ? `${booking.client.first_name} ${booking.client.last_name}`
+                        ? (booking.client.name ?? (`${booking.client.first_name ?? ''} ${booking.client.last_name ?? ''}`.trim() || '—'))
                         : '—'}
                       {booking.client?.email && (
                         <p className="text-xs text-gray-400">
@@ -155,10 +156,10 @@ export default function TalentBookingsPage() {
                       {formatDate(booking.event_date)}
                     </TableCell>
                     <TableCell className="text-gray-600 max-w-[150px] truncate">
-                      {booking.location ?? '—'}
+                      {booking.event_location ?? '—'}
                     </TableCell>
                     <TableCell className="text-right font-medium text-gray-800">
-                      {formatAmount(booking.total_amount)}
+                      {formatAmount(booking.devis?.cachet_amount)}
                     </TableCell>
                     <TableCell className="text-center">
                       <span

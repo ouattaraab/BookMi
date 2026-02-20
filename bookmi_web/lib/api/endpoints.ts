@@ -7,6 +7,21 @@ export const authApi = {
     apiClient.post("/auth/login", data),
   logout: () => apiClient.post("/auth/logout"),
   me: () => apiClient.get("/me"),
+  register: (data: Record<string, unknown>) =>
+    apiClient.post("/auth/register", data),
+  verifyOtp: (data: { phone: string; otp: string }) =>
+    apiClient.post("/auth/verify-otp", { phone: data.phone, code: data.otp }),
+  resendOtp: (data: { phone: string }) =>
+    apiClient.post("/auth/resend-otp", data),
+};
+
+// ─── PUBLIC ──────────────────────────────────────────────────────────────────
+
+export const publicApi = {
+  getCategories: () => apiClient.get("/categories"),
+  getTalents: (params?: Record<string, unknown>) =>
+    apiClient.get("/talents", { params }),
+  getTalent: (slug: string) => apiClient.get(`/talents/${slug}`),
 };
 
 // ─── TALENT PROFILE ─────────────────────────────────────────────────────────
@@ -36,14 +51,25 @@ export const bookingApi = {
   list: (params?: Record<string, unknown>) =>
     apiClient.get("/booking_requests", { params }),
   get: (id: number) => apiClient.get(`/booking_requests/${id}`),
+  create: (data: Record<string, unknown>) =>
+    apiClient.post("/booking_requests", data),
   accept: (id: number) => apiClient.post(`/booking_requests/${id}/accept`),
   reject: (id: number, reason: string) =>
     apiClient.post(`/booking_requests/${id}/reject`, { reason }),
   cancel: (id: number) => apiClient.post(`/booking_requests/${id}/cancel`),
   getContract: (id: number) =>
-    apiClient.get(`/booking_requests/${id}/contract`, {
-      responseType: "blob",
-    }),
+    apiClient.get(`/booking_requests/${id}/contract`, { responseType: "blob" }),
+};
+
+// ─── FAVORITES ───────────────────────────────────────────────────────────────
+
+export const favoriteApi = {
+  list: (params?: { per_page?: number }) =>
+    apiClient.get("/me/favorites", { params }),
+  add: (talentId: number) => apiClient.post(`/talents/${talentId}/favorite`),
+  remove: (talentId: number) =>
+    apiClient.delete(`/talents/${talentId}/favorite`),
+  check: (talentId: number) => apiClient.get(`/talents/${talentId}/favorite`),
 };
 
 // ─── SERVICE PACKAGES ────────────────────────────────────────────────────────
@@ -87,6 +113,73 @@ export const notificationApi = {
   markAllRead: () => apiClient.post("/notifications/read-all"),
 };
 
+// ─── PAYMENTS ────────────────────────────────────────────────────────────────
+
+export const paymentApi = {
+  initiate: (data: {
+    booking_id: number;
+    payment_method: string;
+    phone_number: string;
+  }) => apiClient.post("/payments/initiate", data),
+  submitOtp: (data: { reference: string; otp: string }) =>
+    apiClient.post("/payments/submit_otp", data),
+  getStatus: (id: number) => apiClient.get(`/payments/${id}/status`),
+};
+
+// ─── REVIEWS ─────────────────────────────────────────────────────────────────
+
+export const reviewApi = {
+  submit: (
+    bookingId: number,
+    data: { type: string; rating: number; comment?: string }
+  ) => apiClient.post(`/booking_requests/${bookingId}/reviews`, data),
+  list: (bookingId: number) =>
+    apiClient.get(`/booking_requests/${bookingId}/reviews`),
+};
+
+// ─── ESCROW ───────────────────────────────────────────────────────────────────
+
+export const escrowApi = {
+  confirmDelivery: (bookingId: number) =>
+    apiClient.post(`/booking_requests/${bookingId}/confirm_delivery`),
+};
+
+// ─── TRACKING ─────────────────────────────────────────────────────────────────
+
+export const trackingApi = {
+  get: (bookingId: number) =>
+    apiClient.get(`/booking_requests/${bookingId}/tracking`),
+  update: (
+    bookingId: number,
+    data: { status: string; latitude?: number; longitude?: number }
+  ) => apiClient.post(`/booking_requests/${bookingId}/tracking`, data),
+};
+
+// ─── IDENTITY VERIFICATION ────────────────────────────────────────────────────
+
+export const verificationApi = {
+  submit: (data: FormData) =>
+    apiClient.post("/verifications", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  getMe: () => apiClient.get("/verifications/me"),
+};
+
+// ─── TALENT PROFILE (MUTATIONS) ───────────────────────────────────────────────
+
+export const talentProfileApi = {
+  update: (id: number, data: Record<string, unknown>) =>
+    apiClient.patch(`/talent_profiles/${id}`, data),
+  updatePayout: (data: {
+    payout_method: string;
+    payout_details: Record<string, string>;
+  }) => apiClient.patch("/talent_profiles/me/payout_method", data),
+  updateAutoReply: (data: {
+    auto_reply_message: string;
+    auto_reply_is_active: boolean;
+  }) => apiClient.put("/talent_profiles/me/auto_reply", data),
+};
+
 // ─── MANAGER ─────────────────────────────────────────────────────────────────
 
 export const managerApi = {
@@ -106,4 +199,38 @@ export const managerApi = {
     apiClient.post(`/manager/conversations/${conversationId}/messages`, {
       content,
     }),
+};
+
+// ─── PORTFOLIO ────────────────────────────────────────────────────────────────
+
+export const portfolioApi = {
+  list: (talentProfileId: number) =>
+    apiClient.get(`/talent_profiles/${talentProfileId}/portfolio`),
+  upload: (data: FormData) =>
+    apiClient.post("/talent_profiles/me/portfolio", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  addLink: (data: {
+    link_url: string;
+    link_platform: string;
+    caption?: string;
+  }) => apiClient.post("/talent_profiles/me/portfolio", data),
+  delete: (itemId: number) =>
+    apiClient.delete(`/talent_profiles/me/portfolio/${itemId}`),
+};
+
+// ─── TWO-FACTOR AUTHENTICATION ────────────────────────────────────────────────
+
+export const twoFactorApi = {
+  status: () => apiClient.get("/auth/2fa/status"),
+  setupTotp: () => apiClient.post("/auth/2fa/setup/totp"),
+  enableTotp: (data: { code: string }) =>
+    apiClient.post("/auth/2fa/enable/totp", data),
+  setupEmail: () => apiClient.post("/auth/2fa/setup/email"),
+  enableEmail: (data: { code: string }) =>
+    apiClient.post("/auth/2fa/enable/email", data),
+  verify: (data: { challenge_token: string; code: string }) =>
+    apiClient.post("/auth/2fa/verify", data),
+  disable: (data: { password: string }) =>
+    apiClient.post("/auth/2fa/disable", data),
 };

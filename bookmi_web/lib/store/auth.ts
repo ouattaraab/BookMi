@@ -8,6 +8,7 @@ export interface AuthUser {
   email: string;
   phone: string;
   is_admin: boolean;
+  role?: "client" | "talent" | "manager";
   talentProfile?: {
     id: number;
     stage_name: string;
@@ -25,6 +26,7 @@ interface AuthState {
   isAuthenticated: () => boolean;
   isTalent: () => boolean;
   isManager: () => boolean;
+  isClient: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,11 +43,15 @@ export const useAuthStore = create<AuthState>()(
 
       isTalent: () => !!get().user?.talentProfile,
 
-      isManager: () => false, // determined by API response
+      isManager: () => get().user?.role === "manager",
+
+      isClient: () => {
+        const user = get().user;
+        return !!user && !user.talentProfile && !user.is_admin && user.role !== "manager";
+      },
     }),
     {
       name: "bookmi-auth",
-      // Only persist token + user
       partialize: (state) => ({ token: state.token, user: state.user }),
     }
   )

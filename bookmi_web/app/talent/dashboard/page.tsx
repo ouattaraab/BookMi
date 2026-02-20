@@ -12,9 +12,9 @@ type Booking = {
   id: number;
   status: string;
   event_date: string;
-  location: string;
-  total_amount: number;
-  client?: { email: string; first_name: string; last_name: string };
+  event_location?: string;
+  devis?: { cachet_amount: number; total_amount: number };
+  client?: { name?: string; email?: string; first_name?: string; last_name?: string };
 };
 
 type Analytics = {
@@ -26,6 +26,8 @@ type Analytics = {
 
 const STATUS_LABELS: Record<string, string> = {
   pending: 'En attente',
+  accepted: 'Acceptée',
+  paid: 'Payée',
   confirmed: 'Confirmée',
   completed: 'Complétée',
   cancelled: 'Annulée',
@@ -34,14 +36,17 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  accepted: 'bg-purple-100 text-purple-800 border-purple-200',
+  paid: 'bg-sky-100 text-sky-800 border-sky-200',
   confirmed: 'bg-blue-100 text-blue-800 border-blue-200',
   completed: 'bg-green-100 text-green-800 border-green-200',
   cancelled: 'bg-gray-100 text-gray-600 border-gray-200',
   rejected: 'bg-red-100 text-red-800 border-red-200',
 };
 
-function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
+function formatAmount(amount?: number): string {
+  if (!amount) return '—';
+  return new Intl.NumberFormat('fr-FR').format(Math.round(amount / 100)) + ' FCFA';
 }
 
 function formatDate(dateStr: string): string {
@@ -211,14 +216,14 @@ export default function TalentDashboardPage() {
                       </td>
                       <td className="py-3 px-2 text-gray-700">
                         {booking.client
-                          ? `${booking.client.first_name} ${booking.client.last_name}`
+                          ? (booking.client.name ?? (`${booking.client.first_name ?? ''} ${booking.client.last_name ?? ''}`.trim() || '—'))
                           : '—'}
                       </td>
                       <td className="py-3 px-2 text-gray-600">
                         {formatDate(booking.event_date)}
                       </td>
                       <td className="py-3 px-2 text-right font-medium text-gray-800">
-                        {formatAmount(booking.total_amount)}
+                        {formatAmount(booking.devis?.cachet_amount)}
                       </td>
                       <td className="py-3 px-2 text-right">
                         <span

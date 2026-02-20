@@ -4,41 +4,22 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard,
-  Calendar,
-  BookCheck,
-  Package,
-  MessageSquare,
-  BarChart3,
-  FileText,
-  LogOut,
-  Menu,
-  X,
-  Bell,
-  CheckCheck,
-  User,
-  ShieldCheck,
-  Image,
-  Settings,
+  LayoutDashboard, Search, BookOpen, Heart, MessageSquare,
+  LogOut, Menu, X, Bell, CheckCheck, Settings,
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store/auth';
 import { authApi, notificationApi } from '@/lib/api/endpoints';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { href: '/talent/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/talent/calendar', label: 'Calendrier', icon: Calendar },
-  { href: '/talent/bookings', label: 'Réservations', icon: BookCheck },
-  { href: '/talent/packages', label: 'Packages', icon: Package },
-  { href: '/talent/messages', label: 'Messages', icon: MessageSquare },
-  { href: '/talent/analytics', label: 'Analytiques', icon: BarChart3 },
-  { href: '/talent/certificate', label: 'Attestation', icon: FileText },
-  { href: '/talent/portfolio', label: 'Portfolio', icon: Image },
-  { href: '/talent/profile', label: 'Mon profil', icon: User },
-  { href: '/talent/verification', label: 'Vérification', icon: ShieldCheck },
-  { href: '/talent/settings', label: 'Paramètres', icon: Settings },
+  { href: '/client/dashboard', label: 'Tableau de bord', icon: LayoutDashboard },
+  { href: '/talents', label: 'Découvrir', icon: Search },
+  { href: '/client/bookings', label: 'Mes réservations', icon: BookOpen },
+  { href: '/client/favorites', label: 'Favoris', icon: Heart },
+  { href: '/client/messages', label: 'Messages', icon: MessageSquare },
+  { href: '/client/settings', label: 'Paramètres', icon: Settings },
 ];
 
 type Notification = {
@@ -49,11 +30,7 @@ type Notification = {
   created_at: string;
 };
 
-export default function TalentLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -63,31 +40,21 @@ export default function TalentLayout({
   const notifRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
 
+  const initials = user
+    ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase()
+    : 'C';
+  const displayName = user ? `${user.first_name} ${user.last_name}` : 'Client';
+
   const handleLogout = async () => {
-    try {
-      await authApi.logout();
-    } catch {
-      // ignore error, always clear local auth
-    }
+    try { await authApi.logout(); } catch { /* ignore */ }
     clearAuth();
-    document.cookie =
-      'bookmi_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+    document.cookie = 'bookmi_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
     router.push('/login');
   };
 
-  const initials = user
-    ? `${user.first_name?.[0] ?? ''}${user.last_name?.[0] ?? ''}`.toUpperCase()
-    : 'U';
-
-  const displayName = user
-    ? `${user.first_name} ${user.last_name}`
-    : 'Utilisateur';
-
-  const stageName = user?.talentProfile?.stage_name;
-
   // ── Notifications (poll every 30s) ────────────────────────────────────────
   const { data: notifData } = useQuery({
-    queryKey: ['talent_notifications'],
+    queryKey: ['client_notifications'],
     queryFn: () => notificationApi.list(),
     refetchInterval: 30_000,
   });
@@ -97,12 +64,12 @@ export default function TalentLayout({
 
   const markReadMutation = useMutation({
     mutationFn: (id: number) => notificationApi.markRead(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['talent_notifications'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['client_notifications'] }),
   });
 
   const markAllReadMutation = useMutation({
     mutationFn: () => notificationApi.markAllRead(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['talent_notifications'] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['client_notifications'] }),
   });
 
   // Close notif dropdown on outside click
@@ -120,11 +87,10 @@ export default function TalentLayout({
     <div
       className="flex h-screen"
       style={{
-        background:
-          'linear-gradient(135deg, #fff3e0 0%, #ffe8d6 25%, #fef3e2 60%, #fff8f0 100%)',
+        background: 'linear-gradient(135deg, #dbeafe 0%, #e8e4ff 30%, #ddf4ff 65%, #d1fae5 100%)',
       }}
     >
-      {/* ── Mobile overlay ── */}
+      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 md:hidden"
@@ -133,7 +99,7 @@ export default function TalentLayout({
         />
       )}
 
-      {/* ── Sidebar — Brand Orange #FF6B35 iOS 26 glassmorphism ── */}
+      {/* ── Sidebar ── */}
       <aside
         className={cn(
           'fixed md:relative z-50 md:z-auto w-64 flex flex-col h-full',
@@ -141,39 +107,34 @@ export default function TalentLayout({
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
         style={{
-          background: 'linear-gradient(180deg, #FF6B35 0%, #C85A20 100%)',
-          borderRight: '1px solid rgba(255,255,255,0.12)',
+          background: 'linear-gradient(180deg, #1A2744 0%, #0F1E3A 100%)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
         }}
       >
         {/* Logo */}
         <div className="px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center">
-            <span className="font-extrabold text-2xl text-white tracking-tight leading-none">
-              Book
-            </span>
-            <span
-              className="font-extrabold text-2xl tracking-tight leading-none"
-              style={{ color: 'rgba(255,235,180,0.95)' }}
-            >
-              Mi
-            </span>
-          </div>
-          {/* Close button (mobile only) */}
-          <button
-            className="md:hidden text-white/70 hover:text-white"
-            onClick={() => setSidebarOpen(false)}
-          >
+          <Link href="/" className="flex items-center">
+            <span className="font-extrabold text-2xl text-white tracking-tight leading-none">Book</span>
+            <span className="font-extrabold text-2xl tracking-tight leading-none" style={{ color: '#64B5F6' }}>Mi</span>
+          </Link>
+          <button className="md:hidden text-white/70 hover:text-white" onClick={() => setSidebarOpen(false)}>
             <X size={20} />
           </button>
         </div>
 
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.15)', margin: '0 1rem 0.5rem' }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.10)', margin: '0 1rem' }} />
+
+        {/* Client badge */}
+        <div className="px-6 py-2">
+          <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(100,181,246,0.75)' }}>
+            Espace client
+          </span>
+        </div>
 
         {/* Nav */}
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map(({ href, label, icon: Icon }) => {
-            const isActive =
-              pathname === href || pathname.startsWith(href + '/');
+            const isActive = pathname === href || (href !== '/talents' && pathname.startsWith(href + '/'));
             return (
               <Link
                 key={href}
@@ -181,122 +142,91 @@ export default function TalentLayout({
                 onClick={() => setSidebarOpen(false)}
                 className={cn(
                   'flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-150',
-                  isActive
-                    ? 'text-white font-semibold'
-                    : 'text-white/75 hover:text-white'
+                  isActive ? 'text-white font-semibold' : 'text-white/65 hover:text-white'
                 )}
                 style={
                   isActive
                     ? {
-                        background:
-                          'linear-gradient(90deg, rgba(255,255,255,0.25), rgba(255,255,255,0.10))',
-                        borderLeft: '3px solid rgba(255,255,255,0.9)',
+                        background: 'linear-gradient(90deg, rgba(100,181,246,0.22), rgba(100,181,246,0.08))',
+                        borderLeft: '3px solid #64B5F6',
                         padding: '0.625rem 0.75rem 0.625rem calc(0.75rem - 3px)',
                       }
-                    : {
-                        padding: '0.625rem 0.75rem',
-                      }
+                    : { padding: '0.625rem 0.75rem' }
                 }
                 onMouseEnter={(e) => {
-                  if (!isActive)
-                    (e.currentTarget as HTMLElement).style.background =
-                      'rgba(255,255,255,0.10)';
+                  if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)';
                 }}
                 onMouseLeave={(e) => {
-                  if (!isActive)
-                    (e.currentTarget as HTMLElement).style.background = '';
+                  if (!isActive) (e.currentTarget as HTMLElement).style.background = '';
                 }}
               >
-                <Icon
-                  size={18}
-                  className={isActive ? 'text-white' : 'text-white/50'}
-                />
+                <Icon size={18} style={{ color: isActive ? '#64B5F6' : 'rgba(255,255,255,0.40)' }} />
                 {label}
               </Link>
             );
           })}
         </nav>
 
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.15)', margin: '0 1rem 0.75rem' }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.10)', margin: '0 1rem 0.75rem' }} />
 
         {/* User + Logout */}
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3">
-            <Avatar className="h-9 w-9 flex-shrink-0">
-              <AvatarFallback
-                className="text-xs font-bold"
-                style={{
-                  background: 'rgba(255,255,255,0.25)',
-                  color: '#ffffff',
-                  border: '1.5px solid rgba(255,255,255,0.4)',
-                }}
-              >
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ background: 'rgba(100,181,246,0.25)', border: '1.5px solid rgba(100,181,246,0.4)' }}
+            >
+              {initials}
+            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
-                {stageName ?? displayName}
-              </p>
-              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                Talent
-              </p>
+              <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+              <p className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>Client</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all"
             style={{
-              color: 'rgba(255,220,200,0.85)',
-              border: '1px solid rgba(255,255,255,0.20)',
-              background: 'rgba(255,255,255,0.06)',
+              color: 'rgba(252,165,165,0.85)',
+              border: '1px solid rgba(239,68,68,0.25)',
+              background: 'rgba(239,68,68,0.06)',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                'rgba(255,255,255,0.15)';
-              (e.currentTarget as HTMLElement).style.borderColor =
-                'rgba(255,255,255,0.40)';
+              (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.14)';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                'rgba(255,255,255,0.06)';
-              (e.currentTarget as HTMLElement).style.borderColor =
-                'rgba(255,255,255,0.20)';
+              (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.06)';
             }}
           >
-            <LogOut size={15} />
-            Déconnexion
+            <LogOut size={15} /> Déconnexion
           </button>
         </div>
       </aside>
 
       {/* ── Main content ── */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {/* Header — iOS 26 glassmorphism */}
+        {/* Header */}
         <header
           className="flex-shrink-0 px-4 md:px-8 py-4 flex items-center justify-between"
           style={{
-            background: 'rgba(255,255,255,0.82)',
+            background: 'rgba(255,255,255,0.85)',
             backdropFilter: 'blur(20px) saturate(180%)',
             WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            borderBottom: '1px solid rgba(255,107,53,0.10)',
-            boxShadow: '0 1px 8px rgba(255,107,53,0.06)',
+            borderBottom: '1px solid rgba(26,39,68,0.08)',
+            boxShadow: '0 1px 8px rgba(26,39,68,0.06)',
           }}
         >
           <div className="flex items-center gap-3">
-            {/* Hamburger — mobile only */}
-            <button
-              className="md:hidden text-gray-600 hover:text-gray-900 p-1"
-              onClick={() => setSidebarOpen(true)}
-            >
+            <button className="md:hidden text-gray-600 hover:text-gray-900 p-1" onClick={() => setSidebarOpen(true)}>
               <Menu size={22} />
             </button>
-            <div>
+            <Link href="/">
+              <Image src="/logo.png" alt="BookMi" width={85} height={26} className="md:hidden" />
+            </Link>
+            <div className="hidden md:block">
               <h2 className="text-sm text-gray-500">
-                Bienvenue,{' '}
-                <span className="font-semibold text-gray-900">
-                  {stageName ?? displayName}
-                </span>
+                Espace client —{' '}
+                <span className="font-semibold text-gray-900">{displayName}</span>
               </h2>
             </div>
           </div>
@@ -331,7 +261,7 @@ export default function TalentLayout({
                       <button
                         onClick={() => markAllReadMutation.mutate()}
                         className="text-xs font-semibold flex items-center gap-1"
-                        style={{ color: '#FF6B35' }}
+                        style={{ color: '#2196F3' }}
                       >
                         <CheckCheck size={12} /> Tout lire
                       </button>
@@ -371,19 +301,18 @@ export default function TalentLayout({
               )}
             </div>
 
-            <Avatar className="h-8 w-8">
-              <AvatarFallback
-                className="text-xs font-bold text-white"
-                style={{ background: 'linear-gradient(135deg, #FF6B35, #C85A20)' }}
-              >
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            {/* Avatar */}
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style={{ background: 'linear-gradient(135deg, #1A2744, #64B5F6)' }}
+            >
+              {initials}
+            </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8 client-content">{children}</main>
       </div>
     </div>
   );

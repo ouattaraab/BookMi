@@ -10,8 +10,8 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: 'BookMi — Backoffice',
-  description: 'Espace de gestion pour talents et managers BookMi',
+  title: 'BookMi — Réservez les meilleurs talents de Côte d\'Ivoire',
+  description: 'DJ, Chanteurs, Musiciens, Humoristes... Trouvez et réservez les meilleurs artistes pour vos événements en Côte d\'Ivoire.',
 };
 
 export default function RootLayout({

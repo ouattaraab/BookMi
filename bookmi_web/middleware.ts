@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PUBLIC_ROUTES = ["/login", "/"];
+const PUBLIC_EXACT = new Set(["/login", "/", "/register"]);
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Allow public routes
-  if (PUBLIC_ROUTES.some((route) => pathname === route)) {
-    return NextResponse.next();
-  }
+  // Allow exact public routes
+  if (PUBLIC_EXACT.has(pathname)) return NextResponse.next();
+
+  // Allow public talent directory
+  if (pathname.startsWith("/talents")) return NextResponse.next();
 
   // Check auth via cookie (token stored by zustand persist in localStorage,
   // but for SSR protection we use a cookie set at login)
