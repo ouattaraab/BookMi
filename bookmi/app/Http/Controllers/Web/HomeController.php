@@ -17,6 +17,14 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
-        return view('home', compact('featuredTalents'));
+        // Count par catégorie pour les cards de la landing
+        $categoryCount = TalentProfile::with('category')
+            ->where('is_verified', true)
+            ->get()
+            ->groupBy(fn ($t) => $t->category?->name ?? 'Autre')
+            ->map->count()
+            ->toArray();
+
+        return view('home', compact('featuredTalents', 'categoryCount'));
     }
 }
