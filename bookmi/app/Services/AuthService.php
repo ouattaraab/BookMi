@@ -33,17 +33,16 @@ class AuthService
     {
         return DB::transaction(function () use ($data) {
             $user = User::create([
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-                'password' => $data['password'],
-                'is_active' => true,
+                'first_name'        => $data['first_name'],
+                'last_name'         => $data['last_name'],
+                'email'             => $data['email'],
+                'phone'             => $data['phone'],
+                'password'          => $data['password'],
+                'is_active'         => true,
+                'phone_verified_at' => now(), // Vérification OTP désactivée — marqué comme vérifié d'emblée
             ]);
 
             $user->assignRole($data['role']);
-
-            $this->sendOtp($user->phone);
 
             $user->notify(new WelcomeNotification($data['role']));
 

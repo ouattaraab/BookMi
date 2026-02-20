@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,10 +36,19 @@ class WebRegisterController extends Controller
 
         $user = $this->authService->register($validated);
 
-        // Store phone in session for OTP verification
-        session(['pending_phone_verify' => $user->phone]);
+        // Auto-connexion immédiate — la vérification OTP est désactivée
+        Auth::login($user);
+        $request->session()->regenerate();
 
-        return redirect()->route('auth.verify-phone')
-            ->with('success', 'Compte créé ! Veuillez vérifier votre numéro de téléphone.');
+        return $this->redirectToDashboard($user);
+    }
+
+    private function redirectToDashboard(User $user): RedirectResponse
+    {
+        if ($user->hasRole('client', 'api'))  return redirect()->route('client.dashboard');
+        if ($user->hasRole('talent', 'api'))  return redirect()->route('talent.dashboard');
+        if ($user->hasRole('manager', 'api')) return redirect()->route('manager.dashboard');
+
+        return redirect('/');
     }
 }
