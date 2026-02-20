@@ -36,7 +36,7 @@
 
 /* ─── SEARCH WRAPPER (conteneur glossy) ─── */
 .search-wrapper {
-    max-width: 760px;
+    max-width: 900px;
     margin: 0 auto;
     background: rgba(10, 14, 26, 0.65);
     border: 1.5px solid rgba(255,255,255,0.20);
@@ -309,7 +309,7 @@
     <div style="position:absolute; top:-10%; right:-5%; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 70%); pointer-events:none;"></div>
     <div style="position:absolute; bottom:-15%; left:10%; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, rgba(30,58,138,0.08) 0%, transparent 70%); pointer-events:none;"></div>
 
-    <div style="max-width:720px; margin:0 auto; padding:5rem 1.5rem; text-align:center; position:relative; z-index:10; width:100%;">
+    <div style="max-width:960px; margin:0 auto; padding:5rem 1.5rem; text-align:center; position:relative; z-index:10; width:100%;">
 
         {{-- Titre --}}
         <h1 style="font-weight:900; color:white; line-height:1.08; margin:0 0 0.1em; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
