@@ -1,273 +1,272 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title>Akwaba sur BookMi !</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background-color: #0D1117; font-family: 'Nunito', Arial, sans-serif; -webkit-text-size-adjust: 100%; }
-  .email-wrapper { background-color: #0D1117; padding: 32px 16px; }
-  .email-container { max-width: 620px; margin: 0 auto; }
-
-  /* Header — orange dominant pour les talents */
-  .header { background: linear-gradient(135deg, #1A2744 0%, #2d1a0e 60%, #0D1117 100%); border-radius: 20px 20px 0 0; padding: 40px 40px 32px; text-align: center; border-bottom: 3px solid #FF6B35; position: relative; overflow: hidden; }
-  .header-glow { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 400px; height: 250px; background: radial-gradient(ellipse, rgba(255,107,53,0.22) 0%, transparent 70%); pointer-events: none; }
-  .logo { font-size: 32px; font-weight: 900; letter-spacing: -1px; }
-  .logo-book { color: #FFFFFF; }
-  .logo-mi { color: #FF6B35; }
-  .logo-badge { display: inline-block; background: linear-gradient(135deg, #FF6B35, #ff4500); border-radius: 8px; padding: 4px 12px; margin-left: 8px; font-size: 11px; font-weight: 700; color: #FFFFFF; letter-spacing: 1px; text-transform: uppercase; vertical-align: middle; }
-  .header-emoji { font-size: 52px; margin: 20px 0 12px; display: block; }
-  .header-title { font-size: 26px; font-weight: 900; color: #FFFFFF; line-height: 1.2; margin-bottom: 8px; }
-  .header-title span { color: #FF6B35; }
-  .header-subtitle { font-size: 15px; color: rgba(255,255,255,0.6); font-weight: 400; }
-  .header-stars { margin-top: 12px; font-size: 18px; letter-spacing: 4px; }
-
-  /* Body */
-  .body { background: #FFFFFF; padding: 40px; }
-
-  /* Akwaba section */
-  .akwaba-section { background: linear-gradient(135deg, #FFF5F0 0%, #FFF9F7 100%); border-left: 4px solid #FF6B35; border-radius: 0 12px 12px 0; padding: 20px 24px; margin-bottom: 32px; }
-  .akwaba-text { font-size: 16px; color: #1A2744; font-weight: 600; line-height: 1.6; }
-  .akwaba-text strong { color: #FF6B35; }
-
-  /* Highlight stat bar */
-  .stat-bar { display: table; width: 100%; background: linear-gradient(135deg, #1A2744, #243660); border-radius: 16px; padding: 20px; margin-bottom: 32px; }
-  .stat-bar-inner { display: table-row; }
-  .stat-item { display: table-cell; text-align: center; padding: 0 8px; border-right: 1px solid rgba(255,255,255,0.1); }
-  .stat-item:last-child { border-right: none; }
-  .stat-number { font-size: 22px; font-weight: 900; color: #FF6B35; line-height: 1; }
-  .stat-label { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  /* Section title */
-  .section-title { font-size: 18px; font-weight: 800; color: #1A2744; margin-bottom: 20px; }
-  .section-title::before { content: ''; display: inline-block; width: 4px; height: 20px; background: #FF6B35; border-radius: 2px; margin-right: 10px; vertical-align: middle; }
-
-  /* Steps */
-  .steps { margin-bottom: 36px; }
-  .step { display: flex; align-items: flex-start; margin-bottom: 20px; }
-  .step-number { flex-shrink: 0; width: 40px; height: 40px; background: linear-gradient(135deg, #FF6B35, #ff4500); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; color: #FFFFFF; margin-right: 16px; box-shadow: 0 4px 12px rgba(255,107,53,0.35); }
-  .step-content {}
-  .step-title { font-size: 15px; font-weight: 800; color: #1A2744; margin-bottom: 4px; }
-  .step-desc { font-size: 14px; color: #6B7280; line-height: 1.5; }
-
-  /* Features */
-  .features { margin-bottom: 36px; }
-  .feature-card { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 12px; padding: 16px; }
-  .feature-icon { font-size: 24px; margin-bottom: 8px; display: block; }
-  .feature-title { font-size: 13px; font-weight: 800; color: #1A2744; margin-bottom: 4px; }
-  .feature-desc { font-size: 12px; color: #6B7280; line-height: 1.4; }
-
-  /* Action urgency box */
-  .action-box { background: linear-gradient(135deg, #FFF5F0, #FFEDE6); border: 2px solid rgba(255,107,53,0.3); border-radius: 16px; padding: 24px; margin-bottom: 32px; text-align: center; }
-  .action-box-title { font-size: 16px; font-weight: 800; color: #1A2744; margin-bottom: 8px; }
-  .action-box-text { font-size: 14px; color: #4B5563; margin-bottom: 20px; line-height: 1.5; }
-
-  /* CTA */
-  .cta-button { display: inline-block; background: linear-gradient(135deg, #FF6B35 0%, #ff4500 100%); color: #FFFFFF !important; text-decoration: none; font-size: 16px; font-weight: 800; padding: 16px 40px; border-radius: 50px; box-shadow: 0 6px 20px rgba(255,107,53,0.4); letter-spacing: 0.3px; }
-  .cta-secondary { display: inline-block; color: #FF6B35 !important; text-decoration: none; font-size: 14px; font-weight: 700; margin-top: 12px; }
-
-  /* Divider */
-  .divider { border: none; border-top: 1px solid #E5E7EB; margin: 32px 0; }
-
-  /* Signature */
-  .signature-text { font-size: 15px; color: #374151; line-height: 1.7; }
-  .signature-name { font-size: 16px; font-weight: 800; color: #1A2744; margin-top: 12px; }
-  .signature-title { font-size: 13px; color: #FF6B35; font-weight: 600; }
-
-  /* Footer */
-  .footer { background: #1A2744; border-radius: 0 0 20px 20px; padding: 24px 40px; text-align: center; }
-  .footer-logo span:first-child { color: #FFFFFF; font-size: 20px; font-weight: 900; }
-  .footer-logo span:last-child { color: #FF6B35; font-size: 20px; font-weight: 900; }
-  .footer-tagline { font-size: 12px; color: rgba(255,255,255,0.5); margin: 6px 0 16px; }
-  .footer-links { font-size: 12px; color: rgba(255,255,255,0.4); }
-  .footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; }
-  .footer-dot { margin: 0 8px; }
-  .footer-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.2); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 12px; }
-</style>
+<title>Akwaba sur BookMi, {{ $user->first_name }} !</title>
 </head>
-<body>
-<div class="email-wrapper">
-  <div class="email-container">
+<body style="margin:0;padding:0;background-color:#0D1117;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
 
-    <!-- HEADER -->
-    <div class="header">
-      <div class="header-glow"></div>
-      <div class="logo">
-        <span class="logo-book">Book</span><span class="logo-mi">Mi</span>
-        <span class="logo-badge">✨ Talent</span>
-      </div>
-      <span class="header-emoji">🎤</span>
-      <div class="header-title">
-        Akwaba sur BookMi, <span>{{ $user->first_name }}</span> !
-      </div>
-      <div class="header-subtitle">La scène t'appartient. Côte d'Ivoire 🇨🇮</div>
-      <div class="header-stars">⭐⭐⭐⭐⭐</div>
-    </div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#0D1117">
+<tr>
+<td align="center" style="padding:32px 16px;">
 
-    <!-- BODY -->
-    <div class="body">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
-      <!-- Akwaba message -->
-      <div class="akwaba-section">
-        <div class="akwaba-text">
-          Félicitations <strong>{{ $user->first_name }} {{ $user->last_name }}</strong> ! 🎉<br><br>
-          Tu viens de rejoindre la <strong>première plateforme de mise en relation entre talents et clients</strong> en Côte d'Ivoire. BookMi va t'aider à <strong>booster ta carrière</strong>, trouver de nouveaux clients et être payé(e) en toute sécurité pour chaque prestation.
-        </div>
-      </div>
-
-      <!-- Stats -->
-      <table class="stat-bar" cellpadding="0" cellspacing="0">
-        <tr class="stat-bar-inner">
-          <td class="stat-item">
-            <div class="stat-number">100%</div>
-            <div class="stat-label">Paiements sécurisés</div>
-          </td>
-          <td class="stat-item">
-            <div class="stat-number">7j/7</div>
-            <div class="stat-label">Support dédié</div>
-          </td>
-          <td class="stat-item">
-            <div class="stat-number">0 fcfa</div>
-            <div class="stat-label">Pour démarrer</div>
-          </td>
-          <td class="stat-item">
-            <div class="stat-number">🇨🇮</div>
-            <div class="stat-label">Toute la CI</div>
-          </td>
-        </tr>
-      </table>
-
-      <!-- Comment ça marche -->
-      <div class="steps">
-        <div class="section-title">Comment démarrer sur BookMi ?</div>
-
-        <div class="step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <div class="step-title">🎨 Complète ton profil</div>
-            <div class="step-desc">Ajoute ta bio, tes photos, vidéos et tes forfaits de service. Un profil complet attire 3x plus de clients.</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <div class="step-title">✅ Fais vérifier ton profil</div>
-            <div class="step-desc">Soumets tes documents pour la vérification d'identité. Le badge vérifié inspire confiance et booste ta visibilité.</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <div class="step-title">📬 Reçois des demandes de réservation</div>
-            <div class="step-desc">Les clients te contactent directement. Tu acceptes ou refuses les demandes selon ton calendrier.</div>
-          </div>
-        </div>
-
-        <div class="step">
-          <div class="step-number">4</div>
-          <div class="step-content">
-            <div class="step-title">💰 Sois payé(e) en toute sécurité</div>
-            <div class="step-desc">Le paiement du client est sécurisé à l'avance. Après ta prestation, les fonds sont libérés directement sur ton Mobile Money.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Fonctionnalités talent -->
-      <div class="features">
-        <div class="section-title">Ce que BookMi t'offre</div>
-        <table width="100%" cellpadding="0" cellspacing="0">
+    <!-- ===== HEADER ===== -->
+    <tr>
+      <td bgcolor="#1A2744" style="padding:40px 40px 32px;border-radius:20px 20px 0 0;text-align:center;">
+        <!-- Logo + Badge Talent -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin-bottom:20px;">
           <tr>
-            <td width="50%" style="padding: 6px 6px 6px 0; vertical-align: top;">
-              <div class="feature-card">
-                <span class="feature-icon">📊</span>
-                <div class="feature-title">Tableau de bord analytics</div>
-                <div class="feature-desc">Suis tes performances, tes revenus et tes statistiques de réservation en temps réel.</div>
-              </div>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:900;letter-spacing:-0.5px;vertical-align:middle;">
+              <span style="color:#FFFFFF;">Book</span><span style="color:#FF6B35;">Mi</span>
             </td>
-            <td width="50%" style="padding: 6px 0 6px 6px; vertical-align: top;">
-              <div class="feature-card">
-                <span class="feature-icon">📜</span>
-                <div class="feature-title">Certificat de prestation</div>
-                <div class="feature-desc">Obtiens un certificat officiel BookMi après chaque prestation complétée. Parfait pour ton portfolio.</div>
-              </div>
-            </td>
+            <td width="10" style="vertical-align:middle;"></td>
+            <td style="vertical-align:middle;background-color:#2d1e0f;border:1.5px solid #FF6B35;padding:3px 10px;font-size:10px;font-weight:700;color:#FF6B35;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.5px;text-transform:uppercase;">&#10022; TALENT</td>
           </tr>
+        </table>
+        <!-- Emoji -->
+        <p style="font-size:44px;margin:0 0 10px 0;line-height:1;">&#127908;</p>
+        <!-- Stars -->
+        <p style="font-size:18px;margin:0 0 14px 0;letter-spacing:4px;color:#FF6B35;">&#9733;&#9733;&#9733;&#9733;&#9733;</p>
+        <!-- Title -->
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:#FFFFFF;margin:0 0 8px 0;line-height:1.3;">
+          La scène t'appartient, <span style="color:#FF6B35;">{{ $user->first_name }}</span>&nbsp;!
+        </p>
+        <!-- Subtitle -->
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#8892a4;font-weight:400;margin:0;">
+          Rejoins la communauté des meilleurs talents de Côte d'Ivoire &#127464;&#127470;
+        </p>
+      </td>
+    </tr>
+
+    <!-- Orange accent bar -->
+    <tr>
+      <td bgcolor="#FF6B35" style="height:3px;font-size:0;line-height:0;"></td>
+    </tr>
+
+    <!-- ===== BODY ===== -->
+    <tr>
+      <td bgcolor="#FFFFFF" style="padding:40px;">
+
+        <!-- Félicitations block with left border -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
           <tr>
-            <td width="50%" style="padding: 6px 6px 6px 0; vertical-align: top;">
-              <div class="feature-card">
-                <span class="feature-icon">🗓️</span>
-                <div class="feature-title">Calendrier intégré</div>
-                <div class="feature-desc">Gère tes disponibilités facilement. Bloque des dates, évite les doubles réservations.</div>
-              </div>
-            </td>
-            <td width="50%" style="padding: 6px 0 6px 6px; vertical-align: top;">
-              <div class="feature-card">
-                <span class="feature-icon">🌍</span>
-                <div class="feature-title">Visibilité nationale</div>
-                <div class="feature-desc">Sois visible auprès de milliers de clients à Abidjan, Bouaké, San-Pédro et partout en CI.</div>
-              </div>
+            <td width="4" bgcolor="#FF6B35" style="border-radius:2px;font-size:0;">&nbsp;</td>
+            <td bgcolor="#FFF5F0" style="padding:16px 20px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#1A2744;font-weight:600;line-height:1.7;margin:0;">
+                Félicitations <strong style="color:#FF6B35;">{{ $user->first_name }} {{ $user->last_name }}</strong>&nbsp;! &#127881;<br><br>
+                Tu viens de rejoindre la <strong>première plateforme de mise en relation entre talents et clients</strong> en Côte d'Ivoire. BookMi va t'aider à <strong>booster ta carrière</strong>, trouver de nouveaux clients et être payé(e) en toute sécurité pour chaque prestation.
+              </p>
             </td>
           </tr>
         </table>
-      </div>
 
-      <!-- Action urgency -->
-      <div class="action-box">
-        <div class="action-box-title">🚀 Lance-toi maintenant !</div>
-        <div class="action-box-text">
-          Ton profil est créé, mais il est encore vide. Complète-le dès aujourd'hui pour commencer à recevoir des demandes de réservation. Plus ton profil est riche, plus tu attires de clients !
-        </div>
-        <a href="{{ config('app.url') }}/talent/profile" class="cta-button">
-          ✏️ Compléter mon profil →
-        </a><br>
-        <a href="{{ config('app.url') }}/talent/dashboard" class="cta-secondary">
-          Accéder à mon espace talent →
-        </a>
-      </div>
+        <!-- Stats bar -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#1A2744" style="border-radius:10px;margin-bottom:32px;">
+          <tr>
+            <td width="25%" align="center" style="padding:16px 8px;border-right:1px solid #2d3f5e;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:900;color:#FF6B35;margin:0 0 3px 0;">100%</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#8892a4;margin:0;line-height:1.3;">Paiements<br>sécurisés</p>
+            </td>
+            <td width="25%" align="center" style="padding:16px 8px;border-right:1px solid #2d3f5e;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:900;color:#FF6B35;margin:0 0 3px 0;">7j/7</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#8892a4;margin:0;line-height:1.3;">Support<br>dédié</p>
+            </td>
+            <td width="25%" align="center" style="padding:16px 8px;border-right:1px solid #2d3f5e;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:17px;font-weight:900;color:#FF6B35;margin:0 0 3px 0;">0 fcfa</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#8892a4;margin:0;line-height:1.3;">Pour<br>démarrer</p>
+            </td>
+            <td width="25%" align="center" style="padding:16px 8px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:900;color:#FF6B35;margin:0 0 3px 0;">&#127464;&#127470;</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#8892a4;margin:0;line-height:1.3;">Toute<br>la CI</p>
+            </td>
+          </tr>
+        </table>
 
-      <hr class="divider">
+        <!-- Section title: Steps -->
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#1A2744;margin:0 0 20px 0;padding-left:14px;border-left:4px solid #FF6B35;">
+          Comment démarrer sur BookMi ?
+        </p>
 
-      <!-- Signature -->
-      <div>
-        <div class="signature-text">
-          Tu rejoins une communauté de talents exceptionnels. 🌟<br><br>
-          Chez BookMi, nous croyons en toi et en ton talent. Notre mission est de te donner la <strong>visibilité que tu mérites</strong> et de te garantir des revenus <strong>sécurisés et réguliers</strong>.<br><br>
-          N'hésite pas à nous contacter si tu as la moindre question — nous sommes là pour toi.
-        </div>
-        <div class="signature-name">Charles Ouattara</div>
-        <div class="signature-title">CEO & Fondateur — BookMi Côte d'Ivoire</div>
-      </div>
+        <!-- Step 1 -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+          <tr>
+            <td width="50" valign="top">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="38" height="38" bgcolor="#FF6B35" align="center" style="border-radius:50%;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:900;color:#FFFFFF;line-height:38px;vertical-align:middle;">1</td>
+                </tr>
+              </table>
+            </td>
+            <td valign="top" style="padding-left:4px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">&#127917; Complète ton profil</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6B7280;line-height:1.5;margin:0;">Ajoute ta bio, tes photos, vidéos et tes forfaits de service. Un profil complet attire 3x plus de clients.</p>
+            </td>
+          </tr>
+        </table>
 
-    </div>
+        <!-- Step 2 -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+          <tr>
+            <td width="50" valign="top">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="38" height="38" bgcolor="#FF6B35" align="center" style="border-radius:50%;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:900;color:#FFFFFF;line-height:38px;vertical-align:middle;">2</td>
+                </tr>
+              </table>
+            </td>
+            <td valign="top" style="padding-left:4px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">&#9989; Fais vérifier ton profil</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6B7280;line-height:1.5;margin:0;">Soumets tes documents pour la vérification d'identité. Le badge vérifié inspire confiance et booste ta visibilité.</p>
+            </td>
+          </tr>
+        </table>
 
-    <!-- FOOTER -->
-    <div class="footer">
-      <div class="footer-logo">
-        <span>Book</span><span>Mi</span>
-      </div>
-      <div class="footer-tagline">La plateforme de réservation de talents en Côte d'Ivoire</div>
-      <div class="footer-links">
-        <a href="{{ config('app.url') }}">bookmi.click</a>
-        <span class="footer-dot">·</span>
-        <a href="{{ config('app.url') }}/talent/dashboard">Mon espace</a>
-        <span class="footer-dot">·</span>
-        <a href="mailto:support@bookmi.click">Support</a>
-      </div>
-      <div>
-        <span class="footer-badge">🔒 Paiement sécurisé · Escrow BookMi · Support 7j/7</span>
-      </div>
-      <div style="margin-top: 16px; font-size: 11px; color: rgba(255,255,255,0.3);">
-        © {{ date('Y') }} BookMi. Tous droits réservés.<br>
-        Abidjan, Côte d'Ivoire 🇨🇮
-      </div>
-    </div>
+        <!-- Step 3 -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
+          <tr>
+            <td width="50" valign="top">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="38" height="38" bgcolor="#FF6B35" align="center" style="border-radius:50%;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:900;color:#FFFFFF;line-height:38px;vertical-align:middle;">3</td>
+                </tr>
+              </table>
+            </td>
+            <td valign="top" style="padding-left:4px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">&#128203; Reçois des demandes de réservation</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6B7280;line-height:1.5;margin:0;">Les clients te contactent directement. Tu acceptes ou refuses les demandes selon ton calendrier.</p>
+            </td>
+          </tr>
+        </table>
 
-  </div>
-</div>
+        <!-- Step 4 -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:36px;">
+          <tr>
+            <td width="50" valign="top">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="38" height="38" bgcolor="#FF6B35" align="center" style="border-radius:50%;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:900;color:#FFFFFF;line-height:38px;vertical-align:middle;">4</td>
+                </tr>
+              </table>
+            </td>
+            <td valign="top" style="padding-left:4px;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">&#128176; Sois payé(e) en toute sécurité</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6B7280;line-height:1.5;margin:0;">Le paiement du client est sécurisé à l'avance. Après ta prestation, les fonds sont libérés directement sur ton Mobile Money.</p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Features section title -->
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#1A2744;margin:0 0 16px 0;padding-left:14px;border-left:4px solid #FF6B35;">
+          Ce que BookMi t'offre
+        </p>
+
+        <!-- Features 2x2 grid -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:28px;">
+          <tr>
+            <td width="50%" valign="top" style="padding:0 6px 10px 0;">
+              <table role="presentation" width="100%" cellpadding="14" cellspacing="0" border="0" bgcolor="#F9FAFB" style="border:1px solid #E5E7EB;border-radius:10px;">
+                <tr><td>
+                  <p style="font-size:22px;margin:0 0 7px 0;">&#128202;</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">Tableau de bord analytics</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6B7280;line-height:1.45;margin:0;">Suis tes performances, tes revenus et tes statistiques de réservation en temps réel.</p>
+                </td></tr>
+              </table>
+            </td>
+            <td width="50%" valign="top" style="padding:0 0 10px 6px;">
+              <table role="presentation" width="100%" cellpadding="14" cellspacing="0" border="0" bgcolor="#F9FAFB" style="border:1px solid #E5E7EB;border-radius:10px;">
+                <tr><td>
+                  <p style="font-size:22px;margin:0 0 7px 0;">&#128220;</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">Certificat de prestation</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6B7280;line-height:1.45;margin:0;">Obtiens un certificat officiel BookMi après chaque prestation complétée. Parfait pour ton portfolio.</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td width="50%" valign="top" style="padding:0 6px 0 0;">
+              <table role="presentation" width="100%" cellpadding="14" cellspacing="0" border="0" bgcolor="#F9FAFB" style="border:1px solid #E5E7EB;border-radius:10px;">
+                <tr><td>
+                  <p style="font-size:22px;margin:0 0 7px 0;">&#128197;</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">Calendrier intégré</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6B7280;line-height:1.45;margin:0;">Gère tes disponibilités facilement. Bloque des dates, évite les doubles réservations.</p>
+                </td></tr>
+              </table>
+            </td>
+            <td width="50%" valign="top" style="padding:0 0 0 6px;">
+              <table role="presentation" width="100%" cellpadding="14" cellspacing="0" border="0" bgcolor="#F9FAFB" style="border:1px solid #E5E7EB;border-radius:10px;">
+                <tr><td>
+                  <p style="font-size:22px;margin:0 0 7px 0;">&#127758;</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;color:#1A2744;margin:0 0 4px 0;">Visibilité nationale</p>
+                  <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#6B7280;line-height:1.45;margin:0;">Sois visible auprès de milliers de clients à Abidjan, Bouaké, San-Pédro et partout en CI.</p>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Action urgency box -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px;border:2px solid #FF6B35;border-radius:12px;">
+          <tr>
+            <td bgcolor="#FFF5F0" style="padding:24px;border-radius:10px;text-align:center;">
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:900;color:#1A2744;margin:0 0 8px 0;">&#128640; Lance-toi maintenant !</p>
+              <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6B7280;line-height:1.6;margin:0 0 20px 0;">
+                Ton profil est créé, mais il est encore vide. Complète-le dès aujourd'hui pour commencer à recevoir des demandes de réservation. Plus ton profil est riche, plus tu attires de clients&nbsp;!
+              </p>
+              <a href="{{ config('app.url') }}/talent/profile" style="display:inline-block;background-color:#FF6B35;color:#FFFFFF;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;padding:12px 28px;border-radius:50px;">&#9998;&#65039; Compléter mon profil &rarr;</a>
+              <br><br>
+              <a href="{{ config('app.url') }}/talent/dashboard" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#FF6B35;font-weight:600;text-decoration:none;">&#127968; Accéder à mon espace talent &rarr;</a>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Divider -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px;">
+          <tr><td style="border-top:1px solid #E5E7EB;font-size:0;line-height:0;">&nbsp;</td></tr>
+        </table>
+
+        <!-- Signature -->
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#374151;line-height:1.7;margin:0 0 14px 0;">
+          Tu rejoins une communauté de talents exceptionnels. &#127775;<br><br>
+          Chez BookMi, nous croyons en ton talent et en l'impact que tu peux avoir sur chaque événement ivoirien.<br>
+          On est là pour te voir <strong>briller</strong>.
+        </p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:900;color:#1A2744;margin:0 0 2px 0;">Charles Ouattara</p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#FF6B35;font-weight:600;margin:0;">CEO &amp; Fondateur — BookMi Côte d'Ivoire</p>
+
+      </td>
+    </tr>
+
+    <!-- ===== FOOTER ===== -->
+    <tr>
+      <td bgcolor="#1A2744" style="padding:24px 40px;border-radius:0 0 20px 20px;text-align:center;">
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:900;margin:0 0 6px 0;">
+          <span style="color:#FFFFFF;">Book</span><span style="color:#FF6B35;">Mi</span>
+        </p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#8892a4;margin:0 0 12px 0;">La plateforme de réservation de talents en Côte d'Ivoire</p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:12px;margin:0 0 10px 0;">
+          <a href="{{ config('app.url') }}" style="color:#8892a4;text-decoration:none;">bookmi.click</a>
+          <span style="color:#4a5568;margin:0 6px;">&middot;</span>
+          <a href="{{ config('app.url') }}/talents" style="color:#8892a4;text-decoration:none;">Talents</a>
+          <span style="color:#4a5568;margin:0 6px;">&middot;</span>
+          <a href="mailto:support@bookmi.click" style="color:#8892a4;text-decoration:none;">Support</a>
+        </p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#8892a4;background-color:#1f2f4a;border:1px solid #2d4060;border-radius:20px;padding:5px 14px;display:inline-block;margin:0 0 12px 0;">&#128274; Paiement sécurisé &middot; Escrow BookMi &middot; Support 7j/7</p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#4a5568;margin:0;">
+          &copy; {{ date('Y') }} BookMi. Tous droits réservés.<br>
+          Abidjan, Côte d'Ivoire &#127464;&#127470;
+        </p>
+      </td>
+    </tr>
+
+  </table>
+
+</td>
+</tr>
+</table>
+
 </body>
 </html>
