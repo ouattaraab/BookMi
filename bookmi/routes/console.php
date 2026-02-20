@@ -3,6 +3,7 @@
 use App\Console\Commands\DetectSuspiciousActivity;
 use App\Console\Commands\DetectTalentOverload;
 use App\Console\Commands\FlagLowRatingTalents;
+use App\Console\Commands\GenerateAnnualCertificates;
 use App\Console\Commands\RecalculateTalentLevels;
 use App\Console\Commands\ReleaseExpiredEscrows;
 use App\Console\Commands\SendAdminReminders;
@@ -39,3 +40,7 @@ Schedule::command(DetectSuspiciousActivity::class)->dailyAt('04:00');
 
 // Send reminders for overdue admin actions (Story 8.11)
 Schedule::command(SendAdminReminders::class)->dailyAt('07:00');
+
+// Generate annual revenue certificates for all active talents (Story 7.9 — auto)
+// Runs every January 1st at 06:00 and generates certificates for the previous year
+Schedule::command(GenerateAnnualCertificates::class)->yearlyOn(1, 1, '06:00');

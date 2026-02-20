@@ -177,7 +177,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Portfolio post-prestation (Story 6.7)
         Route::get('/talent_profiles/{talentProfile}/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
         Route::post('/talent_profiles/me/portfolio', [PortfolioController::class, 'store'])->name('portfolio.store');
+        Route::get('/talent_profiles/me/portfolio/pending', [PortfolioController::class, 'pendingSubmissions'])->name('portfolio.pending');
+        Route::post('/talent_profiles/me/portfolio/{portfolioItem}/approve', [PortfolioController::class, 'approve'])->name('portfolio.approve');
+        Route::post('/talent_profiles/me/portfolio/{portfolioItem}/reject', [PortfolioController::class, 'reject'])->name('portfolio.reject');
         Route::delete('/talent_profiles/me/portfolio/{portfolioItem}', [PortfolioController::class, 'destroy'])->name('portfolio.destroy');
+        // Client submits photos/videos after a completed prestation (Story 6.7 — enrichissement)
+        Route::post('/booking_requests/{booking}/client-portfolio', [PortfolioController::class, 'storeClientSubmission'])->name('portfolio.client_store');
 
         // Signalement problème (Story 6.6)
         Route::post('/booking_requests/{booking}/reports', [ReportController::class, 'store'])->name('reports.store');

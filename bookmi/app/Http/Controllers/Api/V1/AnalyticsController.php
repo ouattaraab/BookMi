@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
 use App\Models\BookingRequest;
+use App\Models\ProfileView;
 use App\Models\TalentProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -81,6 +82,24 @@ class AnalyticsController extends BaseController
             ->where('status', BookingStatus::Pending->value)
             ->count();
 
+        // Profile views (last 30 days + total)
+        $thirtyDaysAgo = $now->copy()->subDays(29)->startOfDay();
+
+        $profileViewsLast30 = ProfileView::where('talent_profile_id', $talent->id)
+            ->where('viewed_at', '>=', $thirtyDaysAgo)
+            ->count();
+
+        $profileViewsTotal = ProfileView::where('talent_profile_id', $talent->id)->count();
+
+        $dailyViews = ProfileView::where('talent_profile_id', $talent->id)
+            ->where('viewed_at', '>=', $thirtyDaysAgo)
+            ->get(['viewed_at'])
+            ->groupBy(fn ($v) => \Carbon\Carbon::parse($v->viewed_at)->toDateString())
+            ->map(fn ($group, $date) => ['date' => $date, 'views' => $group->count()])
+            ->sortKeys()
+            ->values()
+            ->toArray();
+
         return [
             'talent_profile_id' => $talent->id,
             'stage_name' => $talent->stage_name,
@@ -92,6 +111,11 @@ class AnalyticsController extends BaseController
             'bookings_by_status' => $bookingsByStatus,
             'monthly_revenue' => $monthlyRevenue,
             'rating_history' => $ratingHistory,
+            'profile_views' => [
+                'total' => $profileViewsTotal,
+                'last_30_days' => $profileViewsLast30,
+                'daily_breakdown' => $dailyViews,
+            ],
         ];
     }
 }

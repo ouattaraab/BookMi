@@ -21,6 +21,9 @@ class PortfolioItem extends Model
         'is_compressed',
         'link_url',
         'link_platform',
+        'submitted_by_client',
+        'submitted_by_user_id',
+        'is_approved',
     ];
 
     /**
@@ -29,7 +32,9 @@ class PortfolioItem extends Model
     protected function casts(): array
     {
         return [
-            'is_compressed' => 'boolean',
+            'is_compressed'       => 'boolean',
+            'submitted_by_client' => 'boolean',
+            'is_approved'         => 'boolean',
         ];
     }
 
