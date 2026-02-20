@@ -4,123 +4,137 @@
 
 @section('head')
 <style>
+main.page-content { background: #F2EFE9 !important; }
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(22px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.dash-fade { opacity: 0; animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
+
 /* ── Conversation row ── */
 .conv-row {
     display: flex;
     align-items: center;
-    gap: 0.875rem;
-    padding: 0.875rem 1.25rem;
+    gap: 14px;
+    padding: 16px 24px;
     text-decoration: none;
-    border-bottom: 1px solid var(--glass-border);
-    transition: background 0.15s;
+    border-bottom: 1px solid #EAE7E0;
+    transition: background 0.18s, padding-left 0.22s;
     position: relative;
 }
 .conv-row:last-child { border-bottom: none; }
-.conv-row:hover { background: rgba(255,255,255,0.04); }
+.conv-row:hover {
+    background: #FFF8F5;
+    padding-left: 28px;
+}
+
 /* ── Avatar ── */
 .conv-avatar {
-    width: 2.75rem; height: 2.75rem;
-    border-radius: 0.875rem;
+    width: 48px; height: 48px;
+    border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 800; font-size: 1rem; color: white;
+    font-weight: 900; font-size: 1.1rem; color: white;
     flex-shrink: 0;
-    background: linear-gradient(135deg, var(--navy), var(--blue));
-    box-shadow: 0 0 12px rgba(33,150,243,0.25);
+    background: linear-gradient(135deg, #1A2744 0%, #2563EB 100%);
+    box-shadow: 0 3px 10px rgba(26,39,68,0.18);
 }
-/* ── Unread dot ── */
-.unread-dot {
-    width: 0.5rem; height: 0.5rem;
-    border-radius: 50%;
-    background: var(--orange);
-    flex-shrink: 0;
-    box-shadow: 0 0 6px rgba(255,107,53,0.6);
+
+/* ── CTA Button ── */
+.btn-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px;
+    background: linear-gradient(135deg, #FF6B35 0%, #f0520f 100%);
+    color: #fff; font-weight: 800; font-size: 0.85rem;
+    border-radius: 12px; text-decoration: none;
+    box-shadow: 0 4px 18px rgba(255,107,53,0.32);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
-/* ── Reveal ── */
-.reveal-item { opacity:0; transform:translateY(14px); transition:opacity 0.42s cubic-bezier(0.16,1,0.3,1), transform 0.42s cubic-bezier(0.16,1,0.3,1); }
-.reveal-item.visible { opacity:1; transform:none; }
+.btn-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(255,107,53,0.42); }
 </style>
 @endsection
 
 @section('content')
-<div class="space-y-6">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:1100px;">
 
     {{-- Flash --}}
     @if(session('success'))
-    <div class="p-3 rounded-xl text-sm font-medium" style="background:rgba(76,175,80,0.12);border:1px solid rgba(76,175,80,0.25);color:rgba(134,239,172,0.95)">{{ session('success') }}</div>
+    <div class="dash-fade" style="animation-delay:0ms;margin-bottom:16px;padding:14px 18px;border-radius:12px;font-size:0.875rem;font-weight:600;background:#F0FDF4;border:1px solid #86EFAC;color:#15803D;">{{ session('success') }}</div>
     @endif
     @if(session('error'))
-    <div class="p-3 rounded-xl text-sm font-medium" style="background:rgba(244,67,54,0.12);border:1px solid rgba(244,67,54,0.25);color:rgba(252,165,165,0.95)">{{ session('error') }}</div>
+    <div class="dash-fade" style="animation-delay:0ms;margin-bottom:16px;padding:14px 18px;border-radius:12px;font-size:0.875rem;font-weight:600;background:#FEF2F2;border:1px solid #FCA5A5;color:#991B1B;">{{ session('error') }}</div>
     @endif
 
     {{-- Header --}}
-    <div class="reveal-item">
-        <h1 class="section-title">Messages</h1>
-        <p class="section-sub">Vos conversations avec les talents</p>
+    <div class="dash-fade" style="animation-delay:0ms;margin-bottom:28px;">
+        <h1 style="font-size:1.8rem;font-weight:900;color:#1A2744;letter-spacing:-0.025em;margin:0 0 5px 0;line-height:1.15;">Messages</h1>
+        <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Vos conversations avec les talents</p>
     </div>
 
     @if($conversations->isEmpty())
         {{-- Empty state --}}
-        <div class="glass-card flex flex-col items-center justify-center py-20 text-center reveal-item" style="transition-delay:0.06s">
-            <div class="w-20 h-20 rounded-3xl mb-5 flex items-center justify-center"
-                 style="background:rgba(33,150,243,0.07);border:1px solid rgba(33,150,243,0.15);box-shadow:0 0 30px rgba(33,150,243,0.08)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="none" viewBox="0 0 24 24" stroke="#64B5F6" stroke-width="1.5">
+        <div class="dash-fade" style="animation-delay:80ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:72px 24px;text-align:center;">
+            <div style="width:76px;height:76px;border-radius:22px;background:#EFF6FF;border:2px solid #93C5FD;display:flex;align-items:center;justify-content:center;margin-bottom:22px;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                 </svg>
             </div>
-            <p class="font-black text-base mb-2" style="color:var(--text)">Aucune conversation</p>
-            <p class="text-sm" style="color:var(--text-muted)">Vos échanges avec les talents apparaîtront ici.</p>
+            <p style="font-size:1.05rem;font-weight:800;color:#1A2744;margin:0 0 8px 0;">Aucune conversation</p>
+            <p style="font-size:0.875rem;color:#8A8278;margin:0 0 28px 0;max-width:280px;line-height:1.6;">Vos échanges avec les talents apparaîtront ici après votre première réservation.</p>
+            <a href="{{ route('talents.index') }}" class="btn-cta">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Découvrir les talents
+            </a>
         </div>
     @else
-        <div class="glass-card overflow-hidden reveal-item" style="transition-delay:0.06s">
+        <div class="dash-fade" style="animation-delay:80ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);overflow:hidden;">
+
+            {{-- Header de la card --}}
+            <div style="padding:18px 24px 16px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <h2 style="font-size:1rem;font-weight:900;color:#1A2744;margin:0 0 2px 0;">Conversations</h2>
+                    <p style="font-size:0.75rem;color:#8A8278;margin:0;font-weight:500;">{{ $conversations->total() ?? $conversations->count() }} conversation{{ ($conversations->total() ?? $conversations->count()) > 1 ? 's' : '' }}</p>
+                </div>
+            </div>
+
             @foreach($conversations as $i => $conversation)
             @php
-                $talentUser = $conversation->talentProfile->user ?? null;
-                $talentName = $conversation->talentProfile->stage_name
+                $talentUser  = $conversation->talentProfile->user ?? null;
+                $talentName  = $conversation->talentProfile->stage_name
                     ?? trim(($talentUser->first_name ?? '') . ' ' . ($talentUser->last_name ?? ''))
                     ?: 'Talent';
-                $talentInitial = strtoupper(substr($talentName, 0, 1));
-                $lastMsg = $conversation->latestMessage;
-                $lastMsgPreview = $lastMsg ? Str::limit($lastMsg->content, 60) : 'Aucun message';
-                $lastMsgDate = $conversation->last_message_at
+                $talentInit  = strtoupper(substr($talentName, 0, 1));
+                $lastMsg     = $conversation->latestMessage;
+                $lastPreview = $lastMsg ? Str::limit($lastMsg->content, 60) : 'Aucun message';
+                $lastDate    = $conversation->last_message_at
                     ? \Carbon\Carbon::parse($conversation->last_message_at)->diffForHumans()
                     : '';
-                $catName = $conversation->talentProfile->category->name ?? null;
+                $catName     = $conversation->talentProfile->category->name ?? null;
             @endphp
             <a href="{{ route('client.messages.show', $conversation->id) }}" class="conv-row">
-                {{-- Avatar --}}
-                <div class="conv-avatar">{{ $talentInitial }}</div>
+                <div class="conv-avatar">{{ $talentInit }}</div>
 
-                {{-- Content --}}
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between mb-0.5">
-                        <span class="font-bold text-sm truncate" style="color:var(--text)">{{ $talentName }}</span>
-                        <span class="text-xs flex-shrink-0 ml-2" style="color:var(--text-faint)">{{ $lastMsgDate }}</span>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+                        <span style="font-weight:800;font-size:0.9rem;color:#1A2744;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $talentName }}</span>
+                        <span style="font-size:0.72rem;color:#B0A89E;flex-shrink:0;margin-left:8px;font-weight:500;">{{ $lastDate }}</span>
                     </div>
-                    <p class="text-xs truncate" style="color:var(--text-muted)">{{ $lastMsgPreview }}</p>
+                    <p style="font-size:0.78rem;color:#8A8278;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">{{ $lastPreview }}</p>
                     @if($catName)
-                        <p class="text-xs mt-0.5" style="color:var(--text-faint)">{{ $catName }}</p>
+                        <p style="font-size:0.72rem;color:#B0A89E;margin:2px 0 0;font-weight:500;">{{ $catName }}</p>
                     @endif
                 </div>
 
-                {{-- Unread / Arrow --}}
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:var(--text-faint);flex-shrink:0"><path d="M9 5l7 7-7 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C3BC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5l7 7-7 7"/></svg>
             </a>
             @endforeach
+
         </div>
 
         @if($conversations->hasPages())
-        <div class="mt-4">{{ $conversations->links() }}</div>
+        <div style="margin-top:20px;">{{ $conversations->links() }}</div>
         @endif
     @endif
 
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
-    }, { threshold: 0.04 });
-    document.querySelectorAll('.reveal-item').forEach(el => io.observe(el));
-});
-</script>
 @endsection
