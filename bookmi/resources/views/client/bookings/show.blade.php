@@ -239,8 +239,8 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
         @endif
 
-        {{-- Bouton messagerie (statuts post-paiement) --}}
-        @if(in_array($sk, ['paid', 'confirmed', 'completed']))
+        {{-- Bouton messagerie (uniquement pour réservations actives) --}}
+        @if(in_array($sk, ['paid', 'confirmed']))
         <div style="padding:0 24px 24px;">
             <form action="{{ route('client.messages.start', $booking->id) }}" method="POST">
                 @csrf

@@ -36,6 +36,14 @@
                             ->where('sender_id', '!=', auth()->id())
                             ->whereNull('read_at')
                             ->count();
+                        $booking = $conversation->bookingRequest;
+                        $bookingStatus = null;
+                        if ($booking) {
+                            $bookingStatus = $booking->status instanceof \BackedEnum
+                                ? $booking->status->value
+                                : (string) $booking->status;
+                        }
+                        $isLocked = in_array($bookingStatus, ['completed', 'cancelled', 'disputed']);
                     @endphp
                     <a href="{{ route('talent.messages.show', $conversation->id) }}"
                        class="flex items-center gap-4 px-5 py-4 hover:bg-orange-50/50 transition-colors group">
@@ -49,7 +57,7 @@
                         {{-- Contenu --}}
                         <div class="flex-1 min-w-0">
                             <div class="flex items-center justify-between gap-2">
-                                <span class="font-semibold text-gray-900 {{ $unread > 0 ? 'text-gray-900' : '' }} truncate">
+                                <span class="font-semibold text-gray-900 truncate">
                                     {{ $conversation->client->first_name ?? '—' }} {{ $conversation->client->last_name ?? '' }}
                                 </span>
                                 @if($conversation->last_message_at)
@@ -60,11 +68,25 @@
                             </div>
                             @if($latest)
                                 <p class="text-sm truncate mt-0.5 {{ $unread > 0 ? 'text-gray-700 font-medium' : 'text-gray-400' }}">
-                                    {{ $latest->sender_id === auth()->id() ? 'Vous : ' : '' }}{{ $latest->content }}
+                                    {{ $latest->sender_id === auth()->id() ? 'Vous : ' : '' }}{{ $latest->content ?: '📷 Média' }}
                                 </p>
                             @else
                                 <p class="text-sm text-gray-300 mt-0.5">Aucun message</p>
                             @endif
+                            {{-- Booking context --}}
+                            <div class="flex items-center gap-2 mt-1 flex-wrap">
+                                @if($booking)
+                                    <span class="text-xs text-gray-300">
+                                        Réservation #{{ $booking->id }}
+                                        @if($booking->event_date)
+                                            · {{ \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y') }}
+                                        @endif
+                                    </span>
+                                @endif
+                                @if($isLocked)
+                                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full" style="background:#F9F8F5;color:#B0A89E;border:1px solid #E5E1DA;">🔒 Terminée</span>
+                                @endif
+                            </div>
                         </div>
                         {{-- Flèche --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-300 group-hover:text-orange-400 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

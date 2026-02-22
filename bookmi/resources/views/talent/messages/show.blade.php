@@ -79,17 +79,35 @@
     $talentProfile   = auth()->user()->talentProfile;
     $myPhotoUrl      = $talentProfile?->profilePhotoUrl ?? null;
     $myName          = $talentProfile?->stage_name ?? auth()->user()->first_name ?? 'Moi';
+
+    // Booking context
+    $booking        = $conversation->bookingRequest;
+    $bookingStatus  = null;
+    if ($booking) {
+        $bookingStatus = $booking->status instanceof \BackedEnum
+            ? $booking->status->value
+            : (string) $booking->status;
+    }
+    $canSendMessage = !in_array($bookingStatus, ['completed', 'cancelled', 'disputed']);
 @endphp
 <div class="flex flex-col h-full space-y-4" x-data="{ lightboxSrc: null }">
 
     {{-- Back --}}
-    <div>
+    <div class="flex items-center justify-between gap-3">
         <a href="{{ route('talent.messages') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-orange-600 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
             Retour aux messages
         </a>
+        @if($booking)
+            <span style="font-size:0.72rem;font-weight:700;padding:3px 10px;border-radius:9999px;background:#FFF8F5;border:1px solid #FFD5C2;color:#C85A20;">
+                Réservation #{{ $booking->id }}
+                @if($booking->event_date)
+                    · {{ \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y') }}
+                @endif
+            </span>
+        @endif
     </div>
 
     {{-- Conversation --}}
@@ -180,84 +198,64 @@
             </div>
         @endif
 
-        {{-- Form envoi --}}
-        <div class="border-t border-gray-100 p-4"
-             x-data="{
-                 message: '',
-                 mediaFile: null,
-                 mediaPreviewSrc: null,
-                 mediaPreviewType: null,
-                 pickMedia() { this.$refs.mediaInput.click(); },
-                 onMediaChange(e) {
-                     const f = e.target.files[0];
-                     if (!f) return;
-                     this.mediaFile = f;
-                     this.mediaPreviewType = f.type.startsWith('video/') ? 'video' : 'image';
-                     const r = new FileReader();
-                     r.onload = ev => { this.mediaPreviewSrc = ev.target.result; };
-                     r.readAsDataURL(f);
-                 },
-                 clearMedia() {
-                     this.mediaFile = null; this.mediaPreviewSrc = null; this.mediaPreviewType = null;
-                     this.$refs.mediaInput.value = '';
-                 },
-                 canSend() { return this.message.trim() || this.mediaFile; }
-             }">
+        {{-- Locked state --}}
+        @if(!$canSendMessage)
+            <div class="mx-4 mb-4 px-4 py-3 rounded-xl flex items-center gap-2"
+                 style="background:#F9F8F5;border:1px solid #E5E1DA;color:#8A8278;font-size:0.8rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0;color:#C8C3BC;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Réservation terminée — les échanges via ce fil sont désactivés.
+            </div>
+        @else
+            {{-- Form envoi — vanilla JS only (no Alpine for media) --}}
+            <div class="border-t border-gray-100 p-4">
 
-            {{-- Media preview --}}
-            <template x-if="mediaPreviewSrc">
-                <div class="media-preview mb-2">
-                    <template x-if="mediaPreviewType === 'image'">
-                        <img :src="mediaPreviewSrc" alt="Aperçu">
-                    </template>
-                    <template x-if="mediaPreviewType === 'video'">
-                        <video :src="mediaPreviewSrc" style="height:54px;width:80px;border-radius:8px;object-fit:cover;"></video>
-                    </template>
-                    <span class="text-xs text-gray-500 ml-1" x-text="mediaPreviewType === 'video' ? 'Vidéo sélectionnée' : 'Image sélectionnée'"></span>
-                    <button type="button" class="media-preview-cancel" @click="clearMedia()">
+                {{-- Media preview --}}
+                <div class="media-preview" id="bm-media-preview" style="display:none;margin-bottom:8px;">
+                    <img id="bm-preview-img" alt="Aperçu" style="height:54px;width:80px;border-radius:8px;object-fit:cover;display:none;">
+                    <video id="bm-preview-vid" style="height:54px;width:80px;border-radius:8px;object-fit:cover;display:none;"></video>
+                    <span class="text-xs text-gray-500 ml-1" id="bm-preview-type"></span>
+                    <button type="button" class="media-preview-cancel" onclick="bmClearMedia()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
                 </div>
-            </template>
 
-            <form method="POST" action="{{ route('talent.messages.send', $conversation->id) }}"
-                  enctype="multipart/form-data" class="flex items-end gap-3"
-                  @submit="setTimeout(() => { message = ''; clearMedia(); }, 100)">
-                @csrf
-                {{-- Bouton upload : input transparent superposé au bouton visuel --}}
-                <div style="position:relative;display:inline-flex;flex-shrink:0;" title="Photo ou vidéo">
-                    <div class="media-btn">
+                <form method="POST" action="{{ route('talent.messages.send', $conversation->id) }}"
+                      enctype="multipart/form-data" class="flex items-end gap-3">
+                    @csrf
+                    {{-- Label wrapping hidden file input — most reliable cross-browser approach --}}
+                    <label class="media-btn" title="Photo ou vidéo" style="cursor:pointer;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-4 4 4"/><circle cx="8.5" cy="13.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-                    </div>
-                    <input type="file" name="media" accept="image/*,video/*"
-                           x-ref="mediaInput"
-                           @change="onMediaChange($event)"
-                           style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
-                </div>
+                        <input type="file" name="media" accept="image/*,video/*"
+                               id="bm-media-input"
+                               style="display:none;"
+                               onchange="bmHandleMedia(this)">
+                    </label>
 
-                <textarea
-                    name="content"
-                    x-model="message"
-                    rows="2"
-                    placeholder="Écrire un message..."
-                    maxlength="2000"
-                    class="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
-                    onkeydown="if(event.ctrlKey && event.key === 'Enter') this.form.submit();"
-                ></textarea>
-                <button type="submit"
-                        class="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white transition-opacity hover:opacity-90"
-                        :class="canSend() ? 'opacity-100' : 'opacity-40 cursor-not-allowed'"
-                        style="background:#FF6B35">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                    </svg>
-                </button>
-            </form>
-            <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Ctrl+Entrée pour envoyer · Numéros de téléphone masqués pour votre sécurité
-            </p>
-        </div>
+                    <textarea
+                        name="content"
+                        rows="2"
+                        placeholder="Écrire un message..."
+                        maxlength="2000"
+                        id="bm-textarea"
+                        class="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                        oninput="bmUpdateSendBtn()"
+                        onkeydown="if(event.ctrlKey && event.key === 'Enter' && !document.getElementById('bm-send-btn').disabled) this.form.submit();"
+                    >{{ old('content') }}</textarea>
+
+                    <button type="submit" id="bm-send-btn" disabled
+                            class="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-white transition-opacity hover:opacity-90"
+                            style="background:#FF6B35;opacity:0.4;cursor:not-allowed;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </form>
+                <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Ctrl+Entrée pour envoyer · Numéros de téléphone masqués pour votre sécurité
+                </p>
+            </div>
+        @endif
     </div>
 
     {{-- Lightbox --}}
@@ -267,10 +265,65 @@
     </div>
 </div>
 
-@section('scripts')
 <script>
-    const container = document.getElementById('messages-container');
-    if (container) container.scrollTop = container.scrollHeight;
+// Scroll to bottom
+(function() {
+    var el = document.getElementById('messages-container');
+    if (el) el.scrollTop = el.scrollHeight;
+})();
+
+// ── Vanilla JS media handlers ──
+function bmHandleMedia(input) {
+    var file = input.files[0];
+    if (!file) { bmUpdateSendBtn(); return; }
+    var previewEl = document.getElementById('bm-media-preview');
+    var imgEl     = document.getElementById('bm-preview-img');
+    var vidEl     = document.getElementById('bm-preview-vid');
+    var typeEl    = document.getElementById('bm-preview-type');
+    if (file.type.startsWith('video/')) {
+        imgEl.style.display = 'none';
+        vidEl.style.display = 'block';
+        vidEl.src = URL.createObjectURL(file);
+        typeEl.textContent = 'Vidéo sélectionnée';
+    } else {
+        vidEl.style.display = 'none';
+        imgEl.style.display = 'block';
+        imgEl.src = URL.createObjectURL(file);
+        typeEl.textContent = 'Image sélectionnée';
+    }
+    previewEl.style.display = 'flex';
+    bmUpdateSendBtn();
+}
+
+function bmClearMedia() {
+    var input = document.getElementById('bm-media-input');
+    if (input) input.value = '';
+    var previewEl = document.getElementById('bm-media-preview');
+    if (previewEl) previewEl.style.display = 'none';
+    var imgEl = document.getElementById('bm-preview-img');
+    var vidEl = document.getElementById('bm-preview-vid');
+    if (imgEl) { imgEl.src = ''; }
+    if (vidEl) { vidEl.src = ''; }
+    bmUpdateSendBtn();
+}
+
+function bmUpdateSendBtn() {
+    var input    = document.getElementById('bm-media-input');
+    var textarea = document.getElementById('bm-textarea');
+    var sendBtn  = document.getElementById('bm-send-btn');
+    if (!sendBtn) return;
+    var hasMedia = input && input.files && input.files.length > 0;
+    var hasText  = textarea && textarea.value.trim().length > 0;
+    var canSend  = hasMedia || hasText;
+    sendBtn.disabled = !canSend;
+    sendBtn.style.opacity    = canSend ? '1'   : '0.4';
+    sendBtn.style.cursor     = canSend ? 'pointer' : 'not-allowed';
+}
+
+// Enable send button if there's pre-filled content (old input on error)
+(function() {
+    var ta = document.getElementById('bm-textarea');
+    if (ta && ta.value.trim().length > 0) bmUpdateSendBtn();
+})();
 </script>
-@endsection
 @endsection

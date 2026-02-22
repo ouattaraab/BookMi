@@ -14,10 +14,11 @@ use Illuminate\View\View;
 class MessageController extends Controller
 {
     use HandleMessageSend;
+
     public function index(): View
     {
         $conversations = Conversation::where('client_id', auth()->id())
-            ->with(['talentProfile.user', 'talentProfile.category', 'latestMessage'])
+            ->with(['talentProfile.user', 'talentProfile.category', 'latestMessage', 'bookingRequest'])
             ->orderByDesc('last_message_at')
             ->paginate(20);
         return view('client.messages.index', compact('conversations'));
@@ -26,7 +27,7 @@ class MessageController extends Controller
     public function show(int $id): View
     {
         $conversation = Conversation::where('client_id', auth()->id())
-            ->with(['talentProfile.user', 'messages.sender'])
+            ->with(['talentProfile.user', 'messages.sender', 'bookingRequest'])
             ->findOrFail($id);
 
         $conversation->messages()
@@ -43,18 +44,16 @@ class MessageController extends Controller
             ->whereIn('status', [
                 BookingStatus::Paid->value,
                 BookingStatus::Confirmed->value,
-                BookingStatus::Completed->value,
+                // Completed intentionally excluded — no new messaging on finished bookings
             ])
             ->findOrFail($bookingId);
 
         $conversation = Conversation::firstOrCreate(
+            ['booking_request_id' => $booking->id],
             [
                 'client_id'         => auth()->id(),
                 'talent_profile_id' => $booking->talent_profile_id,
-            ],
-            [
-                'booking_request_id' => $booking->id,
-                'last_message_at'    => now(),
+                'last_message_at'   => now(),
             ]
         );
 
@@ -68,7 +67,19 @@ class MessageController extends Controller
             'media'   => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,mov,avi,webm|max:51200',
         ]);
 
-        $conversation = Conversation::where('client_id', auth()->id())->findOrFail($id);
+        $conversation = Conversation::where('client_id', auth()->id())
+            ->with('bookingRequest')
+            ->findOrFail($id);
+
+        // Block messaging on completed/cancelled/disputed bookings
+        if ($conversation->bookingRequest) {
+            $bookingStatus = $conversation->bookingRequest->status instanceof \BackedEnum
+                ? $conversation->bookingRequest->status->value
+                : (string) $conversation->bookingRequest->status;
+            if (in_array($bookingStatus, ['completed', 'cancelled', 'disputed'])) {
+                return back()->withErrors(['content' => 'Cette réservation est terminée. Les échanges via ce fil sont désactivés.']);
+            }
+        }
 
         // Block phone number exchanges
         if ($request->content && $this->containsPhoneNumber($request->content)) {

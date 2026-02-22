@@ -68,7 +68,7 @@ main.page-content { background: #F2EFE9 !important; }
     {{-- Header --}}
     <div class="dash-fade" style="animation-delay:0ms;margin-bottom:28px;">
         <h1 style="font-size:1.8rem;font-weight:900;color:#1A2744;letter-spacing:-0.025em;margin:0 0 5px 0;line-height:1.15;">Messages</h1>
-        <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Vos conversations avec les talents</p>
+        <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Vos conversations par réservation — chaque fil est lié à une prestation distincte</p>
     </div>
 
     @if($conversations->isEmpty())
@@ -105,11 +105,21 @@ main.page-content { background: #F2EFE9 !important; }
                     ?: 'Talent';
                 $talentInit  = strtoupper(substr($talentName, 0, 1));
                 $lastMsg     = $conversation->latestMessage;
-                $lastPreview = $lastMsg ? Str::limit($lastMsg->content, 60) : 'Aucun message';
+                $lastPreview = $lastMsg
+                    ? ($lastMsg->content ? Str::limit($lastMsg->content, 60) : '📷 Média')
+                    : 'Aucun message';
                 $lastDate    = $conversation->last_message_at
                     ? \Carbon\Carbon::parse($conversation->last_message_at)->diffForHumans()
                     : '';
                 $catName     = $conversation->talentProfile->category->name ?? null;
+                $booking     = $conversation->bookingRequest;
+                $bookingStatus = null;
+                if ($booking) {
+                    $bookingStatus = $booking->status instanceof \BackedEnum
+                        ? $booking->status->value
+                        : (string) $booking->status;
+                }
+                $isLocked = in_array($bookingStatus, ['completed', 'cancelled', 'disputed']);
             @endphp
             <a href="{{ route('client.messages.show', $conversation->id) }}" class="conv-row">
                 <div class="conv-avatar">{{ $talentInit }}</div>
@@ -120,9 +130,22 @@ main.page-content { background: #F2EFE9 !important; }
                         <span style="font-size:0.72rem;color:#B0A89E;flex-shrink:0;margin-left:8px;font-weight:500;">{{ $lastDate }}</span>
                     </div>
                     <p style="font-size:0.78rem;color:#8A8278;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;">{{ $lastPreview }}</p>
-                    @if($catName)
-                        <p style="font-size:0.72rem;color:#B0A89E;margin:2px 0 0;font-weight:500;">{{ $catName }}</p>
-                    @endif
+                    <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;">
+                        @if($booking)
+                            <span style="font-size:0.68rem;font-weight:700;color:#B0A89E;">Réservation #{{ $booking->id }}
+                                @if($booking->event_date)
+                                    · {{ \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y') }}
+                                @endif
+                            </span>
+                        @elseif($catName)
+                            <span style="font-size:0.72rem;color:#B0A89E;font-weight:500;">{{ $catName }}</span>
+                        @endif
+                        @if($isLocked)
+                            <span style="font-size:0.65rem;font-weight:700;padding:1px 7px;border-radius:9999px;background:#F9F8F5;border:1px solid #E5E1DA;color:#B0A89E;">
+                                🔒 Terminée
+                            </span>
+                        @endif
+                    </div>
                 </div>
 
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C3BC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5l7 7-7 7"/></svg>

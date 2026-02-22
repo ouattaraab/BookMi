@@ -158,6 +158,16 @@
         ?: 'Talent';
     $talentPhotoUrl = $talentProfile->profilePhotoUrl ?? null;
     $clientName     = auth()->user()->first_name ?? 'Moi';
+
+    // Booking context
+    $booking        = $conversation->bookingRequest;
+    $bookingStatus  = null;
+    if ($booking) {
+        $bookingStatus = $booking->status instanceof \BackedEnum
+            ? $booking->status->value
+            : (string) $booking->status;
+    }
+    $canSendMessage = !in_array($bookingStatus, ['completed', 'cancelled', 'disputed']);
 @endphp
 <div class="flex flex-col" style="height:calc(100vh - 10rem); max-width: 48rem"
      x-data="{ lightboxSrc: null, lightboxType: null }">
@@ -168,30 +178,39 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M15 19l-7-7 7-7"/></svg>
         </a>
 
-        {{-- Talent avatar with photo --}}
+        {{-- Talent avatar --}}
         @if($talentPhotoUrl)
             <img src="{{ $talentPhotoUrl }}" alt="{{ $talentName }}"
                  class="w-10 h-10 rounded-xl object-cover flex-shrink-0"
                  style="box-shadow:0 0 12px rgba(255,107,53,0.25);border:2px solid rgba(255,107,53,0.35)">
         @else
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0"
-                 style="background:linear-gradient(135deg,#FF6B35,#C85A20);box-shadow:0 0 12px rgba(255,107,53,0.28)">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-content-center text-white font-black text-sm flex-shrink-0"
+                 style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FF6B35,#C85A20);box-shadow:0 0 12px rgba(255,107,53,0.28)">
                 {{ strtoupper(substr($talentName, 0, 1)) }}
             </div>
         @endif
-        <div>
+        <div style="flex:1;min-width:0;">
             <p class="font-black text-sm" style="color:var(--text)">{{ $talentName }}</p>
             @if($talentProfile->category)
                 <p class="text-xs" style="color:var(--text-muted)">{{ $talentProfile->category->name }}</p>
             @endif
         </div>
+
+        {{-- Booking badge --}}
+        @if($booking)
+            <div style="flex-shrink:0;font-size:0.7rem;font-weight:700;padding:4px 10px;border-radius:9999px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);color:var(--text-muted);">
+                Réservation #{{ $booking->id }}
+                @if($booking->event_date)
+                    · {{ \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y') }}
+                @endif
+            </div>
+        @endif
     </div>
 
     {{-- Messages scroll --}}
     <div class="flex-1 overflow-y-auto rounded-2xl p-4 space-y-4 mb-4"
          id="msg-scroll"
-         style="background:rgba(255,255,255,0.025);border:1px solid var(--glass-border)"
-         x-data x-init="$el.scrollTop = $el.scrollHeight">
+         style="background:rgba(255,255,255,0.025);border:1px solid var(--glass-border)">
 
         @if($conversation->messages->isEmpty())
             <div class="flex items-center justify-center h-full">
@@ -262,97 +281,71 @@
         @endif
     </div>
 
-    {{-- Send form --}}
-    <div class="flex-shrink-0"
-         x-data="{
-             message: '',
-             mediaFile: null,
-             mediaPreviewSrc: null,
-             mediaPreviewType: null,
-             pickMedia() {
-                 this.$refs.mediaInput.click();
-             },
-             onMediaChange(event) {
-                 const file = event.target.files[0];
-                 if (!file) return;
-                 this.mediaFile = file;
-                 this.mediaPreviewType = file.type.startsWith('video/') ? 'video' : 'image';
-                 const reader = new FileReader();
-                 reader.onload = e => { this.mediaPreviewSrc = e.target.result; };
-                 reader.readAsDataURL(file);
-             },
-             clearMedia() {
-                 this.mediaFile = null;
-                 this.mediaPreviewSrc = null;
-                 this.mediaPreviewType = null;
-                 this.$refs.mediaInput.value = '';
-             },
-             canSend() {
-                 return this.message.trim() || this.mediaFile;
-             }
-         }">
-
-        {{-- Error --}}
-        @if($errors->has('content'))
-            <p class="text-xs mb-2" style="color:rgba(252,165,165,0.9)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:-1px;margin-right:4px"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
-                {{ $errors->first('content') }}
+    {{-- Locked state --}}
+    @if(!$canSendMessage)
+        <div class="flex-shrink-0" style="padding:16px 20px;border-radius:1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="color:rgba(255,255,255,0.35);flex-shrink:0;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <p class="text-sm" style="color:rgba(255,255,255,0.45);margin:0;">
+                Cette réservation est terminée — les échanges via ce fil sont désactivés.
+                Pour communiquer à nouveau avec ce talent, effectuez une nouvelle réservation.
             </p>
-        @endif
+        </div>
+    @else
+        {{-- Send form — vanilla JS only (no Alpine.js for media) --}}
+        <div class="flex-shrink-0">
 
-        {{-- Media preview --}}
-        <template x-if="mediaPreviewSrc">
-            <div class="media-preview">
-                <template x-if="mediaPreviewType === 'video'">
-                    <video :src="mediaPreviewSrc" style="height:54px;width:80px;border-radius:0.5rem;object-fit:cover;"></video>
-                </template>
-                <template x-if="mediaPreviewType === 'image'">
-                    <img :src="mediaPreviewSrc" alt="Aperçu" style="height:54px;width:80px;border-radius:0.5rem;object-fit:cover;">
-                </template>
-                <span class="text-xs ml-2" style="color:rgba(255,255,255,0.55)" x-text="mediaPreviewType === 'video' ? 'Vidéo sélectionnée' : 'Image sélectionnée'"></span>
-                <button type="button" class="media-preview-cancel" @click="clearMedia()">
+            {{-- Error --}}
+            @if($errors->has('content'))
+                <p class="text-xs mb-2" style="color:rgba(252,165,165,0.9)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:-1px;margin-right:4px"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    {{ $errors->first('content') }}
+                </p>
+            @endif
+
+            {{-- Media preview (vanilla JS controlled) --}}
+            <div class="media-preview" id="bm-media-preview" style="display:none;margin-bottom:8px;">
+                <img id="bm-preview-img" alt="Aperçu" style="height:54px;width:80px;border-radius:0.5rem;object-fit:cover;display:none;">
+                <video id="bm-preview-vid" style="height:54px;width:80px;border-radius:0.5rem;object-fit:cover;display:none;"></video>
+                <span class="text-xs ml-2" id="bm-preview-type" style="color:rgba(255,255,255,0.55)"></span>
+                <button type="button" class="media-preview-cancel" onclick="bmClearMedia()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
                 </button>
             </div>
-        </template>
 
-        <form action="{{ route('client.messages.send', $conversation->id) }}" method="POST"
-              enctype="multipart/form-data"
-              @submit="setTimeout(() => { message = ''; clearMedia(); }, 100)">
-            @csrf
-            <div class="msg-input-wrap">
-                {{-- Bouton upload : input transparent superposé au bouton visuel --}}
-                <div style="position:relative;display:inline-flex;flex-shrink:0;" title="Envoyer une photo ou vidéo">
-                    <div class="media-btn">
+            <form action="{{ route('client.messages.send', $conversation->id) }}" method="POST"
+                  enctype="multipart/form-data">
+                @csrf
+                <div class="msg-input-wrap">
+                    {{-- Label wrapping hidden file input — most reliable cross-browser approach --}}
+                    <label class="media-btn" title="Envoyer une photo ou vidéo" style="cursor:pointer;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-4 4 4"/><circle cx="8.5" cy="13.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-                    </div>
-                    <input type="file" name="media" accept="image/*,video/*"
-                           x-ref="mediaInput"
-                           @change="onMediaChange($event)"
-                           style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
-                </div>
+                        <input type="file" name="media" accept="image/*,video/*"
+                               id="bm-media-input"
+                               style="display:none;"
+                               onchange="bmHandleMedia(this)">
+                    </label>
 
-                <textarea
-                    name="content"
-                    x-model="message"
-                    rows="1"
-                    placeholder="Écrivez un message..."
-                    x-ref="textarea"
-                    @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
-                    @keydown.enter.prevent.exact="if(canSend()) $el.closest('form').submit()"
-                    @keydown.shift.enter="$event.stopPropagation()"
-                ></textarea>
-                <button type="submit" class="send-btn" :disabled="!canSend()">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                </button>
-            </div>
-        </form>
-        <p class="text-xs text-center mt-2" style="color:var(--text-faint)">
-            Entrée pour envoyer · Maj+Entrée pour saut de ligne ·
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:-1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            Numéros de téléphone masqués pour votre sécurité
-        </p>
-    </div>
+                    <textarea
+                        name="content"
+                        rows="1"
+                        placeholder="Écrivez un message..."
+                        id="bm-textarea"
+                        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';bmUpdateSendBtn()"
+                        onkeydown="if(!event.shiftKey&&event.key==='Enter'){event.preventDefault();if(!document.getElementById('bm-send-btn').disabled)this.closest('form').submit();}"
+                    >{{ old('content') }}</textarea>
+
+                    <button type="submit" class="send-btn" id="bm-send-btn" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    </button>
+                </div>
+            </form>
+            <p class="text-xs text-center mt-2" style="color:var(--text-faint)">
+                Entrée pour envoyer · Maj+Entrée pour saut de ligne ·
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:-1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Numéros de téléphone masqués pour votre sécurité
+            </p>
+        </div>
+    @endif
 
     {{-- Lightbox --}}
     <div class="lightbox" x-show="lightboxSrc && lightboxType === 'image'" x-cloak
@@ -361,4 +354,63 @@
     </div>
 
 </div>
+
+<script>
+// Scroll messages to bottom
+(function() {
+    var el = document.getElementById('msg-scroll');
+    if (el) el.scrollTop = el.scrollHeight;
+})();
+
+// ── Vanilla JS media handlers ──
+function bmHandleMedia(input) {
+    var file = input.files[0];
+    if (!file) { bmUpdateSendBtn(); return; }
+    var previewEl = document.getElementById('bm-media-preview');
+    var imgEl     = document.getElementById('bm-preview-img');
+    var vidEl     = document.getElementById('bm-preview-vid');
+    var typeEl    = document.getElementById('bm-preview-type');
+    if (file.type.startsWith('video/')) {
+        imgEl.style.display = 'none';
+        vidEl.style.display = 'block';
+        vidEl.src = URL.createObjectURL(file);
+        typeEl.textContent = 'Vidéo sélectionnée';
+    } else {
+        vidEl.style.display = 'none';
+        imgEl.style.display = 'block';
+        imgEl.src = URL.createObjectURL(file);
+        typeEl.textContent = 'Image sélectionnée';
+    }
+    previewEl.style.display = 'flex';
+    bmUpdateSendBtn();
+}
+
+function bmClearMedia() {
+    var input = document.getElementById('bm-media-input');
+    if (input) input.value = '';
+    var previewEl = document.getElementById('bm-media-preview');
+    if (previewEl) previewEl.style.display = 'none';
+    var imgEl = document.getElementById('bm-preview-img');
+    var vidEl = document.getElementById('bm-preview-vid');
+    if (imgEl) { imgEl.src = ''; }
+    if (vidEl) { vidEl.src = ''; }
+    bmUpdateSendBtn();
+}
+
+function bmUpdateSendBtn() {
+    var input   = document.getElementById('bm-media-input');
+    var textarea = document.getElementById('bm-textarea');
+    var sendBtn  = document.getElementById('bm-send-btn');
+    if (!sendBtn) return;
+    var hasMedia = input && input.files && input.files.length > 0;
+    var hasText  = textarea && textarea.value.trim().length > 0;
+    sendBtn.disabled = !(hasMedia || hasText);
+}
+
+// Enable send button if there's pre-filled content (old input on error)
+(function() {
+    var ta = document.getElementById('bm-textarea');
+    if (ta && ta.value.trim().length > 0) bmUpdateSendBtn();
+})();
+</script>
 @endsection

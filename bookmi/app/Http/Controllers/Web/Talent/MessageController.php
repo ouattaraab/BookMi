@@ -11,13 +11,14 @@ use Illuminate\View\View;
 class MessageController extends Controller
 {
     use HandleMessageSend;
+
     public function index(): View
     {
         $profile = auth()->user()->talentProfile;
         if (!$profile) return view('talent.coming-soon', ['title' => 'Messages', 'description' => 'Configurez votre profil d\'abord.']);
 
         $conversations = Conversation::where('talent_profile_id', $profile->id)
-            ->with(['client', 'latestMessage'])
+            ->with(['client', 'latestMessage', 'bookingRequest'])
             ->orderByDesc('last_message_at')
             ->paginate(20);
 
@@ -28,7 +29,7 @@ class MessageController extends Controller
     {
         $profile = auth()->user()->talentProfile;
         $conversation = Conversation::where('talent_profile_id', $profile?->id)
-            ->with(['client', 'messages.sender'])
+            ->with(['client', 'messages.sender', 'bookingRequest'])
             ->findOrFail($id);
 
         $conversation->messages()
@@ -47,7 +48,19 @@ class MessageController extends Controller
         ]);
 
         $profile      = auth()->user()->talentProfile;
-        $conversation = Conversation::where('talent_profile_id', $profile?->id)->findOrFail($id);
+        $conversation = Conversation::where('talent_profile_id', $profile?->id)
+            ->with('bookingRequest')
+            ->findOrFail($id);
+
+        // Block messaging on completed/cancelled/disputed bookings
+        if ($conversation->bookingRequest) {
+            $bookingStatus = $conversation->bookingRequest->status instanceof \BackedEnum
+                ? $conversation->bookingRequest->status->value
+                : (string) $conversation->bookingRequest->status;
+            if (in_array($bookingStatus, ['completed', 'cancelled', 'disputed'])) {
+                return back()->withErrors(['content' => 'Cette réservation est terminée. Les échanges via ce fil sont désactivés.']);
+            }
+        }
 
         // Block phone number exchanges
         if ($request->content && $this->containsPhoneNumber($request->content)) {
