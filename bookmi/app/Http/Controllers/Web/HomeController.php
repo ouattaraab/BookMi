@@ -11,7 +11,6 @@ class HomeController extends Controller
     public function index(): View
     {
         $featuredTalents = TalentProfile::with(['user', 'category'])
-            ->where('is_verified', true)
             ->whereHas('user', fn ($q) => $q->where('is_active', true))
             ->inRandomOrder()
             ->limit(6)
@@ -19,7 +18,6 @@ class HomeController extends Controller
 
         // Count par catégorie pour les cards de la landing
         $categoryCount = TalentProfile::with('category')
-            ->where('is_verified', true)
             ->get()
             ->groupBy(fn ($t) => $t->category?->name ?? 'Autre')
             ->map->count()
