@@ -6,7 +6,6 @@ use App\Filament\Resources\ActivityLogResource\Pages;
 use App\Models\ActivityLog;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists\Components\KeyValueEntry as InfolistKeyValueEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry as InfolistTextEntry;
 use Filament\Infolists\Infolist;
@@ -95,8 +94,13 @@ class ActivityLogResource extends Resource
 
             InfolistSection::make('Métadonnées')
                 ->schema([
-                    InfolistKeyValueEntry::make('metadata')
-                        ->label('Données supplémentaires'),
+                    InfolistTextEntry::make('metadata')
+                        ->label('Données supplémentaires')
+                        ->getStateUsing(fn ($record) => $record->metadata
+                            ? json_encode($record->metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+                            : '—')
+                        ->html(false)
+                        ->extraAttributes(['style' => 'font-family: monospace; white-space: pre-wrap; font-size: 0.85rem;']),
                 ])
                 ->visible(fn ($record) => !empty($record->metadata)),
         ]);
