@@ -294,6 +294,33 @@ main.fi-main {
     color: #1565C0 !important;
 }
 
+/* Fix: la règle ".fi-sidebar-item:not(.fi-sidebar-item-active) .fi-sidebar-item-button span"
+   a une spécificité (0,3,1) et écrase le texte des badges de navigation.
+   On la bat avec spécificité (0,4,0).
+   Chaque couleur Filament utilise un fond *-50 (clair) → texte foncé requis.
+   Ressources concernées :
+     - warning : Avertissements, Alertes disponibilité, Vérifications d'identité
+     - danger  : Alertes, Avis
+     - success : (futur usage)
+     - info    : (futur usage)
+*/
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-warning,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-warning span {
+    color: #b45309 !important; /* amber-700 sur fond amber-50 */
+}
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-danger,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-danger span {
+    color: #b91c1c !important; /* red-700 sur fond red-50 */
+}
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-success,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-success span {
+    color: #065f46 !important; /* emerald-800 sur fond emerald-50 */
+}
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-info,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-info span {
+    color: #0369a1 !important; /* sky-700 sur fond sky-50 */
+}
+
 /* ================================================================
    RESPONSIVE — Grilles adaptatives
    ================================================================ */

@@ -140,6 +140,23 @@
     color: #1565C0 !important;
 }
 
+/* Fix: sidebar white color cascades into nav badges — restore proper contrast */
+.fi-sidebar .fi-badge.fi-color-warning {
+    color: #b45309 !important; /* amber-700 sur fond amber-50 */
+}
+.fi-sidebar .fi-badge.fi-color-danger {
+    color: #ffffff !important;
+}
+.fi-sidebar .fi-badge.fi-color-success {
+    color: #065f46 !important;
+}
+.fi-sidebar .fi-badge.fi-color-primary {
+    color: #1565C0 !important;
+}
+.fi-sidebar .fi-badge.fi-color-info {
+    color: #0369a1 !important;
+}
+
 /* ── Forms / Inputs ── */
 .fi-input:focus {
     border-color: #2196F3 !important;
