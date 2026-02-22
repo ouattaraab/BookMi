@@ -16,7 +16,11 @@ use App\Listeners\NotifyClientOfBookingAccepted;
 use App\Listeners\NotifyPartyOfBookingCancelled;
 use App\Listeners\NotifyTalentOfNewBooking;
 use App\Listeners\NotifyTalentOfPaymentReceived;
+use App\Models\BookingRequest;
+use App\Models\PortfolioItem;
 use App\Models\TalentProfile;
+use App\Observers\BookingRequestObserver;
+use App\Observers\PortfolioItemObserver;
 use App\Observers\TalentProfileObserver;
 use App\Repositories\Contracts\FavoriteRepositoryInterface;
 use App\Repositories\Contracts\ServicePackageRepositoryInterface;
@@ -51,6 +55,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         TalentProfile::observe(TalentProfileObserver::class);
+        BookingRequest::observe(BookingRequestObserver::class);
+        PortfolioItem::observe(PortfolioItemObserver::class);
         $this->configureRateLimiting();
         Event::listen(EscrowReleased::class,   HandleEscrowReleased::class);
         Event::listen(BookingCreated::class,   NotifyTalentOfNewBooking::class);

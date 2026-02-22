@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Client;
 
 use App\Http\Controllers\Controller;
 use App\Models\TalentProfile;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -20,20 +21,27 @@ class FavoriteController extends Controller
 
     public function store(int $talentProfileId): RedirectResponse
     {
-        TalentProfile::findOrFail($talentProfileId);
+        $talent = TalentProfile::findOrFail($talentProfileId);
         DB::table('user_favorites')->insertOrIgnore([
             'user_id'           => auth()->id(),
             'talent_profile_id' => $talentProfileId,
+        ]);
+        ActivityLogger::log('favorite.added', $talent, [
+            'talent_stage_name' => $talent->stage_name,
         ]);
         return back()->with('success', 'Talent ajouté aux favoris.');
     }
 
     public function destroy(int $id): RedirectResponse
     {
+        $talent = TalentProfile::find($id);
         DB::table('user_favorites')->where([
             'user_id'           => auth()->id(),
             'talent_profile_id' => $id,
         ])->delete();
+        ActivityLogger::log('favorite.removed', $talent, [
+            'talent_stage_name' => $talent?->stage_name,
+        ]);
         return back()->with('success', 'Talent retiré des favoris.');
     }
 }

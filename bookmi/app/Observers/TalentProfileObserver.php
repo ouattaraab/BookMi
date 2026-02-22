@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Models\TalentNotificationRequest;
 use App\Models\TalentProfile;
 use App\Notifications\TalentAvailableNotification;
+use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Notification;
 
 class TalentProfileObserver
@@ -14,6 +15,11 @@ class TalentProfileObserver
      */
     public function created(TalentProfile $talent): void
     {
+        ActivityLogger::log('talent.profile.created', $talent, [
+            'stage_name'  => $talent->stage_name,
+            'category_id' => $talent->category_id,
+        ]);
+
         if ($talent->is_verified) {
             $this->notifyInterestedUsers($talent);
         }
@@ -24,6 +30,17 @@ class TalentProfileObserver
      */
     public function updated(TalentProfile $talent): void
     {
+        $changed = array_keys($talent->getChanges());
+        $ignored = ['updated_at'];
+        $meaningful = array_diff($changed, $ignored);
+
+        if (! empty($meaningful)) {
+            ActivityLogger::log('talent.profile.updated', $talent, [
+                'changed_fields' => $meaningful,
+                'stage_name'     => $talent->stage_name,
+            ]);
+        }
+
         if ($talent->wasChanged('is_verified') && $talent->is_verified) {
             $this->notifyInterestedUsers($talent);
         }

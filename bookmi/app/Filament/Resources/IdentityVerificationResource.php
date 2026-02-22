@@ -16,6 +16,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 
 class IdentityVerificationResource extends Resource
@@ -33,6 +34,11 @@ class IdentityVerificationResource extends Resource
     protected static ?string $navigationGroup = 'Gestion des utilisateurs';
 
     protected static ?int $navigationSort = 4;
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['user', 'reviewer']);
+    }
 
     public static function getNavigationBadge(): ?string
     {

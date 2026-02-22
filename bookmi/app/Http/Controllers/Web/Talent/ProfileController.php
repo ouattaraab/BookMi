@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -90,6 +91,7 @@ class ProfileController extends Controller
         $this->optimizeImage($uploaded->getRealPath(), $storagePath, 800, 85);
 
         $profile->update(['profile_photo' => $filename]);
+        ActivityLogger::log('talent.profile.photo_updated', $profile);
 
         return back()->with('success', 'Photo de profil mise à jour.');
     }
