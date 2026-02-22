@@ -239,6 +239,21 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
         @endif
 
+        {{-- Bouton messagerie (statuts post-paiement) --}}
+        @if(in_array($sk, ['paid', 'confirmed', 'completed']))
+        <div style="padding:0 24px 24px;">
+            <form action="{{ route('client.messages.start', $booking->id) }}" method="POST">
+                @csrf
+                <button type="submit" style="width:100%;padding:14px 24px;border-radius:14px;font-size:0.875rem;font-weight:800;color:white;background:linear-gradient(135deg,#FF6B35,#C85A20);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(255,107,53,0.30);transition:transform 0.2s,box-shadow 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 22px rgba(255,107,53,0.40)'"
+                        onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(255,107,53,0.30)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+                    Contacter {{ $talentName }}
+                </button>
+            </form>
+        </div>
+        @endif
+
     </div>
 
     {{-- Meta --}}

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web\Client;
 
 use App\Http\Controllers\Controller;
+use App\Enums\BookingStatus;
+use App\Models\BookingRequest;
 use App\Models\Conversation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +33,30 @@ class MessageController extends Controller
             ->update(['read_at' => now()]);
 
         return view('client.messages.show', compact('conversation'));
+    }
+
+    public function startFromBooking(int $bookingId): RedirectResponse
+    {
+        $booking = BookingRequest::where('client_id', auth()->id())
+            ->whereIn('status', [
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+                BookingStatus::Completed->value,
+            ])
+            ->findOrFail($bookingId);
+
+        $conversation = Conversation::firstOrCreate(
+            [
+                'client_id'         => auth()->id(),
+                'talent_profile_id' => $booking->talent_profile_id,
+            ],
+            [
+                'booking_request_id' => $booking->id,
+                'last_message_at'    => now(),
+            ]
+        );
+
+        return redirect()->route('client.messages.show', $conversation->id);
     }
 
     public function send(int $id, Request $request): RedirectResponse

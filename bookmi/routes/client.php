@@ -28,6 +28,7 @@ Route::post('/favorites/{talentProfileId}', [FavoriteController::class, 'store']
 
 // Messages
 Route::get('/messages', [MessageController::class, 'index'])->name('messages');
+Route::post('/messages/booking/{bookingId}', [MessageController::class, 'startFromBooking'])->name('messages.start');
 Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
 Route::post('/messages/{id}', [MessageController::class, 'send'])->name('messages.send');
 
