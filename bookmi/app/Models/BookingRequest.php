@@ -31,6 +31,7 @@ class BookingRequest extends Model
         'total_amount',
         'refund_amount',
         'cancellation_policy_applied',
+        'accept_comment',
     ];
 
     /**

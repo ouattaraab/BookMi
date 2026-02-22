@@ -23,8 +23,9 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->foreignId('service_package_id')
+                ->nullable()
                 ->constrained('service_packages')
-                ->cascadeOnDelete();
+                ->nullOnDelete();
 
             $table->date('event_date');
             $table->string('event_location', 255);
