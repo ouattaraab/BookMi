@@ -9,7 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('conversations', function (Blueprint $table) {
-            // Replace per-artist unique with per-booking unique
+            // The composite unique was also the only index covering client_id (FK).
+            // We must add a standalone index on client_id first, or MySQL refuses to drop.
+            $table->index('client_id');
             $table->dropUnique(['client_id', 'talent_profile_id']);
             $table->unique('booking_request_id');
         });
@@ -19,6 +21,7 @@ return new class extends Migration
     {
         Schema::table('conversations', function (Blueprint $table) {
             $table->dropUnique(['booking_request_id']);
+            $table->dropIndex(['client_id']);
             $table->unique(['client_id', 'talent_profile_id']);
         });
     }
