@@ -17,6 +17,8 @@ class Message extends Model
         'sender_id',
         'content',
         'type',
+        'media_path',
+        'media_type',
         'read_at',
         'is_flagged',
         'is_auto_reply',

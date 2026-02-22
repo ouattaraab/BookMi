@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Client;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Web\Concerns\HandleMessageSend;
 use App\Enums\BookingStatus;
 use App\Models\BookingRequest;
 use App\Models\Conversation;
@@ -12,6 +13,7 @@ use Illuminate\View\View;
 
 class MessageController extends Controller
 {
+    use HandleMessageSend;
     public function index(): View
     {
         $conversations = Conversation::where('client_id', auth()->id())
@@ -61,13 +63,36 @@ class MessageController extends Controller
 
     public function send(int $id, Request $request): RedirectResponse
     {
-        $request->validate(['content' => 'required|string|max:2000']);
-        $conversation = Conversation::where('client_id', auth()->id())->findOrFail($id);
-        $conversation->messages()->create([
-            'sender_id' => auth()->id(),
-            'content'   => $request->content,
-            'type'      => 'text',
+        $request->validate([
+            'content' => 'nullable|string|max:2000',
+            'media'   => 'nullable|file|mimes:jpeg,jpg,png,gif,webp,mp4,mov,avi,webm|max:51200',
         ]);
+
+        $conversation = Conversation::where('client_id', auth()->id())->findOrFail($id);
+
+        // Block phone number exchanges
+        if ($request->content && $this->containsPhoneNumber($request->content)) {
+            return back()->withErrors(['content' => 'Pour protéger votre sécurité, le partage de numéros de téléphone n\'est pas autorisé via la messagerie. Utilisez la plateforme pour vos échanges.'])->withInput();
+        }
+
+        $messageData = [
+            'sender_id' => auth()->id(),
+            'content'   => $request->content ?? '',
+            'type'      => 'text',
+        ];
+
+        if ($request->hasFile('media')) {
+            $media = $this->uploadMedia($request->file('media'), $id);
+            $messageData['media_path'] = $media['path'];
+            $messageData['media_type'] = $media['type'];
+            $messageData['type']       = $media['type'] === 'video' ? 'video' : 'image';
+        }
+
+        if (empty($messageData['content']) && empty($messageData['media_path'] ?? null)) {
+            return back()->withErrors(['content' => 'Le message ne peut pas être vide.']);
+        }
+
+        $conversation->messages()->create($messageData);
         $conversation->touch('last_message_at');
         return back();
     }
