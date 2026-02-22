@@ -321,7 +321,9 @@
               @submit="setTimeout(() => { message = ''; clearMedia(); }, 100)">
             @csrf
             <input type="file" id="media-upload-client" name="media" accept="image/*,video/*"
-                   x-ref="mediaInput" class="hidden" @change="onMediaChange($event)">
+                   x-ref="mediaInput"
+                   style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;"
+                   @change="onMediaChange($event)">
 
             <div class="msg-input-wrap">
                 {{-- Media upload button — label natif, pas de JS pour ouvrir le picker --}}

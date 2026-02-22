@@ -225,7 +225,9 @@
                   @submit="setTimeout(() => { message = ''; clearMedia(); }, 100)">
                 @csrf
                 <input type="file" id="media-upload-talent" name="media" accept="image/*,video/*"
-                       x-ref="mediaInput" class="hidden" @change="onMediaChange($event)">
+                       x-ref="mediaInput"
+                       style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;"
+                       @change="onMediaChange($event)">
 
                 <label for="media-upload-talent" class="media-btn" style="cursor:pointer" title="Photo ou vidéo">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-4 4 4"/><circle cx="8.5" cy="13.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
