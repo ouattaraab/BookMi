@@ -9,7 +9,8 @@ use App\Models\AdminAlert;
 use App\Services\ActivityLogger;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
+use Filament\InfolistSection as InfolistSection;
+use Filament\InfolistTextEntry as InfolistTextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -82,12 +83,12 @@ class AdminAlertResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Informations')
+            InfolistSection::make('Informations')
                 ->schema([
-                    Infolists\Components\TextEntry::make('title')
+                    InfolistTextEntry::make('title')
                         ->label('Titre')
                         ->columnSpanFull(),
-                    Infolists\Components\TextEntry::make('type')
+                    InfolistTextEntry::make('type')
                         ->label('Type')
                         ->badge()
                         ->formatStateUsing(fn ($state) => match (true) {
@@ -102,7 +103,7 @@ class AdminAlertResource extends Resource
                             $state === AlertType::PendingAction || $state === 'pending_action'           => 'info',
                             default => 'gray',
                         }),
-                    Infolists\Components\TextEntry::make('severity')
+                    InfolistTextEntry::make('severity')
                         ->label('Sévérité')
                         ->badge()
                         ->formatStateUsing(fn ($state) => match (true) {
@@ -117,7 +118,7 @@ class AdminAlertResource extends Resource
                             $state === AlertSeverity::Info || $state === 'info'         => 'info',
                             default => 'gray',
                         }),
-                    Infolists\Components\TextEntry::make('status')
+                    InfolistTextEntry::make('status')
                         ->label('Statut')
                         ->badge()
                         ->formatStateUsing(fn ($state) => match ($state) {
@@ -132,19 +133,19 @@ class AdminAlertResource extends Resource
                             'dismissed' => 'gray',
                             default     => 'gray',
                         }),
-                    Infolists\Components\TextEntry::make('description')
+                    InfolistTextEntry::make('description')
                         ->label('Description')
                         ->placeholder('Aucune description')
                         ->columnSpanFull(),
                 ])->columns(2),
 
-            Infolists\Components\Section::make('Résolution')
+            InfolistSection::make('Résolution')
                 ->schema([
-                    Infolists\Components\TextEntry::make('resolved_at')
+                    InfolistTextEntry::make('resolved_at')
                         ->label('Résolu le')
                         ->dateTime('d/m/Y H:i')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('resolved_by_info')
+                    InfolistTextEntry::make('resolved_by_info')
                         ->label('Résolu par')
                         ->getStateUsing(fn ($record) => $record->resolvedBy
                             ? trim(($record->resolvedBy->first_name ?? '') . ' ' . ($record->resolvedBy->last_name ?? '')) . ' (' . $record->resolvedBy->email . ')'

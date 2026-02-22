@@ -8,7 +8,9 @@ use App\Models\IdentityVerification;
 use App\Services\ActivityLogger;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
+use Filament\Infolists\Components\IconEntry as InfolistIconEntry;
+use Filament\Infolists\Components\Section as InfolistSection;
+use Filament\Infolists\Components\TextEntry as InfolistTextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -94,17 +96,17 @@ class IdentityVerificationResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Demandeur')
+            InfolistSection::make('Demandeur')
                 ->schema([
-                    Infolists\Components\TextEntry::make('user.email')
+                    InfolistTextEntry::make('user.email')
                         ->label('Email'),
-                    Infolists\Components\TextEntry::make('user_nom')
+                    InfolistTextEntry::make('user_nom')
                         ->label('Nom complet')
                         ->getStateUsing(fn ($record) => trim(($record->user?->first_name ?? '') . ' ' . ($record->user?->last_name ?? '')) ?: '—'),
-                    Infolists\Components\TextEntry::make('user.phone')
+                    InfolistTextEntry::make('user.phone')
                         ->label('Téléphone')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('document_type')
+                    InfolistTextEntry::make('document_type')
                         ->label('Type de document')
                         ->formatStateUsing(fn ($state) => match ($state) {
                             'id_card'          => "Carte nationale d'identité",
@@ -115,9 +117,9 @@ class IdentityVerificationResource extends Resource
                         }),
                 ])->columns(2),
 
-            Infolists\Components\Section::make('Statut de vérification')
+            InfolistSection::make('Statut de vérification')
                 ->schema([
-                    Infolists\Components\TextEntry::make('verification_status')
+                    InfolistTextEntry::make('verification_status')
                         ->label('Statut')
                         ->badge()
                         ->formatStateUsing(fn ($state) => $state instanceof VerificationStatus ? $state->label() : ($state ?? '—'))
@@ -127,34 +129,34 @@ class IdentityVerificationResource extends Resource
                             $state === VerificationStatus::REJECTED => 'danger',
                             default                                 => 'gray',
                         }),
-                    Infolists\Components\TextEntry::make('reviewed_at')
+                    InfolistTextEntry::make('reviewed_at')
                         ->label('Examiné le')
                         ->dateTime('d/m/Y H:i')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('verified_at')
+                    InfolistTextEntry::make('verified_at')
                         ->label('Vérifié le')
                         ->dateTime('d/m/Y H:i')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('reviewer_info')
+                    InfolistTextEntry::make('reviewer_info')
                         ->label('Examiné par')
                         ->getStateUsing(fn ($record) => $record->reviewer
                             ? trim(($record->reviewer->first_name ?? '') . ' ' . ($record->reviewer->last_name ?? '')) . ' (' . $record->reviewer->email . ')'
                             : '—'),
-                    Infolists\Components\TextEntry::make('rejection_reason')
+                    InfolistTextEntry::make('rejection_reason')
                         ->label('Motif de rejet')
                         ->placeholder('Aucun')
                         ->columnSpanFull(),
                 ])->columns(2),
 
-            Infolists\Components\Section::make('Document soumis')
+            InfolistSection::make('Document soumis')
                 ->schema([
-                    Infolists\Components\TextEntry::make('document_link')
+                    InfolistTextEntry::make('document_link')
                         ->label('Document')
                         ->html()
                         ->getStateUsing(fn ($record) => $record->stored_path
                             ? '<a href="' . asset('storage/' . $record->stored_path) . '" target="_blank" class="text-primary-600 font-medium hover:underline">Ouvrir le document →</a>'
                             : '<span class="text-gray-400 italic">Aucun document</span>'),
-                    Infolists\Components\TextEntry::make('original_mime')
+                    InfolistTextEntry::make('original_mime')
                         ->label('Type de fichier')
                         ->placeholder('—'),
                 ])->columns(2),

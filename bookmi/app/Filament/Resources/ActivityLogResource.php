@@ -6,7 +6,9 @@ use App\Filament\Resources\ActivityLogResource\Pages;
 use App\Models\ActivityLog;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
+use Filament\InfolistKeyValueEntry as InfolistKeyValueEntry;
+use Filament\InfolistSection as InfolistSection;
+use Filament\InfolistTextEntry as InfolistTextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -65,35 +67,35 @@ class ActivityLogResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Informations')
+            InfolistSection::make('Informations')
                 ->schema([
-                    Infolists\Components\TextEntry::make('causer_info')
+                    InfolistTextEntry::make('causer_info')
                         ->label('Utilisateur')
                         ->getStateUsing(fn ($record) => $record->causer
                             ? trim(($record->causer->first_name ?? '') . ' ' . ($record->causer->last_name ?? '')) . ' (' . $record->causer->email . ')'
                             : 'Système'),
-                    Infolists\Components\TextEntry::make('action')
+                    InfolistTextEntry::make('action')
                         ->label('Action')
                         ->badge()
                         ->color('gray'),
-                    Infolists\Components\TextEntry::make('subject_type')
+                    InfolistTextEntry::make('subject_type')
                         ->label('Modèle concerné')
                         ->formatStateUsing(fn ($state) => $state ? class_basename($state) : '—')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('subject_id')
+                    InfolistTextEntry::make('subject_id')
                         ->label('ID du sujet')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('ip_address')
+                    InfolistTextEntry::make('ip_address')
                         ->label('Adresse IP')
                         ->placeholder('—'),
-                    Infolists\Components\TextEntry::make('created_at')
+                    InfolistTextEntry::make('created_at')
                         ->label('Date')
                         ->dateTime('d/m/Y H:i:s'),
                 ])->columns(2),
 
-            Infolists\Components\Section::make('Métadonnées')
+            InfolistSection::make('Métadonnées')
                 ->schema([
-                    Infolists\Components\KeyValueEntry::make('metadata')
+                    InfolistKeyValueEntry::make('metadata')
                         ->label('Données supplémentaires'),
                 ])
                 ->visible(fn ($record) => !empty($record->metadata)),

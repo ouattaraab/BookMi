@@ -9,6 +9,11 @@ class ViewAdminWarning extends ViewRecord
 {
     protected static string $resource = AdminWarningResource::class;
 
+    protected function hasInfolist(): bool
+    {
+        return true;
+    }
+
     protected function getHeaderActions(): array
     {
         return [];

@@ -12,6 +12,11 @@ class ViewReview extends ViewRecord
 {
     protected static string $resource = ReviewResource::class;
 
+    protected function hasInfolist(): bool
+    {
+        return true;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

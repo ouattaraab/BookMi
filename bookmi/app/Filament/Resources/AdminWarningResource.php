@@ -7,7 +7,8 @@ use App\Filament\Resources\AdminWarningResource\Pages;
 use App\Models\AdminWarning;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists;
+use Filament\InfolistSection as InfolistSection;
+use Filament\InfolistTextEntry as InfolistTextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -79,28 +80,28 @@ class AdminWarningResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema([
-            Infolists\Components\Section::make('Utilisateur concerné')
+            InfolistSection::make('Utilisateur concerné')
                 ->schema([
-                    Infolists\Components\TextEntry::make('user.email')
+                    InfolistTextEntry::make('user.email')
                         ->label('Email utilisateur'),
-                    Infolists\Components\TextEntry::make('user_nom')
+                    InfolistTextEntry::make('user_nom')
                         ->label('Nom complet')
                         ->getStateUsing(fn ($record) => trim(($record->user?->first_name ?? '') . ' ' . ($record->user?->last_name ?? '')) ?: '—'),
-                    Infolists\Components\TextEntry::make('issued_by_info')
+                    InfolistTextEntry::make('issued_by_info')
                         ->label('Émis par')
                         ->getStateUsing(fn ($record) => $record->issuedBy
                             ? trim(($record->issuedBy->first_name ?? '') . ' ' . ($record->issuedBy->last_name ?? '')) . ' (' . $record->issuedBy->email . ')'
                             : '—'),
-                    Infolists\Components\TextEntry::make('created_at')
+                    InfolistTextEntry::make('created_at')
                         ->label('Émis le')
                         ->dateTime('d/m/Y H:i'),
                 ])->columns(2),
 
-            Infolists\Components\Section::make('Détails')
+            InfolistSection::make('Détails')
                 ->schema([
-                    Infolists\Components\TextEntry::make('reason')
+                    InfolistTextEntry::make('reason')
                         ->label('Motif'),
-                    Infolists\Components\TextEntry::make('status')
+                    InfolistTextEntry::make('status')
                         ->label('Statut')
                         ->badge()
                         ->formatStateUsing(fn ($state) => match (true) {
@@ -113,15 +114,15 @@ class AdminWarningResource extends Resource
                             $state === WarningStatus::Resolved || $state === 'resolved' => 'success',
                             default => 'gray',
                         }),
-                    Infolists\Components\TextEntry::make('details')
+                    InfolistTextEntry::make('details')
                         ->label('Détails')
                         ->placeholder('Aucun')
                         ->columnSpanFull(),
                 ])->columns(2),
 
-            Infolists\Components\Section::make('Résolution')
+            InfolistSection::make('Résolution')
                 ->schema([
-                    Infolists\Components\TextEntry::make('resolved_at')
+                    InfolistTextEntry::make('resolved_at')
                         ->label('Résolu le')
                         ->dateTime('d/m/Y H:i')
                         ->placeholder('—'),
