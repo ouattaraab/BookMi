@@ -320,14 +320,14 @@
               enctype="multipart/form-data"
               @submit="setTimeout(() => { message = ''; clearMedia(); }, 100)">
             @csrf
-            <input type="file" name="media" accept="image/*,video/*"
+            <input type="file" id="media-upload-client" name="media" accept="image/*,video/*"
                    x-ref="mediaInput" class="hidden" @change="onMediaChange($event)">
 
             <div class="msg-input-wrap">
-                {{-- Media upload button --}}
-                <button type="button" class="media-btn" @click="pickMedia()" title="Envoyer une photo ou vidéo">
+                {{-- Media upload button — label natif, pas de JS pour ouvrir le picker --}}
+                <label for="media-upload-client" class="media-btn" style="cursor:pointer" title="Envoyer une photo ou vidéo">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9l4-4 4 4 4-4 4 4"/><circle cx="8.5" cy="13.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
-                </button>
+                </label>
 
                 <textarea
                     name="content"
