@@ -4,16 +4,19 @@ namespace App\Filament\Resources;
 
 use App\Enums\TalentLevel;
 use App\Filament\Resources\TalentProfileResource\Pages;
-use App\Models\TalentProfile;
+use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class TalentProfileResource extends Resource
 {
-    protected static ?string $model = TalentProfile::class;
+    // Modèle User filtré par rôle 'talent' — affiche TOUS les talents
+    // (avec ou sans profil créé, web + mobile).
+    protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-musical-note';
 
@@ -27,48 +30,68 @@ class TalentProfileResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    protected static ?string $slug = 'talent-profiles';
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->role('talent')
+            ->with('talentProfile');
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\Section::make('Identité')
+            Forms\Components\Section::make('Informations personnelles')
                 ->schema([
-                    Forms\Components\TextInput::make('stage_name')
+                    Forms\Components\TextInput::make('first_name')
+                        ->label('Prénom')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('last_name')
+                        ->label('Nom')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('email')
+                        ->label('Email')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('phone')
+                        ->label('Téléphone')
+                        ->disabled(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Profil talent')
+                ->schema([
+                    Forms\Components\TextInput::make('talentProfile.stage_name')
                         ->label('Nom de scène')
                         ->disabled(),
-                    Forms\Components\TextInput::make('user.email')
-                        ->label('Email utilisateur')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('city')
+                    Forms\Components\TextInput::make('talentProfile.city')
                         ->label('Ville')
                         ->disabled(),
-                    Forms\Components\TextInput::make('talent_level')
+                    Forms\Components\TextInput::make('talentProfile.talent_level')
                         ->label('Niveau')
                         ->disabled(),
-                ])->columns(2),
-
-            Forms\Components\Section::make('Statistiques')
-                ->schema([
-                    Forms\Components\TextInput::make('average_rating')
-                        ->label('Note moyenne')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('total_bookings')
-                        ->label('Total réservations')
-                        ->disabled(),
-                    Forms\Components\TextInput::make('profile_completion_percentage')
-                        ->label('Complétion du profil (%)')
-                        ->disabled(),
-                    Forms\Components\Toggle::make('is_verified')
+                    Forms\Components\Toggle::make('talentProfile.is_verified')
                         ->label('Vérifié')
                         ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.average_rating')
+                        ->label('Note moyenne')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.total_bookings')
+                        ->label('Total réservations')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.profile_completion_percentage')
+                        ->label('Complétion du profil (%)')
+                        ->disabled(),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Biographie')
+            Forms\Components\Section::make('Statut')
                 ->schema([
-                    Forms\Components\Textarea::make('bio')
-                        ->label('Bio')
-                        ->disabled()
-                        ->columnSpanFull(),
-                ]),
+                    Forms\Components\Toggle::make('is_active')
+                        ->label('Actif')
+                        ->disabled(),
+                    Forms\Components\Toggle::make('is_suspended')
+                        ->label('Suspendu')
+                        ->disabled(),
+                ])->columns(2),
         ]);
     }
 
@@ -76,28 +99,39 @@ class TalentProfileResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('stage_name')
-                    ->label('Nom de scène')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('full_name')
+                    ->label('Nom complet')
+                    ->getStateUsing(fn (User $record): string => $record->first_name . ' ' . $record->last_name)
+                    ->searchable(query: function ($query, string $search) {
+                        $query->where(function ($q) use ($search) {
+                            $q->where('first_name', 'like', "%{$search}%")
+                              ->orWhere('last_name', 'like', "%{$search}%");
+                        });
+                    }),
 
-                Tables\Columns\TextColumn::make('user.email')
+                Tables\Columns\TextColumn::make('email')
                     ->label('Email')
                     ->searchable()
-                    ->sortable(),
+                    ->copyable(),
 
-                Tables\Columns\TextColumn::make('city')
+                Tables\Columns\TextColumn::make('talentProfile.stage_name')
+                    ->label('Nom de scène')
+                    ->searchable()
+                    ->default('—'),
+
+                Tables\Columns\TextColumn::make('talentProfile.city')
                     ->label('Ville')
-                    ->searchable(),
+                    ->searchable()
+                    ->default('—'),
 
-                Tables\Columns\BadgeColumn::make('talent_level')
+                Tables\Columns\BadgeColumn::make('talentProfile.talent_level')
                     ->label('Niveau')
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === TalentLevel::NOUVEAU || $state === 'nouveau'     => 'Nouveau',
                         $state === TalentLevel::CONFIRME || $state === 'confirme'   => 'Confirmé',
                         $state === TalentLevel::POPULAIRE || $state === 'populaire' => 'Populaire',
                         $state === TalentLevel::ELITE || $state === 'elite'         => 'Élite',
-                        default => (string) $state,
+                        default => '—',
                     })
                     ->color(fn ($state): string => match (true) {
                         $state === TalentLevel::NOUVEAU || $state === 'nouveau'     => 'gray',
@@ -107,7 +141,7 @@ class TalentProfileResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\IconColumn::make('is_verified')
+                Tables\Columns\IconColumn::make('talentProfile.is_verified')
                     ->label('Vérifié')
                     ->boolean()
                     ->trueIcon('heroicon-o-shield-check')
@@ -115,32 +149,38 @@ class TalentProfileResource extends Resource
                     ->trueColor('success')
                     ->falseColor('warning'),
 
-                Tables\Columns\TextColumn::make('average_rating')
+                Tables\Columns\TextColumn::make('talentProfile.average_rating')
                     ->label('Note moy.')
                     ->formatStateUsing(fn ($state): string => $state ? number_format((float) $state, 1) . ' / 5' : '—')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('total_bookings')
+                Tables\Columns\TextColumn::make('talentProfile.total_bookings')
                     ->label('Réservations')
+                    ->formatStateUsing(fn ($state): string => $state !== null ? (string) $state : '0')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('profile_completion_percentage')
+                Tables\Columns\TextColumn::make('talentProfile.profile_completion_percentage')
                     ->label('Complétion')
-                    ->formatStateUsing(fn ($state): string => ($state ?? 0) . '%')
+                    ->formatStateUsing(fn ($state): string => $state !== null ? $state . '%' : '—')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Créé le')
+                    ->label('Inscrit le')
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_verified')
+                Tables\Filters\TernaryFilter::make('verified')
                     ->label('Vérifié')
                     ->placeholder('Tous')
                     ->trueLabel('Vérifiés seulement')
-                    ->falseLabel('Non vérifiés seulement'),
+                    ->falseLabel('Non vérifiés seulement')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereHas('talentProfile', fn ($q) => $q->where('is_verified', true)),
+                        false: fn (Builder $query) => $query->whereHas('talentProfile', fn ($q) => $q->where('is_verified', false)),
+                        blank: fn (Builder $query) => $query,
+                    ),
 
                 Tables\Filters\SelectFilter::make('talent_level')
                     ->label('Niveau')
@@ -149,7 +189,23 @@ class TalentProfileResource extends Resource
                         'confirme'  => 'Confirmé',
                         'populaire' => 'Populaire',
                         'elite'     => 'Élite',
-                    ]),
+                    ])
+                    ->query(fn (Builder $query, array $data): Builder =>
+                        isset($data['value']) && $data['value'] !== ''
+                            ? $query->whereHas('talentProfile', fn ($q) => $q->where('talent_level', $data['value']))
+                            : $query
+                    ),
+
+                Tables\Filters\TernaryFilter::make('has_profile')
+                    ->label('Profil créé')
+                    ->placeholder('Tous')
+                    ->trueLabel('Avec profil')
+                    ->falseLabel('Sans profil')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereHas('talentProfile'),
+                        false: fn (Builder $query) => $query->whereDoesntHave('talentProfile'),
+                        blank: fn (Builder $query) => $query,
+                    ),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
