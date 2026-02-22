@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Client;
 
 use App\Enums\PaymentMethod;
+use App\Events\BookingCreated;
 use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
@@ -73,7 +74,7 @@ class BookingController extends Controller
         $commissionAmount = (int) round($cachetAmount * $commissionRate / 100);
         $totalAmount      = $cachetAmount + $commissionAmount;
 
-        BookingRequest::create([
+        $booking = BookingRequest::create([
             'client_id'          => auth()->id(),
             'talent_profile_id'  => $validated['talent_profile_id'],
             'service_package_id' => $validated['service_package_id'] ?? null,
@@ -85,6 +86,8 @@ class BookingController extends Controller
             'commission_amount'  => $commissionAmount,
             'total_amount'       => $totalAmount,
         ]);
+
+        BookingCreated::dispatch($booking);
 
         return redirect()->route('client.bookings')
             ->with('success', 'Votre demande de réservation a été envoyée ! Le talent vous répondra sous 24h.');

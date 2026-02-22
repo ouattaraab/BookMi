@@ -181,8 +181,21 @@ main.page-content { background: #F2EFE9 !important; }
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
                 </div>
                 <div style="flex:1;">
-                    <p style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#B0A89E;margin:0 0 4px;">Message</p>
+                    <p style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#B0A89E;margin:0 0 4px;">Votre message</p>
                     <p style="font-size:0.875rem;color:#6B7280;font-weight:500;line-height:1.6;margin:0;">{{ $booking->message }}</p>
+                </div>
+            </div>
+            @endif
+
+            {{-- Commentaire d'acceptation du talent --}}
+            @if($booking->accept_comment)
+            <div class="detail-row">
+                <div class="detail-icon" style="background:#F0FDF4;border-color:#86EFAC;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#15803D" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div style="flex:1;">
+                    <p style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#15803D;margin:0 0 4px;">Message du talent</p>
+                    <p style="font-size:0.875rem;color:#374151;font-weight:500;line-height:1.6;margin:0;">{{ $booking->accept_comment }}</p>
                 </div>
             </div>
             @endif

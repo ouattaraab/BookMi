@@ -17,6 +17,14 @@ Bonne nouvelle ! **{{ $talentName }}** a accepté votre demande de prestation. F
 | **Total à payer** | **{{ $total }} XOF** |
 @endcomponent
 
+@if(!empty($talentComment))
+@component('mail::panel')
+💬 **Message de {{ $talentName }}**
+
+{{ $talentComment }}
+@endcomponent
+
+@endif
 @component('mail::panel')
 🔒 **Paiement sécurisé par séquestre**
 

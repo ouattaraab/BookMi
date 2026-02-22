@@ -31,21 +31,23 @@ class BookingAcceptedNotification extends Notification
         $packageName = $booking->servicePackage?->name ?? '—';
         $eventDate   = $booking->event_date?->translatedFormat('d F Y') ?? '—';
 
-        $artistFee   = number_format($booking->artist_fee ?? ($booking->total_amount ?? 0), 0, ',', ' ');
-        $commission  = number_format($booking->platform_commission ?? 0, 0, ',', ' ');
-        $total       = number_format($booking->total_amount ?? 0, 0, ',', ' ');
+        $artistFee     = number_format($booking->cachet_amount ?? ($booking->total_amount ?? 0), 0, ',', ' ');
+        $commission    = number_format($booking->commission_amount ?? 0, 0, ',', ' ');
+        $total         = number_format($booking->total_amount ?? 0, 0, ',', ' ');
+        $talentComment = $booking->accept_comment ?? null;
 
         return (new MailMessage())
             ->subject('Votre réservation est acceptée — BookMi')
             ->markdown('emails.booking-accepted', [
-                'clientName'  => $clientName,
-                'talentName'  => $talentName,
-                'packageName' => $packageName,
-                'eventDate'   => $eventDate,
-                'artistFee'   => $artistFee,
-                'commission'  => $commission,
-                'total'       => $total,
-                'actionUrl'   => url('/client/bookings/' . $booking->id . '/pay'),
+                'clientName'    => $clientName,
+                'talentName'    => $talentName,
+                'packageName'   => $packageName,
+                'eventDate'     => $eventDate,
+                'artistFee'     => $artistFee,
+                'commission'    => $commission,
+                'total'         => $total,
+                'talentComment' => $talentComment,
+                'actionUrl'     => url('/client/bookings/' . $booking->id . '/pay'),
             ]);
     }
 }

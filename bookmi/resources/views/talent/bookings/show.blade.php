@@ -109,26 +109,61 @@
             @endif
         </div>
 
+        {{-- Commentaire d'acceptation affiché si déjà acceptée --}}
+        @if($sk !== 'pending' && $booking->accept_comment)
+        <div class="px-6 pb-4">
+            <div class="rounded-xl p-4" style="background:#f0fdf4; border:1px solid #bbf7d0">
+                <p class="text-xs uppercase tracking-wider mb-2" style="color:#15803d">Votre commentaire d'acceptation</p>
+                <p class="text-sm text-gray-700 leading-relaxed">{{ $booking->accept_comment }}</p>
+            </div>
+        </div>
+        @endif
+
         {{-- Actions --}}
         @if(in_array($sk, ['pending', 'accepted', 'confirmed']))
-        <div class="px-6 py-4 border-t border-gray-100 flex flex-wrap gap-3">
+        <div class="px-6 py-4 border-t border-gray-100">
             @if($sk === 'pending')
-                <form method="POST" action="{{ route('talent.bookings.accept', $booking->id) }}">
+                {{-- Formulaire acceptation avec commentaire obligatoire --}}
+                <form method="POST" action="{{ route('talent.bookings.accept', $booking->id) }}" class="space-y-4">
                     @csrf
-                    <button type="submit"
-                            class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                            style="background:#4CAF50"
-                            onclick="return confirm('Accepter cette réservation ?')">
-                        Accepter la réservation
-                    </button>
+                    <div>
+                        <label for="accept_comment" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Commentaire pour le client <span style="color:#f44336">*</span>
+                        </label>
+                        <textarea id="accept_comment"
+                                  name="accept_comment"
+                                  rows="3"
+                                  required
+                                  minlength="10"
+                                  maxlength="1000"
+                                  placeholder="Ex : Bonjour, je confirme ma disponibilité pour votre événement. Je serai présent à l'heure convenue avec tout le matériel nécessaire…"
+                                  class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 resize-none"
+                                  style="focus:ring-color:#FF6B35">{{ old('accept_comment') }}</textarea>
+                        @error('accept_comment')
+                            <p class="text-xs mt-1" style="color:#f44336">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="submit"
+                                class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                style="background:#4CAF50">
+                            ✓ Accepter la réservation
+                        </button>
+                        <button type="button"
+                                class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                style="background:#f44336"
+                                onclick="document.getElementById('reject-form').classList.toggle('hidden')">
+                            ✗ Refuser
+                        </button>
+                    </div>
                 </form>
-                <form method="POST" action="{{ route('talent.bookings.reject', $booking->id) }}">
+                <form id="reject-form" method="POST" action="{{ route('talent.bookings.reject', $booking->id) }}" class="hidden mt-3">
                     @csrf
                     <button type="submit"
                             class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
                             style="background:#f44336"
-                            onclick="return confirm('Refuser cette réservation ?')">
-                        Refuser
+                            onclick="return confirm('Confirmer le refus de cette réservation ?')">
+                        Confirmer le refus
                     </button>
                 </form>
             @elseif($sk === 'accepted')

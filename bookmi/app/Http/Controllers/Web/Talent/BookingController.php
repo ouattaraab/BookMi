@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Web\Talent;
 
+use App\Events\BookingAccepted;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Services\ActivityLogger;
@@ -41,14 +42,32 @@ class BookingController extends Controller
         return view('talent.bookings.show', compact('booking'));
     }
 
-    public function accept(int $id): RedirectResponse
+    public function accept(int $id, Request $request): RedirectResponse
     {
+        $request->validate([
+            'accept_comment' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'accept_comment.required' => 'Un commentaire est obligatoire pour accepter la réservation.',
+            'accept_comment.min'      => 'Le commentaire doit contenir au moins 10 caractères.',
+        ]);
+
         $booking = BookingRequest::where('talent_profile_id', $this->profile()?->id)
             ->where('status', 'pending')
             ->findOrFail($id);
-        $booking->update(['status' => 'accepted']);
-        ActivityLogger::log('booking.accepted', $booking, ['client_email' => $booking->client?->email ?? $booking->client_name]);
-        return back()->with('success', 'Réservation acceptée.');
+
+        $booking->update([
+            'status'         => 'accepted',
+            'accept_comment' => $request->accept_comment,
+        ]);
+
+        BookingAccepted::dispatch($booking);
+
+        ActivityLogger::log('booking.accepted', $booking, [
+            'client_email'   => $booking->client?->email,
+            'accept_comment' => $request->accept_comment,
+        ]);
+
+        return back()->with('success', 'Réservation acceptée. Le client a été notifié.');
     }
 
     public function reject(int $id): RedirectResponse
