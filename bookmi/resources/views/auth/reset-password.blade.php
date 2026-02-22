@@ -151,7 +151,7 @@
 
                 <div class="form-group">
                     <label class="auth-label">Adresse email</label>
-                    <input type="email" name="email" value="{{ request()->query('email', old('email')) }}" required
+                    <input type="email" name="email" value="{{ old('email', $email ?? '') }}" required
                         class="auth-input" placeholder="vous@exemple.com">
                 </div>
 

@@ -13,9 +13,12 @@ use Illuminate\View\View;
 
 class WebResetPasswordController extends Controller
 {
-    public function showForm(string $token): View
+    public function showForm(Request $request): View
     {
-        return view('auth.reset-password', ['token' => $token]);
+        return view('auth.reset-password', [
+            'token' => $request->query('token', ''),
+            'email' => $request->query('email', ''),
+        ]);
     }
 
     public function reset(Request $request): RedirectResponse

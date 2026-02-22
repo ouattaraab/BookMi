@@ -29,7 +29,7 @@ Route::middleware('guest')->group(function () {
     Route::get('/forgot-password', [WebForgotPasswordController::class, 'showForm'])->name('password.request');
     Route::post('/forgot-password', [WebForgotPasswordController::class, 'send'])->name('password.email');
 
-    Route::get('/reset-password/{token}', [WebResetPasswordController::class, 'showForm'])->name('password.reset');
+    Route::get('/reset-password', [WebResetPasswordController::class, 'showForm'])->name('password.reset');
     Route::post('/reset-password', [WebResetPasswordController::class, 'reset'])->name('password.update');
 });
 
