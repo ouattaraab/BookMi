@@ -95,6 +95,22 @@
                 <p class="text-xs text-gray-400 mt-1">C'est ce nom qui sera affiché aux clients.</p>
             </div>
 
+            {{-- Catégorie --}}
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Catégorie *</label>
+                <select name="category_id" required
+                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white">
+                    <option value="">Choisir votre catégorie artistique…</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}"
+                            {{ old('category_id', $profile->category_id ?? '') == $cat->id ? 'selected' : '' }}>
+                            {{ $cat->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-400 mt-1">Détermine dans quelle section vous apparaissez.</p>
+            </div>
+
             {{-- Bio --}}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1.5">Biographie</label>
@@ -116,8 +132,8 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">Cachet de base (FCFA)</label>
                     <div class="relative">
-                        <input type="number" name="cachet_amount" min="0"
-                               value="{{ old('cachet_amount', $profile->cachet_amount ?? '') }}"
+                        <input type="number" name="cachet_amount" min="0" max="99999999"
+                               value="{{ old('cachet_amount', $profile->cachet_amount ?? 0) }}"
                                placeholder="0"
                                class="w-full border border-gray-200 rounded-xl px-4 py-2.5 pr-16 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">FCFA</span>

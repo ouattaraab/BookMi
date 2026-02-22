@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,15 +12,19 @@ class ProfileController extends Controller
 {
     public function edit(): View
     {
-        $profile = auth()->user()->talentProfile;
-        $user    = auth()->user();
-        return view('talent.profile.edit', compact('profile', 'user'));
+        $profile    = auth()->user()->talentProfile;
+        $user       = auth()->user();
+        $categories = Category::orderBy('name')->get();
+        return view('talent.profile.edit', compact('profile', 'user', 'categories'));
     }
 
     public function update(Request $request): RedirectResponse
     {
+        $profile = auth()->user()->talentProfile;
+
         $data = $request->validate([
             'stage_name'              => 'required|string|max:100',
+            'category_id'             => 'required|exists:categories,id',
             'bio'                     => 'nullable|string|max:2000',
             'city'                    => 'nullable|string|max:100',
             'cachet_amount'           => 'nullable|integer|min:0',
@@ -28,6 +33,9 @@ class ProfileController extends Controller
             'social_links.youtube'    => 'nullable|url|max:300',
             'social_links.tiktok'     => 'nullable|url|max:300',
         ]);
+
+        // Ensure cachet_amount always has a value (NOT NULL in DB)
+        $data['cachet_amount'] = $data['cachet_amount'] ?? 0;
 
         // Build social_links array (only non-empty values)
         $socialLinks = array_filter($request->input('social_links', []), fn ($v) => ! empty($v));
@@ -39,12 +47,10 @@ class ProfileController extends Controller
             $data['social_links.tiktok'],
         );
 
-        $profile = auth()->user()->talentProfile;
-
         if ($profile) {
             $profile->update($data);
         } else {
-            auth()->user()->talentProfile()->create(array_merge($data, ['user_id' => auth()->id()]));
+            auth()->user()->talentProfile()->create($data);
         }
 
         if ($request->filled('first_name') || $request->filled('last_name')) {
@@ -62,8 +68,9 @@ class ProfileController extends Controller
 
         $profile = auth()->user()->talentProfile;
 
+        // Auto-create a minimal profile if it doesn't exist yet
         if (! $profile) {
-            return back()->withErrors(['photo' => 'Profil introuvable.']);
+            return back()->withErrors(['photo' => 'Veuillez d\'abord enregistrer votre profil (nom de scène et catégorie) avant d\'uploader une photo.']);
         }
 
         // Delete old photo
