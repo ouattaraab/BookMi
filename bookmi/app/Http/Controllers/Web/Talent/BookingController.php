@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -46,6 +47,7 @@ class BookingController extends Controller
             ->where('status', 'pending')
             ->findOrFail($id);
         $booking->update(['status' => 'accepted']);
+        ActivityLogger::log('booking.accepted', $booking, ['client_email' => $booking->client?->email ?? $booking->client_name]);
         return back()->with('success', 'Réservation acceptée.');
     }
 
@@ -55,6 +57,7 @@ class BookingController extends Controller
             ->whereIn('status', ['pending', 'accepted'])
             ->findOrFail($id);
         $booking->update(['status' => 'cancelled']);
+        ActivityLogger::log('booking.rejected', $booking, ['client_email' => $booking->client?->email ?? $booking->client_name]);
         return back()->with('success', 'Réservation refusée.');
     }
 
@@ -64,6 +67,7 @@ class BookingController extends Controller
             ->where('status', 'confirmed')
             ->findOrFail($id);
         $booking->update(['status' => 'completed']);
+        ActivityLogger::log('booking.completed', $booking);
         return back()->with('success', 'Réservation marquée comme terminée.');
     }
 }

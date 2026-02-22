@@ -6,8 +6,11 @@ use App\Enums\AlertSeverity;
 use App\Enums\AlertType;
 use App\Filament\Resources\AdminAlertResource\Pages;
 use App\Models\AdminAlert;
+use App\Services\ActivityLogger;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -72,6 +75,80 @@ class AdminAlertResource extends Resource
                     Forms\Components\TextInput::make('resolvedBy.email')
                         ->label('Résolu par')
                         ->disabled(),
+                ])->columns(2),
+        ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Informations')
+                ->schema([
+                    Infolists\Components\TextEntry::make('title')
+                        ->label('Titre')
+                        ->columnSpanFull(),
+                    Infolists\Components\TextEntry::make('type')
+                        ->label('Type')
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => match (true) {
+                            $state === AlertType::LowRating || $state === 'low_rating'                   => 'Note basse',
+                            $state === AlertType::SuspiciousActivity || $state === 'suspicious_activity' => 'Activité suspecte',
+                            $state === AlertType::PendingAction || $state === 'pending_action'           => 'Action en attente',
+                            default => (string) $state,
+                        })
+                        ->color(fn ($state): string => match (true) {
+                            $state === AlertType::LowRating || $state === 'low_rating'                   => 'warning',
+                            $state === AlertType::SuspiciousActivity || $state === 'suspicious_activity' => 'danger',
+                            $state === AlertType::PendingAction || $state === 'pending_action'           => 'info',
+                            default => 'gray',
+                        }),
+                    Infolists\Components\TextEntry::make('severity')
+                        ->label('Sévérité')
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => match (true) {
+                            $state === AlertSeverity::Critical || $state === 'critical' => 'Critique',
+                            $state === AlertSeverity::Warning || $state === 'warning'   => 'Avertissement',
+                            $state === AlertSeverity::Info || $state === 'info'         => 'Info',
+                            default => (string) $state,
+                        })
+                        ->color(fn ($state): string => match (true) {
+                            $state === AlertSeverity::Critical || $state === 'critical' => 'danger',
+                            $state === AlertSeverity::Warning || $state === 'warning'   => 'warning',
+                            $state === AlertSeverity::Info || $state === 'info'         => 'info',
+                            default => 'gray',
+                        }),
+                    Infolists\Components\TextEntry::make('status')
+                        ->label('Statut')
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => match ($state) {
+                            'open'      => 'Ouverte',
+                            'resolved'  => 'Résolue',
+                            'dismissed' => 'Ignorée',
+                            default     => $state,
+                        })
+                        ->color(fn ($state): string => match ($state) {
+                            'open'      => 'warning',
+                            'resolved'  => 'success',
+                            'dismissed' => 'gray',
+                            default     => 'gray',
+                        }),
+                    Infolists\Components\TextEntry::make('description')
+                        ->label('Description')
+                        ->placeholder('Aucune description')
+                        ->columnSpanFull(),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Résolution')
+                ->schema([
+                    Infolists\Components\TextEntry::make('resolved_at')
+                        ->label('Résolu le')
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
+                    Infolists\Components\TextEntry::make('resolved_by_info')
+                        ->label('Résolu par')
+                        ->getStateUsing(fn ($record) => $record->resolvedBy
+                            ? trim(($record->resolvedBy->first_name ?? '') . ' ' . ($record->resolvedBy->last_name ?? '')) . ' (' . $record->resolvedBy->email . ')'
+                            : '—'),
                 ])->columns(2),
         ]);
     }
@@ -163,6 +240,12 @@ class AdminAlertResource extends Resource
                             'resolved_at'    => now(),
                             'resolved_by_id' => Auth::id(),
                         ]);
+
+                        ActivityLogger::log('alert.resolved', $record, [
+                            'title'    => $record->title,
+                            'severity' => is_string($record->severity) ? $record->severity : $record->severity?->value,
+                        ]);
+
                         Notification::make()
                             ->title('Alerte marquée comme résolue')
                             ->success()
@@ -178,6 +261,11 @@ class AdminAlertResource extends Resource
                     ->modalHeading('Ignorer cette alerte ?')
                     ->action(function (AdminAlert $record): void {
                         $record->update(['status' => 'dismissed']);
+
+                        ActivityLogger::log('alert.dismissed', $record, [
+                            'title' => $record->title,
+                        ]);
+
                         Notification::make()
                             ->title('Alerte ignorée')
                             ->send();

@@ -7,6 +7,8 @@ use App\Filament\Resources\AdminWarningResource\Pages;
 use App\Models\AdminWarning;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -71,6 +73,59 @@ class AdminWarningResource extends Resource
                         ->label('Résolu le')
                         ->disabled(),
                 ])->columns(2),
+        ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Utilisateur concerné')
+                ->schema([
+                    Infolists\Components\TextEntry::make('user.email')
+                        ->label('Email utilisateur'),
+                    Infolists\Components\TextEntry::make('user_nom')
+                        ->label('Nom complet')
+                        ->getStateUsing(fn ($record) => trim(($record->user?->first_name ?? '') . ' ' . ($record->user?->last_name ?? '')) ?: '—'),
+                    Infolists\Components\TextEntry::make('issued_by_info')
+                        ->label('Émis par')
+                        ->getStateUsing(fn ($record) => $record->issuedBy
+                            ? trim(($record->issuedBy->first_name ?? '') . ' ' . ($record->issuedBy->last_name ?? '')) . ' (' . $record->issuedBy->email . ')'
+                            : '—'),
+                    Infolists\Components\TextEntry::make('created_at')
+                        ->label('Émis le')
+                        ->dateTime('d/m/Y H:i'),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Détails')
+                ->schema([
+                    Infolists\Components\TextEntry::make('reason')
+                        ->label('Motif'),
+                    Infolists\Components\TextEntry::make('status')
+                        ->label('Statut')
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => match (true) {
+                            $state === WarningStatus::Active || $state === 'active'     => 'Actif',
+                            $state === WarningStatus::Resolved || $state === 'resolved' => 'Résolu',
+                            default => (string) $state,
+                        })
+                        ->color(fn ($state): string => match (true) {
+                            $state === WarningStatus::Active || $state === 'active'     => 'warning',
+                            $state === WarningStatus::Resolved || $state === 'resolved' => 'success',
+                            default => 'gray',
+                        }),
+                    Infolists\Components\TextEntry::make('details')
+                        ->label('Détails')
+                        ->placeholder('Aucun')
+                        ->columnSpanFull(),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Résolution')
+                ->schema([
+                    Infolists\Components\TextEntry::make('resolved_at')
+                        ->label('Résolu le')
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
+                ]),
         ]);
     }
 

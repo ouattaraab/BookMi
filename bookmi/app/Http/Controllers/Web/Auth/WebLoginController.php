@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Services\ActivityLogger;
 use App\Services\TwoFactorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,11 +66,16 @@ class WebLoginController extends Controller
 
         $request->session()->regenerate();
 
+        ActivityLogger::log('auth.login', $user, ['method' => 'password'], $user->id);
+
         return $this->redirectToDashboard($user);
     }
 
     public function logout(Request $request): RedirectResponse
     {
+        $userId = Auth::id();
+        ActivityLogger::log('auth.logout', Auth::user(), [], $userId);
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

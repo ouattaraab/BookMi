@@ -5,13 +5,15 @@ namespace App\Filament\Resources;
 use App\Enums\ReviewType;
 use App\Filament\Resources\ReviewResource\Pages;
 use App\Models\Review;
+use App\Services\ActivityLogger;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class ReviewResource extends Resource
 {
@@ -81,6 +83,73 @@ class ReviewResource extends Resource
                     Forms\Components\Textarea::make('report_reason')
                         ->label('Motif du signalement')
                         ->disabled()
+                        ->columnSpanFull(),
+                ])->columns(2),
+        ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Parties')
+                ->schema([
+                    Infolists\Components\TextEntry::make('booking_request_id')
+                        ->label('Réservation #'),
+                    Infolists\Components\TextEntry::make('type')
+                        ->label('Type')
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => match (true) {
+                            $state === ReviewType::ClientToTalent || $state === 'client_to_talent' => 'Client → Talent',
+                            $state === ReviewType::TalentToClient || $state === 'talent_to_client' => 'Talent → Client',
+                            default => (string) $state,
+                        })
+                        ->color(fn ($state): string => match (true) {
+                            $state === ReviewType::ClientToTalent || $state === 'client_to_talent' => 'info',
+                            $state === ReviewType::TalentToClient || $state === 'talent_to_client' => 'primary',
+                            default => 'gray',
+                        }),
+                    Infolists\Components\TextEntry::make('reviewer.email')
+                        ->label('Auteur (email)'),
+                    Infolists\Components\TextEntry::make('reviewer_nom')
+                        ->label('Auteur (nom)')
+                        ->getStateUsing(fn ($record) => trim(($record->reviewer?->first_name ?? '') . ' ' . ($record->reviewer?->last_name ?? '')) ?: '—'),
+                    Infolists\Components\TextEntry::make('reviewee.email')
+                        ->label('Destinataire (email)'),
+                    Infolists\Components\TextEntry::make('reviewee_nom')
+                        ->label('Destinataire (nom)')
+                        ->getStateUsing(fn ($record) => trim(($record->reviewee?->first_name ?? '') . ' ' . ($record->reviewee?->last_name ?? '')) ?: '—'),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Contenu')
+                ->schema([
+                    Infolists\Components\TextEntry::make('rating')
+                        ->label('Note')
+                        ->html()
+                        ->formatStateUsing(fn ($state) => str_repeat('★', (int) $state) . str_repeat('☆', 5 - (int) $state) . " ({$state}/5)"),
+                    Infolists\Components\TextEntry::make('created_at')
+                        ->label('Publié le')
+                        ->dateTime('d/m/Y H:i'),
+                    Infolists\Components\TextEntry::make('comment')
+                        ->label('Commentaire')
+                        ->columnSpanFull(),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Signalement')
+                ->schema([
+                    Infolists\Components\IconEntry::make('is_reported')
+                        ->label('Signalé')
+                        ->boolean()
+                        ->trueColor('danger')
+                        ->falseColor('success')
+                        ->trueIcon('heroicon-o-flag')
+                        ->falseIcon('heroicon-o-check-circle'),
+                    Infolists\Components\TextEntry::make('reported_at')
+                        ->label('Signalé le')
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
+                    Infolists\Components\TextEntry::make('report_reason')
+                        ->label('Motif du signalement')
+                        ->placeholder('Aucun')
                         ->columnSpanFull(),
                 ])->columns(2),
         ]);
@@ -174,6 +243,13 @@ class ReviewResource extends Resource
                             'report_reason' => null,
                             'reported_at'   => null,
                         ]);
+
+                        ActivityLogger::log('review.report_dismissed', $record, [
+                            'reviewer_email' => $record->reviewer?->email,
+                            'reviewee_email' => $record->reviewee?->email,
+                            'rating'         => $record->rating,
+                        ]);
+
                         Notification::make()
                             ->title('Avis validé — signalement retiré')
                             ->success()
@@ -181,7 +257,12 @@ class ReviewResource extends Resource
                     }),
 
                 Tables\Actions\DeleteAction::make()
-                    ->label('Supprimer'),
+                    ->label('Supprimer')
+                    ->after(fn (Review $record) => ActivityLogger::log('review.deleted', null, [
+                        'reviewer_email' => $record->reviewer?->email,
+                        'reviewee_email' => $record->reviewee?->email,
+                        'rating'         => $record->rating,
+                    ])),
             ])
             ->defaultSort('created_at', 'desc');
     }

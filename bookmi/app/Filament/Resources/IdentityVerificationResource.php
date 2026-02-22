@@ -5,8 +5,11 @@ namespace App\Filament\Resources;
 use App\Enums\VerificationStatus;
 use App\Filament\Resources\IdentityVerificationResource\Pages;
 use App\Models\IdentityVerification;
+use App\Services\ActivityLogger;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -40,6 +43,7 @@ class IdentityVerificationResource extends Resource
         return 'warning';
     }
 
+    // Used for modal forms (approve/reject actions) — NOT for the view page
     public static function form(Form $form): Form
     {
         return $form->schema([
@@ -84,6 +88,76 @@ class IdentityVerificationResource extends Resource
                                 ->openUrlInNewTab()
                         ),
                 ]),
+        ]);
+    }
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Infolists\Components\Section::make('Demandeur')
+                ->schema([
+                    Infolists\Components\TextEntry::make('user.email')
+                        ->label('Email'),
+                    Infolists\Components\TextEntry::make('user_nom')
+                        ->label('Nom complet')
+                        ->getStateUsing(fn ($record) => trim(($record->user?->first_name ?? '') . ' ' . ($record->user?->last_name ?? '')) ?: '—'),
+                    Infolists\Components\TextEntry::make('user.phone')
+                        ->label('Téléphone')
+                        ->placeholder('—'),
+                    Infolists\Components\TextEntry::make('document_type')
+                        ->label('Type de document')
+                        ->formatStateUsing(fn ($state) => match ($state) {
+                            'id_card'          => "Carte nationale d'identité",
+                            'passport'         => 'Passeport',
+                            'driver_license'   => 'Permis de conduire',
+                            'residence_permit' => 'Titre de séjour',
+                            default            => $state ?? '—',
+                        }),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Statut de vérification')
+                ->schema([
+                    Infolists\Components\TextEntry::make('verification_status')
+                        ->label('Statut')
+                        ->badge()
+                        ->formatStateUsing(fn ($state) => $state instanceof VerificationStatus ? $state->label() : ($state ?? '—'))
+                        ->color(fn ($state): string => match (true) {
+                            $state === VerificationStatus::PENDING  => 'warning',
+                            $state === VerificationStatus::APPROVED => 'success',
+                            $state === VerificationStatus::REJECTED => 'danger',
+                            default                                 => 'gray',
+                        }),
+                    Infolists\Components\TextEntry::make('reviewed_at')
+                        ->label('Examiné le')
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
+                    Infolists\Components\TextEntry::make('verified_at')
+                        ->label('Vérifié le')
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
+                    Infolists\Components\TextEntry::make('reviewer_info')
+                        ->label('Examiné par')
+                        ->getStateUsing(fn ($record) => $record->reviewer
+                            ? trim(($record->reviewer->first_name ?? '') . ' ' . ($record->reviewer->last_name ?? '')) . ' (' . $record->reviewer->email . ')'
+                            : '—'),
+                    Infolists\Components\TextEntry::make('rejection_reason')
+                        ->label('Motif de rejet')
+                        ->placeholder('Aucun')
+                        ->columnSpanFull(),
+                ])->columns(2),
+
+            Infolists\Components\Section::make('Document soumis')
+                ->schema([
+                    Infolists\Components\TextEntry::make('document_link')
+                        ->label('Document')
+                        ->html()
+                        ->getStateUsing(fn ($record) => $record->stored_path
+                            ? '<a href="' . asset('storage/' . $record->stored_path) . '" target="_blank" class="text-primary-600 font-medium hover:underline">Ouvrir le document →</a>'
+                            : '<span class="text-gray-400 italic">Aucun document</span>'),
+                    Infolists\Components\TextEntry::make('original_mime')
+                        ->label('Type de fichier')
+                        ->placeholder('—'),
+                ])->columns(2),
         ]);
     }
 
@@ -154,6 +228,11 @@ class IdentityVerificationResource extends Resource
                             $record->user->talentProfile->update(['is_verified' => true]);
                         }
 
+                        ActivityLogger::log('verification.approved', $record, [
+                            'user_email'    => $record->user?->email,
+                            'document_type' => $record->document_type,
+                        ]);
+
                         Notification::make()
                             ->title('Vérification approuvée')
                             ->success()
@@ -179,6 +258,12 @@ class IdentityVerificationResource extends Resource
                             'rejection_reason'    => $data['rejection_reason'],
                             'reviewed_at'         => now(),
                             'reviewer_id'         => Auth::id(),
+                        ]);
+
+                        ActivityLogger::log('verification.rejected', $record, [
+                            'user_email'       => $record->user?->email,
+                            'document_type'    => $record->document_type,
+                            'rejection_reason' => $data['rejection_reason'],
                         ]);
 
                         Notification::make()

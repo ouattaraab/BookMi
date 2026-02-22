@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
 use App\Models\IdentityVerification;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -34,6 +35,11 @@ class VerificationController extends Controller
             'stored_path'         => $path,
             'original_mime'       => $request->file('document')->getMimeType(),
             'verification_status' => 'pending',
+        ]);
+
+        ActivityLogger::log('verification.submitted', null, [
+            'document_type' => $request->document_type,
+            'mime'          => $request->file('document')->getMimeType(),
         ]);
 
         return back()->with('success', 'Document soumis. Notre équipe va l\'examiner sous 48h.');

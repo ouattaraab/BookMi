@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\AuthService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,6 +40,8 @@ class WebRegisterController extends Controller
         // Auto-connexion immédiate — la vérification OTP est désactivée
         Auth::login($user);
         $request->session()->regenerate();
+
+        ActivityLogger::log('auth.register', $user, ['role' => $validated['role']], $user->id);
 
         return $this->redirectToDashboard($user);
     }

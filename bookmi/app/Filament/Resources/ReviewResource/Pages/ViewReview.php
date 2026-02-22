@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\ReviewResource\Pages;
 
 use App\Filament\Resources\ReviewResource;
-use App\Models\Review;
+use App\Services\ActivityLogger;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
@@ -27,8 +27,15 @@ class ViewReview extends ViewRecord
                         'report_reason' => null,
                         'reported_at'   => null,
                     ]);
+
+                    ActivityLogger::log('review.report_dismissed', $this->record, [
+                        'reviewer_email' => $this->record->reviewer?->email,
+                        'reviewee_email' => $this->record->reviewee?->email,
+                        'rating'         => $this->record->rating,
+                    ]);
+
                     Notification::make()->title('Signalement retiré')->success()->send();
-                    $this->refreshFormData(['is_reported', 'report_reason', 'reported_at']);
+                    $this->record->refresh();
                 }),
 
             Actions\DeleteAction::make()

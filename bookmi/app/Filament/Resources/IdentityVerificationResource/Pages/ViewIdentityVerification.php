@@ -4,6 +4,7 @@ namespace App\Filament\Resources\IdentityVerificationResource\Pages;
 
 use App\Enums\VerificationStatus;
 use App\Filament\Resources\IdentityVerificationResource;
+use App\Services\ActivityLogger;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
@@ -32,8 +33,14 @@ class ViewIdentityVerification extends ViewRecord
                     if ($this->record->user?->talentProfile) {
                         $this->record->user->talentProfile->update(['is_verified' => true]);
                     }
+
+                    ActivityLogger::log('verification.approved', $this->record, [
+                        'user_email'    => $this->record->user?->email,
+                        'document_type' => $this->record->document_type,
+                    ]);
+
                     Notification::make()->title('Vérification approuvée')->success()->send();
-                    $this->refreshFormData(['verification_status', 'verified_at', 'reviewed_at']);
+                    $this->record->refresh();
                 }),
 
             Actions\Action::make('reject')
@@ -54,8 +61,15 @@ class ViewIdentityVerification extends ViewRecord
                         'reviewed_at'         => now(),
                         'reviewer_id'         => Auth::id(),
                     ]);
+
+                    ActivityLogger::log('verification.rejected', $this->record, [
+                        'user_email'       => $this->record->user?->email,
+                        'document_type'    => $this->record->document_type,
+                        'rejection_reason' => $data['rejection_reason'],
+                    ]);
+
                     Notification::make()->title('Vérification rejetée')->danger()->send();
-                    $this->refreshFormData(['verification_status', 'rejection_reason', 'reviewed_at']);
+                    $this->record->refresh();
                 }),
         ];
     }

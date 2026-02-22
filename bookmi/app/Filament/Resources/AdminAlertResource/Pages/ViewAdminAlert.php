@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AdminAlertResource\Pages;
 
 use App\Filament\Resources\AdminAlertResource;
+use App\Services\ActivityLogger;
 use Filament\Actions;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
@@ -27,8 +28,14 @@ class ViewAdminAlert extends ViewRecord
                         'resolved_at'    => now(),
                         'resolved_by_id' => Auth::id(),
                     ]);
+
+                    ActivityLogger::log('alert.resolved', $this->record, [
+                        'title'    => $this->record->title,
+                        'severity' => is_string($this->record->severity) ? $this->record->severity : $this->record->severity?->value,
+                    ]);
+
                     Notification::make()->title('Alerte résolue')->success()->send();
-                    $this->refreshFormData(['status', 'resolved_at']);
+                    $this->record->refresh();
                 }),
 
             Actions\Action::make('dismiss')
@@ -39,8 +46,13 @@ class ViewAdminAlert extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (): void {
                     $this->record->update(['status' => 'dismissed']);
+
+                    ActivityLogger::log('alert.dismissed', $this->record, [
+                        'title' => $this->record->title,
+                    ]);
+
                     Notification::make()->title('Alerte ignorée')->send();
-                    $this->refreshFormData(['status']);
+                    $this->record->refresh();
                 }),
         ];
     }
