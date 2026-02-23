@@ -37,6 +37,7 @@ class _BookingsViewState extends State<_BookingsView>
   late final TabController _tabController;
 
   static const _tabs = [
+    _Tab(label: 'Toutes'),
     _Tab(label: 'En attente', status: 'pending'),
     _Tab(label: 'Confirmées', status: 'accepted'),
     _Tab(label: 'Passées', status: 'completed'),
@@ -122,7 +123,7 @@ class _BookingsTab extends StatelessWidget {
     required this.tabIndex,
   });
 
-  final String status;
+  final String? status;
   final TabController tabController;
   final int tabIndex;
 
@@ -271,7 +272,7 @@ class _BookingsTab extends StatelessWidget {
 }
 
 class _Tab {
-  const _Tab({required this.label, required this.status});
+  const _Tab({required this.label, this.status});
   final String label;
-  final String status;
+  final String? status;
 }

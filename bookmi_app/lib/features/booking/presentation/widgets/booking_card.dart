@@ -4,6 +4,7 @@ import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/features/booking/data/models/booking_model.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookingCard extends StatelessWidget {
   const BookingCard({
@@ -67,31 +68,42 @@ class BookingCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      _formatDate(booking.eventDate),
+                      booking.startTime != null
+                          ? '${_formatDate(booking.eventDate)} · ${_formatTime(booking.startTime!)}'
+                          : _formatDate(booking.eventDate),
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
-                    const SizedBox(width: BookmiSpacing.spaceSm),
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 12,
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        booking.eventLocation,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.white.withValues(alpha: 0.7),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
                   ],
+                ),
+                const SizedBox(height: 3),
+                GestureDetector(
+                  onTap: () => _openMaps(booking.eventLocation),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 12,
+                        color: BookmiColors.brandBlueLight.withValues(alpha: 0.8),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          booking.eventLocation,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: BookmiColors.brandBlueLight.withValues(alpha: 0.8),
+                            decoration: TextDecoration.underline,
+                            decorationColor: BookmiColors.brandBlueLight.withValues(alpha: 0.5),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: BookmiSpacing.spaceXs),
                 Text(
@@ -142,7 +154,7 @@ class BookingCard extends StatelessWidget {
     try {
       final parts = isoDate.split('-');
       if (parts.length != 3) return isoDate;
-      final months = [
+      const months = [
         'jan', 'fév', 'mar', 'avr', 'mai', 'juin',
         'juil', 'aoû', 'sep', 'oct', 'nov', 'déc',
       ];
@@ -151,6 +163,22 @@ class BookingCard extends StatelessWidget {
       return '${parts[2]} ${months[month - 1]}. ${parts[0]}';
     } catch (_) {
       return isoDate;
+    }
+  }
+
+  static String _formatTime(String time) {
+    final parts = time.split(':');
+    if (parts.length < 2) return time;
+    return '${parts[0]}h${parts[1]}';
+  }
+
+  static Future<void> _openMaps(String location) async {
+    final encoded = Uri.encodeComponent(location);
+    final uri = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$encoded',
+    );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 }

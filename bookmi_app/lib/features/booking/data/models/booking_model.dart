@@ -17,6 +17,7 @@ class BookingModel {
     required this.totalAmount,
     required this.isExpress,
     required this.contractAvailable,
+    this.startTime,
     this.message,
     this.rejectReason,
     this.refundAmount,
@@ -31,6 +32,7 @@ class BookingModel {
   final String packageName;
   final String packageType;
   final String eventDate;
+  final String? startTime;
   final String eventLocation;
   final int cachetAmount;
   final int commissionAmount;
@@ -57,6 +59,7 @@ class BookingModel {
       packageName: pkg?['name'] as String? ?? 'Forfait',
       packageType: pkg?['type'] as String? ?? 'standard',
       eventDate: json['event_date'] as String,
+      startTime: json['start_time'] as String?,
       eventLocation: json['event_location'] as String,
       cachetAmount: (devis?['cachet_amount'] as int?) ?? 0,
       commissionAmount: (devis?['commission_amount'] as int?) ?? 0,

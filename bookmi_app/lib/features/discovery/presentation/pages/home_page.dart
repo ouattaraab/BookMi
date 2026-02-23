@@ -817,7 +817,9 @@ class _PopularCategoriesSection extends StatelessWidget {
               final icon = _iconForSlug(slug);
 
               return GestureDetector(
-                onTap: () => onCategoryTap(slug),
+                onTap: () => onCategoryTap(
+                  (cat['id'] as int?)?.toString() ?? slug,
+                ),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
