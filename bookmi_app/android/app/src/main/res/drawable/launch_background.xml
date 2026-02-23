@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- BookMi white background -->
+    <!-- BookMi night background — matches Flutter SplashPage dark theme -->
     <item>
         <shape>
-            <solid android:color="#FFFFFF"/>
+            <solid android:color="#0D1B35"/>
         </shape>
     </item>
-    <!-- BookMi logo centered -->
-    <item
-        android:gravity="center"
-        android:drawable="@drawable/ic_launch_image" />
 </layer-list>

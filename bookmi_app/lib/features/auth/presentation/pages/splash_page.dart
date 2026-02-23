@@ -10,6 +10,39 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_ce/hive.dart';
 
+// ── Star model ────────────────────────────────────────────────────────────────
+
+class _Star {
+  const _Star({
+    required this.x,
+    required this.y,
+    required this.size,
+    required this.phase,
+    required this.baseOpacity,
+    required this.warm, // true = orange-tinted, false = cool-blue-tinted
+  });
+
+  final double x, y, size, phase, baseOpacity;
+  final bool warm;
+}
+
+List<_Star> _buildStars(int n) {
+  final rng = math.Random(7331);
+  return List.generate(n, (_) {
+    final warm = rng.nextDouble() < 0.18; // 18 % warm stars
+    return _Star(
+      x: rng.nextDouble(),
+      y: rng.nextDouble(),
+      size: 0.8 + rng.nextDouble() * 2.8,
+      phase: rng.nextDouble() * 2 * math.pi,
+      baseOpacity: 0.25 + rng.nextDouble() * 0.55,
+      warm: warm,
+    );
+  });
+}
+
+// ── SplashPage ────────────────────────────────────────────────────────────────
+
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -20,102 +53,119 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   static const _kTimeoutSeconds = 10;
-  Timer? _timeoutTimer;
+  static final _stars = _buildStars(62);
 
+  Timer? _timeoutTimer;
   late final AnimationController _ctrl;
 
-  // Phase 1 – entry
-  late final Animation<double> _fadeIn;
-  late final Animation<double> _scale;
-  late final Animation<double> _rotation;
+  // Interval map (ms → normalised 0–1 over 3 000 ms)
+  //  0   –  400 ms  →  0.000 – 0.133   stars fade in
+  //  400 –  900 ms  →  0.133 – 0.300   spotlight + logo reveal
+  //  900 – 1 400 ms →  0.300 – 0.467   orange pulse
+  // 1 400 – 2 000 ms → 0.467 – 0.667   logo breath + tagline
+  // 2 200 – 3 000 ms → 0.733 – 1.000   spinner
 
-  // Phase 2 – orange energy
-  late final Animation<double> _orangeGlow;
-  late final Animation<double> _ringGlow;
-
-  // Phase 3 – blue settle
-  late final Animation<double> _blueGlow;
-  late final Animation<double> _spinnerOpacity;
+  late final Animation<double> _starsFade;
+  late final Animation<double> _spotlight;
+  late final Animation<double> _logoFade;
+  late final Animation<double> _logoEntryScale;
+  late final Animation<double> _pulseProgress;
+  late final Animation<double> _logoBreath;
+  late final Animation<double> _taglineFade;
+  late final Animation<double> _taglineRise;
+  late final Animation<double> _spinnerFade;
 
   @override
   void initState() {
     super.initState();
 
-    // Auth check (unchanged logic)
+    // ── Auth check (unchanged) ────────────────────────────────────────────
     final bloc = context.read<AuthBloc>()..add(const AuthCheckRequested());
     _timeoutTimer = Timer(const Duration(seconds: _kTimeoutSeconds), () {
-      final state = bloc.state;
-      if (state is AuthInitial || state is AuthLoading) {
+      final s = bloc.state;
+      if (s is AuthInitial || s is AuthLoading) {
         bloc.add(const AuthSessionExpired());
       }
     });
 
-    // ── Animation controller (2 500 ms total) ──────────────────────────────
+    // ── Controller ───────────────────────────────────────────────────────
     _ctrl = AnimationController(
-      duration: const Duration(milliseconds: 2500),
+      duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
 
-    // Fade in  0ms → 300ms
-    _fadeIn = Tween<double>(begin: 0.0, end: 1.0).animate(
+    // Stars  0 → 400 ms
+    _starsFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _ctrl,
-        curve: const Interval(0.0, 0.12, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.133, curve: Curves.easeOut),
       ),
     );
 
-    // Scale  0ms → 900ms  (0.82 → 1.0)
-    _scale = Tween<double>(begin: 0.82, end: 1.0).animate(
+    // Spotlight  400 → 900 ms
+    _spotlight = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _ctrl,
-        curve: const Interval(0.0, 0.36, curve: Curves.easeOutCubic),
+        curve: const Interval(0.133, 0.30, curve: Curves.easeOutCubic),
       ),
     );
 
-    // Rotation wobble  0ms → 550ms  (0 → 0.024 → 0 rad ≈ 1.4°)
-    _rotation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.024), weight: 14),
-      TweenSequenceItem(tween: Tween(begin: 0.024, end: 0.0), weight: 8),
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 78),
-    ]).animate(_ctrl);
+    // Logo fade in  350 → 800 ms
+    _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.117, 0.267, curve: Curves.easeOut),
+      ),
+    );
 
-    // Orange glow  peak ~1 050 ms
-    //   0   -  750ms : off        (weight 30)
-    //   750 - 1050ms : 0 → 1      (weight 12)
-    //  1050 - 1500ms : 1 → 0      (weight 18)
-    //  1500 - 2500ms : off        (weight 40)
-    _orangeGlow = TweenSequence<double>([
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 12),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 18),
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 40),
-    ]).animate(_ctrl);
+    // Logo entry scale  350 → 800 ms  (0.86 → 1.0, overshoot)
+    _logoEntryScale = Tween<double>(begin: 0.86, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.117, 0.267, curve: Curves.easeOutBack),
+      ),
+    );
 
-    // Orange ring  peak ~1 250 ms
-    //   0   - 1000ms : off        (weight 40)
-    //  1000 - 1250ms : 0 → 1      (weight 10)
-    //  1250 - 1700ms : 1 → 0      (weight 18)
-    //  1700 - 2500ms : off        (weight 32)
-    _ringGlow = TweenSequence<double>([
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 40),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 10),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.0), weight: 18),
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 32),
-    ]).animate(_ctrl);
+    // Orange pulse  900 → 1 400 ms
+    _pulseProgress = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.30, 0.467, curve: Curves.easeOut),
+      ),
+    );
 
-    // Blue glow  1 500ms → 2 500ms  (fades to 0.4 at end)
-    _blueGlow = TweenSequence<double>([
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 60),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 16),
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 0.4), weight: 24),
-    ]).animate(_ctrl);
+    // Logo breath  1 400 → 2 000 ms  (1.0 → 1.042 → 1.0)
+    _logoBreath = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.042), weight: 50),
+      TweenSequenceItem(tween: Tween(begin: 1.042, end: 1.0), weight: 50),
+    ]).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.467, 0.667, curve: Curves.easeInOut),
+      ),
+    );
 
-    // Spinner  2 000ms → 2 500ms
-    _spinnerOpacity = TweenSequence<double>([
-      TweenSequenceItem(tween: ConstantTween(0.0), weight: 80),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 1.0), weight: 8),
-      TweenSequenceItem(tween: ConstantTween(1.0), weight: 12),
-    ]).animate(_ctrl);
+    // Tagline  1 600 → 2 100 ms
+    _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.533, 0.70, curve: Curves.easeOut),
+      ),
+    );
+    _taglineRise = Tween<double>(begin: 20.0, end: 0.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.533, 0.70, curve: Curves.easeOut),
+      ),
+    );
+
+    // Spinner  2 200 → 3 000 ms
+    _spinnerFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _ctrl,
+        curve: const Interval(0.733, 0.90, curve: Curves.easeOut),
+      ),
+    );
 
     _ctrl.forward();
   }
@@ -152,57 +202,126 @@ class _SplashPageState extends State<SplashPage>
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF0D1B35),
         body: AnimatedBuilder(
           animation: _ctrl,
           builder: (context, _) {
+            final size = MediaQuery.sizeOf(context);
             return Stack(
               children: [
-                // ── Centred animated logo ──────────────────────────────────
-                Center(
-                  child: Opacity(
-                    opacity: _fadeIn.value,
-                    child: Transform.scale(
-                      scale: _scale.value,
-                      child: Transform.rotate(
-                        angle: _rotation.value,
-                        child: SizedBox(
-                          width: 300,
-                          height: 180,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // Blue glow (back layer)
-                              if (_blueGlow.value > 0)
-                                _BlueGlowLayer(intensity: _blueGlow.value),
-                              // Orange ring
-                              if (_ringGlow.value > 0)
-                                _OrangeRingLayer(intensity: _ringGlow.value),
-                              // Orange burst + sparks
-                              if (_orangeGlow.value > 0)
-                                _OrangeBurstLayer(intensity: _orangeGlow.value),
-                              // Logo (top layer)
-                              Image.asset(
-                                'assets/images/bookmi_logo.png',
-                                width: 260,
-                                fit: BoxFit.contain,
-                              ),
-                            ],
-                          ),
-                        ),
+                // ── Deep navy radial gradient background ──────────────────
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment.center,
+                        radius: 1.3,
+                        colors: [Color(0xFF1E2D4E), Color(0xFF080E1E)],
                       ),
                     ),
                   ),
                 ),
 
-                // ── Loading spinner ────────────────────────────────────────
-                if (_spinnerOpacity.value > 0)
+                // ── Subtle stage-arc decoration ───────────────────────────
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _StageArcPainter(
+                      opacity: _starsFade.value,
+                    ),
+                  ),
+                ),
+
+                // ── Twinkling star field ──────────────────────────────────
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: _StarFieldPainter(
+                      stars: _stars,
+                      animValue: _ctrl.value,
+                      fadeIn: _starsFade.value,
+                    ),
+                  ),
+                ),
+
+                // ── Spotlight glow ────────────────────────────────────────
+                if (_spotlight.value > 0)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _SpotlightPainter(
+                        progress: _spotlight.value,
+                        screenSize: size,
+                      ),
+                    ),
+                  ),
+
+                // ── Orange pulse wave ─────────────────────────────────────
+                if (_pulseProgress.value > 0)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: _PulseWavePainter(
+                        progress: _pulseProgress.value,
+                        screenSize: size,
+                      ),
+                    ),
+                  ),
+
+                // ── Logo + tagline ────────────────────────────────────────
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Logo
+                      Opacity(
+                        opacity: _logoFade.value,
+                        child: Transform.scale(
+                          scale: _logoEntryScale.value * _logoBreath.value,
+                          child: const _LuminousLogo(),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Tagline
+                      Opacity(
+                        opacity: _taglineFade.value,
+                        child: Transform.translate(
+                          offset: Offset(0, _taglineRise.value),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _TaglineDash(
+                                opacity: _taglineFade.value,
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'RÉSERVEZ LES MEILLEURS TALENTS',
+                                style: TextStyle(
+                                  color: Color(0xFF8BA8CC),
+                                  fontSize: 9.5,
+                                  letterSpacing: 2.4,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.0,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              _TaglineDash(
+                                opacity: _taglineFade.value,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── Loading spinner ───────────────────────────────────────
+                if (_spinnerFade.value > 0)
                   Positioned(
-                    bottom: 72,
+                    bottom: 64,
                     left: 0,
                     right: 0,
                     child: Opacity(
-                      opacity: _spinnerOpacity.value,
+                      opacity: _spinnerFade.value,
                       child: const Center(
                         child: SizedBox(
                           width: 18,
@@ -210,13 +329,36 @@ class _SplashPageState extends State<SplashPage>
                           child: CircularProgressIndicator(
                             strokeWidth: 1.5,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFFCBD5E1),
+                              Color(0xFFFF6B35),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
+
+                // ── Accent dots ───────────────────────────────────────────
+                _AccentDot(
+                  x: 0.08,
+                  y: 0.82,
+                  color: const Color(0xFFFF6B35),
+                  size: 5,
+                  opacity: _taglineFade.value * 0.7,
+                ),
+                _AccentDot(
+                  x: 0.91,
+                  y: 0.15,
+                  color: const Color(0xFF60A5FA),
+                  size: 4,
+                  opacity: _taglineFade.value * 0.5,
+                ),
+                _AccentDot(
+                  x: 0.85,
+                  y: 0.75,
+                  color: const Color(0xFFFF6B35),
+                  size: 3,
+                  opacity: _taglineFade.value * 0.45,
+                ),
               ],
             );
           },
@@ -226,167 +368,317 @@ class _SplashPageState extends State<SplashPage>
   }
 }
 
-// ── Effect layers ────────────────────────────────────────────────────────────
+// ── Reusable widgets ──────────────────────────────────────────────────────────
 
-/// Soft blue radial glow — visible from Frame 9 (2.0 s) onwards
-class _BlueGlowLayer extends StatelessWidget {
-  const _BlueGlowLayer({required this.intensity});
+/// Logo with white luminous shader mask (visible on dark bg)
+class _LuminousLogo extends StatelessWidget {
+  const _LuminousLogo();
 
-  final double intensity;
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Diffuse glow halo behind the logo
+        Container(
+          width: 280,
+          height: 100,
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                const Color(0xFFFFFFFF).withOpacity(0.06),
+                const Color(0xFF3B82F6).withOpacity(0.04),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.55, 1.0],
+            ),
+          ),
+        ),
+        // Logo — white gradient shader so it glows on the dark bg
+        ShaderMask(
+          shaderCallback: (bounds) => const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFFFFFFFF), // "Book" — pure white
+              Color(0xFFD0E8FF), // "Mi"   — icy blue-white
+            ],
+            stops: [0.50, 1.0],
+          ).createShader(bounds),
+          blendMode: BlendMode.srcIn,
+          child: Image.asset(
+            'assets/images/bookmi_logo.png',
+            width: 230,
+            fit: BoxFit.contain,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Short horizontal line on each side of the tagline
+class _TaglineDash extends StatelessWidget {
+  const _TaglineDash({required this.opacity});
+
+  final double opacity;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 340,
-      height: 220,
+      width: 20,
+      height: 1,
       decoration: BoxDecoration(
-        gradient: RadialGradient(
+        gradient: LinearGradient(
           colors: [
-            const Color(0xFF3B82F6).withOpacity(0.28 * intensity),
-            const Color(0xFF60A5FA).withOpacity(0.10 * intensity),
-            Colors.transparent,
+            const Color(0xFFFF6B35).withOpacity(opacity * 0.8),
+            const Color(0xFFFF6B35).withOpacity(0),
           ],
-          stops: const [0.0, 0.5, 1.0],
-          radius: 0.65,
         ),
       ),
     );
   }
 }
 
-/// Orange radial burst + radiating sparks — Frame 5–6 (0.8 s → 1.1 s)
-class _OrangeBurstLayer extends StatelessWidget {
-  const _OrangeBurstLayer({required this.intensity});
+/// Small glowing dot positioned using fractional screen coordinates
+class _AccentDot extends StatelessWidget {
+  const _AccentDot({
+    required this.x,
+    required this.y,
+    required this.color,
+    required this.size,
+    required this.opacity,
+  });
 
-  final double intensity;
+  final double x, y, size, opacity;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(320, 200),
-      painter: _BurstPainter(intensity: intensity),
+    if (opacity <= 0) return const SizedBox.shrink();
+    final screenSize = MediaQuery.sizeOf(context);
+    return Positioned(
+      left: x * screenSize.width - size / 2,
+      top: y * screenSize.height - size / 2,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color.withOpacity(opacity),
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(opacity * 0.7),
+              blurRadius: size * 2.5,
+              spreadRadius: size * 0.5,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
 
-class _BurstPainter extends CustomPainter {
-  const _BurstPainter({required this.intensity});
+// ── Custom painters ───────────────────────────────────────────────────────────
 
-  final double intensity;
+/// Concentric arc lines — evokes a performance stage
+class _StageArcPainter extends CustomPainter {
+  const _StageArcPainter({required this.opacity});
+
+  final double opacity;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
+    if (opacity <= 0) return;
 
-    // Soft radial blob
-    final blobPaint = Paint()
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, 22 * intensity)
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFFF6B35).withOpacity(0.82 * intensity),
-          const Color(0xFFFF8C42).withOpacity(0.42 * intensity),
-          const Color(0xFFFFB870).withOpacity(0.12 * intensity),
-          Colors.transparent,
-        ],
-        stops: const [0.0, 0.32, 0.62, 1.0],
-      ).createShader(
-        Rect.fromCenter(
-          center: center,
-          width: size.width * 0.88,
-          height: size.height * 0.82,
-        ),
-      );
+    final center = Offset(size.width / 2, size.height * 1.05);
 
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: center,
-        width: size.width * 0.88,
-        height: size.height * 0.82,
-      ),
-      blobPaint,
-    );
-
-    // Radiating sparks (deterministic seed = reproducible each frame)
-    final rng = math.Random(42);
-    for (var i = 0; i < 28; i++) {
-      final angle = (i / 28) * 2 * math.pi + rng.nextDouble() * 0.28;
-      final innerR = 36.0 + rng.nextDouble() * 14;
-      final outerR = innerR + 16 + rng.nextDouble() * 44;
-      final sparkOpacity = (0.38 + rng.nextDouble() * 0.48) * intensity;
-
-      canvas.drawLine(
-        Offset(
-          center.dx + math.cos(angle) * innerR,
-          center.dy + math.sin(angle) * innerR * 0.54,
-        ),
-        Offset(
-          center.dx + math.cos(angle) * outerR,
-          center.dy + math.sin(angle) * outerR * 0.54,
-        ),
+    // Concentric arcs from bottom-center (like a stage spotlight beam)
+    for (var i = 0; i < 6; i++) {
+      final r = size.height * (0.25 + i * 0.14);
+      final alpha = opacity * (0.038 - i * 0.005).clamp(0.0, 1.0);
+      canvas.drawCircle(
+        center,
+        r,
         Paint()
-          ..color = Color.lerp(
-            const Color(0xFFFF6B35),
-            const Color(0xFFFFD000),
-            rng.nextDouble(),
-          )!
-              .withOpacity(sparkOpacity)
-          ..strokeWidth = 1.1 + rng.nextDouble() * 0.9
-          ..strokeCap = StrokeCap.round,
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.5
+          ..color = Colors.white.withOpacity(alpha),
+      );
+    }
+
+    // Two pairs of diagonal accent lines
+    final diag = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5
+      ..color = const Color(0xFFFF6B35).withOpacity(opacity * 0.07);
+
+    canvas
+      ..drawLine(Offset(size.width * 0.62, 0),
+          Offset(size.width, size.height * 0.38), diag)
+      ..drawLine(Offset(size.width * 0.78, 0),
+          Offset(size.width, size.height * 0.22), diag)
+      ..drawLine(
+          Offset(size.width * 0.38, 0), Offset(0, size.height * 0.38), diag)
+      ..drawLine(
+          Offset(size.width * 0.22, 0), Offset(0, size.height * 0.22), diag);
+  }
+
+  @override
+  bool shouldRepaint(_StageArcPainter old) => old.opacity != opacity;
+}
+
+/// Twinkling stars — warm (orange-tinted) and cool (blue-tinted) variants
+class _StarFieldPainter extends CustomPainter {
+  const _StarFieldPainter({
+    required this.stars,
+    required this.animValue,
+    required this.fadeIn,
+  });
+
+  final List<_Star> stars;
+  final double animValue;
+  final double fadeIn;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (fadeIn <= 0) return;
+
+    final paint = Paint()..style = PaintingStyle.fill;
+
+    for (final star in stars) {
+      // Smooth twinkling with individual phase offset
+      final twinkle =
+          (math.sin(animValue * 4.5 * math.pi + star.phase) + 1) / 2;
+      final opacity = fadeIn * star.baseOpacity * (0.35 + 0.65 * twinkle);
+      if (opacity <= 0.01) continue;
+
+      final color = star.warm
+          ? const Color(0xFFFFCC80) // warm amber
+          : const Color(0xFFB8D4FF); // cool blue-white
+
+      paint
+        ..color = color.withOpacity(opacity)
+        ..maskFilter = star.size > 2.0
+            ? MaskFilter.blur(BlurStyle.normal, star.size * 0.45)
+            : null;
+
+      canvas.drawCircle(
+        Offset(star.x * size.width, star.y * size.height),
+        star.size * 0.5,
+        paint,
       );
     }
   }
 
   @override
-  bool shouldRepaint(_BurstPainter old) => old.intensity != intensity;
+  bool shouldRepaint(_StarFieldPainter old) =>
+      old.animValue != animValue || old.fadeIn != fadeIn;
 }
 
-/// Orange torus ring — Frame 7 (1.2 s)
-class _OrangeRingLayer extends StatelessWidget {
-  const _OrangeRingLayer({required this.intensity});
+/// Soft radial spotlight glow expanding from center
+class _SpotlightPainter extends CustomPainter {
+  const _SpotlightPainter({
+    required this.progress,
+    required this.screenSize,
+  });
 
-  final double intensity;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(320, 200),
-      painter: _RingPainter(intensity: intensity),
-    );
-  }
-}
-
-class _RingPainter extends CustomPainter {
-  const _RingPainter({required this.intensity});
-
-  final double intensity;
+  final double progress;
+  final Size screenSize;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final rx = size.width * 0.40;
-    final ry = size.height * 0.42;
-    final rect = Rect.fromCenter(center: center, width: rx * 2, height: ry * 2);
+    if (progress <= 0) return;
 
-    // Blurred outer ring
-    canvas.drawOval(
-      rect,
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxR = size.shortestSide * 0.72 * progress;
+
+    canvas.drawCircle(
+      center,
+      maxR,
       Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 30 * intensity
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 18 * intensity)
-        ..color = const Color(0xFFFF7A3C).withOpacity(0.52 * intensity),
+        ..shader = RadialGradient(
+          colors: [
+            Colors.white.withOpacity(0.055 * progress),
+            Colors.white.withOpacity(0.018 * progress),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(Rect.fromCircle(center: center, radius: maxR)),
     );
 
-    // Sharp inner highlight
-    canvas.drawOval(
-      rect,
+    // Second subtler halo (larger radius)
+    final haloR = maxR * 1.6;
+    canvas.drawCircle(
+      center,
+      haloR,
       Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5 * intensity
-        ..color = const Color(0xFFFFB070).withOpacity(0.82 * intensity),
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFF3B82F6).withOpacity(0.022 * progress),
+            Colors.transparent,
+          ],
+        ).createShader(Rect.fromCircle(center: center, radius: haloR)),
     );
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.intensity != intensity;
+  bool shouldRepaint(_SpotlightPainter old) => old.progress != progress;
+}
+
+/// Expanding concentric orange rings (pulse)
+class _PulseWavePainter extends CustomPainter {
+  const _PulseWavePainter({
+    required this.progress,
+    required this.screenSize,
+  });
+
+  final double progress;
+  final Size screenSize;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (progress <= 0) return;
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final maxR = size.shortestSide * 0.58;
+
+    _drawRing(canvas, center, maxR, progress);
+
+    // Trailing second ring (delayed by 30 % of progress)
+    if (progress > 0.30) {
+      _drawRing(canvas, center, maxR, (progress - 0.30) / 0.70, alpha: 0.65);
+    }
+  }
+
+  void _drawRing(Canvas canvas, Offset center, double maxR, double p,
+      {double alpha = 1.0}) {
+    final r = maxR * p;
+    final fade = (1.0 - p) * alpha;
+    if (fade <= 0) return;
+
+    // Blurred glow ring
+    canvas.drawCircle(
+      center,
+      r,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)
+        ..color = const Color(0xFFFF6B35).withOpacity(fade * 0.55),
+    );
+
+    // Sharp crisp inner ring
+    canvas.drawCircle(
+      center,
+      r,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2
+        ..color = const Color(0xFFFFAB6B).withOpacity(fade * 0.80),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_PulseWavePainter old) => old.progress != progress;
 }
