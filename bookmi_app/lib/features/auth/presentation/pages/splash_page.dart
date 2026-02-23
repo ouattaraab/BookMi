@@ -63,26 +63,16 @@ class _SplashPageState extends State<SplashPage> {
             break;
         }
       },
-      child: DecoratedBox(
-        decoration: const BoxDecoration(gradient: BookmiColors.gradientHero),
+      child: const ColoredBox(
+        color: Colors.white,
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.music_note_rounded,
-                size: 80,
-                color: BookmiColors.ctaOrange,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'BookMi',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 48),
+            child: Image(
+              image: AssetImage('assets/images/bookmi_logo.png'),
+              width: 260,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       ),
