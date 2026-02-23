@@ -14,7 +14,7 @@ class TalentPageControllerTest extends TestCase
     {
         $talent = TalentProfile::factory()->verified()->create();
 
-        $response = $this->get("/talent/{$talent->slug}");
+        $response = $this->get("/talents/{$talent->slug}");
 
         $response->assertStatus(200);
     }
@@ -25,7 +25,7 @@ class TalentPageControllerTest extends TestCase
             'stage_name' => 'DJ Test Schema',
         ]);
 
-        $response = $this->get("/talent/{$talent->slug}");
+        $response = $this->get("/talents/{$talent->slug}");
 
         $response->assertStatus(200)
             ->assertSee('application/ld+json', false)
@@ -39,7 +39,7 @@ class TalentPageControllerTest extends TestCase
             'stage_name' => 'DJ OG Test',
         ]);
 
-        $response = $this->get("/talent/{$talent->slug}");
+        $response = $this->get("/talents/{$talent->slug}");
 
         $response->assertStatus(200)
             ->assertSee('og:title', false)
@@ -51,7 +51,7 @@ class TalentPageControllerTest extends TestCase
 
     public function test_web_talent_page_returns_404_for_unknown_slug(): void
     {
-        $response = $this->get('/talent/slug-inexistant');
+        $response = $this->get('/talents/slug-inexistant');
 
         $response->assertStatus(404);
     }
@@ -60,7 +60,7 @@ class TalentPageControllerTest extends TestCase
     {
         $talent = TalentProfile::factory()->create(['is_verified' => false]);
 
-        $response = $this->get("/talent/{$talent->slug}");
+        $response = $this->get("/talents/{$talent->slug}");
 
         $response->assertStatus(404);
     }

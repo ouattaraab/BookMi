@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PackageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,6 +32,7 @@ class ServicePackage extends Model
     protected function casts(): array
     {
         return [
+            'type' => PackageType::class,
             'cachet_amount' => 'integer',
             'duration_minutes' => 'integer',
             'inclusions' => 'array',

@@ -4,6 +4,19 @@
 @section('meta_description'){{ Str::limit($profile->bio ?? 'Talent sur BookMi', 160) }}@endsection
 
 @section('head')
+{{-- Open Graph --}}
+<meta property="og:title" content="{{ $profile->stage_name }} — BookMi">
+<meta property="og:description" content="{{ Str::limit($profile->bio ?? 'Talent sur BookMi', 160) }}">
+<meta property="og:url" content="{{ route('talent.show', $profile->slug) }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BookMi">
+{{-- Schema.org JSON-LD --}}
+<script type="application/ld+json">{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'Person',
+    'name' => $profile->stage_name,
+    'url' => route('talent.show', $profile->slug),
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 <style>
 /* ── Hero ── */
 .tp-hero {

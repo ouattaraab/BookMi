@@ -57,7 +57,7 @@ class TalentProfileService
     {
         $profile = $this->repository->findBySlug($slug);
 
-        if ($profile === null) {
+        if ($profile === null || ! $profile->is_verified) {
             return null;
         }
 
