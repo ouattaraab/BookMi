@@ -15,6 +15,13 @@ abstract final class RouteNames {
   static const tracking = 'tracking';
   static const evaluation = 'evaluation';
   static const talentOnboarding = 'talentOnboarding';
+  // Profile sub-routes
+  static const profilePersonalInfo = 'profilePersonalInfo';
+  static const profileFavorites = 'profileFavorites';
+  static const profilePaymentMethods = 'profilePaymentMethods';
+  static const profileIdentityVerification = 'profileIdentityVerification';
+  static const profileTalentStatistics = 'profileTalentStatistics';
+  static const profileSupport = 'profileSupport';
 }
 
 abstract final class RoutePaths {
@@ -34,4 +41,11 @@ abstract final class RoutePaths {
   static const profile = '/profile';
   static const talentDetail = 'talent/:slug';
   static const talentOnboarding = '/talent-onboarding';
+  // Profile sub-routes (relative — children of /profile)
+  static const profilePersonalInfo = 'personal-info';
+  static const profileFavorites = 'favorites';
+  static const profilePaymentMethods = 'payment-methods';
+  static const profileIdentityVerification = 'identity-verification';
+  static const profileTalentStatistics = 'talent-statistics';
+  static const profileSupport = 'support';
 }

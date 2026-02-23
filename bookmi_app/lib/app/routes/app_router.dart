@@ -23,7 +23,15 @@ import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/conversation_list_page.dart';
+import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
+import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/favorites_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/identity_verification_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/payment_methods_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/personal_info_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/profile_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/support_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/talent_statistics_page.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_profile_page.dart';
@@ -57,6 +65,7 @@ GoRouter buildAppRouter(
   ReviewRepository reviewRepo,
   OnboardingRepository onboardingRepo,
   MessagingRepository messagingRepo,
+  ProfileRepository profileRepo,
 ) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -251,7 +260,53 @@ GoRouter buildAppRouter(
               GoRoute(
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
-                builder: (context, state) => const ProfilePage(),
+                builder: (context, state) => BlocProvider(
+                  create: (_) => ProfileBloc(repository: profileRepo),
+                  child: const ProfilePage(),
+                ),
+                routes: [
+                  GoRoute(
+                    path: RoutePaths.profilePersonalInfo,
+                    name: RouteNames.profilePersonalInfo,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        const PersonalInfoPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profileFavorites,
+                    name: RouteNames.profileFavorites,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        FavoritesPage(repository: profileRepo),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profilePaymentMethods,
+                    name: RouteNames.profilePaymentMethods,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        const PaymentMethodsPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profileIdentityVerification,
+                    name: RouteNames.profileIdentityVerification,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        const IdentityVerificationPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profileTalentStatistics,
+                    name: RouteNames.profileTalentStatistics,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        TalentStatisticsPage(repository: profileRepo),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profileSupport,
+                    name: RouteNames.profileSupport,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const SupportPage(),
+                  ),
+                ],
               ),
             ],
           ),

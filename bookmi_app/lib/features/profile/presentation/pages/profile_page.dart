@@ -1,9 +1,14 @@
+import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
+import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
+import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 // ── Design tokens ─────────────────────────────────────────────────
 const _primary = Color(0xFF3B9DF2);
@@ -15,69 +20,135 @@ const _success = Color(0xFF14B8A6);
 const _destructive = Color(0xFFEF4444);
 const _warning = Color(0xFFFBBF24);
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool _statsRequested = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_statsRequested) {
+      _statsRequested = true;
+      final authState = context.read<AuthBloc>().state;
+      if (authState is AuthAuthenticated) {
+        final isTalent = authState.roles.contains('talent');
+        context
+            .read<ProfileBloc>()
+            .add(ProfileStatsFetched(isTalent: isTalent));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        final user = state is AuthAuthenticated ? state.user : null;
-        final roles = state is AuthAuthenticated ? state.roles : <String>[];
+      builder: (context, authState) {
+        final user =
+            authState is AuthAuthenticated ? authState.user : null;
+        final roles = authState is AuthAuthenticated
+            ? authState.roles
+            : <String>[];
         final firstName = user?.firstName ?? 'Utilisateur';
         final lastName = user?.lastName ?? '';
         final email = user?.email ?? '';
         final memberSince = _formatMemberSince(user?.phoneVerifiedAt);
         final initials = user != null
-            ? '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}'.toUpperCase()
+            ? '${firstName.isNotEmpty ? firstName[0] : ''}'
+                '${lastName.isNotEmpty ? lastName[0] : ''}'
+                    .toUpperCase()
             : 'U';
         final isTalent = roles.contains('talent');
 
-        return Scaffold(
-          backgroundColor: _muted,
-          body: CustomScrollView(
-            slivers: [
-              // Header navy
-              SliverToBoxAdapter(
-                child: _ProfileHeader(
-                  firstName: firstName,
-                  lastName: lastName,
-                  email: email,
-                  initials: initials,
-                  memberSince: memberSince,
-                  isTalent: isTalent,
+        return BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, profileState) {
+            final stats = profileState is ProfileLoaded
+                ? profileState.stats
+                : null;
+
+            return Scaffold(
+              backgroundColor: _muted,
+              body: RefreshIndicator(
+                onRefresh: () async {
+                  context.read<ProfileBloc>().add(
+                        ProfileStatsFetched(isTalent: isTalent),
+                      );
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _ProfileHeader(
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        initials: initials,
+                        memberSince: memberSince,
+                        isTalent: isTalent,
+                        nombrePrestations:
+                            stats?.nombrePrestations ?? 0,
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _DashboardCard(
+                        isTalent: isTalent,
+                        stats: stats,
+                        isLoading: profileState is ProfileLoading,
+                        onAgendaTap: () => context.goNamed(
+                          RouteNames.bookings,
+                        ),
+                        onManagerTap: isTalent
+                            ? () {
+                                // Manager access — placeholder
+                              }
+                            : null,
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _GeneralSection(
+                        isTalent: isTalent,
+                        isPhoneVerified:
+                            user?.phoneVerifiedAt != null,
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: _LogoutButton(),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: SizedBox(height: 100),
+                    ),
+                  ],
                 ),
               ),
-              // Dashboard card
-              SliverToBoxAdapter(
-                child: _DashboardCard(isTalent: isTalent),
-              ),
-              // General section
-              SliverToBoxAdapter(
-                child: _GeneralSection(isTalent: isTalent),
-              ),
-              // Logout button
-              SliverToBoxAdapter(
-                child: _LogoutButton(),
-              ),
-              // Bottom spacing
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
   static String _formatMemberSince(String? isoDate) {
-    if (isoDate == null) return 'Janvier 2025';
+    if (isoDate == null) return 'Récemment';
     final date = DateTime.tryParse(isoDate);
-    if (date == null) return 'Janvier 2025';
+    if (date == null) return 'Récemment';
     const months = [
-      '', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+      '',
+      'Janvier',
+      'Février',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Août',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Décembre',
     ];
     return '${months[date.month]} ${date.year}';
   }
@@ -92,6 +163,7 @@ class _ProfileHeader extends StatelessWidget {
     required this.initials,
     required this.memberSince,
     required this.isTalent,
+    required this.nombrePrestations,
   });
 
   final String firstName;
@@ -100,6 +172,14 @@ class _ProfileHeader extends StatelessWidget {
   final String initials;
   final String memberSince;
   final bool isTalent;
+  final int nombrePrestations;
+
+  String get _badgeLabel {
+    if (!isTalent) return 'Client BookMi';
+    if (nombrePrestations >= 20) return 'Talent Elite';
+    if (nombrePrestations >= 5) return 'Talent Actif';
+    return 'Talent';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -125,66 +205,53 @@ class _ProfileHeader extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
+              GestureDetector(
+                onTap: () => context.pushNamed(
+                  RouteNames.profilePersonalInfo,
                 ),
-                child: const Icon(
-                  Icons.settings_outlined,
-                  color: Colors.white,
-                  size: 20,
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.settings_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 24),
-          // Avatar + info
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              // Avatar
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [_primary, Color(0xFF1565C0)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+          // Avatar
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [_primary, Color(0xFF1565C0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 2,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                initials,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-              // Verified badge
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: const BoxDecoration(
-                    color: _success,
-                    shape: BoxShape.circle,
-                    border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2)),
-                  ),
-                  child: const Icon(Icons.check, size: 12, color: Colors.white),
-                ),
-              ),
-            ],
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -204,9 +271,12 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 10),
-          // Badge
+          // Badge — dynamic
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 5,
+            ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [_warning, _warning.withValues(alpha: 0.8)],
@@ -219,7 +289,7 @@ class _ProfileHeader extends StatelessWidget {
                 const Icon(Icons.star, size: 13, color: Colors.white),
                 const SizedBox(width: 5),
                 Text(
-                  isTalent ? 'Talent Elite' : 'Client Gold',
+                  _badgeLabel,
                   style: GoogleFonts.manrope(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -237,11 +307,58 @@ class _ProfileHeader extends StatelessWidget {
 
 // ── Dashboard card ────────────────────────────────────────────────
 class _DashboardCard extends StatelessWidget {
-  const _DashboardCard({required this.isTalent});
+  const _DashboardCard({
+    required this.isTalent,
+    required this.stats,
+    required this.isLoading,
+    required this.onAgendaTap,
+    this.onManagerTap,
+  });
+
   final bool isTalent;
+  final ProfileStats? stats;
+  final bool isLoading;
+  final VoidCallback onAgendaTap;
+  final VoidCallback? onManagerTap;
 
   @override
   Widget build(BuildContext context) {
+    final fmt = NumberFormat('#,###', 'fr_FR');
+    final now = DateTime.now();
+    const months = [
+      '',
+      'Jan',
+      'Fév',
+      'Mar',
+      'Avr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Aoû',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Déc',
+    ];
+    final currentMonthLabel = months[now.month];
+
+    // Stats values
+    final stat1Value = isLoading
+        ? '…'
+        : isTalent
+            ? '${fmt.format(stats?.revenusMoisCourant ?? 0)} FCFA'
+            : '${stats?.bookingCount ?? 0}';
+    final stat1Label = isTalent
+        ? 'Revenus ($currentMonthLabel)'
+        : 'Réservations';
+    final stat2Value = isLoading
+        ? '…'
+        : isTalent
+            ? '${stats?.nombrePrestations ?? 0}'
+            : '${stats?.favoriteCount ?? 0}';
+    final stat2Label =
+        isTalent ? 'Prestations totales' : 'Talents favoris';
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -268,30 +385,33 @@ class _DashboardCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Stats grid
           Row(
             children: [
               Expanded(
                 child: _StatCard(
-                  label: isTalent ? 'Revenus (Mars)' : 'Réservations',
-                  value: isTalent ? '0 FCFA' : '0',
-                  icon: isTalent ? Icons.account_balance_wallet_outlined : Icons.calendar_today_outlined,
+                  label: stat1Label,
+                  value: stat1Value,
+                  icon: isTalent
+                      ? Icons.account_balance_wallet_outlined
+                      : Icons.calendar_today_outlined,
                   color: _primary,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: _StatCard(
-                  label: 'Vues Profil',
-                  value: '0',
-                  icon: Icons.visibility_outlined,
+                  label: stat2Label,
+                  value: stat2Value,
+                  icon: isTalent
+                      ? Icons.star_outline
+                      : Icons.favorite_border,
                   color: _success,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          // Mini chart
+          // Chart
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -303,7 +423,11 @@ class _DashboardCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              _MiniBarChart(),
+              _MiniBarChart(
+                mensuels: (isTalent && stats != null)
+                    ? stats!.mensuels
+                    : [],
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -314,7 +438,7 @@ class _DashboardCard extends StatelessWidget {
                 child: _ActionButton(
                   label: 'Mon agenda',
                   icon: Icons.calendar_month_outlined,
-                  onTap: () {},
+                  onTap: onAgendaTap,
                 ),
               ),
               if (isTalent) ...[
@@ -324,7 +448,7 @@ class _DashboardCard extends StatelessWidget {
                     label: 'Accès Manager',
                     icon: Icons.manage_accounts_outlined,
                     isPrimary: true,
-                    onTap: () {},
+                    onTap: onManagerTap ?? () {},
                   ),
                 ),
               ],
@@ -366,10 +490,12 @@ class _StatCard extends StatelessWidget {
           Text(
             value,
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w700,
               color: _secondary,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Text(
@@ -386,29 +512,87 @@ class _StatCard extends StatelessWidget {
 }
 
 class _MiniBarChart extends StatelessWidget {
+  const _MiniBarChart({required this.mensuels});
+  final List<Map<String, dynamic>> mensuels;
+
+  static const _fallbackBars = [0.2, 0.5, 0.35, 0.8, 0.6, 0.4];
+  static const _fallbackMonths = [
+    'Oct',
+    'Nov',
+    'Déc',
+    'Jan',
+    'Fév',
+    'Mar',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final bars = [0.2, 0.5, 0.35, 0.8, 0.6, 0.4];
-    final months = ['Oct', 'Nov', 'Déc', 'Jan', 'Fév', 'Mar'];
+    if (mensuels.isEmpty) {
+      // Fallback static chart when no data
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: List.generate(_fallbackBars.length, (i) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 28,
+                height: 50 * _fallbackBars[i],
+                decoration: BoxDecoration(
+                  color: i == _fallbackBars.length - 1
+                      ? _primary
+                      : _primary.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _fallbackMonths[i],
+                style: GoogleFonts.manrope(
+                  fontSize: 10,
+                  color: _mutedFg,
+                ),
+              ),
+            ],
+          );
+        }),
+      );
+    }
+
+    final maxRevenue = mensuels
+        .map((m) => (m['revenus'] as int?) ?? 0)
+        .fold(0, (a, b) => a > b ? a : b);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
-      children: List.generate(bars.length, (i) {
+      children: mensuels.asMap().entries.map((entry) {
+        final i = entry.key;
+        final m = entry.value;
+        final rev = (m['revenus'] as int?) ?? 0;
+        final ratio =
+            maxRevenue > 0 ? (rev / maxRevenue) : 0.0;
+        final moisStr = m['mois'] as String? ?? '';
+        final label = _shortMonth(moisStr);
+        final isLast = i == mensuels.length - 1;
+
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 28,
-              height: 50 * bars[i],
+              height: (50 * ratio).clamp(4.0, 50.0),
               decoration: BoxDecoration(
-                color: i == bars.length - 1 ? _primary : _primary.withValues(alpha: 0.25),
+                color: isLast
+                    ? _primary
+                    : _primary.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              months[i],
+              label,
               style: GoogleFonts.manrope(
                 fontSize: 10,
                 color: _mutedFg,
@@ -416,8 +600,31 @@ class _MiniBarChart extends StatelessWidget {
             ),
           ],
         );
-      }),
+      }).toList(),
     );
+  }
+
+  static String _shortMonth(String yyyyMm) {
+    if (yyyyMm.length < 7) return yyyyMm;
+    final parts = yyyyMm.split('-');
+    if (parts.length < 2) return yyyyMm;
+    const names = [
+      '',
+      'Jan',
+      'Fév',
+      'Mar',
+      'Avr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Aoû',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Déc',
+    ];
+    final month = int.tryParse(parts[1]) ?? 0;
+    return month >= 1 && month <= 12 ? names[month] : yyyyMm;
   }
 }
 
@@ -450,7 +657,11 @@ class _ActionButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 16, color: isPrimary ? Colors.white : _secondary),
+            Icon(
+              icon,
+              size: 16,
+              color: isPrimary ? Colors.white : _secondary,
+            ),
             const SizedBox(width: 6),
             Text(
               label,
@@ -469,8 +680,13 @@ class _ActionButton extends StatelessWidget {
 
 // ── General section ───────────────────────────────────────────────
 class _GeneralSection extends StatelessWidget {
-  const _GeneralSection({required this.isTalent});
+  const _GeneralSection({
+    required this.isTalent,
+    required this.isPhoneVerified,
+  });
+
   final bool isTalent;
+  final bool isPhoneVerified;
 
   @override
   Widget build(BuildContext context) {
@@ -505,40 +721,52 @@ class _GeneralSection extends StatelessWidget {
           _MenuItem(
             icon: Icons.person_outline,
             label: 'Informations personnelles',
-            onTap: () {},
+            onTap: () => context.pushNamed(
+              RouteNames.profilePersonalInfo,
+            ),
           ),
           _Divider(),
           _MenuItem(
             icon: Icons.favorite_border,
             label: 'Mes talents favoris',
-            onTap: () {},
+            onTap: () =>
+                context.pushNamed(RouteNames.profileFavorites),
           ),
           _Divider(),
           _MenuItem(
             icon: Icons.payment_outlined,
             label: 'Moyens de paiement',
-            onTap: () {},
+            onTap: () => context.pushNamed(
+              RouteNames.profilePaymentMethods,
+            ),
           ),
           _Divider(),
           _MenuItem(
             icon: Icons.verified_user_outlined,
-            label: 'Vérification d\'identité',
-            trailing: _VerifiedBadge(),
-            onTap: () {},
+            label: "Vérification d'identité",
+            trailing: isPhoneVerified
+                ? _VerifiedBadge()
+                : _UnverifiedBadge(),
+            onTap: () => context.pushNamed(
+              RouteNames.profileIdentityVerification,
+            ),
           ),
           if (isTalent) ...[
             _Divider(),
             _MenuItem(
               icon: Icons.bar_chart_outlined,
               label: 'Statistiques talent',
-              onTap: () {},
+              onTap: () => context.pushNamed(
+                RouteNames.profileTalentStatistics,
+              ),
             ),
           ],
           _Divider(),
           _MenuItem(
             icon: Icons.help_outline,
             label: 'Aide et support',
-            onTap: () {},
+            onTap: () =>
+                context.pushNamed(RouteNames.profileSupport),
           ),
           const SizedBox(height: 8),
         ],
@@ -565,7 +793,10 @@ class _MenuItem extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         child: Row(
           children: [
             Container(
@@ -588,7 +819,12 @@ class _MenuItem extends StatelessWidget {
                 ),
               ),
             ),
-            trailing ?? const Icon(Icons.chevron_right, size: 18, color: _mutedFg),
+            trailing ??
+                const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: _mutedFg,
+                ),
           ],
         ),
       ),
@@ -630,6 +866,30 @@ class _VerifiedBadge extends StatelessWidget {
   }
 }
 
+class _UnverifiedBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.orange.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Text(
+        'À vérifier',
+        style: GoogleFonts.manrope(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Colors.orange,
+        ),
+      ),
+    );
+  }
+}
+
 // ── Logout button ─────────────────────────────────────────────────
 class _LogoutButton extends StatelessWidget {
   @override
@@ -663,7 +923,9 @@ class _LogoutButton extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     Navigator.of(ctx).pop();
-                    context.read<AuthBloc>().add(const AuthLogoutRequested());
+                    context
+                        .read<AuthBloc>()
+                        .add(const AuthLogoutRequested());
                   },
                   child: Text(
                     'Déconnecter',
@@ -682,12 +944,18 @@ class _LogoutButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: _destructive.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _destructive.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: _destructive.withValues(alpha: 0.2),
+            ),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.logout_rounded, size: 18, color: _destructive),
+              const Icon(
+                Icons.logout_rounded,
+                size: 18,
+                color: _destructive,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Se déconnecter',
