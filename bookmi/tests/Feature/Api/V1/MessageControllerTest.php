@@ -210,7 +210,9 @@ class MessageControllerTest extends TestCase
         $response->assertJsonPath('data.sender_id', $talentUser->id);
         $response->assertJsonPath('data.content', 'Bonsoir, voici mes disponibilités.');
 
-        Event::assertDispatched(MessageSent::class, fn (MessageSent $e) =>
+        Event::assertDispatched(
+            MessageSent::class,
+            fn (MessageSent $e) =>
             $e->message->conversation_id === $conversation->id
         );
     }

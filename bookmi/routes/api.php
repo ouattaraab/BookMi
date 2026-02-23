@@ -85,12 +85,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->name('auth.logout');
 
         // 2FA — protected management endpoints
-        Route::get('/auth/2fa/status',        [TwoFactorController::class, 'status'])->name('auth.2fa.status');
-        Route::post('/auth/2fa/setup/totp',   [TwoFactorController::class, 'setupTotp'])->name('auth.2fa.setup.totp');
-        Route::post('/auth/2fa/enable/totp',  [TwoFactorController::class, 'enableTotp'])->name('auth.2fa.enable.totp');
-        Route::post('/auth/2fa/setup/email',  [TwoFactorController::class, 'setupEmail'])->name('auth.2fa.setup.email');
+        Route::get('/auth/2fa/status', [TwoFactorController::class, 'status'])->name('auth.2fa.status');
+        Route::post('/auth/2fa/setup/totp', [TwoFactorController::class, 'setupTotp'])->name('auth.2fa.setup.totp');
+        Route::post('/auth/2fa/enable/totp', [TwoFactorController::class, 'enableTotp'])->name('auth.2fa.enable.totp');
+        Route::post('/auth/2fa/setup/email', [TwoFactorController::class, 'setupEmail'])->name('auth.2fa.setup.email');
         Route::post('/auth/2fa/enable/email', [TwoFactorController::class, 'enableEmail'])->name('auth.2fa.enable.email');
-        Route::post('/auth/2fa/disable',      [TwoFactorController::class, 'disable'])->name('auth.2fa.disable');
+        Route::post('/auth/2fa/disable', [TwoFactorController::class, 'disable'])->name('auth.2fa.disable');
 
         Route::get('/me', [AuthController::class, 'me'])
             ->middleware('throttle:auth')

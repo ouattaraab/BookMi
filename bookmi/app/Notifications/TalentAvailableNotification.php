@@ -15,7 +15,8 @@ class TalentAvailableNotification extends Notification
     public function __construct(
         private readonly TalentProfile $talent,
         private readonly TalentNotificationRequest $request,
-    ) {}
+    ) {
+    }
 
     /** @return array<int, string> */
     public function via(object $notifiable): array

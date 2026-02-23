@@ -17,7 +17,9 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function __construct(private readonly PaymentService $paymentService) {}
+    public function __construct(private readonly PaymentService $paymentService)
+    {
+    }
 
     public function index(Request $request): View
     {

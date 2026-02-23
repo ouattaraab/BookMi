@@ -15,7 +15,8 @@ class RefundService
 {
     public function __construct(
         private readonly PaymentGatewayInterface $gateway,
-    ) {}
+    ) {
+    }
 
     /**
      * Process a refund for a disputed booking.

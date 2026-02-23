@@ -11,7 +11,8 @@ class AdminRefundController extends BaseController
 {
     public function __construct(
         private readonly RefundService $refundService,
-    ) {}
+    ) {
+    }
 
     /**
      * POST /v1/admin/booking_requests/{booking}/refund

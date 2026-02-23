@@ -10,8 +10,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Auth;
 
-
-
 class ViewIdentityVerification extends ViewRecord
 {
     protected static string $resource = IdentityVerificationResource::class;

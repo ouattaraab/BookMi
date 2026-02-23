@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Api\V1\BaseController;
 use App\Http\Requests\Api\SendMessageRequest;
 use App\Http\Requests\Api\StartConversationRequest;
 use App\Http\Resources\ConversationResource;
 use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
-use App\Models\TalentProfile;
 use App\Services\MessagingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

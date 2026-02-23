@@ -1,10 +1,10 @@
 <?php
+
 namespace App\Http\Controllers\Web\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Models\TalentProfile;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class TalentController extends Controller

@@ -13,7 +13,8 @@ class AdminVerificationController extends BaseController
 {
     public function __construct(
         private readonly IdentityVerificationService $service,
-    ) {}
+    ) {
+    }
 
     /**
      * GET /admin/verifications

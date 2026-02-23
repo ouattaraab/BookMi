@@ -79,7 +79,9 @@ class AdminDisputeControllerTest extends TestCase
         $response->assertOk();
         $this->assertCount(3, $response->json('data'));
 
-        Event::assertDispatched(AdminAccessedMessages::class, fn ($e) =>
+        Event::assertDispatched(
+            AdminAccessedMessages::class,
+            fn ($e) =>
             $e->admin->id === $admin->id && $e->booking->id === $booking->id
         );
     }

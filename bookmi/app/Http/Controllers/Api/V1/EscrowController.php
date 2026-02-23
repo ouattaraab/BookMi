@@ -11,7 +11,8 @@ class EscrowController extends BaseController
 {
     public function __construct(
         private readonly EscrowService $escrowService,
-    ) {}
+    ) {
+    }
 
     /**
      * POST /v1/booking_requests/{booking}/confirm_delivery

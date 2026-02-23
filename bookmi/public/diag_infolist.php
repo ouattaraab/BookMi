@@ -1,4 +1,5 @@
 <?php
+
 // Temporary diagnostic script — DELETE AFTER USE
 $file = __DIR__ . '/../app/Filament/Resources/IdentityVerificationResource.php';
 $content = file_get_contents($file);

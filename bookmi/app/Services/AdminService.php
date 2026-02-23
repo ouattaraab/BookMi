@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class AdminService
 {
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(private readonly AuditService $audit)
+    {
+    }
 
     // ─── Dashboard (8.1) ────────────────────────────────────────────────────
 

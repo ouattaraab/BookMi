@@ -138,7 +138,8 @@ class UserResource extends Resource
                     ->color(fn (User $record): string => $record->is_suspended ? 'success' : 'danger')
                     ->requiresConfirmation()
                     ->modalHeading(fn (User $record): string => $record->is_suspended ? 'Réactiver cet utilisateur ?' : 'Suspendre cet utilisateur ?')
-                    ->modalDescription(fn (User $record): string => $record->is_suspended
+                    ->modalDescription(
+                        fn (User $record): string => $record->is_suspended
                         ? 'L\'utilisateur pourra de nouveau se connecter et utiliser l\'application.'
                         : 'L\'utilisateur ne pourra plus se connecter ni utiliser l\'application.'
                     )

@@ -6,7 +6,6 @@ use App\Enums\AlertSeverity;
 use App\Enums\AlertType;
 use App\Enums\BookingStatus;
 use App\Enums\VerificationStatus;
-use App\Models\AdminAlert;
 use App\Models\BookingRequest;
 use App\Models\IdentityVerification;
 use App\Models\Review;

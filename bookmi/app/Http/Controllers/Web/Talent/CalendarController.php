@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
@@ -12,7 +13,9 @@ class CalendarController extends Controller
     public function index(Request $request): View
     {
         $profile = auth()->user()->talentProfile;
-        if (!$profile) return view('talent.coming-soon', ['title' => 'Calendrier', 'description' => 'Configurez votre profil d\'abord.']);
+        if (!$profile) {
+            return view('talent.coming-soon', ['title' => 'Calendrier', 'description' => 'Configurez votre profil d\'abord.']);
+        }
 
         $month = $request->integer('month', (int) now()->format('m'));
         $year  = $request->integer('year', (int) now()->format('Y'));

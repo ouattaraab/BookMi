@@ -28,7 +28,8 @@ class PaymentGatewayResolver implements PaymentGatewayInterface
     public function __construct(
         private readonly PaymentGatewayInterface $primary,
         private readonly PaymentGatewayInterface $fallback,
-    ) {}
+    ) {
+    }
 
     public function name(): string
     {

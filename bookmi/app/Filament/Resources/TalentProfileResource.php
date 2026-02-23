@@ -190,7 +190,8 @@ class TalentProfileResource extends Resource
                         'populaire' => 'Populaire',
                         'elite'     => 'Élite',
                     ])
-                    ->query(fn (Builder $query, array $data): Builder =>
+                    ->query(
+                        fn (Builder $query, array $data): Builder =>
                         isset($data['value']) && $data['value'] !== ''
                             ? $query->whereHas('talentProfile', fn ($q) => $q->where('talent_level', $data['value']))
                             : $query

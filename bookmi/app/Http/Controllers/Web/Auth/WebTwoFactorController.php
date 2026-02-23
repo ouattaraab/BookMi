@@ -12,7 +12,9 @@ use Illuminate\View\View;
 
 class WebTwoFactorController extends Controller
 {
-    public function __construct(private readonly TwoFactorService $twoFactorService) {}
+    public function __construct(private readonly TwoFactorService $twoFactorService)
+    {
+    }
 
     public function showChallenge(): View|RedirectResponse
     {
@@ -69,9 +71,15 @@ class WebTwoFactorController extends Controller
 
     private function redirectToDashboard(User $user): RedirectResponse
     {
-        if ($user->hasRole('client'))  return redirect()->route('client.dashboard');
-        if ($user->hasRole('talent'))  return redirect()->route('talent.dashboard');
-        if ($user->hasRole('manager')) return redirect()->route('manager.dashboard');
+        if ($user->hasRole('client')) {
+            return redirect()->route('client.dashboard');
+        }
+        if ($user->hasRole('talent')) {
+            return redirect()->route('talent.dashboard');
+        }
+        if ($user->hasRole('manager')) {
+            return redirect()->route('manager.dashboard');
+        }
 
         return redirect('/');
     }

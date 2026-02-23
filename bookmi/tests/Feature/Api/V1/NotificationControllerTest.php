@@ -139,7 +139,9 @@ class NotificationControllerTest extends TestCase
             'message'           => 'Bonjour !',
         ])->assertCreated();
 
-        Queue::assertPushed(SendPushNotification::class, fn ($job) =>
+        Queue::assertPushed(
+            SendPushNotification::class,
+            fn ($job) =>
             $job->userId === $talentUser->id && str_contains($job->title, 'message')
         );
     }

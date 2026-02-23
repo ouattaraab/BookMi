@@ -17,7 +17,8 @@ class AdminDisputeController extends BaseController
     public function __construct(
         private readonly AdminService $admin,
         private readonly AuditService $audit,
-    ) {}
+    ) {
+    }
 
     /**
      * GET /api/v1/admin/disputes

@@ -58,11 +58,11 @@ class AppServiceProvider extends ServiceProvider
         BookingRequest::observe(BookingRequestObserver::class);
         PortfolioItem::observe(PortfolioItemObserver::class);
         $this->configureRateLimiting();
-        Event::listen(EscrowReleased::class,   HandleEscrowReleased::class);
-        Event::listen(BookingCreated::class,   NotifyTalentOfNewBooking::class);
-        Event::listen(BookingAccepted::class,  NotifyClientOfBookingAccepted::class);
+        Event::listen(EscrowReleased::class, HandleEscrowReleased::class);
+        Event::listen(BookingCreated::class, NotifyTalentOfNewBooking::class);
+        Event::listen(BookingAccepted::class, NotifyClientOfBookingAccepted::class);
         Event::listen(BookingCancelled::class, NotifyPartyOfBookingCancelled::class);
-        Event::listen(PaymentReceived::class,  NotifyTalentOfPaymentReceived::class);
+        Event::listen(PaymentReceived::class, NotifyTalentOfPaymentReceived::class);
     }
 
     protected function configureRateLimiting(): void

@@ -13,5 +13,6 @@ class EscrowReleased
 
     public function __construct(
         public readonly EscrowHold $escrowHold,
-    ) {}
+    ) {
+    }
 }

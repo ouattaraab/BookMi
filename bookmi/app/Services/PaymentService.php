@@ -16,7 +16,8 @@ class PaymentService
 {
     public function __construct(
         private readonly PaymentGatewayInterface $gateway,
-    ) {}
+    ) {
+    }
 
     /**
      * Initiate a Mobile Money payment via Paystack.
@@ -82,11 +83,16 @@ class PaymentService
         try {
             if ($paymentMethod->isMobileMoney()) {
                 $result = $this->initiateChargeForMobileMoney(
-                    $booking, $paymentMethod, $idempotencyKey, $data['phone_number'] ?? '',
+                    $booking,
+                    $paymentMethod,
+                    $idempotencyKey,
+                    $data['phone_number'] ?? '',
                 );
             } else {
                 $result = $this->initializeTransactionForCard(
-                    $booking, $paymentMethod, $idempotencyKey,
+                    $booking,
+                    $paymentMethod,
+                    $idempotencyKey,
                 );
             }
         } catch (PaymentException $e) {

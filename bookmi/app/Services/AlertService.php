@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class AlertService
 {
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(private readonly AuditService $audit)
+    {
+    }
 
     public function create(
         AlertType $type,

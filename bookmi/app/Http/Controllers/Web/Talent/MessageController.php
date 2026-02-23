@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
@@ -15,7 +16,9 @@ class MessageController extends Controller
     public function index(): View
     {
         $profile = auth()->user()->talentProfile;
-        if (!$profile) return view('talent.coming-soon', ['title' => 'Messages', 'description' => 'Configurez votre profil d\'abord.']);
+        if (!$profile) {
+            return view('talent.coming-soon', ['title' => 'Messages', 'description' => 'Configurez votre profil d\'abord.']);
+        }
 
         $conversations = Conversation::where('talent_profile_id', $profile->id)
             ->with(['client', 'latestMessage', 'bookingRequest'])

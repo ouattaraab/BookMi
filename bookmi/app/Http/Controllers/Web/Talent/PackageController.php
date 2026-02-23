@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
@@ -12,7 +13,9 @@ class PackageController extends Controller
     public function index(): View
     {
         $profile = auth()->user()->talentProfile;
-        if (!$profile) return view('talent.coming-soon', ['title' => 'Packages', 'description' => 'Configurez votre profil d\'abord.']);
+        if (!$profile) {
+            return view('talent.coming-soon', ['title' => 'Packages', 'description' => 'Configurez votre profil d\'abord.']);
+        }
 
         $packages = ServicePackage::where('talent_profile_id', $profile->id)
             ->orderBy('sort_order')

@@ -8,7 +8,6 @@ use App\Models\IdentityVerification;
 use App\Services\ActivityLogger;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Infolists\Components\IconEntry as InfolistIconEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry as InfolistTextEntry;
 use Filament\Infolists\Infolist;

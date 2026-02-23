@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 
 class AdminUserController extends BaseController
 {
-    public function __construct(private readonly AdminService $admin) {}
+    public function __construct(private readonly AdminService $admin)
+    {
+    }
 
     /**
      * GET /api/v1/admin/users

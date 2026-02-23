@@ -13,7 +13,9 @@ use Illuminate\View\View;
 
 class WebRegisterController extends Controller
 {
-    public function __construct(private readonly AuthService $authService) {}
+    public function __construct(private readonly AuthService $authService)
+    {
+    }
 
     public function showForm(): View|RedirectResponse
     {
@@ -48,9 +50,15 @@ class WebRegisterController extends Controller
 
     private function redirectToDashboard(User $user): RedirectResponse
     {
-        if ($user->hasRole('client', 'api'))  return redirect()->route('client.dashboard');
-        if ($user->hasRole('talent', 'api'))  return redirect()->route('talent.dashboard');
-        if ($user->hasRole('manager', 'api')) return redirect()->route('manager.dashboard');
+        if ($user->hasRole('client', 'api')) {
+            return redirect()->route('client.dashboard');
+        }
+        if ($user->hasRole('talent', 'api')) {
+            return redirect()->route('talent.dashboard');
+        }
+        if ($user->hasRole('manager', 'api')) {
+            return redirect()->route('manager.dashboard');
+        }
 
         return redirect('/');
     }

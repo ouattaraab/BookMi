@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +11,9 @@ class AnalyticsController extends Controller
     public function index(): View
     {
         $profile = auth()->user()->talentProfile;
-        if (!$profile) return view('talent.coming-soon', ['title' => 'Analytiques', 'description' => 'Configurez votre profil d\'abord.']);
+        if (!$profile) {
+            return view('talent.coming-soon', ['title' => 'Analytiques', 'description' => 'Configurez votre profil d\'abord.']);
+        }
 
         $monthly = BookingRequest::where('talent_profile_id', $profile->id)
             ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count, SUM(cachet_amount) as revenue')

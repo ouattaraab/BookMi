@@ -13,7 +13,8 @@ class PaymentReceivedNotification extends Notification
 
     public function __construct(
         private readonly Transaction $transaction,
-    ) {}
+    ) {
+    }
 
     /** @return array<int, string> */
     public function via(object $notifiable): array

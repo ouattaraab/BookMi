@@ -3,7 +3,6 @@
 namespace Tests\Unit\Commands;
 
 use App\Enums\AlertType;
-use App\Models\AdminAlert;
 use App\Models\TalentProfile;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

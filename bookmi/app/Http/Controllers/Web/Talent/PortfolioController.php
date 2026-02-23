@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
@@ -13,7 +14,9 @@ class PortfolioController extends Controller
     public function index(): View
     {
         $profile = auth()->user()->talentProfile;
-        if (!$profile) return view('talent.coming-soon', ['title' => 'Portfolio', 'description' => 'Configurez votre profil d\'abord.']);
+        if (!$profile) {
+            return view('talent.coming-soon', ['title' => 'Portfolio', 'description' => 'Configurez votre profil d\'abord.']);
+        }
 
         $items = PortfolioItem::where('talent_profile_id', $profile->id)
             ->orderByDesc('created_at')
@@ -89,7 +92,9 @@ class PortfolioController extends Controller
     public function destroy(int $id): RedirectResponse
     {
         $item = PortfolioItem::where('talent_profile_id', auth()->user()->talentProfile?->id)->findOrFail($id);
-        if ($item->original_path) Storage::disk('public')->delete($item->original_path);
+        if ($item->original_path) {
+            Storage::disk('public')->delete($item->original_path);
+        }
         $item->delete();
         return back()->with('success', 'Élément supprimé.');
     }
@@ -100,7 +105,10 @@ class PortfolioController extends Controller
     private function optimizeImage(string $source, string $dest, int $maxWidth, int $quality): void
     {
         $info = @getimagesize($source);
-        if (! $info) { copy($source, $dest); return; }
+        if (! $info) {
+            copy($source, $dest);
+            return;
+        }
 
         [$width, $height, $type] = $info;
 
@@ -112,7 +120,10 @@ class PortfolioController extends Controller
             default        => null,
         };
 
-        if (! $src) { copy($source, $dest); return; }
+        if (! $src) {
+            copy($source, $dest);
+            return;
+        }
 
         if ($width > $maxWidth) {
             $newWidth  = $maxWidth;

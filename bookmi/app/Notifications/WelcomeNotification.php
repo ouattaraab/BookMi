@@ -13,7 +13,8 @@ class WelcomeNotification extends Notification
 
     public function __construct(
         private readonly string $role // 'client' | 'talent'
-    ) {}
+    ) {
+    }
 
     /**
      * @param User $notifiable
@@ -34,7 +35,7 @@ class WelcomeNotification extends Notification
 
         $subject = 'Akwaba sur BookMi, ' . $notifiable->first_name . ' ! 🎉';
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject($subject)
             ->view($view, ['user' => $notifiable]);
     }

@@ -13,7 +13,9 @@ use Illuminate\View\View;
 
 class WebPhoneVerifyController extends Controller
 {
-    public function __construct(private readonly AuthService $authService) {}
+    public function __construct(private readonly AuthService $authService)
+    {
+    }
 
     public function showOtp(): View|RedirectResponse
     {
@@ -70,9 +72,15 @@ class WebPhoneVerifyController extends Controller
 
     private function redirectToDashboard(User $user): RedirectResponse
     {
-        if ($user->hasRole('client'))  return redirect()->route('client.dashboard');
-        if ($user->hasRole('talent'))  return redirect()->route('talent.dashboard');
-        if ($user->hasRole('manager')) return redirect()->route('manager.dashboard');
+        if ($user->hasRole('client')) {
+            return redirect()->route('client.dashboard');
+        }
+        if ($user->hasRole('talent')) {
+            return redirect()->route('talent.dashboard');
+        }
+        if ($user->hasRole('manager')) {
+            return redirect()->route('manager.dashboard');
+        }
 
         return redirect('/');
     }

@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 
 class AdminAlertController extends BaseController
 {
-    public function __construct(private readonly AlertService $alerts) {}
+    public function __construct(private readonly AlertService $alerts)
+    {
+    }
 
     /**
      * GET /api/v1/admin/alerts

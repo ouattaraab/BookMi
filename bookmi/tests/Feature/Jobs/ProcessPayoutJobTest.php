@@ -167,7 +167,8 @@ class ProcessPayoutJobTest extends TestCase
                 'status' => true, 'data' => ['recipient_code' => 'RCP_test_fail'],
             ], 200),
             'https://api.paystack.co/transfer' => Http::response(
-                ['status' => false, 'message' => 'Insufficient balance'], 400
+                ['status' => false, 'message' => 'Insufficient balance'],
+                400
             ),
         ]);
 

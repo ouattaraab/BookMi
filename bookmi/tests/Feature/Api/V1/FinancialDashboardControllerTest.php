@@ -3,7 +3,6 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\EscrowStatus;
-use App\Enums\PayoutStatus;
 use App\Enums\TransactionStatus;
 use App\Models\BookingRequest;
 use App\Models\EscrowHold;

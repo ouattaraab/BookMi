@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Events\BookingAccepted;
@@ -19,7 +20,9 @@ class BookingController extends Controller
     public function index(Request $request): View
     {
         $profile = $this->profile();
-        if (!$profile) return view('talent.coming-soon', ['title' => 'Réservations', 'description' => 'Configurez votre profil d\'abord.']);
+        if (!$profile) {
+            return view('talent.coming-soon', ['title' => 'Réservations', 'description' => 'Configurez votre profil d\'abord.']);
+        }
 
         $query = BookingRequest::where('talent_profile_id', $profile->id)
             ->with(['client', 'servicePackage'])

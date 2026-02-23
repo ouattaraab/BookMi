@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +11,9 @@ use Illuminate\View\View;
 
 class SettingsController extends Controller
 {
-    public function __construct(private readonly TwoFactorService $twoFactorService) {}
+    public function __construct(private readonly TwoFactorService $twoFactorService)
+    {
+    }
 
     public function index(): View
     {
@@ -37,7 +40,9 @@ class SettingsController extends Controller
     {
         $request->validate(['code' => 'required|string']);
         $secret = session('2fa_setup_secret');
-        if (!$secret) return back()->with('error', 'Session expirée, veuillez recommencer.');
+        if (!$secret) {
+            return back()->with('error', 'Session expirée, veuillez recommencer.');
+        }
 
         try {
             $this->twoFactorService->enableTotp(auth()->user(), $request->code);

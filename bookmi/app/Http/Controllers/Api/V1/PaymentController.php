@@ -15,7 +15,8 @@ class PaymentController extends BaseController
 {
     public function __construct(
         private readonly PaymentService $paymentService,
-    ) {}
+    ) {
+    }
 
     /**
      * POST /v1/payments/initiate

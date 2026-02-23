@@ -2,13 +2,8 @@
 
 namespace Tests\Feature\Api\V1;
 
-use App\Enums\EscrowStatus;
-use App\Enums\PayoutStatus;
 use App\Enums\TransactionStatus;
 use App\Models\BookingRequest;
-use App\Models\EscrowHold;
-use App\Models\Payout;
-use App\Models\TalentProfile;
 use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;

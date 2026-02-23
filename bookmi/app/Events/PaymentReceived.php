@@ -15,5 +15,6 @@ class PaymentReceived
     public function __construct(
         public readonly Transaction $transaction,
         public readonly EscrowHold $escrowHold,
-    ) {}
+    ) {
+    }
 }

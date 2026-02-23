@@ -15,7 +15,8 @@ class PayoutService
 {
     public function __construct(
         private readonly PaymentGatewayInterface $gateway,
-    ) {}
+    ) {
+    }
 
     /**
      * Process a talent payout for a released escrow hold.

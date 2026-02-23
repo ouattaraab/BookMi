@@ -13,7 +13,8 @@ class BookingAcceptedNotification extends Notification
 
     public function __construct(
         private readonly BookingRequest $booking,
-    ) {}
+    ) {
+    }
 
     /** @return array<int, string> */
     public function via(object $notifiable): array

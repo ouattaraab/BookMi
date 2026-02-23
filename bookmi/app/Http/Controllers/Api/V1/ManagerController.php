@@ -10,7 +10,6 @@ use App\Models\TalentProfile;
 use App\Services\ManagerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ManagerController extends BaseController
 {

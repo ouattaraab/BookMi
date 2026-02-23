@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Web\Concerns;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 

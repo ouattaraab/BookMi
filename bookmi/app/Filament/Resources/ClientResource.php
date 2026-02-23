@@ -127,7 +127,8 @@ class ClientResource extends Resource
                     ->color(fn (User $record): string => $record->is_suspended ? 'success' : 'danger')
                     ->requiresConfirmation()
                     ->modalHeading(fn (User $record): string => $record->is_suspended ? 'Réactiver ce client ?' : 'Suspendre ce client ?')
-                    ->modalDescription(fn (User $record): string => $record->is_suspended
+                    ->modalDescription(
+                        fn (User $record): string => $record->is_suspended
                         ? 'Le client pourra de nouveau se connecter et utiliser l\'application.'
                         : 'Le client ne pourra plus se connecter ni utiliser l\'application.'
                     )

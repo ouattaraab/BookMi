@@ -5,7 +5,6 @@ namespace Tests\Feature\Commands;
 use App\Enums\BookingStatus;
 use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Queue;
@@ -35,7 +34,9 @@ class SendReminderNotificationsTest extends TestCase
         $this->artisan('bookmi:send-reminders')
             ->assertExitCode(0);
 
-        Queue::assertPushed(SendPushNotification::class, fn ($job) =>
+        Queue::assertPushed(
+            SendPushNotification::class,
+            fn ($job) =>
             $job->userId === $booking->client_id
         );
     }
@@ -47,7 +48,9 @@ class SendReminderNotificationsTest extends TestCase
         $this->artisan('bookmi:send-reminders')
             ->assertExitCode(0);
 
-        Queue::assertPushed(SendPushNotification::class, fn ($job) =>
+        Queue::assertPushed(
+            SendPushNotification::class,
+            fn ($job) =>
             $job->userId === $booking->client_id
         );
     }
@@ -90,7 +93,9 @@ class SendReminderNotificationsTest extends TestCase
 
         $this->artisan('bookmi:send-reminders')->assertExitCode(0);
 
-        Queue::assertPushed(SendPushNotification::class, fn ($job) =>
+        Queue::assertPushed(
+            SendPushNotification::class,
+            fn ($job) =>
             ($job->data['booking_id'] ?? null) === (string) $booking->id
         );
     }

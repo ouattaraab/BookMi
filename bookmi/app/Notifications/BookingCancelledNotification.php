@@ -14,7 +14,8 @@ class BookingCancelledNotification extends Notification
     public function __construct(
         private readonly BookingRequest $booking,
         private readonly string         $cancelledByRole, // 'client' | 'talent'
-    ) {}
+    ) {
+    }
 
     /** @return array<int, string> */
     public function via(object $notifiable): array

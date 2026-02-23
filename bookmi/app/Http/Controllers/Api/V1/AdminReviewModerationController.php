@@ -10,7 +10,9 @@ use Illuminate\Http\Request;
 
 class AdminReviewModerationController extends BaseController
 {
-    public function __construct(private readonly AuditService $audit) {}
+    public function __construct(private readonly AuditService $audit)
+    {
+    }
 
     /**
      * POST /api/v1/reviews/{review}/report  (authenticated user)
