@@ -39,9 +39,9 @@ class _BookingsViewState extends State<_BookingsView>
   static const _tabs = [
     _Tab(label: 'Toutes'),
     _Tab(label: 'En attente', status: 'pending'),
-    _Tab(label: 'Confirmées', status: 'accepted'),
-    _Tab(label: 'Passées', status: 'completed'),
-    _Tab(label: 'Annulées', status: 'cancelled'),
+    _Tab(label: 'Confirmé', status: 'accepted,paid,confirmed'),
+    _Tab(label: 'Terminé', status: 'completed'),
+    _Tab(label: 'Annulé', status: 'cancelled'),
   ];
 
   @override

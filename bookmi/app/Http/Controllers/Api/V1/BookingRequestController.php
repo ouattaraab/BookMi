@@ -26,15 +26,27 @@ class BookingRequestController extends BaseController
      */
     public function index(Request $request): JsonResponse
     {
-        $status = $request->query('status');
+        $statusParam = $request->query('status');
+        $filter      = [];
 
-        if ($status !== null && ! in_array($status, array_column(BookingStatus::cases(), 'value'), strict: true)) {
-            return $this->errorResponse('BOOKING_INVALID_STATUS', 'Le statut fourni est invalide.', 422);
+        if ($statusParam !== null) {
+            $parts      = array_values(array_filter(array_map('trim', explode(',', $statusParam))));
+            $validValues = array_column(BookingStatus::cases(), 'value');
+
+            foreach ($parts as $s) {
+                if (! in_array($s, $validValues, strict: true)) {
+                    return $this->errorResponse('BOOKING_INVALID_STATUS', 'Le statut fourni est invalide.', 422);
+                }
+            }
+
+            $filter = count($parts) === 1
+                ? ['status'   => $parts[0]]
+                : ['statuses' => $parts];
         }
 
         $paginator = $this->bookingService->getBookingsForUser(
             $request->user(),
-            ['status' => $status],
+            $filter,
         );
 
         $paginator->through(fn ($booking) => new BookingRequestResource($booking));

@@ -105,7 +105,9 @@ class BookingService
             $query->where('client_id', $user->id);
         }
 
-        if (! empty($filters['status'])) {
+        if (! empty($filters['statuses'])) {
+            $query->whereIn('status', $filters['statuses']);
+        } elseif (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
 
