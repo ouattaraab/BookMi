@@ -18,10 +18,12 @@ import 'package:bookmi_app/features/auth/presentation/pages/otp_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/register_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:bookmi_app/features/discovery/presentation/pages/discovery_page.dart';
+import 'package:bookmi_app/features/discovery/presentation/pages/home_page.dart';
 import 'package:bookmi_app/features/booking/booking.dart';
-import 'package:bookmi_app/features/placeholder/home_placeholder_page.dart';
-import 'package:bookmi_app/features/placeholder/messages_placeholder_page.dart';
-import 'package:bookmi_app/features/placeholder/profile_placeholder_page.dart';
+import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
+import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/features/messaging/presentation/pages/conversation_list_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_profile_page.dart';
@@ -54,6 +56,7 @@ GoRouter buildAppRouter(
   TrackingRepository trackingRepo,
   ReviewRepository reviewRepo,
   OnboardingRepository onboardingRepo,
+  MessagingRepository messagingRepo,
 ) {
   return GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -110,15 +113,17 @@ GoRouter buildAppRouter(
         builder: (context, state, navigationShell) =>
             ShellPage(navigationShell: navigationShell),
         branches: [
+          // Branch 0: Home
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: RoutePaths.home,
                 name: RouteNames.home,
-                builder: (context, state) => const HomePlaceholderPage(),
+                builder: (context, state) => const HomePage(),
               ),
             ],
           ),
+          // Branch 1: Search / Discovery
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -153,6 +158,7 @@ GoRouter buildAppRouter(
               ),
             ],
           ),
+          // Branch 2: Bookings
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -222,21 +228,30 @@ GoRouter buildAppRouter(
               ),
             ],
           ),
+          // Branch 3: Messages
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: RoutePaths.messages,
                 name: RouteNames.messages,
-                builder: (context, state) => const MessagesPlaceholderPage(),
+                builder: (context, state) => RepositoryProvider.value(
+                  value: messagingRepo,
+                  child: BlocProvider(
+                    create: (_) =>
+                        MessagingCubit(repository: messagingRepo),
+                    child: const ConversationListPage(),
+                  ),
+                ),
               ),
             ],
           ),
+          // Branch 4: Profile
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
-                builder: (context, state) => const ProfilePlaceholderPage(),
+                builder: (context, state) => const ProfilePage(),
               ),
             ],
           ),

@@ -6,6 +6,7 @@ import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/data/repositories/auth_repository.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
+import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
@@ -48,8 +49,9 @@ void main() {
     final trackingRepo = TrackingRepository.forTesting(dio: mockDio);
     final reviewRepo = ReviewRepository.forTesting(dio: mockDio);
     final onboardingRepo = OnboardingRepository.forTesting(dio: mockDio);
+    final messagingRepo = MessagingRepository.forTesting(dio: mockDio);
 
-    router = buildAppRouter(repo, authBloc, bookingRepo, trackingRepo, reviewRepo, onboardingRepo);
+    router = buildAppRouter(repo, authBloc, bookingRepo, trackingRepo, reviewRepo, onboardingRepo, messagingRepo);
   });
 
   tearDown(() async {

@@ -59,13 +59,12 @@ class DiscoveryRepository {
       final talents = (data['data'] as List<dynamic>)
           .cast<Map<String, dynamic>>();
       final meta = data['meta'] as Map<String, dynamic>;
-      final cursorMeta = meta['cursor'] as Map<String, dynamic>;
 
       final result = TalentListResponse(
         talents: talents,
-        nextCursor: cursorMeta['next'] as String?,
-        hasMore: cursorMeta['has_more'] as bool,
-        total: meta['total'] as int,
+        nextCursor: meta['next_cursor'] as String?,
+        hasMore: meta['has_more'] as bool? ?? false,
+        total: meta['total'] as int? ?? talents.length,
       );
 
       // Cache successful response
@@ -82,14 +81,13 @@ class DiscoveryRepository {
           final talents = (data['data'] as List<dynamic>)
               .cast<Map<String, dynamic>>();
           final meta = Map<String, dynamic>.from(data['meta'] as Map);
-          final cursorMeta = Map<String, dynamic>.from(meta['cursor'] as Map);
 
           return ApiSuccess(
             TalentListResponse(
               talents: talents,
-              nextCursor: cursorMeta['next'] as String?,
-              hasMore: cursorMeta['has_more'] as bool,
-              total: meta['total'] as int,
+              nextCursor: meta['next_cursor'] as String?,
+              hasMore: meta['has_more'] as bool? ?? false,
+              total: meta['total'] as int? ?? talents.length,
             ),
           );
         }

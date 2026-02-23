@@ -44,18 +44,18 @@ class BookingModel {
   final String? devisMessage;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
-    final client = json['client'] as Map<String, dynamic>;
-    final talent = json['talent_profile'] as Map<String, dynamic>;
-    final pkg = json['service_package'] as Map<String, dynamic>;
+    final client = json['client'] as Map<String, dynamic>?;
+    final talent = json['talent_profile'] as Map<String, dynamic>?;
+    final pkg = json['service_package'] as Map<String, dynamic>?;
     final devis = json['devis'] as Map<String, dynamic>?;
 
     return BookingModel(
       id: json['id'] as int,
       status: json['status'] as String,
-      clientName: client['name'] as String,
-      talentStageName: talent['stage_name'] as String,
-      packageName: pkg['name'] as String,
-      packageType: pkg['type'] as String,
+      clientName: client?['name'] as String? ?? 'Client',
+      talentStageName: talent?['stage_name'] as String? ?? 'Talent',
+      packageName: pkg?['name'] as String? ?? 'Forfait',
+      packageType: pkg?['type'] as String? ?? 'standard',
       eventDate: json['event_date'] as String,
       eventLocation: json['event_location'] as String,
       cachetAmount: (devis?['cachet_amount'] as int?) ?? 0,
