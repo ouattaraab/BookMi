@@ -7,6 +7,7 @@ use App\Services\TwoFactorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SettingsController extends Controller
@@ -78,5 +79,40 @@ class SettingsController extends Controller
         }
         $this->twoFactorService->disable(auth()->user());
         return back()->with('success', '2FA désactivée.');
+    }
+
+    public function updateProfile(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'first_name' => 'sometimes|string|max:60',
+            'last_name'  => 'sometimes|string|max:60',
+            'avatar'     => 'sometimes|image|max:2048',
+        ]);
+
+        $user = auth()->user();
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $path              = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = $path;
+        }
+
+        $user->update($validated);
+
+        return back()->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    public function deleteAvatar(Request $request): RedirectResponse
+    {
+        $user = auth()->user();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+            $user->update(['avatar' => null]);
+        }
+
+        return back()->with('success', 'Photo de profil supprimée.');
     }
 }

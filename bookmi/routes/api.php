@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\V1\TalentController;
 use App\Http\Controllers\Api\V1\ServicePackageController;
 use App\Http\Controllers\Api\V1\TalentProfileController;
 use App\Http\Controllers\Api\V1\VerificationController;
+use App\Http\Controllers\Api\V1\IdentityVerificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -95,6 +96,15 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/me', [AuthController::class, 'me'])
             ->middleware('throttle:auth')
             ->name('me');
+
+        Route::patch('/me', [AuthController::class, 'updateProfile'])->name('me.update');
+        Route::delete('/me/avatar', [AuthController::class, 'deleteAvatar'])->name('me.avatar.delete');
+        Route::get('/me/stats', [AuthController::class, 'stats'])->name('me.stats');
+
+        // Identity verification
+        Route::get('/me/identity/status', [IdentityVerificationController::class, 'status'])->name('me.identity.status');
+        Route::post('/me/identity/document', [IdentityVerificationController::class, 'submitDocument'])->name('me.identity.document');
+        Route::post('/me/identity/selfie', [IdentityVerificationController::class, 'submitSelfie'])->name('me.identity.selfie');
 
         Route::post('/talent_profiles', [TalentProfileController::class, 'store'])->name('talent_profiles.store');
         Route::get('/talent_profiles/me', [TalentProfileController::class, 'showOwn'])->name('talent_profiles.me');

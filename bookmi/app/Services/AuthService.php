@@ -245,6 +245,7 @@ class AuthService
                 'phone_verified_at' => $phoneVerifiedAt->toIso8601String(),
                 'is_active' => $user->is_active,
                 'is_admin' => (bool) $user->is_admin,
+                'avatar_url' => $user->avatar_url,
                 'talentProfile' => $tp ? [
                     'id' => $tp->id,
                     'stage_name' => $tp->stage_name,
@@ -358,10 +359,24 @@ class AuthService
                 'phone' => $user->phone,
                 'phone_verified_at' => $phoneVerifiedAt?->toIso8601String(),
                 'is_active' => $user->is_active,
+                'avatar_url' => $user->avatar_url,
             ],
             'roles' => $user->getRoleNames()->toArray(),
             'permissions' => $user->getAllPermissions()->pluck('name')->toArray(),
         ];
+    }
+
+    /**
+     * Update user's name and/or avatar.
+     *
+     * @param array{first_name?: string, last_name?: string, avatar?: string|null} $data
+     */
+    public function updateProfile(User $user, array $data): array
+    {
+        $user->update($data);
+        $user->refresh();
+
+        return $this->getProfile($user);
     }
 
     public function sendOtp(string $phone): string

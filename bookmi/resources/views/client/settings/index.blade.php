@@ -100,8 +100,128 @@ main.page-content { background: #F2EFE9 !important; }
     {{-- Header --}}
     <div class="dash-fade" style="animation-delay:0ms;margin-bottom:28px;">
         <h1 style="font-size:1.8rem;font-weight:900;color:#1A2744;letter-spacing:-0.025em;margin:0 0 5px 0;line-height:1.15;">Paramètres</h1>
-        <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Gérez la sécurité de votre compte</p>
+        <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Gérez votre profil et la sécurité de votre compte</p>
     </div>
+
+    {{-- ── Profile Section ── --}}
+    <div class="dash-fade settings-card-l" style="animation-delay:40ms;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #EAE7E0;">
+            <div class="option-icon-l" style="background:#FFF3EE;border:1px solid #FECDBB;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+                <h2 style="font-weight:900;font-size:0.95rem;color:#1A2744;margin:0 0 2px 0;">Mon profil</h2>
+                <p style="font-size:0.75rem;color:#8A8278;margin:0;font-weight:500;">Photo de profil et informations personnelles</p>
+            </div>
+        </div>
+
+        <form action="{{ route('client.settings.profile.update') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
+
+                {{-- Avatar --}}
+                <div style="display:flex;align-items:center;gap:20px;">
+                    <div style="position:relative;flex-shrink:0;">
+                        @if($user->avatar_url)
+                            <img src="{{ $user->avatar_url }}" alt="Avatar"
+                                style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #FF6B35;box-shadow:0 4px 12px rgba(255,107,53,0.2);">
+                        @else
+                            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FF8C42);display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,107,53,0.3);box-shadow:0 4px 12px rgba(255,107,53,0.2);">
+                                <span style="font-size:1.8rem;font-weight:900;color:white;">{{ strtoupper(substr($user->first_name, 0, 1)) . strtoupper(substr($user->last_name, 0, 1)) }}</span>
+                            </div>
+                        @endif
+                    </div>
+                    <div style="flex:1;">
+                        <p style="font-size:0.875rem;font-weight:800;color:#1A2744;margin:0 0 4px 0;">{{ trim($user->first_name . ' ' . $user->last_name) }}</p>
+                        <p style="font-size:0.75rem;color:#8A8278;margin:0 0 12px 0;">{{ $user->email }}</p>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <label for="avatar-input" style="padding:7px 14px;border-radius:9px;font-size:0.75rem;font-weight:700;background:#FF6B35;color:white;cursor:pointer;border:none;box-shadow:0 2px 8px rgba(255,107,53,0.25);transition:opacity 0.15s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                Changer la photo
+                            </label>
+                            @if($user->avatar)
+                            <form action="{{ route('client.settings.avatar.delete') }}" method="POST" style="display:inline;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" onclick="return confirm('Supprimer la photo de profil ?')"
+                                    style="padding:7px 14px;border-radius:9px;font-size:0.75rem;font-weight:700;background:#FEF2F2;color:#991B1B;border:1.5px solid #FCA5A5;cursor:pointer;transition:background 0.15s;"
+                                    onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
+                                    Supprimer
+                                </button>
+                            </form>
+                            @endif
+                        </div>
+                        <input id="avatar-input" type="file" name="avatar" accept="image/*" style="display:none;"
+                            onchange="previewAvatar(this)">
+                        <p id="avatar-filename" style="font-size:0.7rem;color:#8A8278;margin:6px 0 0 0;display:none;"></p>
+                    </div>
+                </div>
+
+                {{-- Divider --}}
+                <div style="border-top:1px solid #EAE7E0;"></div>
+
+                {{-- First name / Last name --}}
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:800;color:#1A2744;margin-bottom:8px;letter-spacing:0.02em;">Prénom</label>
+                        <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}"
+                            class="settings-input-l" placeholder="Prénom" maxlength="60">
+                        @error('first_name')<p style="color:#EF4444;font-size:0.7rem;margin:4px 0 0 0;">{{ $message }}</p>@enderror
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:800;color:#1A2744;margin-bottom:8px;letter-spacing:0.02em;">Nom</label>
+                        <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}"
+                            class="settings-input-l" placeholder="Nom" maxlength="60">
+                        @error('last_name')<p style="color:#EF4444;font-size:0.7rem;margin:4px 0 0 0;">{{ $message }}</p>@enderror
+                    </div>
+                </div>
+
+                {{-- Email / Phone (read-only) --}}
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:800;color:#8A8278;margin-bottom:8px;letter-spacing:0.02em;">Email <span style="font-weight:500;font-size:0.65rem;">(non modifiable)</span></label>
+                        <input type="text" value="{{ $user->email }}" class="settings-input-l" disabled style="opacity:0.6;cursor:not-allowed;">
+                    </div>
+                    @if($user->phone)
+                    <div>
+                        <label style="display:block;font-size:0.75rem;font-weight:800;color:#8A8278;margin-bottom:8px;letter-spacing:0.02em;">Téléphone <span style="font-weight:500;font-size:0.65rem;">(non modifiable)</span></label>
+                        <input type="text" value="{{ $user->phone }}" class="settings-input-l" disabled style="opacity:0.6;cursor:not-allowed;">
+                    </div>
+                    @endif
+                </div>
+
+                <button type="submit"
+                    style="align-self:flex-start;padding:12px 28px;border-radius:12px;font-size:0.875rem;font-weight:900;color:white;background:linear-gradient(135deg,#FF6B35,#FF8C42);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,53,0.30);transition:opacity 0.15s;"
+                    onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                    Enregistrer les modifications
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    function previewAvatar(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const label = document.getElementById('avatar-filename');
+            label.textContent = '📎 ' + file.name;
+            label.style.display = 'block';
+            // Preview: update the avatar display
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarContainer = input.closest('[style*="position:relative"]');
+                const existing = avatarContainer.querySelector('img, div');
+                if (existing) {
+                    existing.style.display = 'none';
+                }
+                const preview = document.createElement('img');
+                preview.src = e.target.result;
+                preview.style = 'width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #FF6B35;box-shadow:0 4px 12px rgba(255,107,53,0.2);';
+                avatarContainer.prepend(preview);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    </script>
 
     {{-- ── 2FA Section ── --}}
     <div class="dash-fade settings-card-l" style="animation-delay:80ms;margin-bottom:24px;">
@@ -276,11 +396,10 @@ main.page-content { background: #F2EFE9 !important; }
     <div class="dash-fade settings-card-l" style="animation-delay:160ms;">
         <div style="padding:20px 24px;border-bottom:1px solid #EAE7E0;">
             <h3 style="font-weight:900;font-size:0.95rem;color:#1A2744;margin:0 0 2px 0;">Informations du compte</h3>
-            <p style="font-size:0.75rem;color:#8A8278;margin:0;font-weight:500;">Vos données personnelles</p>
+            <p style="font-size:0.75rem;color:#8A8278;margin:0;font-weight:500;">Données en lecture seule</p>
         </div>
         <div style="padding:4px 24px 12px;">
             @foreach([
-                ['Nom', trim($user->first_name . ' ' . $user->last_name)],
                 ['Email', $user->email],
                 ...(($user->phone) ? [['Téléphone', $user->phone]] : []),
                 ['Membre depuis', $user->created_at->format('d/m/Y')],

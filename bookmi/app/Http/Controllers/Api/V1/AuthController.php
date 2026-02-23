@@ -8,9 +8,12 @@ use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Requests\Api\ResendOtpRequest;
 use App\Http\Requests\Api\ResetPasswordRequest;
 use App\Http\Requests\Api\VerifyOtpRequest;
+use App\Models\BookingRequest;
 use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends BaseController
 {
@@ -98,5 +101,73 @@ class AuthController extends BaseController
         $profile = $this->authService->getProfile($request->user());
 
         return $this->successResponse($profile);
+    }
+
+    /**
+     * GET /api/v1/me/stats
+     * Returns exact booking and favorite counts for the authenticated user.
+     */
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $tp   = $user->talentProfile;
+
+        $bookingCount = BookingRequest::when(
+            $tp,
+            fn ($q) => $q->where('talent_profile_id', $tp->id),
+            fn ($q) => $q->where('client_id', $user->id)
+        )->count();
+
+        $favoriteCount = DB::table('user_favorites')
+            ->where('user_id', $user->id)
+            ->count();
+
+        return $this->successResponse([
+            'booking_count'  => $bookingCount,
+            'favorite_count' => $favoriteCount,
+        ]);
+    }
+
+    /**
+     * PATCH /api/v1/me
+     * Update the authenticated user's first name, last name and/or avatar.
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'first_name' => 'sometimes|string|max:60',
+            'last_name'  => 'sometimes|string|max:60',
+            'avatar'     => 'sometimes|image|max:2048',
+        ]);
+
+        $user = $request->user();
+
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $path              = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = $path;
+        }
+
+        $profile = $this->authService->updateProfile($user, $validated);
+
+        return $this->successResponse($profile);
+    }
+
+    /**
+     * DELETE /api/v1/me/avatar
+     * Remove the authenticated user's avatar.
+     */
+    public function deleteAvatar(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+            $user->update(['avatar' => null]);
+        }
+
+        return $this->successResponse(['message' => 'Avatar supprimé.']);
     }
 }
