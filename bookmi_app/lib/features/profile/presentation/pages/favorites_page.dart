@@ -140,16 +140,24 @@ class _FavoritesPageState extends State<FavoritesPage> {
           final item = _favorites[index];
           final attrs =
               item['attributes'] as Map<String, dynamic>? ?? item;
-          final talent =
+          final talentRaw =
               attrs['talent'] as Map<String, dynamic>? ?? {};
+          // TalentResource uses JSON:API-style nesting: { attributes: {...} }
+          final talent =
+              talentRaw['attributes'] as Map<String, dynamic>? ??
+              talentRaw;
           final slug = talent['slug'] as String? ?? '';
           final stageName =
               talent['stage_name'] as String? ?? 'Talent';
-          final category =
-              talent['category'] as String? ?? '';
-          final photoUrl = talent['profile_photo_url'] as String?;
-          final rating =
-              (talent['average_rating'] as num?)?.toDouble() ?? 0;
+          final categoryData =
+              talent['category'] as Map<String, dynamic>?;
+          final category = categoryData?['name'] as String? ?? '';
+          // Backend exposes 'photo_url', not 'profile_photo_url'
+          final photoUrl = talent['photo_url'] as String?;
+          final ratingRaw = talent['average_rating'];
+          final rating = ratingRaw is num
+              ? ratingRaw.toDouble()
+              : double.tryParse(ratingRaw?.toString() ?? '') ?? 0.0;
           final city = talent['city'] as String? ?? '';
 
           return GestureDetector(
