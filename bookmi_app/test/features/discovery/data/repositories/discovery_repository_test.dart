@@ -41,12 +41,10 @@ void main() {
       },
     ],
     'meta': {
-      'cursor': {
-        'next': 'eyJpZCI6NDN9',
-        'prev': null,
-        'per_page': 20,
-        'has_more': true,
-      },
+      'next_cursor': 'eyJpZCI6NDN9',
+      'prev_cursor': null,
+      'per_page': 20,
+      'has_more': true,
       'total': 156,
     },
   };
@@ -181,10 +179,8 @@ void main() {
               }),
             ],
             'meta': Map<dynamic, dynamic>.from({
-              'cursor': Map<dynamic, dynamic>.from({
-                'next': null,
-                'has_more': false,
-              }),
+              'next_cursor': null,
+              'has_more': false,
               'total': 1,
             }),
           }),

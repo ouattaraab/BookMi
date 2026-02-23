@@ -25,6 +25,10 @@ class TalentRepository implements TalentRepositoryInterface
             ->verified()
             ->with(['category', 'subcategory'])
             ->when(
+                isset($filters['q']) && $filters['q'] !== '',
+                fn ($q) => $q->where('stage_name', 'LIKE', '%' . $filters['q'] . '%'),
+            )
+            ->when(
                 isset($filters['category_id']),
                 fn ($q) => $q->byCategory((int) $filters['category_id']),
             )

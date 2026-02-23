@@ -3,6 +3,8 @@ import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:bookmi_app/app/app_bloc_observer.dart';
+import 'package:bookmi_app/core/network/api_client.dart';
+import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
@@ -10,6 +12,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 
 Future<void> bootstrap(
   FutureOr<Widget> Function() builder, {
+  required String baseUrl,
   String? sentryDsn,
   String environment = 'development',
 }) async {
@@ -21,6 +24,9 @@ Future<void> bootstrap(
 
   // Initialize Hive for local storage
   await Hive.initFlutter();
+
+  // Initialize ApiClient singleton before the widget tree is built
+  ApiClient(baseUrl: baseUrl, secureStorage: SecureStorage());
 
   final hasSentry = sentryDsn != null && sentryDsn.isNotEmpty;
 

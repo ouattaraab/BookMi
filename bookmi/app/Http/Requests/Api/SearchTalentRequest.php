@@ -17,6 +17,7 @@ class SearchTalentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'q'           => ['nullable', 'string', 'max:100'],
             'category_id' => ['nullable', 'integer', 'exists:categories,id'],
             'subcategory_id' => ['nullable', 'integer', 'exists:categories,id'],
             'min_cachet' => ['nullable', 'integer', 'min:0'],

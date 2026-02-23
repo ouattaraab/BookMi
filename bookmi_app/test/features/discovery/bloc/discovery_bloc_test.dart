@@ -14,6 +14,10 @@ void main() {
 
   setUp(() {
     mockRepository = MockDiscoveryRepository();
+    // Stub getCategories() to return an empty list by default.
+    when(() => mockRepository.getCategories()).thenAnswer(
+      (_) async => const ApiSuccess(<Map<String, dynamic>>[]),
+    );
   });
 
   DiscoveryBloc buildBloc() => DiscoveryBloc(repository: mockRepository);

@@ -19,6 +19,7 @@ final class DiscoveryLoaded extends DiscoveryState {
     required this.hasMore,
     required this.nextCursor,
     required this.activeFilters,
+    this.categories = const [],
   });
 
   final List<Map<String, dynamic>> talents;
@@ -26,17 +27,22 @@ final class DiscoveryLoaded extends DiscoveryState {
   final String? nextCursor;
   final Map<String, dynamic> activeFilters;
 
+  /// Categories fetched from /categories endpoint.
+  final List<Map<String, dynamic>> categories;
+
   DiscoveryLoaded copyWith({
     List<Map<String, dynamic>>? talents,
     bool? hasMore,
     String? nextCursor,
     Map<String, dynamic>? activeFilters,
+    List<Map<String, dynamic>>? categories,
   }) {
     return DiscoveryLoaded(
       talents: talents ?? this.talents,
       hasMore: hasMore ?? this.hasMore,
       nextCursor: nextCursor ?? this.nextCursor,
       activeFilters: activeFilters ?? this.activeFilters,
+      categories: categories ?? this.categories,
     );
   }
 
@@ -48,7 +54,8 @@ final class DiscoveryLoaded extends DiscoveryState {
           listEquals(talents, other.talents) &&
           hasMore == other.hasMore &&
           nextCursor == other.nextCursor &&
-          mapEquals(activeFilters, other.activeFilters);
+          mapEquals(activeFilters, other.activeFilters) &&
+          listEquals(categories, other.categories);
 
   @override
   int get hashCode => Object.hash(
@@ -59,6 +66,7 @@ final class DiscoveryLoaded extends DiscoveryState {
     Object.hashAll(
       activeFilters.entries.map((e) => Object.hash(e.key, e.value)),
     ),
+    Object.hashAll(categories),
   );
 }
 
@@ -68,6 +76,7 @@ final class DiscoveryLoadingMore extends DiscoveryLoaded {
     required super.hasMore,
     required super.nextCursor,
     required super.activeFilters,
+    super.categories,
   });
 }
 

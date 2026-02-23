@@ -4,6 +4,8 @@ import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/core/storage/local_storage.dart';
 import 'package:dio/dio.dart';
 
+typedef CategoryList = List<Map<String, dynamic>>;
+
 class TalentListResponse {
   const TalentListResponse({
     required this.talents,
@@ -41,12 +43,14 @@ class DiscoveryRepository {
     String? cursor,
     int perPage = 20,
     Map<String, dynamic>? filters,
+    String? query,
   }) async {
     try {
       final queryParameters = <String, dynamic>{
         'per_page': perPage,
         // ignore: use_null_aware_elements, conflicts with invalid_null_aware_operator
         if (cursor != null) 'cursor': cursor,
+        if (query != null && query.isNotEmpty) 'q': query,
         ...?filters,
       };
 
@@ -56,9 +60,9 @@ class DiscoveryRepository {
       );
 
       final data = response.data!;
-      final talents = (data['data'] as List<dynamic>)
+      final talents = ((data['data'] as List<dynamic>?) ?? [])
           .cast<Map<String, dynamic>>();
-      final meta = data['meta'] as Map<String, dynamic>;
+      final meta = (data['meta'] as Map<String, dynamic>?) ?? {};
 
       final result = TalentListResponse(
         talents: talents,
@@ -99,6 +103,27 @@ class DiscoveryRepository {
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
         message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
+
+  /// Fetch the list of talent categories from the API.
+  Future<ApiResult<CategoryList>> getCategories() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.categories,
+      );
+      final data = response.data!;
+      final items = ((data['data'] as List<dynamic>?) ?? [])
+          .cast<Map<String, dynamic>>();
+      return ApiSuccess(items);
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message:
+            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }

@@ -147,14 +147,14 @@ class BookingRepository {
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   BookingListResponse _parseListResponse(Map<String, dynamic> data) {
-    final items = (data['data'] as List<dynamic>).cast<Map<String, dynamic>>();
-    final meta = data['meta'] as Map<String, dynamic>;
-    final cursorMeta = meta['cursor'] as Map<String, dynamic>;
+    final items =
+        ((data['data'] as List<dynamic>?) ?? []).cast<Map<String, dynamic>>();
+    final meta = data['meta'] as Map<String, dynamic>? ?? {};
 
     return BookingListResponse(
       bookings: items.map(BookingModel.fromJson).toList(),
-      nextCursor: cursorMeta['next'] as String?,
-      hasMore: cursorMeta['has_more'] as bool,
+      nextCursor: meta['next_cursor'] as String?,
+      hasMore: meta['has_more'] as bool? ?? false,
     );
   }
 

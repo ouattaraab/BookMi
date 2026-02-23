@@ -24,15 +24,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
   final _scrollController = ScrollController();
   final _scrollOffset = ValueNotifier<double>(0);
 
-  static const _categoryFilters = [
-    FilterItem(key: 'dj', label: 'DJ'),
-    FilterItem(key: 'groupe-musical', label: 'Groupe'),
-    FilterItem(key: 'humoriste', label: 'Humoriste'),
-    FilterItem(key: 'danseur', label: 'Danseur'),
-    FilterItem(key: 'mc-animateur', label: 'MC'),
-    FilterItem(key: 'photographe', label: 'Photo'),
-    FilterItem(key: 'decorateur', label: 'Déco'),
-  ];
+  // Categories are loaded dynamically from the API via DiscoveryBloc.
 
   @override
   void initState() {
@@ -68,10 +60,12 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
         ? Map<String, dynamic>.from(currentState.activeFilters)
         : <String, dynamic>{};
 
-    if (currentFilters['category'] == filterKey) {
-      currentFilters.remove('category');
+    // filterKey is the category ID as a string (e.g. '3').
+    final currentId = currentFilters['category_id']?.toString();
+    if (currentId == filterKey) {
+      currentFilters.remove('category_id');
     } else {
-      currentFilters['category'] = filterKey;
+      currentFilters['category_id'] = int.tryParse(filterKey) ?? filterKey;
     }
 
     if (currentFilters.isEmpty) {
@@ -129,10 +123,28 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                 final activeFilters = state is DiscoveryLoaded
                     ? state.activeFilters
                     : const <String, dynamic>{};
-                final activeCategory = activeFilters['category'] as String?;
+                // activeCategory kept for local variable naming — now holds the ID string.
+                final activeCategory =
+                    activeFilters['category_id']?.toString();
+
+                // Build filter items dynamically from API categories.
+                final categories = state is DiscoveryLoaded
+                    ? state.categories
+                    : <Map<String, dynamic>>[];
+                // Use ID as key so the filter sends category_id (int) to API.
+                final filters = categories
+                    .map(
+                      (c) => FilterItem(
+                        key: (c['id'] as int?)?.toString() ??
+                            c['slug'] as String? ??
+                            '',
+                        label: c['name'] as String? ?? '',
+                      ),
+                    )
+                    .toList();
 
                 return FilterBar(
-                  filters: _categoryFilters,
+                  filters: filters,
                   activeFilters: activeCategory != null
                       ? {activeCategory}
                       : const {},

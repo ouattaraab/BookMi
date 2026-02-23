@@ -21,6 +21,7 @@ class TalentDetailResource extends JsonResource
             'attributes' => [
                 'stage_name' => $this->stage_name,
                 'slug' => $this->slug,
+                'photo_url' => $this->cover_photo_url,
                 'bio' => $this->bio,
                 'city' => $this->city,
                 'cachet_amount' => $this->cachet_amount,

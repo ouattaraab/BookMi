@@ -31,3 +31,17 @@ final class DiscoveryFiltersChanged extends DiscoveryEvent {
 final class DiscoveryFilterCleared extends DiscoveryEvent {
   const DiscoveryFilterCleared();
 }
+
+@immutable
+final class DiscoverySearchChanged extends DiscoveryEvent {
+  const DiscoverySearchChanged({required this.query});
+  final String query;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DiscoverySearchChanged && query == other.query;
+
+  @override
+  int get hashCode => query.hashCode;
+}

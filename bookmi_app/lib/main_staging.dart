@@ -7,5 +7,6 @@ Future<void> main() async {
     () => const App(),
     sentryDsn: dsn.isNotEmpty ? dsn : null,
     environment: 'staging',
+    baseUrl: 'https://bookmi.click/api/v1',
   );
 }

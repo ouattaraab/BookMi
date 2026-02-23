@@ -14,6 +14,7 @@ class SearchService
     ];
 
     private const FILTER_KEYS = [
+        'q',
         'category_id',
         'subcategory_id',
         'min_cachet',
