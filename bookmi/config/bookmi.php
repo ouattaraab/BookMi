@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'commission_rate' => 15, // Pourcentage frais BookMi
+    'commission_rate' => 15, // Pourcentage frais BookMi (plateforme Côte d'Ivoire)
 
     'escrow' => [
         'auto_confirm_hours' => 48, // Heures avant confirmation auto
