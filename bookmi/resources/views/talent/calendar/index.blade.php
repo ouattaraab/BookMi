@@ -6,7 +6,7 @@
 <style>
 main.page-content { background: #F2EFE9 !important; }
 .cal-grid-7 { display: grid; grid-template-columns: repeat(7, 1fr); }
-.cal-cell { min-height: 64px; border-bottom: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6; position: relative; }
+.cal-cell { min-height: 80px; border-bottom: 1px solid #f3f4f6; border-right: 1px solid #f3f4f6; position: relative; }
 .cal-cell-past { opacity: 0.5; }
 .cal-cell-active { cursor: pointer; transition: box-shadow 0.15s; }
 .cal-cell-active:hover { box-shadow: inset 0 0 0 2px #FF6B35; }
@@ -32,10 +32,11 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
 
         {{-- Légende --}}
-        <div class="flex items-center gap-4 text-xs font-medium text-gray-600">
+        <div class="flex items-center gap-4 text-xs font-medium text-gray-600 flex-wrap">
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#4CAF50"></span> Disponible</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#f44336"></span> Bloqué</span>
             <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full inline-block" style="background:#9E9E9E"></span> Repos</span>
+            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded inline-block" style="background:#FF6B35"></span> Réservation</span>
         </div>
     </div>
 
@@ -66,7 +67,6 @@ main.page-content { background: #F2EFE9 !important; }
         @php
             $daysOfWeek = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
             $firstDayOfMonth = $currentDate->copy()->startOfMonth();
-            // Pad to Monday (1=Mon ... 7=Sun in isoWeekday)
             $startPad = ($firstDayOfMonth->isoWeekday() - 1);
             $daysInMonth = $currentDate->daysInMonth;
             $today = now()->format('Y-m-d');
@@ -88,28 +88,28 @@ main.page-content { background: #F2EFE9 !important; }
 
             @for($d = 1; $d <= $daysInMonth; $d++)
                 @php
-                    $dateStr = $currentDate->copy()->day($d)->format('Y-m-d');
-                    $slot    = $slots[$dateStr] ?? null;
-                    $slotStatus = $slot ? ($slot->status instanceof \BackedEnum ? $slot->status->value : (string) $slot->status) : null;
-                    $isToday = $dateStr === $today;
-                    $isPast  = $dateStr < $today;
+                    $dateStr     = $currentDate->copy()->day($d)->format('Y-m-d');
+                    $slot        = $slots[$dateStr] ?? null;
+                    $dayBookings = $bookingsByDate[$dateStr] ?? collect();
+                    $hasBookings = $dayBookings->isNotEmpty();
 
-                    $bgColor = match($slotStatus) {
-                        'available' => '#f0fdf4',
-                        'blocked'   => '#fff5f5',
-                        'rest'      => '#f9fafb',
-                        default     => 'white',
+                    $slotStatus = $slot ? ($slot->status instanceof \BackedEnum ? $slot->status->value : (string) $slot->status) : null;
+                    $isToday    = $dateStr === $today;
+                    $isPast     = $dateStr < $today;
+
+                    // Cell background: booking dates get a warm tint, otherwise slot color
+                    $bgColor = match(true) {
+                        $hasBookings                => '#FFF3E0',
+                        $slotStatus === 'available' => '#f0fdf4',
+                        $slotStatus === 'blocked'   => '#fff5f5',
+                        $slotStatus === 'rest'      => '#f9fafb',
+                        default                     => 'white',
                     };
+
                     $dotColor = match($slotStatus) {
                         'available' => '#4CAF50',
                         'blocked'   => '#f44336',
                         'rest'      => '#9E9E9E',
-                        default     => null,
-                    };
-                    $slotLabel = match($slotStatus) {
-                        'available' => 'Disponible',
-                        'blocked'   => 'Bloqué',
-                        'rest'      => 'Repos',
                         default     => null,
                     };
                 @endphp
@@ -121,12 +121,40 @@ main.page-content { background: #F2EFE9 !important; }
                     @endif
                 >
                     {{-- Numéro jour --}}
-                    <span style="position:absolute;top:6px;left:8px;font-size:0.72rem;font-weight:700;{{ $isToday ? 'background:#FF6B35;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;' : 'color:#374151;' }}">
+                    <span style="position:absolute;top:6px;left:8px;font-size:0.72rem;font-weight:700;z-index:1;{{ $isToday ? 'background:#FF6B35;color:#fff;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;' : 'color:#374151;' }}">
                         {{ $d }}
                     </span>
 
-                    {{-- Indicateur statut --}}
-                    @if($dotColor)
+                    {{-- Événements de réservation --}}
+                    @if($hasBookings)
+                    <div style="position:absolute;top:26px;left:3px;right:3px;bottom:3px;display:flex;flex-direction:column;gap:2px;overflow:hidden;">
+                        @foreach($dayBookings->take(2) as $booking)
+                        @php
+                            $bStatus = $booking->status instanceof \BackedEnum ? $booking->status->value : (string) $booking->status;
+                            [$bBg, $bText] = match($bStatus) {
+                                'pending'   => ['#FFF3E0', '#B45309'],
+                                'accepted'  => ['#EFF6FF', '#1D4ED8'],
+                                'paid'      => ['#ECFDF5', '#065F46'],
+                                'confirmed' => ['#F0FDF4', '#15803D'],
+                                'completed' => ['#F5F3FF', '#5B21B6'],
+                                'disputed'  => ['#FEF2F2', '#991B1B'],
+                                default     => ['#F3F4F6', '#374151'],
+                            };
+                            $clientName = $booking->client ? $booking->client->first_name : 'Client';
+                            $timeLabel  = $booking->start_time
+                                ? \Carbon\Carbon::createFromTimeString($booking->start_time)->format('H:i') . ' · '
+                                : '';
+                        @endphp
+                        <div style="background:{{ $bBg }};color:{{ $bText }};font-size:0.6rem;font-weight:700;padding:2px 4px;border-radius:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;border-left:2px solid {{ $bText }};">
+                            {{ $timeLabel }}{{ $clientName }}
+                        </div>
+                        @endforeach
+                        @if($dayBookings->count() > 2)
+                        <div style="font-size:0.55rem;color:#6B7280;font-weight:600;padding:0 4px;">+{{ $dayBookings->count() - 2 }} autre(s)</div>
+                        @endif
+                    </div>
+                    @elseif($dotColor)
+                    {{-- Indicateur statut (seulement si pas de réservation) --}}
                     <div style="position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;">
                         <span style="width:6px;height:6px;border-radius:50%;background:{{ $dotColor }};display:inline-block;"></span>
                     </div>

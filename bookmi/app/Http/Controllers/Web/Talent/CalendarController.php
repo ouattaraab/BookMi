@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Web\Talent;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
+use App\Models\BookingRequest;
 use App\Models\CalendarSlot;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -26,7 +28,17 @@ class CalendarController extends Controller
             ->get()
             ->keyBy(fn ($s) => $s->date->format('Y-m-d'));
 
-        return view('talent.calendar.index', compact('slots', 'month', 'year', 'profile'));
+        // Load active booking requests for the month so they appear as events on the calendar
+        $bookingsByDate = BookingRequest::where('talent_profile_id', $profile->id)
+            ->whereYear('event_date', $year)
+            ->whereMonth('event_date', $month)
+            ->whereNotIn('status', [BookingStatus::Cancelled->value])
+            ->with('client:id,first_name,last_name')
+            ->orderBy('start_time')
+            ->get()
+            ->groupBy(fn ($b) => $b->event_date->format('Y-m-d'));
+
+        return view('talent.calendar.index', compact('slots', 'month', 'year', 'profile', 'bookingsByDate'));
     }
 
     public function setAvailability(Request $request): RedirectResponse

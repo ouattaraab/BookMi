@@ -27,11 +27,12 @@ class BookingService
     /**
      * Create a new booking request from a client.
      *
-     * @param array{talent_profile_id: int, service_package_id: int, event_date: string, event_location: string, message?: string|null, is_express?: bool} $data
+     * @param array{talent_profile_id: int, service_package_id: int, event_date: string, start_time?: string|null, event_location: string, message?: string|null, is_express?: bool} $data
      */
     public function createBookingRequest(User $client, array $data): BookingRequest
     {
         $isExpress = (bool) ($data['is_express'] ?? false);
+        $startTime = $data['start_time'] ?? null;
 
         $talentProfile = TalentProfile::find($data['talent_profile_id']);
         if (! $talentProfile) {
@@ -47,7 +48,7 @@ class BookingService
             throw BookingException::packageNotBelongToTalent();
         }
 
-        if (! $this->calendarService->isDateAvailable($talentProfile, $data['event_date'])) {
+        if (! $this->calendarService->isDateAvailable($talentProfile, $data['event_date'], $startTime)) {
             throw BookingException::dateUnavailable();
         }
 
@@ -61,6 +62,7 @@ class BookingService
             'talent_profile_id'  => $talentProfile->id,
             'service_package_id' => $package->id,
             'event_date'         => $data['event_date'],
+            'start_time'         => $startTime,
             'event_location'     => $data['event_location'],
             'message'            => $data['message'] ?? null,
             'is_express'         => $isExpress,
@@ -125,13 +127,17 @@ class BookingService
         DB::transaction(function () use ($booking) {
             $booking->update(['status' => BookingStatus::Accepted]);
 
-            CalendarSlot::updateOrCreate(
-                [
-                    'talent_profile_id' => $booking->talent_profile_id,
-                    'date'              => $booking->event_date->toDateString(),
-                ],
-                ['status' => CalendarSlotStatus::Blocked],
-            );
+            // Only block the whole day when no start_time is set (date-only booking).
+            // Time-based bookings rely on the ±1h buffer check in CalendarService::isDateAvailable().
+            if ($booking->start_time === null) {
+                CalendarSlot::updateOrCreate(
+                    [
+                        'talent_profile_id' => $booking->talent_profile_id,
+                        'date'              => $booking->event_date->toDateString(),
+                    ],
+                    ['status' => CalendarSlotStatus::Blocked],
+                );
+            }
         });
 
         BookingAccepted::dispatch($booking);

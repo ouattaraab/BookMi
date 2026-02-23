@@ -103,14 +103,16 @@ class CalendarService
     }
 
     /**
-     * Check whether a specific date is available for booking.
+     * Check whether a specific date (and optional start time) is available for booking.
      *
-     * A date is unavailable when:
+     * A date/time is unavailable when:
      *  - There is a calendar slot with status `blocked` or `rest`
-     *  - There is a confirmed booking_request on that date
+     *  - (no start_time) There is a confirmed booking_request on that date
+     *  - (with start_time) There is an accepted/paid/confirmed booking within ±1h of the requested time
      */
-    public function isDateAvailable(TalentProfile $talent, string $date): bool
+    public function isDateAvailable(TalentProfile $talent, string $date, ?string $startTime = null): bool
     {
+        // 1. Day-level blockers always apply regardless of time
         $hasBlockingSlot = CalendarSlot::where('talent_profile_id', $talent->id)
             ->where('date', $date)
             ->whereIn('status', [CalendarSlotStatus::Blocked->value, CalendarSlotStatus::Rest->value])
@@ -120,14 +122,38 @@ class CalendarService
             return false;
         }
 
-        $hasConfirmedBooking = DB::table('booking_requests')
+        // 2a. No start_time: fall back to day-level confirmed-booking check
+        if ($startTime === null) {
+            $hasConfirmedBooking = DB::table('booking_requests')
+                ->where('talent_profile_id', $talent->id)
+                ->where('event_date', $date)
+                ->where('status', BookingStatus::Confirmed->value)
+                ->exists();
+
+            return ! $hasConfirmedBooking;
+        }
+
+        // 2b. start_time provided: check ±1h buffer against active bookings with a known time
+        $existingTimes = DB::table('booking_requests')
             ->where('talent_profile_id', $talent->id)
             ->where('event_date', $date)
-            ->where('status', BookingStatus::Confirmed->value)
-            ->exists();
+            ->whereIn('status', [
+                BookingStatus::Accepted->value,
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+            ])
+            ->whereNotNull('start_time')
+            ->pluck('start_time');
 
-        if ($hasConfirmedBooking) {
-            return false;
+        $newTime = Carbon::createFromTimeString($startTime);
+
+        foreach ($existingTimes as $existingTime) {
+            $existing     = Carbon::createFromTimeString($existingTime);
+            $diffMinutes  = abs($newTime->diffInMinutes($existing));
+
+            if ($diffMinutes < 60) {
+                return false; // Within 1-hour buffer — conflict
+            }
         }
 
         return true;

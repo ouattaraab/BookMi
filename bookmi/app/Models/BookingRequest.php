@@ -20,6 +20,7 @@ class BookingRequest extends Model
         'talent_profile_id',
         'service_package_id',
         'event_date',
+        'start_time',
         'event_location',
         'message',
         'is_express',
