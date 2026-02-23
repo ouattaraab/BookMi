@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources;
 
+use App\Models\PortfolioItem;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -31,10 +33,23 @@ class TalentDetailResource extends JsonResource
                 'profile_completion_percentage' => $this->profile_completion_percentage,
                 'social_links' => $this->social_links,
                 'reliability_score' => $this->calculateReliabilityScore(),
-                'reviews_count' => 0,
-                'portfolio_items' => [],
+                'reviews_count' => $this->whenLoaded('receivedReviews', fn () => $this->receivedReviews->count(), 0),
+                'portfolio_items' => $this->whenLoaded('portfolioItems', fn () => $this->portfolioItems->map(fn (PortfolioItem $item) => [
+                    'url'           => $item->publicUrl(),
+                    'media_type'    => $item->media_type,
+                    'caption'       => $item->caption,
+                    'link_url'      => $item->link_url,
+                    'link_platform' => $item->link_platform,
+                ])->values()->all(), []),
                 'service_packages' => ServicePackageResource::collection($this->whenLoaded('servicePackages')),
-                'recent_reviews' => [],
+                'recent_reviews' => $this->whenLoaded('receivedReviews', fn () => $this->receivedReviews->map(fn (Review $review) => [
+                    'reviewer_name' => $review->reviewer !== null
+                        ? trim($review->reviewer->first_name . ' ' . $review->reviewer->last_name)
+                        : 'Anonyme',
+                    'rating'        => $review->rating,
+                    'comment'       => $review->comment,
+                    'created_at'    => $review->created_at?->format('d/m/Y'),
+                ])->values()->all(), []),
                 'created_at' => $this->created_at?->toIso8601String(),
                 'category' => [
                     'id' => $this->category->id,

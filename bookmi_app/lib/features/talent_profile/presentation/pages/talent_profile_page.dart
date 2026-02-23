@@ -19,6 +19,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TalentProfilePage extends StatefulWidget {
   const TalentProfilePage({
@@ -644,7 +645,14 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
               minWidth: 48,
               minHeight: 48,
             ),
-            onPressed: () {},
+            onPressed: () async {
+              final rawUrl = entry.value as String? ?? '';
+              if (rawUrl.isEmpty) return;
+              final uri = Uri.tryParse(rawUrl);
+              if (uri != null) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            },
           ),
         );
       }).toList(),

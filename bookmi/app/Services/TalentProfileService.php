@@ -64,8 +64,9 @@ class TalentProfileService
         $profile->load([
             'category',
             'subcategory',
-            'servicePackages' => fn ($q) => $q->active()->ordered(),
-            'portfolioItems'  => fn ($q) => $q->where('is_approved', true)->latest(),
+            'servicePackages'  => fn ($q) => $q->active()->ordered(),
+            'portfolioItems'   => fn ($q) => $q->where('is_approved', true)->latest(),
+            'receivedReviews'  => fn ($q) => $q->with('reviewer')->where('is_reported', false)->latest(),
         ]);
 
         $similarTalents = $this->repository->findSimilar($profile);

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TalentLevel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\ReviewType;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -188,6 +189,17 @@ class TalentProfile extends Model
     public function portfolioItems(): HasMany
     {
         return $this->hasMany(PortfolioItem::class);
+    }
+
+    /**
+     * Reviews written by clients about this talent (client_to_talent).
+     *
+     * @return HasMany<Review, $this>
+     */
+    public function receivedReviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'reviewee_id', 'user_id')
+            ->where('type', ReviewType::ClientToTalent->value);
     }
 
     /**
