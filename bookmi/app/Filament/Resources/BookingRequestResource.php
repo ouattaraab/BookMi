@@ -162,6 +162,13 @@ class BookingRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Voir'),
+                Tables\Actions\DeleteAction::make()
+                    ->label('Supprimer'),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('created_at', 'desc');
     }
