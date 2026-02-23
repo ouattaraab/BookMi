@@ -34,7 +34,8 @@ class AuthServiceTest extends TestCase
     #[Test]
     public function register_creates_user_with_correct_data(): void
     {
-        $this->smsService->shouldReceive('sendOtp')->once();
+        // OTP disabled at registration — phone is auto-verified
+        $this->smsService->shouldReceive('sendOtp')->never();
 
         $user = $this->authService->register([
             'first_name' => 'Aminata',
@@ -51,13 +52,13 @@ class AuthServiceTest extends TestCase
         $this->assertSame('aminata@example.com', $user->email);
         $this->assertSame('+2250700000001', $user->phone);
         $this->assertTrue($user->is_active);
-        $this->assertNull($user->phone_verified_at);
+        $this->assertNotNull($user->phone_verified_at);
     }
 
     #[Test]
     public function register_assigns_role_via_spatie(): void
     {
-        $this->smsService->shouldReceive('sendOtp')->once();
+        $this->smsService->shouldReceive('sendOtp')->never();
 
         $user = $this->authService->register([
             'first_name' => 'DJ',
@@ -75,7 +76,8 @@ class AuthServiceTest extends TestCase
     #[Test]
     public function register_generates_otp_in_cache(): void
     {
-        $this->smsService->shouldReceive('sendOtp')->once();
+        // OTP disabled at registration — no OTP stored in cache
+        $this->smsService->shouldReceive('sendOtp')->never();
 
         $this->authService->register([
             'first_name' => 'Test',
@@ -87,19 +89,14 @@ class AuthServiceTest extends TestCase
         ]);
 
         $cachedOtp = Cache::get('otp:+2250700000003');
-        $this->assertNotNull($cachedOtp);
-        $this->assertSame(6, strlen($cachedOtp));
+        $this->assertNull($cachedOtp);
     }
 
     #[Test]
     public function register_calls_sms_service_with_otp(): void
     {
-        $this->smsService
-            ->shouldReceive('sendOtp')
-            ->once()
-            ->withArgs(function (string $phone, string $code) {
-                return $phone === '+2250700000004' && strlen($code) === 6;
-            });
+        // OTP disabled at registration — SmsService not called
+        $this->smsService->shouldReceive('sendOtp')->never();
 
         $this->authService->register([
             'first_name' => 'Test',

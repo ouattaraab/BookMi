@@ -53,8 +53,21 @@ jobs:
           ssh -p 65002 u726808002@bookmi.click '
             set -e
             cd /home/u726808002/bookmi_app
+
+            # 1. Pull latest code (updates bookmi/ subdirectory)
             git pull origin main
+
+            # 2. Sync bookmi/ app files to root (where webserver looks)
+            #    Exclude: vendor (managed by composer), storage (runtime data),
+            #    .env (server config), node_modules, .git
+            rsync -a --exclude="vendor/" --exclude="storage/" --exclude=".env" \
+              --exclude="node_modules/" --exclude=".git/" \
+              bookmi/ ./
+
+            # 3. Install/update PHP dependencies at root
             composer install --no-dev --optimize-autoloader --quiet
+
+            # 4. Run migrations & clear caches
             php artisan migrate --force
             php artisan optimize:clear
             php artisan optimize

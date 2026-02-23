@@ -144,6 +144,7 @@
                                     description: {{ json_encode($package->description ?? '') }},
                                     cachet_amount: {{ $package->cachet_amount }},
                                     duration_minutes: {{ $package->duration_minutes ?? 'null' }},
+                                    type: {{ json_encode($package->type ?? '') }},
                                     is_active: {{ $package->is_active ? 'true' : 'false' }}
                                 }"
                                 class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600 transition-colors">
@@ -211,9 +212,16 @@
                                    class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
                         </div>
                     </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Type d'événement</label>
+                        <input type="text" name="type" maxlength="150" placeholder="Ex: concert, mariage, corporate"
+                               x-model="editData.type"
+                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+                    </div>
                     <div class="flex items-center gap-3">
                         <input type="checkbox" name="is_active" id="is_active_edit" value="1"
-                               x-model="editData.is_active"
+                               :checked="editData.is_active"
+                               @change="editData.is_active = $event.target.checked"
                                class="w-4 h-4 rounded accent-orange-500">
                         <label for="is_active_edit" class="text-sm font-medium text-gray-700">Package actif</label>
                     </div>

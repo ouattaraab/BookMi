@@ -60,8 +60,10 @@ class AdminReviewModerationTest extends TestCase
         $this->reportedReview();
         Review::factory()->create(['is_reported' => false]);
 
-        $this->actingAs($admin)
-            ->getJson('/admin/reviews/reported')
+        // Use the API route — the web route /admin/reviews/reported conflicts with
+        // Filament's panel route admin/reviews/{record} (registered first).
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/v1/admin/reviews/reported')
             ->assertOk()
             ->assertJsonCount(2, 'data');
     }

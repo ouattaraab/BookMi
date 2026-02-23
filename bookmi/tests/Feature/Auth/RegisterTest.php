@@ -71,7 +71,8 @@ class RegisterTest extends TestCase
         $user = User::where('email', 'aminata@example.com')->first();
         $this->assertTrue($user->hasRole('client', 'api'));
         $this->assertTrue($user->is_active);
-        $this->assertNull($user->phone_verified_at);
+        // OTP disabled at registration — phone is auto-verified
+        $this->assertNotNull($user->phone_verified_at);
     }
 
     #[Test]
@@ -86,17 +87,18 @@ class RegisterTest extends TestCase
         $this->assertNotNull($user);
         $this->assertTrue($user->hasRole('talent', 'api'));
         $this->assertTrue($user->is_active);
-        $this->assertNull($user->phone_verified_at);
+        // OTP disabled at registration — phone is auto-verified
+        $this->assertNotNull($user->phone_verified_at);
     }
 
     #[Test]
-    public function registration_generates_otp_in_cache(): void
+    public function registration_does_not_generate_otp_in_cache(): void
     {
+        // OTP is disabled at registration — phone is auto-verified, no OTP stored
         $this->postJson('/api/v1/auth/register', $this->validClientData());
 
         $otp = Cache::get('otp:+2250700000001');
-        $this->assertNotNull($otp);
-        $this->assertSame(6, strlen($otp));
+        $this->assertNull($otp);
     }
 
     #[Test]

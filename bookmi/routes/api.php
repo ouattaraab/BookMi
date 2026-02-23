@@ -235,6 +235,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
                 ->name('reports.financial');
             Route::get('/disputes/{booking}/messages', [AdminDisputeController::class, 'messages'])
                 ->name('disputes.messages');
+            // Story 8.9 — Moderation admin
+            Route::get('/reviews/reported', [AdminReviewModerationController::class, 'reported'])->name('reviews.reported');
+            Route::post('/reviews/{review}/approve', [AdminReviewModerationController::class, 'approve'])->name('reviews.approve');
+            Route::delete('/reviews/{review}', [AdminReviewModerationController::class, 'destroy'])->name('reviews.destroy');
+            Route::put('/reviews/{review}', [AdminReviewModerationController::class, 'update'])->name('reviews.update');
         });
     });
 });

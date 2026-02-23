@@ -50,10 +50,17 @@ class PackageController extends Controller
             'description'      => 'nullable|string|max:1000',
             'cachet_amount'    => 'required|integer|min:0',
             'duration_minutes' => 'nullable|integer|min:0',
-            'is_active'        => 'boolean',
+            'type'             => 'nullable|string|max:150',
+            'is_active'        => 'nullable|boolean',
         ]);
 
-        ServicePackage::where('talent_profile_id', auth()->user()->talentProfile?->id)->findOrFail($id)->update($data);
+        // Normalize checkbox: if not submitted, treat as false
+        $data['is_active'] = $request->boolean('is_active');
+
+        ServicePackage::where('talent_profile_id', auth()->user()->talentProfile?->id)
+            ->findOrFail($id)
+            ->update($data);
+
         return back()->with('success', 'Package mis à jour.');
     }
 

@@ -49,6 +49,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'two_factor_method',
         'two_factor_secret',
         'two_factor_confirmed_at',
+        'phone_verified_at',
     ];
 
     /**
