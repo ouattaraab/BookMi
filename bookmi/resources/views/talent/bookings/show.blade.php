@@ -61,6 +61,12 @@
                 <div class="bg-gray-50 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Date de l'événement</p>
                     <p class="font-semibold text-gray-900">{{ \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y') }}</p>
+                    @if($booking->start_time)
+                        <p class="text-sm font-bold mt-1" style="color:#FF6B35;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="inline h-3.5 w-3.5 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="2"/><path stroke-width="2" stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+                            {{ \Carbon\Carbon::createFromTimeString($booking->start_time)->format('H\hi') }}
+                        </p>
+                    @endif
                 </div>
 
                 {{-- Lieu --}}

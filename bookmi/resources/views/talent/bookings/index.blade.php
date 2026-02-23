@@ -80,6 +80,9 @@
                                 <span class="text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="inline h-3.5 w-3.5 mr-0.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                     {{ \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y') }}
+                                    @if($booking->start_time)
+                                        · <span style="color:#FF6B35;font-weight:700;">{{ \Carbon\Carbon::createFromTimeString($booking->start_time)->format('H\hi') }}</span>
+                                    @endif
                                 </span>
                                 @if($booking->servicePackage)
                                     <span class="text-gray-300">|</span>

@@ -193,15 +193,29 @@ main.page-content { background: #F2EFE9 !important; }
                             @enderror
                         </div>
                         <div>
-                            <label class="form-label" for="event_location">Lieu</label>
-                            <input type="text" id="event_location" name="event_location"
-                                   placeholder="Abidjan, Cocody…"
-                                   value="{{ old('event_location') }}"
-                                   class="booking-input" required>
-                            @error('event_location')
+                            <label class="form-label" for="start_time">
+                                Heure de début
+                                <span style="font-weight:500;text-transform:none;letter-spacing:0;color:#B0A89E;">(optionnel)</span>
+                            </label>
+                            <input type="time" id="start_time" name="start_time"
+                                   step="1800"
+                                   value="{{ old('start_time') }}"
+                                   class="booking-input">
+                            @error('start_time')
                             <p style="color:#EF4444;font-size:0.75rem;font-weight:600;margin:6px 0 0;">{{ $message }}</p>
                             @enderror
                         </div>
+                    </div>
+
+                    <div style="margin-bottom:16px;">
+                        <label class="form-label" for="event_location">Lieu</label>
+                        <input type="text" id="event_location" name="event_location"
+                               placeholder="Abidjan, Cocody…"
+                               value="{{ old('event_location') }}"
+                               class="booking-input" required>
+                        @error('event_location')
+                        <p style="color:#EF4444;font-size:0.75rem;font-weight:600;margin:6px 0 0;">{{ $message }}</p>
+                        @enderror
                     </div>
 
                     <div>

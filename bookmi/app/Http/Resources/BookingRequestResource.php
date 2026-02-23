@@ -33,6 +33,7 @@ class BookingRequestResource extends JsonResource
                 'duration_minutes' => $this->servicePackage->duration_minutes,
             ],
             'event_date'      => $this->event_date->toDateString(),
+            'start_time'      => $this->start_time,
             'event_location'  => $this->event_location,
             'message'         => $this->message,
             'is_express'                  => $this->is_express,

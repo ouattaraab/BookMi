@@ -138,7 +138,12 @@ main.page-content { background: #F2EFE9 !important; }
                 </div>
                 <div>
                     <p style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#B0A89E;margin:0 0 4px;">Date de l'événement</p>
-                    <p style="font-size:0.9rem;font-weight:800;color:#1A2744;margin:0;">{{ \Carbon\Carbon::parse($booking->event_date)->translatedFormat('l d F Y') }}</p>
+                    <p style="font-size:0.9rem;font-weight:800;color:#1A2744;margin:0;">
+                        {{ \Carbon\Carbon::parse($booking->event_date)->translatedFormat('l d F Y') }}
+                        @if($booking->start_time)
+                            <span style="color:#FF6B35;font-weight:700;"> · {{ \Carbon\Carbon::createFromTimeString($booking->start_time)->format('H\hi') }}</span>
+                        @endif
+                    </p>
                 </div>
             </div>
 

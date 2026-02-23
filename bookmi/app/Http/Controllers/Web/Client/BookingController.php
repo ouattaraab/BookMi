@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Models\TalentProfile;
 use App\Models\Transaction;
+use App\Services\CalendarService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,8 +18,10 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function __construct(private readonly PaymentService $paymentService)
-    {
+    public function __construct(
+        private readonly PaymentService $paymentService,
+        private readonly CalendarService $calendarService,
+    ) {
     }
 
     public function index(Request $request): View
@@ -57,11 +60,16 @@ class BookingController extends Controller
             'talent_profile_id'  => ['required', 'integer', 'exists:talent_profiles,id'],
             'service_package_id' => ['nullable', 'integer', 'exists:service_packages,id'],
             'event_date'         => ['required', 'date', 'after:today'],
+            'start_time'         => ['nullable', 'date_format:H:i'],
             'event_location'     => ['required', 'string', 'max:255'],
             'message'            => ['nullable', 'string', 'max:1000'],
         ]);
 
         $talent = TalentProfile::with('servicePackages')->findOrFail($validated['talent_profile_id']);
+
+        if (! $this->calendarService->isDateAvailable($talent, $validated['event_date'], $validated['start_time'] ?? null)) {
+            return back()->withInput()->with('error', 'Cette date n\'est pas disponible pour ce talent. Veuillez choisir une autre date ou heure.');
+        }
 
         // Calcul du montant
         $cachetAmount = $talent->cachet_amount ?? 0;
@@ -81,6 +89,7 @@ class BookingController extends Controller
             'talent_profile_id'  => $validated['talent_profile_id'],
             'service_package_id' => $validated['service_package_id'] ?? null,
             'event_date'         => $validated['event_date'],
+            'start_time'         => $validated['start_time'] ?? null,
             'event_location'     => $validated['event_location'],
             'message'            => $validated['message'] ?? null,
             'status'             => 'pending',
