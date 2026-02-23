@@ -1,0 +1,1171 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Cannot call method isToday\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/DetectTalentOverload.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Console/Commands/RecalculateTalentLevels.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\TalentLevel will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Console/Commands/RecalculateTalentLevels.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/RecalculateTalentLevels.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/SendMissingCheckinAlerts.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/SendReminderNotifications.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/SendReminderNotifications.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Console/Commands/SendReminderNotifications.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Events/MessageSent.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Events/TrackingStatusChanged.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Events/TrackingStatusChanged.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Events/TrackingStatusChanged.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Events/TrackingStatusChanged.php
+
+		-
+			message: '#^Access to an undefined property App\\Filament\\Pages\\TwoFactorChallengePage\:\:\$form\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Filament/Pages/TwoFactorChallengePage.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Filament/Resources/AdminAlertResource.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type \*NEVER\*\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/AdminAlertResource.php
+
+		-
+			message: '#^Cannot access property \$severity on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: app/Filament/Resources/AdminAlertResource/Pages/ViewAdminAlert.php
+
+		-
+			message: '#^Cannot access property \$status on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Filament/Resources/AdminAlertResource/Pages/ViewAdminAlert.php
+
+		-
+			message: '#^Cannot access property \$title on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Filament/Resources/AdminAlertResource/Pages/ViewAdminAlert.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/AdminWarningResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/AdminWarningResource.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:role\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/ClientResource.php
+
+		-
+			message: '#^Cannot access property \$is_suspended on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 5
+			path: app/Filament/Resources/ClientResource/Pages/ViewClient.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\VerificationStatus\:\:PENDING will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: app/Filament/Resources/IdentityVerificationResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/IdentityVerificationResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Resources/IdentityVerificationResource.php
+
+		-
+			message: '#^Cannot access property \$document_type on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Filament/Resources/IdentityVerificationResource/Pages/ViewIdentityVerification.php
+
+		-
+			message: '#^Cannot access property \$user on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: app/Filament/Resources/IdentityVerificationResource/Pages/ViewIdentityVerification.php
+
+		-
+			message: '#^Cannot access property \$verification_status on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Filament/Resources/IdentityVerificationResource/Pages/ViewIdentityVerification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Resources/ReviewResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Resources/ReviewResource.php
+
+		-
+			message: '#^Cannot access property \$is_reported on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/ReviewResource/Pages/ViewReview.php
+
+		-
+			message: '#^Cannot access property \$rating on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/ReviewResource/Pages/ViewReview.php
+
+		-
+			message: '#^Cannot access property \$reviewee on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/ReviewResource/Pages/ViewReview.php
+
+		-
+			message: '#^Cannot access property \$reviewer on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Filament/Resources/ReviewResource/Pages/ViewReview.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\:\:role\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Filament/Resources/TalentProfileResource.php
+
+		-
+			message: '#^Cannot access property \$is_suspended on Illuminate\\Database\\Eloquent\\Model\|int\|string\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: app/Filament/Resources/UserResource/Pages/ViewUser.php
+
+		-
+			message: '#^Constant App\\Gateways\\PaymentGatewayResolver\:\:NO_FALLBACK_METHODS is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Gateways/PaymentGatewayResolver.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Disputed will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: app/Http/Controllers/Api/V1/AdminDisputeController.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/Http/Controllers/Api/V1/AdminDisputeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$commission_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stage_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>commission_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between true and true will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/AuthController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/CheckInController.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/CheckInController.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/CheckInController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/CheckInController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/EscrowController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/PaymentController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/PortfolioController.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Http/Controllers/Api/V1/ReportController.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/ReportController.php
+
+		-
+			message: '#^Result of && is always true\.$#'
+			identifier: booleanAnd.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/ReportController.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Completed will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/ReportController.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Http/Controllers/Api/V1/ReportController.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Http/Controllers/Api/V1/RevenueCertificateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>commission" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/RevenueCertificateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>gross_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/RevenueCertificateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>net_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/RevenueCertificateController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/ReviewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Review\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/ReviewController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/TrackingController.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/TrackingController.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/TrackingController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TrackingEvent\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/TrackingController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/TrackingController.php
+
+		-
+			message: '#^Instanceof between App\\Enums\\TransactionStatus and BackedEnum will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Web/Client/BookingController.php
+
+		-
+			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Web/Client/MessageController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Web/HomeController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\BookingRequest\:\:\$client_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Web/Talent/BookingController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Web/Talent/BookingController.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Web/Talent/CalendarController.php
+
+		-
+			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Web/Talent/MessageController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 2
+			path: app/Http/Resources/BookingRequestResource.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/BookingRequestResource.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/CalendarSlotResource.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/CalendarSlotResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/ConversationResource.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/ConversationResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/MessageResource.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/MessageResource.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/MessageResource.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Resources/PushNotificationResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/RescheduleRequestResource.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Resources/RescheduleRequestResource.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/RescheduleRequestResource.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Resources/RescheduleRequestResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$booking_request_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$completed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$currency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$gateway\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$gateway_reference\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$initiated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$payment_method\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TransactionResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TransactionResource.php
+
+		-
+			message: '#^Call to static method make\(\) on an unknown class Intervention\\Image\\Facades\\Image\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Jobs/CompressPortfolioImage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyClientOfBookingAccepted.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyClientOfBookingAccepted.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyClientOfBookingAccepted.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Listeners/NotifyPartyOfBookingCancelled.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyTalentOfNewBooking.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyTalentOfNewBooking.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyTalentOfNewBooking.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Listeners/NotifyTalentOfPaymentReceived.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Listeners/NotifyTalentOfPaymentReceived.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$servicePackage\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Listeners/NotifyTalentOfPaymentReceived.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$talentProfile\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Listeners/NotifyTalentOfPaymentReceived.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyTalentOfPaymentReceived.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Listeners/NotifyTalentOfPaymentReceived.php
+
+		-
+			message: '#^PHPDoc tag @use has invalid type Database\\Factories\\AdminAlertFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/AdminAlert.php
+
+		-
+			message: '#^Type Database\\Factories\\AdminAlertFactory in generic type Illuminate\\Database\\Eloquent\\Factories\\HasFactory\<Database\\Factories\\AdminAlertFactory\> in PHPDoc tag @use is not subtype of template type TFactory of Illuminate\\Database\\Eloquent\\Factories\\Factory of trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Models/AdminAlert.php
+
+		-
+			message: '#^PHPDoc tag @use has invalid type Database\\Factories\\AdminWarningFactory\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/AdminWarning.php
+
+		-
+			message: '#^Type Database\\Factories\\AdminWarningFactory in generic type Illuminate\\Database\\Eloquent\\Factories\\HasFactory\<Database\\Factories\\AdminWarningFactory\> in PHPDoc tag @use is not subtype of template type TFactory of Illuminate\\Database\\Eloquent\\Factories\\Factory of trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Models/AdminWarning.php
+
+		-
+			message: '#^Cannot call method translatedFormat\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Notifications/BookingAcceptedNotification.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingAcceptedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Notifications/BookingAcceptedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Notifications/BookingAcceptedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingAcceptedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingAcceptedNotification.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Notifications/BookingCancelledNotification.php
+
+		-
+			message: '#^Cannot call method translatedFormat\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Notifications/BookingCancelledNotification.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingCancelledNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingCancelledNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingCancelledNotification.php
+
+		-
+			message: '#^Cannot call method translatedFormat\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$event_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$servicePackage\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$talentProfile\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/PaymentReceivedNotification.php
+
+		-
+			message: '#^Instanceof between string and Carbon\\Carbon will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Observers/BookingRequestObserver.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AdminService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$admin\.$#'
+			identifier: closure.unusedUse
+			count: 2
+			path: app/Services/AdminService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\User\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/AdminService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Disputed will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/AdminService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/AdminService.php
+
+		-
+			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Services/AuthService.php
+
+		-
+			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/BookingService.php
+
+		-
+			message: '#^Cannot call method startOfDay\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Pending will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/BookingService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Method App\\Services\\CalendarService\:\:getMonthCalendar\(\) should return Illuminate\\Support\\Collection\<int, array\{date\: string, status\: string, slot_id\: int\|null\}\> but returns Illuminate\\Support\\Collection\<int, array\{date\: mixed, status\: mixed, slot_id\: int\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<\(int\|string\),App\\Models\\CalendarSlot\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortBy\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Parameter \#2 \$value of method Illuminate\\Support\\Collection\<\(int\|string\),array\<string, mixed\>\>\:\:put\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Parameter \#2 \$value of method Illuminate\\Support\\Collection\<\(int\|string\),array\<string, mixed\>\>\:\:put\(\) expects array\{date\: mixed, status\: mixed, slot_id\: int\}, array\{date\: string, status\: ''confirmed'', slot_id\: null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/CalendarService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/EscrowService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Services/EscrowService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Paid will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/EscrowService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Paid will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/EscrowService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/EscrowService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/ManagerService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Pending will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: app/Services/ManagerService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/Services/ManagerService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ManagerService.php
+
+		-
+			message: '#^Generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\Message\> in PHPDoc tag @return does not specify all template types of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\: TKey, TValue$#'
+			identifier: generics.lessTypes
+			count: 1
+			path: app/Services/MessagingService.php
+
+		-
+			message: '#^Method App\\Services\\MessagingService\:\:getMessages\(\) should return Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\Message\> but returns Illuminate\\Pagination\\LengthAwarePaginator\<int, App\\Models\\Message\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/MessagingService.php
+
+		-
+			message: '#^Type App\\Models\\Message in generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\Message\> in PHPDoc tag @return is not subtype of template type TKey of \(int\|string\) of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\.$#'
+			identifier: generics.notSubtype
+			count: 1
+			path: app/Services/MessagingService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Method App\\Services\\PaymentService\:\:initializeTransactionForCard\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Method App\\Services\\PaymentService\:\:initiateChargeForMobileMoney\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Accepted will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Services/PaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$talent_profile_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PayoutService.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: app/Services/PayoutService.php
+
+		-
+			message: '#^Offset ''recipient_code'' on array\{non\-falsy\-string\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/PayoutService.php
+
+		-
+			message: '#^Parameter \#2 \$payoutDetails of method App\\Services\\PayoutService\:\:buildRecipientPayload\(\) expects array\<string, mixed\>, array\<int, string\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PayoutService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Accepted, App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/RescheduleService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\RescheduleStatus\:\:Pending will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 2
+			path: app/Services/RescheduleService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 3
+			path: app/Services/RescheduleService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Confirmed, App\\Enums\\BookingStatus\:\:Completed\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/ReviewService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/TrackingService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Services/TrackingService.php
+
+		-
+			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/TrackingService.php
