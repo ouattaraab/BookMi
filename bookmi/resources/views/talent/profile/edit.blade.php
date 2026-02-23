@@ -150,6 +150,7 @@
                         'facebook'  => ['label'=>'Facebook', 'placeholder'=>'https://facebook.com/votre_page',  'color'=>'#1877F2'],
                         'youtube'   => ['label'=>'YouTube',  'placeholder'=>'https://youtube.com/@votre_chaine','color'=>'#FF0000'],
                         'tiktok'    => ['label'=>'TikTok',   'placeholder'=>'https://tiktok.com/@votre_compte', 'color'=>'#000000'],
+                        'twitter'   => ['label'=>'X / Twitter','placeholder'=>'https://x.com/votre_compte',    'color'=>'#000000'],
                     ] as $key => $meta)
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold w-20 flex-shrink-0" style="color:{{ $meta['color'] }}">{{ $meta['label'] }}</span>

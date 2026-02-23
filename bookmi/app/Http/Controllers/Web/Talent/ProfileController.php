@@ -34,6 +34,7 @@ class ProfileController extends Controller
             'social_links.facebook'   => 'nullable|url|max:300',
             'social_links.youtube'    => 'nullable|url|max:300',
             'social_links.tiktok'     => 'nullable|url|max:300',
+            'social_links.twitter'    => 'nullable|url|max:300',
         ]);
 
         // Ensure cachet_amount always has a value (NOT NULL in DB)
@@ -47,6 +48,7 @@ class ProfileController extends Controller
             $data['social_links.facebook'],
             $data['social_links.youtube'],
             $data['social_links.tiktok'],
+            $data['social_links.twitter'],
         );
 
         if ($profile) {
