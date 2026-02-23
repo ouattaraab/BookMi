@@ -18,6 +18,7 @@ import 'package:bookmi_app/features/talent_profile/presentation/widgets/similar_
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -628,23 +629,22 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
   Widget _buildSocialLinks(Map<String, dynamic> links) {
     return Row(
       children: links.entries.map((entry) {
-        final icon = switch (entry.key) {
-          'instagram' => Icons.camera_alt,
-          'facebook' => Icons.facebook,
-          'twitter' || 'x' => Icons.alternate_email,
-          'youtube' => Icons.play_circle_outline,
-          'tiktok' => Icons.music_note,
-          _ => Icons.link,
+        final (icon, color) = switch (entry.key) {
+          'instagram' => (FontAwesomeIcons.instagram, const Color(0xFFE1306C)),
+          'facebook'  => (FontAwesomeIcons.facebook,  const Color(0xFF1877F2)),
+          'twitter' || 'x' => (FontAwesomeIcons.xTwitter, Colors.white),
+          'youtube'   => (FontAwesomeIcons.youtube,   const Color(0xFFFF0000)),
+          'tiktok'    => (FontAwesomeIcons.tiktok,    Colors.white),
+          'linkedin'  => (FontAwesomeIcons.linkedin,  const Color(0xFF0A66C2)),
+          'snapchat'  => (FontAwesomeIcons.snapchat,  const Color(0xFFFFFC00)),
+          _ => (FontAwesomeIcons.link, BookmiColors.brandBlueLight),
         };
         return Padding(
-          padding: const EdgeInsets.only(right: BookmiSpacing.spaceSm),
+          padding: const EdgeInsets.only(right: 4),
           child: IconButton(
-            icon: Icon(icon, size: 20),
-            color: BookmiColors.brandBlueLight,
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
-            ),
+            icon: FaIcon(icon, size: 22, color: color),
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            padding: const EdgeInsets.all(10),
             onPressed: () async {
               final rawUrl = entry.value as String? ?? '';
               if (rawUrl.isEmpty) return;

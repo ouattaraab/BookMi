@@ -3,6 +3,7 @@ import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PortfolioGallery extends StatelessWidget {
@@ -65,26 +66,20 @@ class PortfolioGallery extends StatelessWidget {
 
   Widget _buildLinkTile(Map<String, dynamic> item) {
     final platform = item['link_platform'] as String? ?? '';
-    final icon = switch (platform) {
-      'youtube' => Icons.play_circle_filled,
-      'instagram' => Icons.camera_alt,
-      'facebook' => Icons.facebook,
-      'tiktok' => Icons.music_note,
-      _ => Icons.link,
-    };
-    final color = switch (platform) {
-      'youtube' => const Color(0xFFFF0000),
-      'instagram' => const Color(0xFFE1306C),
-      'facebook' => const Color(0xFF1877F2),
-      'tiktok' => const Color(0xFF010101),
-      _ => BookmiColors.ctaOrange,
+    final (icon, color) = switch (platform) {
+      'youtube'   => (FontAwesomeIcons.youtube,   const Color(0xFFFF0000)),
+      'instagram' => (FontAwesomeIcons.instagram, const Color(0xFFE1306C)),
+      'facebook'  => (FontAwesomeIcons.facebook,  const Color(0xFF1877F2)),
+      'tiktok'    => (FontAwesomeIcons.tiktok,    Colors.white),
+      'twitter' || 'x' => (FontAwesomeIcons.xTwitter, Colors.white),
+      _           => (FontAwesomeIcons.link,       BookmiColors.ctaOrange),
     };
     return ColoredBox(
       color: BookmiColors.glassDarkMedium,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
+          FaIcon(icon, color: color, size: 28),
           const SizedBox(height: 4),
           Text(
             platform.isNotEmpty ? platform : 'Lien',
