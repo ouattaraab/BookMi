@@ -1,0 +1,79 @@
+name: Deploy to Production
+
+# Déclenché uniquement après la réussite du CI Laravel sur main
+on:
+  workflow_run:
+    workflows: ["CI Laravel"]
+    types: [completed]
+    branches: [main]
+
+# Un seul déploiement à la fois — ne pas annuler un déploiement en cours
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to Hostinger
+    runs-on: ubuntu-latest
+    # Ne déployer que si le CI est passé
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── Build Vite assets ──────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: bookmi/package-lock.json
+
+      - name: Install Node dependencies
+        run: npm ci
+        working-directory: bookmi
+
+      - name: Build Vite assets
+        run: npm run build
+        working-directory: bookmi
+
+      # ── Configurer SSH ─────────────────────────────────────────────────
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p 65002 bookmi.click >> ~/.ssh/known_hosts
+
+      # ── Déployer le code PHP ───────────────────────────────────────────
+      - name: Deploy PHP code
+        run: |
+          ssh -p 65002 u726808002@bookmi.click '
+            set -e
+            cd /home/u726808002/bookmi_app
+            git pull origin main
+            composer install --no-dev --optimize-autoloader --quiet
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan optimize
+            echo "PHP deploy OK"
+          '
+
+      # ── Déployer les assets Vite vers le webroot ───────────────────────
+      - name: Upload Vite assets to webroot
+        run: |
+          rsync -az --delete \
+            -e "ssh -p 65002 -i ~/.ssh/id_ed25519" \
+            bookmi/public/build/ \
+            u726808002@bookmi.click:/home/u726808002/domains/bookmi.click/public_html/build/
+
+      # ── Synchroniser le manifest vers le chemin public Laravel ────────
+      - name: Sync manifest to app public path
+        run: |
+          ssh -p 65002 u726808002@bookmi.click '
+            cp /home/u726808002/domains/bookmi.click/public_html/build/manifest.json \
+               /home/u726808002/bookmi_app/public/build/manifest.json
+            echo "Manifest synced OK"
+          '
