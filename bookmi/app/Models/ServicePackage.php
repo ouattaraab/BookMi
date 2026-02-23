@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\PackageType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,7 +35,6 @@ class ServicePackage extends Model
             'duration_minutes' => 'integer',
             'inclusions' => 'array',
             'is_active' => 'boolean',
-            'type' => PackageType::class,
             'sort_order' => 'integer',
         ];
     }
