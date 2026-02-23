@@ -87,7 +87,7 @@ class BookingService
      * - If the user has a talent profile: returns bookings received for that profile.
      * - Otherwise: returns bookings sent by the user as a client.
      *
-     * @param array{status?: string|null} $filters
+     * @param array{status?: string|null, statuses?: list<string>} $filters
      */
     public function getBookingsForUser(User $user, array $filters = []): CursorPaginator
     {
