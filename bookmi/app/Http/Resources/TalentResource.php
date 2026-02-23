@@ -27,12 +27,12 @@ class TalentResource extends JsonResource
                 'average_rating' => $this->average_rating,
                 'is_verified' => $this->is_verified,
                 'talent_level' => $this->talent_level,
-                'category' => [
+                'category' => $this->category ? [
                     'id' => $this->category->id,
                     'name' => $this->category->name,
                     'slug' => $this->category->slug,
                     'color_hex' => $this->category->color_hex,
-                ],
+                ] : null,
                 'subcategory' => $this->when($this->subcategory_id !== null, fn () => [
                     'id' => $this->subcategory?->id,
                     'name' => $this->subcategory?->name,

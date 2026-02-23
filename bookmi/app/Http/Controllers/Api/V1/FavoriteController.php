@@ -19,7 +19,7 @@ class FavoriteController extends BaseController
         $perPage = min(max((int) $request->query('per_page', 20), 1), 100);
         $favorites = $this->favoriteService->getFavorites($request->user(), $perPage);
 
-        $favorites->through(fn ($talent) => new FavoriteResource($talent));
+        $favorites->through(fn ($talent) => (new FavoriteResource($talent))->resolve($request));
 
         return $this->paginatedResponse($favorites);
     }

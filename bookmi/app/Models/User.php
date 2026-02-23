@@ -13,6 +13,7 @@ use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -50,6 +51,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'two_factor_secret',
         'two_factor_confirmed_at',
         'phone_verified_at',
+        'avatar',
     ];
 
     /**
@@ -122,6 +124,7 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function favorites(): BelongsToMany
     {
         return $this->belongsToMany(TalentProfile::class, 'user_favorites')
+            ->withPivot('id')
             ->withTimestamps();
     }
 
@@ -156,5 +159,10 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar ? Storage::disk('public')->url($this->avatar) : null;
     }
 }

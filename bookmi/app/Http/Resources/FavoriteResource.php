@@ -17,15 +17,14 @@ class FavoriteResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        /** @var \Illuminate\Database\Eloquent\Relations\Pivot $pivot */
-        $pivot = $this->resource->pivot;
+        $pivot = $this->resource->pivot ?? null;
 
         return [
-            'id' => $pivot->id,
+            'id' => $pivot?->id,
             'type' => 'favorite',
             'attributes' => [
                 'talent' => new TalentResource($this->resource),
-                'favorited_at' => $pivot->getAttribute('created_at')?->toIso8601String(),
+                'favorited_at' => $pivot?->getAttribute('created_at')?->toIso8601String(),
             ],
         ];
     }
