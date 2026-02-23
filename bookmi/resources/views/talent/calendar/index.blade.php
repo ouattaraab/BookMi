@@ -89,6 +89,7 @@ main.page-content { background: #F2EFE9 !important; }
             @for($d = 1; $d <= $daysInMonth; $d++)
                 @php
                     $dateStr     = $currentDate->copy()->day($d)->format('Y-m-d');
+                    $dateLabel   = ucfirst($currentDate->copy()->day($d)->locale('fr')->isoFormat('dddd D MMMM YYYY'));
                     $slot        = $slots[$dateStr] ?? null;
                     $dayBookings = $bookingsByDate[$dateStr] ?? collect();
                     $hasBookings = $dayBookings->isNotEmpty();
@@ -97,7 +98,6 @@ main.page-content { background: #F2EFE9 !important; }
                     $isToday    = $dateStr === $today;
                     $isPast     = $dateStr < $today;
 
-                    // Cell background: booking dates get a warm tint, otherwise slot color
                     $bgColor = match(true) {
                         $hasBookings                => '#FFF3E0',
                         $slotStatus === 'available' => '#f0fdf4',
@@ -112,12 +112,26 @@ main.page-content { background: #F2EFE9 !important; }
                         'rest'      => '#9E9E9E',
                         default     => null,
                     };
+
+                    // Build booking data for the JS modal (only when needed)
+                    $bookingData = $hasBookings ? $dayBookings->map(fn($b) => [
+                        'id'         => $b->id,
+                        'client'     => trim(($b->client?->first_name ?? '') . ' ' . ($b->client?->last_name ?? '')),
+                        'start_time' => $b->start_time
+                            ? \Carbon\Carbon::createFromTimeString($b->start_time)->format('H:i')
+                            : null,
+                        'status'     => $b->status instanceof \BackedEnum ? $b->status->value : (string) $b->status,
+                    ])->values()->toArray() : [];
                 @endphp
                 <div
                     class="cal-cell {{ !$isPast ? 'cal-cell-active' : 'cal-cell-past' }}"
                     style="background:{{ $bgColor }}"
                     @if(!$isPast)
-                    @click="openModal('{{ $dateStr }}', '{{ $slotStatus ?? '' }}', {{ $slot ? $slot->id : 'null' }})"
+                        @if($hasBookings)
+                        @click="openBookingModal({{ Js::from($dateLabel) }}, {{ Js::from($bookingData) }})"
+                        @else
+                        @click="openAvailabilityModal('{{ $dateStr }}', '{{ $slotStatus ?? '' }}', {{ $slot ? $slot->id : 'null' }})"
+                        @endif
                     @endif
                 >
                     {{-- Numéro jour --}}
@@ -173,13 +187,77 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
     </div>
 
-    {{-- Modal Alpine.js --}}
+    {{-- ── Modal détail réservations ─────────────────────────────────── --}}
     <div
-        x-show="modalOpen"
+        x-show="bookingModalOpen"
+        x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center"
+        style="background:rgba(0,0,0,0.45)"
+        @click.self="bookingModalOpen = false"
+    >
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden" @click.stop>
+            {{-- Header modal --}}
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100" style="background:#fff8f5">
+                <div>
+                    <h3 class="text-base font-black text-gray-900">Réservations</h3>
+                    <p class="text-xs text-gray-400 mt-0.5 font-semibold capitalize" x-text="bookingModalDate"></p>
+                </div>
+                <button type="button" @click="bookingModalOpen = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+
+            {{-- Liste des réservations --}}
+            <div class="p-4 space-y-3 max-h-80 overflow-y-auto">
+                <template x-for="booking in bookingModalItems" :key="booking.id">
+                    <div class="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-orange-200 transition-colors">
+                        {{-- Avatar initiale client --}}
+                        <div class="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white" style="background:#FF6B35">
+                            <span x-text="booking.client ? booking.client.charAt(0).toUpperCase() : '?'"></span>
+                        </div>
+
+                        {{-- Infos --}}
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-gray-900 truncate" x-text="booking.client || 'Client inconnu'"></p>
+                            <p class="text-xs text-gray-400 mt-0.5">
+                                <span x-show="booking.start_time" x-text="'🕐 ' + booking.start_time"></span>
+                                <span x-show="!booking.start_time" class="italic">Heure non précisée</span>
+                            </p>
+                        </div>
+
+                        {{-- Badge statut + lien --}}
+                        <div class="flex flex-col items-end gap-1.5">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full"
+                                  :style="statusStyle(booking.status)"
+                                  x-text="statusLabel(booking.status)">
+                            </span>
+                            <a :href="'/talent/bookings/' + booking.id"
+                               class="text-xs font-semibold hover:underline"
+                               style="color:#FF6B35">
+                                Voir les détails →
+                            </a>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            {{-- Footer --}}
+            <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button type="button" @click="bookingModalOpen = false"
+                        class="px-5 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{-- ── Modal disponibilité (inchangé) ────────────────────────────── --}}
+    <div
+        x-show="availabilityModalOpen"
         x-cloak
         class="fixed inset-0 z-50 flex items-center justify-center"
         style="background:rgba(0,0,0,0.4)"
-        @click.self="modalOpen = false"
+        @click.self="availabilityModalOpen = false"
     >
         <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4" @click.stop>
             <h3 class="text-lg font-bold text-gray-900 mb-1">Définir la disponibilité</h3>
@@ -210,7 +288,7 @@ main.page-content { background: #F2EFE9 !important; }
                 </div>
 
                 <div class="flex gap-2">
-                    <button type="button" @click="modalOpen = false"
+                    <button type="button" @click="availabilityModalOpen = false"
                             class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors">
                         Annuler
                     </button>
@@ -244,16 +322,55 @@ main.page-content { background: #F2EFE9 !important; }
 <script>
 function calendarApp() {
     return {
-        modalOpen: false,
-        selectedDate: '',
+        // Modal réservations
+        bookingModalOpen:  false,
+        bookingModalDate:  '',
+        bookingModalItems: [],
+
+        // Modal disponibilité
+        availabilityModalOpen: false,
+        selectedDate:   '',
         selectedStatus: '',
-        slotId: null,
-        openModal(date, status, slotId) {
-            this.selectedDate = date;
+        slotId:         null,
+
+        openBookingModal(dateLabel, bookings) {
+            this.bookingModalDate  = dateLabel;
+            this.bookingModalItems = bookings;
+            this.bookingModalOpen  = true;
+        },
+
+        openAvailabilityModal(date, status, slotId) {
+            this.selectedDate   = date;
             this.selectedStatus = status || '';
-            this.slotId = slotId;
-            this.modalOpen = true;
-        }
+            this.slotId         = slotId;
+            this.availabilityModalOpen = true;
+        },
+
+        statusLabel(status) {
+            const labels = {
+                pending:   'En attente',
+                accepted:  'Acceptée',
+                paid:      'Payée',
+                confirmed: 'Confirmée',
+                completed: 'Terminée',
+                cancelled: 'Annulée',
+                disputed:  'Litige',
+            };
+            return labels[status] || status;
+        },
+
+        statusStyle(status) {
+            const styles = {
+                pending:   'background:#FFF3E0;color:#B45309',
+                accepted:  'background:#EFF6FF;color:#1D4ED8',
+                paid:      'background:#ECFDF5;color:#065F46',
+                confirmed: 'background:#F0FDF4;color:#15803D',
+                completed: 'background:#F5F3FF;color:#5B21B6',
+                cancelled: 'background:#F9FAFB;color:#4B5563',
+                disputed:  'background:#FEF2F2;color:#991B1B',
+            };
+            return styles[status] || 'background:#F3F4F6;color:#374151';
+        },
     }
 }
 </script>
