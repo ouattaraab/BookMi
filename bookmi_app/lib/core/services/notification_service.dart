@@ -22,6 +22,11 @@ class NotificationService {
   /// Called when user taps a notification — override to handle navigation.
   void Function(RemoteMessage message)? onNotificationTap;
 
+  /// Emits whenever notifications are marked as read (triggers badge refresh).
+  final _notificationsReadController = StreamController<void>.broadcast();
+  Stream<void> get onNotificationsRead => _notificationsReadController.stream;
+  void notifyNotificationsRead() => _notificationsReadController.add(null);
+
   Future<void> init() async {
     // Register background handler
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

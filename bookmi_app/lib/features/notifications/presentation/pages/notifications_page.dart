@@ -1,10 +1,13 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({required this.repository, super.key});
@@ -25,6 +28,31 @@ class _NotificationsPageState extends State<NotificationsPage> {
     _load();
   }
 
+  static const _bookingTypes = {
+    'booking_requested',
+    'booking_accepted',
+    'booking_rejected',
+    'booking_cancelled',
+    'booking_completed',
+    'payment_received',
+    'payment_confirmed',
+    'escrow_released',
+  };
+
+  void _navigate(PushNotificationModel n) {
+    final type = n.data?['type'] as String?;
+    final bookingId = n.data?['booking_id']?.toString();
+
+    if (bookingId != null && bookingId.isNotEmpty) {
+      context.push('/bookings/booking/$bookingId');
+    } else if (type != null && _bookingTypes.contains(type)) {
+      context.pushNamed(RouteNames.bookings);
+    } else if (type == 'new_message') {
+      context.pushNamed(RouteNames.messages);
+    }
+    // admin_broadcast and unknowns: stay on the page (body already visible).
+  }
+
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -34,8 +62,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (!mounted) return;
     switch (result) {
       case ApiSuccess(:final data):
-        // Mark all as read after loading
-        unawaited(widget.repository.markAllRead());
+        // Mark all as read after loading, then refresh the shell badge.
+        unawaited(
+          widget.repository.markAllRead().then((_) {
+            NotificationService.instance.notifyNotificationsRead();
+          }),
+        );
         setState(() {
           _items = data;
           _loading = false;
@@ -68,6 +100,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             TextButton(
               onPressed: () async {
                 await widget.repository.markAllRead();
+                NotificationService.instance.notifyNotificationsRead();
                 setState(() {
                   _items = _items
                       .map(
@@ -153,6 +186,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             onTap: () async {
                               if (n.isUnread) {
                                 await widget.repository.markRead(n.id);
+                                if (!mounted) return;
+                                NotificationService.instance
+                                    .notifyNotificationsRead();
                                 setState(() {
                                   _items[index] = PushNotificationModel(
                                     id: n.id,
@@ -164,6 +200,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   );
                                 });
                               }
+                              if (!mounted) return;
+                              _navigate(n);
                             },
                           );
                         },
