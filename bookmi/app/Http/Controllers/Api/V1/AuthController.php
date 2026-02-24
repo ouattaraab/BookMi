@@ -122,9 +122,41 @@ class AuthController extends BaseController
             ->where('user_id', $user->id)
             ->count();
 
+        // Pending booking count (talent only)
+        $pendingBookingCount = 0;
+        if ($tp) {
+            $pendingBookingCount = \App\Models\BookingRequest::where('talent_profile_id', $tp->id)
+                ->where('status', \App\Enums\BookingStatus::Pending->value)
+                ->count();
+        }
+
+        // Unread notification count
+        $unreadNotificationCount = DB::table('push_notifications')
+            ->where('user_id', $user->id)
+            ->whereNull('read_at')
+            ->count();
+
+        // Profile views (talent only)
+        $profileViewsToday = 0;
+        $profileViewsWeek  = 0;
+        $profileViewsMonth = 0;
+        $profileViewsTotal = 0;
+        if ($tp) {
+            $profileViewsToday  = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->whereDate('viewed_at', today())->count();
+            $profileViewsWeek   = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->where('viewed_at', '>=', now()->startOfWeek())->count();
+            $profileViewsMonth  = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->where('viewed_at', '>=', now()->startOfMonth())->count();
+            $profileViewsTotal  = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->count();
+        }
+
         return $this->successResponse([
-            'booking_count'  => $bookingCount,
-            'favorite_count' => $favoriteCount,
+            'booking_count'              => $bookingCount,
+            'favorite_count'             => $favoriteCount,
+            'pending_booking_count'      => $pendingBookingCount,
+            'unread_notification_count'  => $unreadNotificationCount,
+            'profile_views_today'        => $profileViewsToday,
+            'profile_views_week'         => $profileViewsWeek,
+            'profile_views_month'        => $profileViewsMonth,
+            'profile_views_total'        => $profileViewsTotal,
         ]);
     }
 

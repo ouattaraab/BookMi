@@ -61,6 +61,7 @@ class App extends StatelessWidget {
               darkTheme: BookmiTheme.dark,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
+              debugShowCheckedModeBanner: false,
             ),
           ),
         );
