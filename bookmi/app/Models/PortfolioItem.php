@@ -54,7 +54,7 @@ class PortfolioItem extends Model
         return $this->belongsTo(BookingRequest::class);
     }
 
-    public function displayPath(): string
+    public function displayPath(): ?string
     {
         return $this->compressed_path ?? $this->original_path;
     }
