@@ -65,12 +65,15 @@ jobs:
               bookmi/ ./
 
             # 3. Install/update PHP dependencies at root
-            composer install --no-dev --optimize-autoloader --quiet
+            composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-sodium --quiet
 
             # 4. Run migrations & clear caches
             php artisan migrate --force
             php artisan optimize:clear
             php artisan optimize
+
+            # 5. Create storage symlink (idempotent — safe to run each time)
+            php artisan storage:link --force
             echo "PHP deploy OK"
           '
 
