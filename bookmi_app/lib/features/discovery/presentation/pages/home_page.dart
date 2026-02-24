@@ -12,6 +12,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
+import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 
 // ── Design tokens ────────────────────────────────────────────────
 const _primary = Color(0xFF3B9DF2);
@@ -188,6 +190,93 @@ class _HomePageState extends State<HomePage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    BlocBuilder<ProfileBloc, ProfileState>(
+                      builder: (context, profileState) {
+                        if (profileState is! ProfileLoaded) {
+                          return const SizedBox.shrink();
+                        }
+                        final pending =
+                            profileState.stats.pendingBookingCount;
+                        if (!profileState.stats.isTalent || pending == 0) {
+                          return const SizedBox.shrink();
+                        }
+                        return GestureDetector(
+                          onTap: () => context.go('/bookings'),
+                          child: Container(
+                            margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Color(0xFFFF6B35),
+                                  Color(0xFFFF8C42),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF6B35)
+                                      .withValues(alpha: 0.3),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white
+                                        .withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.notifications_active,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "$pending réservation${pending > 1 ? 's' : ''} en attente",
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Accepter ou refuser maintenant',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 12,
+                                          color: Colors.white
+                                              .withValues(alpha: 0.85),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                     _FeaturedSection(
                       talents: talents,
                       isLoading: isLoading,
@@ -269,23 +358,60 @@ class _HomeHeader extends StatelessWidget {
                     ),
                   ),
                   const Spacer(),
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                  BlocBuilder<ProfileBloc, ProfileState>(
+                    builder: (context, profileState) {
+                      final unread = profileState is ProfileLoaded
+                          ? profileState.stats.unreadNotificationCount
+                          : 0;
+                      return GestureDetector(
+                        onTap: () => context.pushNamed(RouteNames.notifications),
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.notifications_outlined,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                            if (unread > 0)
+                              Positioned(
+                                top: -4,
+                                right: -4,
+                                child: Container(
+                                  constraints: const BoxConstraints(
+                                    minWidth: 16,
+                                    minHeight: 16,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF6B35),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    unread > 99 ? '99+' : '$unread',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                        child: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white,
-                          size: 22,
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                   const SizedBox(width: 10),
                   Container(
