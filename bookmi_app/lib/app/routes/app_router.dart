@@ -364,7 +364,7 @@ GoRouter buildAppRouter(
     if (bookingId != null && bookingId.isNotEmpty) {
       router.push('/bookings/booking/$bookingId');
     } else if (type == 'admin_broadcast') {
-      router.push(RoutePaths.messages);
+      router.go(RoutePaths.messages);
     } else {
       router.push(RoutePaths.notifications);
     }

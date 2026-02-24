@@ -46,9 +46,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
     if (bookingId != null && bookingId.isNotEmpty) {
       context.push('/bookings/booking/$bookingId');
     } else if (type != null && _bookingTypes.contains(type)) {
-      context.pushNamed(RouteNames.bookings);
+      context.go(RoutePaths.bookings);
     } else if (type == 'new_message' || type == 'admin_broadcast') {
-      context.pushNamed(RouteNames.messages);
+      context.go(RoutePaths.messages);
     }
   }
 
