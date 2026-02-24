@@ -19,7 +19,7 @@ class FavoriteRepository implements FavoriteRepositoryInterface
             ->favorites()
             ->verified()
             ->with(['category'])
-            ->orderByPivot('created_at', 'desc')
+            ->orderBy('talent_profiles.id', 'desc')
             ->cursorPaginate($perPage);
     }
 

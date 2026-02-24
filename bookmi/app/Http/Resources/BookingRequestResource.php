@@ -24,14 +24,18 @@ class BookingRequestResource extends JsonResource
                 'slug'       => $this->talentProfile->slug,
             ] : null,
             'created_at'      => $this->created_at?->toIso8601String(),
-            'service_package' => $this->servicePackage ? [
-                'id'               => $this->servicePackage->id,
-                'name'             => $this->servicePackage->name,
-                'type'             => $this->servicePackage->type->value,
-                'description'      => $this->servicePackage->description,
-                'inclusions'       => $this->servicePackage->inclusions,
-                'duration_minutes' => $this->servicePackage->duration_minutes,
-            ] : null,
+            'service_package' => $this->package_snapshot
+                ?? ($this->servicePackage ? [
+                    'id'               => $this->servicePackage->id,
+                    'name'             => $this->servicePackage->name,
+                    'type'             => $this->servicePackage->type instanceof \BackedEnum
+                        ? $this->servicePackage->type->value
+                        : $this->servicePackage->type,
+                    'description'      => $this->servicePackage->description,
+                    'cachet_amount'    => $this->servicePackage->cachet_amount,
+                    'duration_minutes' => $this->servicePackage->duration_minutes,
+                    'inclusions'       => $this->servicePackage->inclusions,
+                ] : null),
             'event_date'      => $this->event_date->toDateString(),
             'start_time'      => $this->start_time,
             'event_location'  => $this->event_location,

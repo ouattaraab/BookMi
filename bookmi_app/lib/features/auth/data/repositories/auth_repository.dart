@@ -128,6 +128,17 @@ class AuthRepository {
     }
   }
 
+  Future<void> updateFcmToken(String token) async {
+    try {
+      await _dio.put<Map<String, dynamic>>(
+        ApiEndpoints.meUpdateFcmToken,
+        data: {'fcm_token': token},
+      );
+    } catch (_) {
+      // Non-critical — ignore failures
+    }
+  }
+
   ApiFailure<T> _handleError<T>(DioException e) {
     final data = e.response?.data;
 

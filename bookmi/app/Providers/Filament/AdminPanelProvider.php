@@ -18,6 +18,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -64,6 +65,18 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 'panels::head.end',
                 fn () => view('filament.custom-styles'),
+            )
+
+            // ── Firebase FCM Web Push (token registration + foreground handler) ──
+            ->renderHook(
+                'panels::head.end',
+                fn () => view('filament.firebase-scripts'),
+            )
+
+            // ── Cloche de notifications en haut à droite de la topbar ──
+            ->renderHook(
+                'panels::topbar.end',
+                fn () => Blade::render("@livewire('shared.notification-bell')"),
             )
 
             // ── Footer sidebar : utilisateur connecté + déconnexion ──

@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
@@ -20,6 +23,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthForgotPasswordSubmitted>(_onForgotPasswordSubmitted);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthSessionExpired>(_onSessionExpired);
+    on<AuthProfileUpdated>(_onProfileUpdated);
   }
 
   final AuthRepository _authRepository;
@@ -40,6 +44,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     switch (result) {
       case ApiSuccess(:final data):
         emit(AuthAuthenticated(user: data.user, roles: data.roles));
+        unawaited(_registerFcmToken());
       case ApiFailure():
         await _secureStorage.deleteToken();
         emit(const AuthUnauthenticated());
@@ -58,6 +63,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       case ApiSuccess(:final data):
         await _secureStorage.saveToken(data.token);
         emit(AuthAuthenticated(user: data.user, roles: data.roles));
+        unawaited(_registerFcmToken());
       case ApiFailure(:final code, :final message, :final details):
         emit(AuthFailure(code: code, message: message, details: details));
     }
@@ -143,5 +149,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     await _secureStorage.deleteToken();
     emit(const AuthUnauthenticated());
+  }
+
+  void _onProfileUpdated(
+    AuthProfileUpdated event,
+    Emitter<AuthState> emit,
+  ) {
+    final current = state;
+    if (current is AuthAuthenticated) {
+      emit(AuthAuthenticated(user: event.user, roles: current.roles));
+    }
+  }
+
+  Future<void> _registerFcmToken() async {
+    try {
+      final token = await NotificationService.instance.getFcmToken();
+      if (token != null) {
+        await _authRepository.updateFcmToken(token);
+      }
+    } catch (_) {
+      // Non-critical — ignore FCM token registration failures
+    }
   }
 }

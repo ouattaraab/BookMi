@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Events\EscrowReleased;
 use App\Jobs\ProcessPayout;
+use App\Jobs\SendPushNotification;
 
 class HandleEscrowReleased
 {
@@ -17,5 +18,21 @@ class HandleEscrowReleased
 
         ProcessPayout::dispatch($event->escrowHold->id)
             ->delay(now()->addHours($delayHours));
+
+        // Notify talent that payout is being processed
+        $escrowHold = $event->escrowHold;
+        $booking    = $escrowHold->bookingRequest;
+        if ($booking) {
+            $talent = $booking->talentProfile;
+            if ($talent && $talent->user_id) {
+                $amount = number_format($escrowHold->cachet_amount / 100, 0, ',', ' ');
+                dispatch(new SendPushNotification(
+                    userId: $talent->user_id,
+                    title:  'Virement en cours',
+                    body:   "Votre virement de {$amount} XOF a été initié.",
+                    data:   ['booking_id' => (string) $booking->id, 'type' => 'escrow_released'],
+                ));
+            }
+        }
     }
 }

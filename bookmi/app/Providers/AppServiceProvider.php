@@ -5,15 +5,21 @@ namespace App\Providers;
 use App\Contracts\PaymentGatewayInterface;
 use App\Events\BookingAccepted;
 use App\Events\BookingCancelled;
+use App\Events\BookingCompleted;
 use App\Events\BookingCreated;
+use App\Events\BookingDisputed;
+use App\Events\BookingRejected;
 use App\Events\EscrowReleased;
 use App\Events\PaymentReceived;
 use App\Gateways\FedaPayGateway;
 use App\Gateways\PaymentGatewayResolver;
 use App\Gateways\PaystackGateway;
 use App\Listeners\HandleEscrowReleased;
+use App\Listeners\NotifyAdminOfBookingDisputed;
 use App\Listeners\NotifyClientOfBookingAccepted;
+use App\Listeners\NotifyClientOfBookingRejected;
 use App\Listeners\NotifyPartyOfBookingCancelled;
+use App\Listeners\NotifyPartiesOfBookingCompleted;
 use App\Listeners\NotifyTalentOfNewBooking;
 use App\Listeners\NotifyTalentOfPaymentReceived;
 use App\Models\BookingRequest;
@@ -63,6 +69,9 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(BookingAccepted::class, NotifyClientOfBookingAccepted::class);
         Event::listen(BookingCancelled::class, NotifyPartyOfBookingCancelled::class);
         Event::listen(PaymentReceived::class, NotifyTalentOfPaymentReceived::class);
+        Event::listen(BookingRejected::class, NotifyClientOfBookingRejected::class);
+        Event::listen(BookingCompleted::class, NotifyPartiesOfBookingCompleted::class);
+        Event::listen(BookingDisputed::class, NotifyAdminOfBookingDisputed::class);
     }
 
     protected function configureRateLimiting(): void

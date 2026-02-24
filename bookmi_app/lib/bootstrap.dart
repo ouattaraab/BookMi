@@ -4,7 +4,10 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:bookmi_app/app/app_bloc_observer.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
+import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/core/storage/secure_storage.dart';
+import 'package:bookmi_app/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
@@ -20,6 +23,15 @@ Future<void> bootstrap(
 
   if (kDebugMode) {
     Bloc.observer = const AppBlocObserver();
+  }
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationService.instance.init();
+
+  // Print FCM token in debug mode — useful for testing artisan bookmi:test-push
+  if (kDebugMode) {
+    final fcmToken = await NotificationService.instance.getFcmToken();
+    debugPrint('[BookMi FCM] Device token: $fcmToken');
   }
 
   // Initialize Hive for local storage

@@ -1,3 +1,4 @@
+import 'package:bookmi_app/features/auth/data/models/auth_user.dart';
 import 'package:flutter/foundation.dart';
 
 sealed class AuthEvent {
@@ -92,4 +93,11 @@ final class AuthLogoutRequested extends AuthEvent {
 @immutable
 final class AuthSessionExpired extends AuthEvent {
   const AuthSessionExpired();
+}
+
+@immutable
+final class AuthProfileUpdated extends AuthEvent {
+  const AuthProfileUpdated(this.user);
+
+  final AuthUser user;
 }

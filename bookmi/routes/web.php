@@ -88,6 +88,9 @@ Route::prefix('admin')->name('admin.web.')->middleware(['auth:web', 'admin'])->g
     Route::delete('/reviews/{review}', [\App\Http\Controllers\Api\V1\AdminReviewModerationController::class, 'destroy'])->name('reviews.destroy');
     Route::patch('/reviews/{review}', [\App\Http\Controllers\Api\V1\AdminReviewModerationController::class, 'update'])->name('reviews.update');
 
+    // FCM token — admin device token for web push notifications
+    Route::post('/fcm-token', [\App\Http\Controllers\Web\Admin\AdminFcmController::class, 'update'])->name('fcm-token');
+
     // Team management (Story 8.6)
     Route::get('/team', [\App\Http\Controllers\Api\V1\AdminUserController::class, 'team'])->name('team.index');
     Route::post('/team', [\App\Http\Controllers\Api\V1\AdminUserController::class, 'createCollaborator'])->name('team.store');
