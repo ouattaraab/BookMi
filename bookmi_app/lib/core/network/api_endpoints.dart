@@ -30,6 +30,13 @@ abstract final class ApiEndpoints {
   static const categories = '/categories';
   static String talentFavorite(int talentId) => '/talents/$talentId/favorite';
 
+  // Profile
+  static const meStats = '/me/stats';
+  static const meAvatar = '/me/avatar';
+  static const meIdentityStatus = '/me/identity/status';
+  static const meIdentityDocument = '/me/identity/document';
+  static const meIdentitySelfie = '/me/identity/selfie';
+
   // Story 6.1 — Tracking
   static String bookingTracking(int bookingId) =>
       '/booking_requests/$bookingId/tracking';
@@ -52,4 +59,22 @@ abstract final class ApiEndpoints {
   static const mePortfolio = '/talent_profiles/me/portfolio';
   static String mePortfolioItem(int itemId) =>
       '/talent_profiles/me/portfolio/$itemId';
+  // Booking actions (talent)
+  static String bookingAccept(int id) => '/booking_requests/$id/accept';
+  static String bookingReject(int id) => '/booking_requests/$id/reject';
+
+  // Service packages (talent own)
+  static const servicePackages = '/service_packages';
+  static String servicePackage(int id) => '/service_packages/$id';
+
+  // Earnings (talent)
+  static const meEarnings = '/me/earnings';
+
+  // Admin broadcasts (push notifications of type admin_broadcast)
+  static const meBroadcasts = '/me/broadcasts';
+
+  // Messaging — delete
+  static String conversationDelete(int id) => '/conversations/$id';
+  static String messageDelete(int convId, int msgId) =>
+      '/conversations/$convId/messages/$msgId';
 }

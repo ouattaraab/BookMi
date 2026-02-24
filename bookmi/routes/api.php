@@ -170,6 +170,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::get('/me/broadcasts', [NotificationController::class, 'broadcasts'])->name('me.broadcasts');
         Route::put('/me/fcm_token', [NotificationController::class, 'updateFcmToken'])->name('me.fcm_token');
 
         // Messagerie interne (Story 5.1)
@@ -178,21 +179,31 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/conversations/{conversation}/messages', [MessageController::class, 'messages'])->name('conversations.messages');
         Route::post('/conversations/{conversation}/messages', [MessageController::class, 'send'])->name('conversations.send');
         Route::post('/conversations/{conversation}/read', [MessageController::class, 'read'])->name('conversations.read');
+        Route::delete('/conversations/{conversation}', [MessageController::class, 'destroyConversation'])->name('conversations.destroy');
+        Route::delete('/conversations/{conversation}/messages/{message}', [MessageController::class, 'destroyMessage'])->name('conversations.messages.destroy');
 
         // Suivi Jour J (Stories 6.1 & 6.2)
         Route::get('/booking_requests/{booking}/tracking', [TrackingController::class, 'index'])->name('tracking.index');
         Route::post('/booking_requests/{booking}/tracking', [TrackingController::class, 'update'])->name('tracking.update');
         Route::post('/booking_requests/{booking}/checkin', [CheckInController::class, 'store'])->name('checkin.store');
 
-        // Portfolio post-prestation (Story 6.7)
-        Route::get('/talent_profiles/{talentProfile}/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
+        // Portfolio — routes "me" spécifiques AVANT les routes paramétrées (évite {talentProfile}="me")
+        Route::get('/talent_profiles/me/portfolio', [PortfolioController::class, 'indexOwn'])->name('portfolio.own');
         Route::post('/talent_profiles/me/portfolio', [PortfolioController::class, 'store'])->name('portfolio.store');
         Route::get('/talent_profiles/me/portfolio/pending', [PortfolioController::class, 'pendingSubmissions'])->name('portfolio.pending');
+        Route::patch('/talent_profiles/me/portfolio/{portfolioItem}', [PortfolioController::class, 'update'])->name('portfolio.update');
         Route::post('/talent_profiles/me/portfolio/{portfolioItem}/approve', [PortfolioController::class, 'approve'])->name('portfolio.approve');
         Route::post('/talent_profiles/me/portfolio/{portfolioItem}/reject', [PortfolioController::class, 'reject'])->name('portfolio.reject');
         Route::delete('/talent_profiles/me/portfolio/{portfolioItem}', [PortfolioController::class, 'destroy'])->name('portfolio.destroy');
+
+        // Portfolio post-prestation (Story 6.7) — route paramétrée après les routes "me"
+        Route::get('/talent_profiles/{talentProfile}/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
         // Client submits photos/videos after a completed prestation (Story 6.7 — enrichissement)
         Route::post('/booking_requests/{booking}/client-portfolio', [PortfolioController::class, 'storeClientSubmission'])->name('portfolio.client_store');
+
+        // Earnings (talent)
+        Route::get('me/earnings', [FinancialDashboardController::class, 'earnings'])
+             ->name('api.v1.me.earnings');
 
         // Signalement problème (Story 6.6)
         Route::post('/booking_requests/{booking}/reports', [ReportController::class, 'store'])->name('reports.store');

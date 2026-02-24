@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:bookmi_app/core/network/api_client.dart';
 import 'package:bookmi_app/core/network/api_endpoints.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/data/models/message_model.dart';
+import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
 import 'package:dio/dio.dart';
 
 class MessagingRepository {
@@ -23,6 +26,22 @@ class MessagingRepository {
       final items = (response.data!['data'] as List<dynamic>)
           .cast<Map<String, dynamic>>();
       return ApiSuccess(items.map(ConversationModel.fromJson).toList());
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Returns the latest admin broadcast notifications.
+  Future<ApiResult<List<PushNotificationModel>>> getAdminBroadcasts() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.meBroadcasts,
+      );
+      final items = (response.data!['data'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      return ApiSuccess(
+        items.map(PushNotificationModel.fromJson).toList(),
+      );
     } on DioException catch (e) {
       return _mapDioError(e);
     }
@@ -67,7 +86,7 @@ class MessagingRepository {
     }
   }
 
-  /// Sends a message in an existing conversation.
+  /// Sends a text message in an existing conversation.
   Future<ApiResult<MessageModel>> sendMessage(
     int conversationId, {
     required String content,
@@ -80,6 +99,60 @@ class MessagingRepository {
       );
       final data = response.data!['data'] as Map<String, dynamic>;
       return ApiSuccess(MessageModel.fromJson(data));
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Sends a media file (image or video) with an optional caption.
+  Future<ApiResult<MessageModel>> sendMediaMessage(
+    int conversationId, {
+    required File file,
+    required String type, // 'image' or 'video'
+    String caption = '',
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'type': type,
+        'content': caption,
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: file.path.split('/').last,
+        ),
+      });
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.conversationMessages(conversationId),
+        data: formData,
+      );
+      final data = response.data!['data'] as Map<String, dynamic>;
+      return ApiSuccess(MessageModel.fromJson(data));
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Deletes an entire conversation (soft-delete on backend).
+  Future<ApiResult<void>> deleteConversation(int conversationId) async {
+    try {
+      await _dio.delete<void>(
+        ApiEndpoints.conversationDelete(conversationId),
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Deletes a single message (sender only).
+  Future<ApiResult<void>> deleteMessage(
+    int conversationId,
+    int messageId,
+  ) async {
+    try {
+      await _dio.delete<void>(
+        ApiEndpoints.messageDelete(conversationId, messageId),
+      );
+      return const ApiSuccess(null);
     } on DioException catch (e) {
       return _mapDioError(e);
     }

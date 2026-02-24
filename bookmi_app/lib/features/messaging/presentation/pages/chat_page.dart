@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_state.dart';
+import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/data/models/message_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 // ── Design tokens ─────────────────────────────────────────────────
 const _primary = Color(0xFF3B9DF2);
@@ -13,7 +18,6 @@ const _secondary = Color(0xFF00274D);
 const _muted = Color(0xFFF8FAFC);
 const _mutedFg = Color(0xFF64748B);
 const _border = Color(0xFFE2E8F0);
-const _success = Color(0xFF14B8A6);
 const _warning = Color(0xFFFBBF24);
 
 class ChatPage extends StatefulWidget {
@@ -21,10 +25,14 @@ class ChatPage extends StatefulWidget {
     super.key,
     required this.conversationId,
     required this.otherPartyName,
+    this.talentAvatarUrl,
+    this.booking,
   });
 
   final int conversationId;
   final String otherPartyName;
+  final String? talentAvatarUrl;
+  final BookingInfo? booking;
 
   @override
   State<ChatPage> createState() => _ChatPageState();
@@ -46,6 +54,54 @@ class _ChatPageState extends State<ChatPage> {
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _showDeleteMessageSheet(BuildContext context, MessageModel msg) {
+    showModalBottomSheet<void>(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              decoration: BoxDecoration(
+                color: _border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+              title: Text(
+                'Supprimer ce message',
+                style: GoogleFonts.manrope(
+                  color: const Color(0xFFEF4444),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () {
+                Navigator.of(context).pop();
+                context.read<MessagingCubit>().deleteMessage(
+                  widget.conversationId,
+                  msg.id,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.close, color: Colors.grey),
+              title: Text('Annuler', style: GoogleFonts.manrope()),
+              onTap: () => Navigator.of(context).pop(),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
   }
 
   void _scrollToBottom() {
@@ -70,17 +126,77 @@ class _ChatPageState extends State<ChatPage> {
     _scrollToBottom();
   }
 
+  Future<void> _pickMedia() async {
+    final picker = ImagePicker();
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text('Photo depuis la galerie',
+                  style: GoogleFonts.manrope()),
+              onTap: () => Navigator.pop(context, 'photo_gallery'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt_outlined),
+              title: Text('Prendre une photo',
+                  style: GoogleFonts.manrope()),
+              onTap: () => Navigator.pop(context, 'photo_camera'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined),
+              title: Text('Vidéo depuis la galerie',
+                  style: GoogleFonts.manrope()),
+              onTap: () => Navigator.pop(context, 'video_gallery'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (choice == null || !mounted) return;
+
+    XFile? file;
+    String type = 'image';
+
+    if (choice == 'photo_gallery') {
+      file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    } else if (choice == 'photo_camera') {
+      file = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+    } else if (choice == 'video_gallery') {
+      file = await picker.pickVideo(source: ImageSource.gallery);
+      type = 'video';
+    }
+
+    if (file == null || !mounted) return;
+
+    setState(() => _sending = true);
+    await context.read<MessagingCubit>().sendMediaMessage(
+      widget.conversationId,
+      file: File(file.path),
+      type: type,
+    );
+    if (mounted) setState(() => _sending = false);
+    _scrollToBottom();
+  }
+
   String get _initials {
     final parts = widget.otherPartyName.split(' ');
     if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return widget.otherPartyName.isNotEmpty ? widget.otherPartyName[0].toUpperCase() : '?';
+    return widget.otherPartyName.isNotEmpty
+        ? widget.otherPartyName[0].toUpperCase()
+        : '?';
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get current user id from auth state
     final authState = context.read<AuthBloc>().state;
-    final currentUserId = authState is AuthAuthenticated ? authState.user.id : -1;
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : -1;
+    final isClosed = widget.booking?.isClosed ?? false;
 
     return Scaffold(
       backgroundColor: _muted,
@@ -89,9 +205,11 @@ class _ChatPageState extends State<ChatPage> {
           _ChatHeader(
             otherPartyName: widget.otherPartyName,
             initials: _initials,
+            avatarUrl: widget.talentAvatarUrl,
+            booking: widget.booking,
           ),
-          // Safety banner
-          _SafetyBanner(),
+          if (!isClosed) _SafetyBanner(),
+          if (isClosed) _ClosedBanner(),
           Expanded(
             child: BlocConsumer<MessagingCubit, MessagingState>(
               listener: (context, state) {
@@ -126,7 +244,11 @@ class _ChatPageState extends State<ChatPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.chat_bubble_outline, size: 48, color: _border),
+                        const Icon(
+                          Icons.chat_bubble_outline,
+                          size: 48,
+                          color: _border,
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           'Envoyez votre premier message',
@@ -139,21 +261,23 @@ class _ChatPageState extends State<ChatPage> {
 
                 return ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: messages.length,
                   itemBuilder: (context, i) {
                     final msg = messages[i];
                     final isMine = msg.senderId == currentUserId;
-
-                    // Show date separator at top
-                    final showDateSep = i == 0;
-
                     return Column(
                       children: [
-                        if (showDateSep) _DateSeparator(label: "Aujourd'hui"),
-                        // Show sequestre banner in middle of messages
-                        if (i == messages.length ~/ 2) _SequestreBanner(),
-                        _ChatBubble(message: msg, isMine: isMine),
+                        if (i == 0) _DateSeparator(label: "Aujourd'hui"),
+                        GestureDetector(
+                          onLongPress: isMine
+                              ? () => _showDeleteMessageSheet(context, msg)
+                              : null,
+                          child: _ChatBubble(message: msg, isMine: isMine),
+                        ),
                       ],
                     );
                   },
@@ -161,11 +285,14 @@ class _ChatPageState extends State<ChatPage> {
               },
             ),
           ),
-          _InputBar(
-            controller: _controller,
-            sending: _sending,
-            onSend: _send,
-          ),
+          // Input bar — hidden when conversation is closed
+          if (!isClosed)
+            _InputBar(
+              controller: _controller,
+              sending: _sending,
+              onSend: _send,
+              onPickMedia: _pickMedia,
+            ),
         ],
       ),
     );
@@ -177,10 +304,31 @@ class _ChatHeader extends StatelessWidget {
   const _ChatHeader({
     required this.otherPartyName,
     required this.initials,
+    this.avatarUrl,
+    this.booking,
   });
 
   final String otherPartyName;
   final String initials;
+  final String? avatarUrl;
+  final BookingInfo? booking;
+
+  String get _subtitle {
+    if (booking == null) return '';
+    final parts = <String>[];
+    if (booking!.title != null) parts.add(booking!.title!);
+    if (booking!.eventDate != null) {
+      final dt = DateTime.tryParse(booking!.eventDate!);
+      if (dt != null) {
+        const months = [
+          'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
+          'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
+        ];
+        parts.add('${dt.day} ${months[dt.month - 1]}');
+      }
+    }
+    return parts.join(' · ');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -194,52 +342,33 @@ class _ChatHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Back button
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.white,
+              size: 18,
+            ),
             onPressed: () => Navigator.of(context).pop(),
           ),
           // Avatar
-          Stack(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [_primary, Color(0xFF1565C0)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: GoogleFonts.manrope(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              // Online indicator
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: _success,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _secondary, width: 2),
-                  ),
-                ),
-              ),
-            ],
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              color: _border,
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: avatarUrl != null && avatarUrl!.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: avatarUrl!,
+                    fit: BoxFit.cover,
+                    errorWidget: (_, __, ___) =>
+                        _HeaderInitials(initials: initials),
+                  )
+                : _HeaderInitials(initials: initials),
           ),
           const SizedBox(width: 10),
-          // Name & event
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,17 +381,17 @@ class _ChatHeader extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                Text(
-                  'En ligne · Réservation #BM-2025',
-                  style: GoogleFonts.manrope(
-                    fontSize: 11,
-                    color: Colors.white.withValues(alpha: 0.6),
+                if (_subtitle.isNotEmpty)
+                  Text(
+                    _subtitle,
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      color: Colors.white.withValues(alpha: 0.6),
+                    ),
                   ),
-                ),
               ],
             ),
           ),
-          // Info button
           Container(
             width: 36,
             height: 36,
@@ -270,7 +399,11 @@ class _ChatHeader extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.info_outline, color: Colors.white, size: 18),
+            child: const Icon(
+              Icons.info_outline,
+              color: Colors.white,
+              size: 18,
+            ),
           ),
         ],
       ),
@@ -278,7 +411,31 @@ class _ChatHeader extends StatelessWidget {
   }
 }
 
-// ── Safety banner ─────────────────────────────────────────────────
+class _HeaderInitials extends StatelessWidget {
+  const _HeaderInitials({required this.initials});
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(colors: [_primary, Color(0xFF1565C0)]),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: GoogleFonts.manrope(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Banners ───────────────────────────────────────────────────────
 class _SafetyBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -313,27 +470,30 @@ class _SafetyBanner extends StatelessWidget {
   }
 }
 
-// ── Sequestre banner ──────────────────────────────────────────────
-class _SequestreBanner extends StatelessWidget {
+class _ClosedBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: _secondary,
-        borderRadius: BorderRadius.circular(12),
-      ),
+      color: const Color(0xFFF1F5F9),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          const Icon(Icons.lock_outline, color: Colors.white, size: 16),
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: _mutedFg.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.lock_outline, size: 15, color: _mutedFg),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Paiement Séquestre activé · 50 000 FCFA sécurisé',
+              'Cette conversation est terminée. Les messages sont en lecture seule.',
               style: GoogleFonts.manrope(
                 fontSize: 12,
-                color: Colors.white,
+                color: _mutedFg,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -389,11 +549,13 @@ class _ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (message.isFlagged) {
-      return _FlaggedMessage(message: message, isMine: isMine);
+      return _FlaggedMessage(message: message);
     }
-
-    if (message.type == 'audio') {
-      return _AudioMessage(message: message, isMine: isMine);
+    if (message.type == 'image') {
+      return _ImageMessage(message: message, isMine: isMine);
+    }
+    if (message.type == 'video') {
+      return _VideoMessage(message: message, isMine: isMine);
     }
 
     return Padding(
@@ -401,7 +563,8 @@ class _ChatBubble extends StatelessWidget {
       child: Align(
         alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
         child: Column(
-          crossAxisAlignment: isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment:
+              isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Container(
               constraints: BoxConstraints(
@@ -464,10 +627,7 @@ class _ChatBubble extends StatelessWidget {
             const SizedBox(height: 3),
             Text(
               _formatTime(message.createdAt),
-              style: GoogleFonts.manrope(
-                fontSize: 10,
-                color: _mutedFg,
-              ),
+              style: GoogleFonts.manrope(fontSize: 10, color: _mutedFg),
             ),
           ],
         ),
@@ -476,11 +636,136 @@ class _ChatBubble extends StatelessWidget {
   }
 }
 
-// ── Flagged message warning ───────────────────────────────────────
-class _FlaggedMessage extends StatelessWidget {
-  const _FlaggedMessage({required this.message, required this.isMine});
+// ── Image message ─────────────────────────────────────────────────
+class _ImageMessage extends StatelessWidget {
+  const _ImageMessage({required this.message, required this.isMine});
   final MessageModel message;
   final bool isMine;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Align(
+        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+        child: Column(
+          crossAxisAlignment:
+              isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: message.mediaUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: message.mediaUrl!,
+                      width: 220,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => Container(
+                        width: 220,
+                        height: 180,
+                        color: _border,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: _primary,
+                          ),
+                        ),
+                      ),
+                      errorWidget: (_, __, ___) => Container(
+                        width: 220,
+                        height: 180,
+                        color: _border,
+                        child: const Icon(Icons.broken_image_outlined, color: _mutedFg),
+                      ),
+                    )
+                  : Container(
+                      width: 220,
+                      height: 180,
+                      color: _border,
+                      child: const Icon(Icons.image_outlined, color: _mutedFg),
+                    ),
+            ),
+            if (message.content.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  message.content,
+                  style: GoogleFonts.manrope(fontSize: 12, color: _mutedFg),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Video message ─────────────────────────────────────────────────
+class _VideoMessage extends StatelessWidget {
+  const _VideoMessage({required this.message, required this.isMine});
+  final MessageModel message;
+  final bool isMine;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Align(
+        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+        child: Container(
+          width: 220,
+          height: 140,
+          decoration: BoxDecoration(
+            color: _secondary,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              const Icon(
+                Icons.play_circle_filled_rounded,
+                color: Colors.white,
+                size: 48,
+              ),
+              Positioned(
+                bottom: 8,
+                left: 8,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.videocam_outlined,
+                          size: 12, color: Colors.white),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Vidéo',
+                        style: GoogleFonts.manrope(
+                          fontSize: 10,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Flagged message warning ───────────────────────────────────────
+class _FlaggedMessage extends StatelessWidget {
+  const _FlaggedMessage({required this.message});
+  final MessageModel message;
 
   @override
   Widget build(BuildContext context) {
@@ -526,93 +811,19 @@ class _FlaggedMessage extends StatelessWidget {
   }
 }
 
-// ── Audio message ─────────────────────────────────────────────────
-class _AudioMessage extends StatelessWidget {
-  const _AudioMessage({required this.message, required this.isMine});
-  final MessageModel message;
-  final bool isMine;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Align(
-        alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
-        child: Container(
-          width: 220,
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: isMine ? _primary : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.play_circle_filled,
-                color: isMine ? Colors.white : _primary,
-                size: 32,
-              ),
-              const SizedBox(width: 10),
-              // Simulated waveform
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: List.generate(16, (i) {
-                        final heights = [6.0, 12.0, 8.0, 16.0, 10.0, 14.0, 6.0, 18.0,
-                                         10.0, 14.0, 8.0, 12.0, 16.0, 6.0, 10.0, 8.0];
-                        return Container(
-                          width: 3,
-                          height: heights[i % heights.length],
-                          decoration: BoxDecoration(
-                            color: isMine
-                                ? Colors.white.withValues(alpha: 0.8)
-                                : _primary.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        );
-                      }),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '0:24',
-                      style: GoogleFonts.manrope(
-                        fontSize: 10,
-                        color: isMine ? Colors.white70 : _mutedFg,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 // ── Input bar ─────────────────────────────────────────────────────
 class _InputBar extends StatelessWidget {
   const _InputBar({
     required this.controller,
     required this.sending,
     required this.onSend,
+    required this.onPickMedia,
   });
 
   final TextEditingController controller;
   final bool sending;
   final VoidCallback onSend;
+  final VoidCallback onPickMedia;
 
   @override
   Widget build(BuildContext context) {
@@ -636,16 +847,19 @@ class _InputBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Attach button
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: _muted,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: _border),
+          // Media picker button
+          GestureDetector(
+            onTap: onPickMedia,
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: _muted,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _border),
+              ),
+              child: const Icon(Icons.add, color: _mutedFg, size: 20),
             ),
-            child: const Icon(Icons.add, color: _mutedFg, size: 20),
           ),
           const SizedBox(width: 8),
           // Text input
@@ -663,10 +877,7 @@ class _InputBar extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       controller: controller,
-                      style: GoogleFonts.manrope(
-                        fontSize: 14,
-                        color: _secondary,
-                      ),
+                      style: GoogleFonts.manrope(fontSize: 14, color: _secondary),
                       maxLines: 4,
                       minLines: 1,
                       textCapitalization: TextCapitalization.sentences,
@@ -678,24 +889,18 @@ class _InputBar extends StatelessWidget {
                         ),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding:
+                            const EdgeInsets.symmetric(vertical: 10),
                       ),
                       onSubmitted: (_) => onSend(),
                     ),
-                  ),
-                  // Emoji button
-                  IconButton(
-                    icon: const Icon(Icons.emoji_emotions_outlined, color: _mutedFg, size: 20),
-                    onPressed: () {},
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                   ),
                 ],
               ),
             ),
           ),
           const SizedBox(width: 8),
-          // Send/mic button
+          // Send button
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             child: sending
@@ -703,25 +908,28 @@ class _InputBar extends StatelessWidget {
                     key: ValueKey('loading'),
                     width: 42,
                     height: 42,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: _primary),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: _primary,
+                    ),
                   )
                 : ValueListenableBuilder<TextEditingValue>(
                     valueListenable: controller,
                     builder: (context, value, _) {
                       final hasText = value.text.isNotEmpty;
                       return GestureDetector(
-                        key: const ValueKey('send_mic'),
+                        key: const ValueKey('send'),
                         onTap: hasText ? onSend : null,
                         child: Container(
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: _primary,
+                            color: hasText ? _primary : _border,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            hasText ? Icons.send_rounded : Icons.mic_outlined,
-                            color: Colors.white,
+                            Icons.send_rounded,
+                            color: hasText ? Colors.white : _mutedFg,
                             size: 20,
                           ),
                         ),

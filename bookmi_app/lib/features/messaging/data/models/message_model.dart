@@ -7,6 +7,8 @@ class MessageModel {
     required this.type,
     required this.isFlagged,
     required this.isAutoReply,
+    this.mediaUrl,
+    this.mediaType,
     this.senderName,
     this.readAt,
     this.createdAt,
@@ -17,8 +19,10 @@ class MessageModel {
       id: json['id'] as int,
       conversationId: json['conversation_id'] as int,
       senderId: json['sender_id'] as int,
-      content: json['content'] as String,
+      content: json['content'] as String? ?? '',
       type: json['type'] as String? ?? 'text',
+      mediaUrl: json['media_url'] as String?,
+      mediaType: json['media_type'] as String?,
       isFlagged: (json['is_flagged'] as bool?) ?? false,
       isAutoReply: (json['is_auto_reply'] as bool?) ?? false,
       senderName: json['sender_name'] as String?,
@@ -35,7 +39,9 @@ class MessageModel {
   final int conversationId;
   final int senderId;
   final String content;
-  final String type;
+  final String type; // 'text' | 'image' | 'video' | 'audio'
+  final String? mediaUrl;
+  final String? mediaType;
   final bool isFlagged;
   final bool isAutoReply;
   final String? senderName;

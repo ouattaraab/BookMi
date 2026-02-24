@@ -7,6 +7,7 @@ use App\Http\Requests\Api\StartConversationRequest;
 use App\Http\Resources\ConversationResource;
 use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
+use App\Models\Message;
 use App\Services\MessagingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -109,11 +110,14 @@ class MessageController extends BaseController
     {
         $this->authorizeParticipant($conversation, $request);
 
+        $type = \App\Enums\MessageType::from($request->input('type', 'text'));
+
         $message = $this->messagingService->sendMessage(
             conversation: $conversation,
             sender: $request->user(),
-            content: $request->string('content')->toString(),
-            type: \App\Enums\MessageType::from($request->input('type', 'text')),
+            content: $request->input('content') ?? '',
+            type: $type,
+            mediaFile: $request->file('file'),
         );
 
         $response = ['data' => new MessageResource($message->load('sender'))];
@@ -140,6 +144,40 @@ class MessageController extends BaseController
         $count = $this->messagingService->markAsRead($conversation, $request->user());
 
         return response()->json(['data' => ['marked_read' => $count]]);
+    }
+
+    /**
+     * DELETE /api/v1/conversations/{conversation}
+     * Delete an entire conversation (only for participants).
+     */
+    public function destroyConversation(Request $request, Conversation $conversation): JsonResponse
+    {
+        $this->authorizeParticipant($conversation, $request);
+        $conversation->messages()->delete();
+        $conversation->delete();
+
+        return response()->json(['data' => ['deleted' => true]]);
+    }
+
+    /**
+     * DELETE /api/v1/conversations/{conversation}/messages/{message}
+     * Delete a single message (only the sender can delete their own).
+     */
+    public function destroyMessage(Request $request, Conversation $conversation, Message $message): JsonResponse
+    {
+        $this->authorizeParticipant($conversation, $request);
+
+        if ($message->conversation_id !== $conversation->id) {
+            abort(404);
+        }
+
+        if ($message->sender_id !== $request->user()->id) {
+            abort(403, 'Vous ne pouvez supprimer que vos propres messages.');
+        }
+
+        $message->delete();
+
+        return response()->json(['data' => ['deleted' => true]]);
     }
 
     private function authorizeParticipant(Conversation $conversation, Request $request): void

@@ -1,7 +1,10 @@
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_state.dart';
 import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
+import 'package:bookmi_app/features/messaging/presentation/pages/admin_broadcast_page.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/chat_page.dart';
+import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -13,8 +16,7 @@ const _secondary = Color(0xFF00274D);
 const _muted = Color(0xFFF8FAFC);
 const _mutedFg = Color(0xFF64748B);
 const _border = Color(0xFFE2E8F0);
-const _success = Color(0xFF14B8A6);
-const _warning = Color(0xFFFBBF24);
+const _admin = Color(0xFF7C3AED); // purple for admin messages
 
 class ConversationListPage extends StatefulWidget {
   const ConversationListPage({super.key});
@@ -81,7 +83,6 @@ class _MessagesHeader extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Title bar
           Row(
             children: [
               RichText(
@@ -115,23 +116,9 @@ class _MessagesHeader extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
-          // Toggle tabs
           Container(
             height: 42,
             decoration: BoxDecoration(
@@ -188,7 +175,9 @@ class _TabToggle extends StatelessWidget {
               style: GoogleFonts.manrope(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? _secondary : Colors.white.withValues(alpha: 0.7),
+                color: isSelected
+                    ? _secondary
+                    : Colors.white.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -198,7 +187,7 @@ class _TabToggle extends StatelessWidget {
   }
 }
 
-// ── Conversations list ────────────────────────────────────────────
+// ── List (conversations + admin broadcasts merged) ─────────────────
 class _ConversationsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -206,13 +195,58 @@ class _ConversationsList extends StatelessWidget {
       builder: (context, state) {
         return switch (state) {
           MessagingLoading() => _buildLoading(),
-          MessagingError(:final message) => _buildError(message),
-          ConversationsLoaded(:final conversations) => conversations.isEmpty
-              ? _buildEmpty()
-              : _buildList(context, conversations),
+          MessagingError(:final message) => _buildError(context, message),
+          ConversationsLoaded(:final conversations, :final broadcasts) =>
+            _buildList(context, conversations, broadcasts),
           _ => _buildEmpty(),
         };
       },
+    );
+  }
+
+  // ── Merged entry type (conversations + broadcasts sorted by date) ─
+
+  Widget _buildList(
+    BuildContext context,
+    List<ConversationModel> conversations,
+    List<PushNotificationModel> broadcasts,
+  ) {
+    if (conversations.isEmpty && broadcasts.isEmpty) return _buildEmpty();
+
+    // Build tagged entries: (DateTime, Widget)
+    final entries = <(DateTime, Widget)>[];
+
+    for (final c in conversations) {
+      entries.add((
+        c.lastMessageAt ?? DateTime(2000),
+        _DismissibleTile(
+          key: ValueKey('conv_${c.id}'),
+          onDismissed: () => context.read<MessagingCubit>().deleteConversation(c.id),
+          child: _ConversationTile(conversation: c),
+        ),
+      ));
+    }
+    for (final b in broadcasts) {
+      entries.add((
+        b.createdAt,
+        _DismissibleTile(
+          key: ValueKey('bcast_${b.id}'),
+          onDismissed: () => context.read<MessagingCubit>().removeBroadcast(b.id),
+          child: _AdminBroadcastTile(broadcast: b),
+        ),
+      ));
+    }
+
+    entries.sort((a, b) => b.$1.compareTo(a.$1)); // newest first
+
+    return RefreshIndicator(
+      onRefresh: () => context.read<MessagingCubit>().loadConversations(),
+      child: ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: entries.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (_, i) => entries[i].$2,
+      ),
     );
   }
 
@@ -222,7 +256,7 @@ class _ConversationsList extends StatelessWidget {
       itemCount: 5,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (_, __) => Container(
-        height: 76,
+        height: 88,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -244,9 +278,11 @@ class _ConversationsList extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(height: 12, width: 120, color: _border),
-                  const SizedBox(height: 8),
-                  Container(height: 10, width: 200, color: _border),
+                  Container(height: 12, width: 130, color: _border),
+                  const SizedBox(height: 6),
+                  Container(height: 10, width: 180, color: _border),
+                  const SizedBox(height: 6),
+                  Container(height: 10, width: 110, color: _border),
                 ],
               ),
             ),
@@ -256,7 +292,7 @@ class _ConversationsList extends StatelessWidget {
     );
   }
 
-  Widget _buildError(String message) {
+  Widget _buildError(BuildContext context, String message) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -269,6 +305,11 @@ class _ConversationsList extends StatelessWidget {
               message,
               style: GoogleFonts.manrope(color: _mutedFg),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => context.read<MessagingCubit>().loadConversations(),
+              child: const Text('Réessayer'),
             ),
           ],
         ),
@@ -288,11 +329,15 @@ class _ConversationsList extends StatelessWidget {
               color: _primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.chat_bubble_outline, size: 32, color: _primary),
+            child: const Icon(
+              Icons.chat_bubble_outline,
+              size: 32,
+              color: _primary,
+            ),
           ),
           const SizedBox(height: 16),
           Text(
-            'Aucune conversation',
+            'Aucun message',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -301,7 +346,7 @@ class _ConversationsList extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Vos conversations avec les talents\napparaîtront ici',
+            'Vos échanges avec les talents\napparaîtront ici',
             style: GoogleFonts.manrope(fontSize: 13, color: _mutedFg),
             textAlign: TextAlign.center,
           ),
@@ -309,29 +354,54 @@ class _ConversationsList extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildList(BuildContext context, List<ConversationModel> conversations) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: conversations.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, i) => _ConversationTile(
-        conversation: conversations[i],
+// ── Swipe-to-delete wrapper ────────────────────────────────────────
+class _DismissibleTile extends StatelessWidget {
+  const _DismissibleTile({
+    super.key,
+    required this.child,
+    required this.onDismissed,
+  });
+
+  final Widget child;
+  final VoidCallback onDismissed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dismissible(
+      key: key!,
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => onDismissed(),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: const Icon(Icons.delete_outline, color: Colors.white, size: 26),
       ),
+      child: child,
     );
   }
 }
 
-// ── Conversation tile ─────────────────────────────────────────────
+// ── Booking conversation tile ──────────────────────────────────────
 class _ConversationTile extends StatelessWidget {
   const _ConversationTile({required this.conversation});
   final ConversationModel conversation;
 
-  String get _otherName =>
+  String get _talentName =>
       conversation.talentName ?? conversation.clientName ?? 'Inconnu';
 
-  String get _preview =>
-      conversation.latestMessage?.content ?? 'Commencer la conversation…';
+  String get _preview {
+    final msg = conversation.latestMessage;
+    if (msg == null) return 'Appuyez pour voir les échanges';
+    if (msg.type == 'image') return '📷 Photo';
+    if (msg.type == 'video') return '🎥 Vidéo';
+    return msg.content.isNotEmpty ? msg.content : 'Appuyez pour voir les échanges';
+  }
 
   String get _timeLabel {
     final dt = conversation.lastMessageAt;
@@ -345,30 +415,324 @@ class _ConversationTile extends StatelessWidget {
   }
 
   String get _initials {
-    final name = _otherName;
-    final parts = name.split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+    final parts = _talentName.split(' ');
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    return _talentName.isNotEmpty ? _talentName[0].toUpperCase() : '?';
   }
 
   @override
   Widget build(BuildContext context) {
-    final isFlagged = conversation.latestMessage?.isFlagged == true;
-    final unreadCount = 0; // Would come from API
+    final booking = conversation.booking;
+    final unread = conversation.unreadCount;
+    final isClosed = conversation.isClosed;
+    final avatarUrl = conversation.talentAvatarUrl;
 
+    return GestureDetector(
+      onTap: () {
+        final cubit = context.read<MessagingCubit>();
+        Navigator.of(context)
+            .push(
+              MaterialPageRoute<void>(
+                builder: (_) => BlocProvider.value(
+                  value: cubit,
+                  child: ChatPage(
+                    conversationId: conversation.id,
+                    otherPartyName: _talentName,
+                    talentAvatarUrl: avatarUrl,
+                    booking: booking,
+                  ),
+                ),
+              ),
+            )
+            .then((_) => cubit.restoreConversationsIfNeeded());
+      },
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Avatar ─────────────────────────────────────
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    color: _border,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: avatarUrl != null && avatarUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: avatarUrl,
+                          fit: BoxFit.cover,
+                          errorWidget: (_, __, ___) => _AvatarInitials(
+                            initials: _initials,
+                          ),
+                        )
+                      : _AvatarInitials(initials: _initials),
+                ),
+                if (isClosed)
+                  Positioned(
+                    bottom: -2,
+                    right: -2,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: _mutedFg,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.lock,
+                        size: 8,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                else if (unread > 0)
+                  Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$unread',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 12),
+            // ── Content ────────────────────────────────────
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _talentName,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: _secondary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _timeLabel,
+                        style: GoogleFonts.manrope(
+                          fontSize: 11,
+                          color: _mutedFg,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Booking details (package name, date, location)
+                  if (booking != null) ...[
+                    const SizedBox(height: 3),
+                    if (booking.title != null)
+                      Text(
+                        booking.title!,
+                        style: GoogleFonts.manrope(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: _secondary.withValues(alpha: 0.8),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        if (booking.eventDate != null) ...[
+                          const Icon(
+                            Icons.calendar_today_outlined,
+                            size: 11,
+                            color: _mutedFg,
+                          ),
+                          const SizedBox(width: 3),
+                          Text(
+                            _formatDate(booking.eventDate!),
+                            style: GoogleFonts.manrope(
+                              fontSize: 11,
+                              color: _mutedFg,
+                            ),
+                          ),
+                        ],
+                        if (booking.eventDate != null &&
+                            booking.eventLocation != null)
+                          Text(
+                            ' · ',
+                            style: GoogleFonts.manrope(
+                              fontSize: 11,
+                              color: _mutedFg,
+                            ),
+                          ),
+                        if (booking.eventLocation != null)
+                          Expanded(
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_outlined,
+                                  size: 11,
+                                  color: _mutedFg,
+                                ),
+                                const SizedBox(width: 2),
+                                Expanded(
+                                  child: Text(
+                                    booking.eventLocation!,
+                                    style: GoogleFonts.manrope(
+                                      fontSize: 11,
+                                      color: _mutedFg,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _preview,
+                          style: GoogleFonts.manrope(
+                            fontSize: 13,
+                            color: unread > 0
+                                ? _secondary
+                                : const Color(0xFF475569),
+                            fontWeight: unread > 0
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (isClosed)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _mutedFg.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Clos',
+                            style: GoogleFonts.manrope(
+                              fontSize: 10,
+                              color: _mutedFg,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(String isoDate) {
+    final dt = DateTime.tryParse(isoDate);
+    if (dt == null) return isoDate;
+    const months = [
+      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
+      'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
+    ];
+    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+}
+
+class _AvatarInitials extends StatelessWidget {
+  const _AvatarInitials({required this.initials});
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(colors: [_primary, Color(0xFF1565C0)]),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Admin broadcast tile ───────────────────────────────────────────
+class _AdminBroadcastTile extends StatelessWidget {
+  const _AdminBroadcastTile({required this.broadcast});
+  final PushNotificationModel broadcast;
+
+  String get _timeLabel {
+    final now = DateTime.now();
+    final diff = now.difference(broadcast.createdAt);
+    if (diff.inMinutes < 1) return 'À l\'instant';
+    if (diff.inHours < 1) return '${diff.inMinutes}m';
+    if (diff.inDays < 1) return '${diff.inHours}h';
+    return '${diff.inDays}j';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
           MaterialPageRoute<void>(
-            builder: (_) => BlocProvider.value(
-              value: context.read<MessagingCubit>(),
-              child: ChatPage(
-                conversationId: conversation.id,
-                otherPartyName: _otherName,
-              ),
-            ),
+            builder: (_) => AdminBroadcastPage(broadcast: broadcast),
           ),
         );
       },
@@ -386,74 +750,68 @@ class _ConversationTile extends StatelessWidget {
           ],
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [_primary, Color(0xFF1565C0)],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: Text(
-                      _initials,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+            // Admin icon
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    _admin.withValues(alpha: 0.8),
+                    _admin,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                if (unreadCount > 0)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFEF4444),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$unreadCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(
+                Icons.campaign_outlined,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
-            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          _otherName,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: _secondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Row(
+                          children: [
+                            Text(
+                              'BookMi',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: _secondary,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _admin.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Admin',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: _admin,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Text(
@@ -467,77 +825,40 @@ class _ConversationTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    _preview,
+                    broadcast.title,
                     style: GoogleFonts.manrope(
-                      fontSize: 13,
-                      color: _mutedFg,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: _secondary.withValues(alpha: 0.8),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 6),
-                  // Badges
-                  Row(
-                    children: [
-                      if (conversation.bookingRequestId != null)
-                        _Badge(label: 'Mariage', color: _primary),
-                      const SizedBox(width: 6),
-                      _Badge(
-                        label: 'Paiement sécurisé',
-                        icon: Icons.lock_outline,
-                        color: _success,
-                      ),
-                      if (isFlagged) ...[
-                        const SizedBox(width: 6),
-                        _Badge(
-                          label: 'Signalé',
-                          icon: Icons.warning_amber_rounded,
-                          color: _warning,
-                        ),
-                      ],
-                    ],
+                  const SizedBox(height: 2),
+                  Text(
+                    broadcast.body,
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      color: const Color(0xFF475569),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
+            if (broadcast.isUnread)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.only(top: 4, left: 8),
+                decoration: const BoxDecoration(
+                  color: _admin,
+                  shape: BoxShape.circle,
+                ),
+              ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.label, required this.color, this.icon});
-  final String label;
-  final Color color;
-  final IconData? icon;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 10, color: color),
-            const SizedBox(width: 3),
-          ],
-          Text(
-            label,
-            style: GoogleFonts.manrope(
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
       ),
     );
   }

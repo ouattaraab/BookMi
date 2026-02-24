@@ -1,5 +1,6 @@
 import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/data/models/message_model.dart';
+import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
 
 sealed class MessagingState {
   const MessagingState();
@@ -14,8 +15,12 @@ final class MessagingLoading extends MessagingState {
 }
 
 final class ConversationsLoaded extends MessagingState {
-  const ConversationsLoaded(this.conversations);
+  const ConversationsLoaded({
+    required this.conversations,
+    this.broadcasts = const [],
+  });
   final List<ConversationModel> conversations;
+  final List<PushNotificationModel> broadcasts;
 }
 
 final class MessagesLoaded extends MessagingState {
