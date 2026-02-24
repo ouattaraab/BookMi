@@ -355,12 +355,16 @@ GoRouter buildAppRouter(
   );
 
   // Wire FCM notification tap → deep-link.
-  // Booking notifications carry a booking_id → navigate to the detail page.
-  // All other notifications → open the notifications list.
+  // • booking_id present  → booking detail page
+  // • admin_broadcast      → messages tab
+  // • everything else      → notifications list
   NotificationService.instance.onNotificationTap = (message) {
+    final type = message.data['type'];
     final bookingId = message.data['booking_id']?.toString();
     if (bookingId != null && bookingId.isNotEmpty) {
       router.push('/bookings/booking/$bookingId');
+    } else if (type == 'admin_broadcast') {
+      router.push(RoutePaths.messages);
     } else {
       router.push(RoutePaths.notifications);
     }
