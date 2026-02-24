@@ -25,8 +25,8 @@
         x-transition:leave="transition ease-in duration-75"
         x-transition:leave-start="transform opacity-100 scale-100"
         x-transition:leave-end="transform opacity-0 scale-95"
-        class="absolute right-0 top-12 w-80 rounded-2xl bg-white shadow-2xl border border-gray-100 overflow-hidden z-50"
-        style="box-shadow: 0 16px 48px rgba(0,0,0,0.15)"
+        class="absolute top-12 w-80 rounded-2xl bg-white shadow-2xl border border-gray-100 overflow-hidden z-50"
+        style="right: 0; left: auto; width: 20rem; box-shadow: 0 16px 48px rgba(0,0,0,0.15)"
     >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <p class="text-sm font-bold text-gray-900">Notifications</p>

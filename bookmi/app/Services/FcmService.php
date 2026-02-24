@@ -26,7 +26,8 @@ class FcmService
         }
 
         try {
-            $message = CloudMessage::withTarget('token', $deviceToken)
+            $message = CloudMessage::new()
+                ->withToken($deviceToken)
                 ->withNotification(Notification::create($title, $body))
                 ->withData(array_map('strval', $data));
 
