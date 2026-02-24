@@ -22,6 +22,10 @@ abstract final class RouteNames {
   static const profileIdentityVerification = 'profileIdentityVerification';
   static const profileTalentStatistics = 'profileTalentStatistics';
   static const profileSupport = 'profileSupport';
+  static const profileTalentEarnings = 'profileTalentEarnings';
+  static const profilePortfolioManager = 'profilePortfolioManager';
+  static const profilePackageManager = 'profilePackageManager';
+  static const notifications = 'notifications';
 }
 
 abstract final class RoutePaths {
@@ -48,4 +52,8 @@ abstract final class RoutePaths {
   static const profileIdentityVerification = 'identity-verification';
   static const profileTalentStatistics = 'talent-statistics';
   static const profileSupport = 'support';
+  static const profileTalentEarnings = 'earnings';
+  static const profilePortfolioManager = 'portfolio-manager';
+  static const profilePackageManager = 'package-manager';
+  static const notifications = '/notifications';
 }

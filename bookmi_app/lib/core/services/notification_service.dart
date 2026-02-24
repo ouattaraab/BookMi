@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -38,8 +39,14 @@ class NotificationService {
     await _localNotifications.initialize(
       const InitializationSettings(android: androidInit, iOS: iosInit),
       onDidReceiveNotificationResponse: (details) {
-        // Foreground notification tap — payload is JSON of the RemoteMessage data
-        // handled via onNotificationTap callback
+        // Foreground notification tap — payload carries JSON of RemoteMessage.data
+        final payload = details.payload;
+        if (payload == null || payload.isEmpty) return;
+        try {
+          final raw = jsonDecode(payload) as Map<String, dynamic>;
+          final data = raw.map((k, v) => MapEntry(k, v.toString()));
+          onNotificationTap?.call(RemoteMessage(data: data));
+        } catch (_) {}
       },
     );
 
@@ -117,6 +124,9 @@ class NotificationService {
           presentSound: true,
         ),
       ),
+      // Payload = JSON of message.data so onDidReceiveNotificationResponse
+      // can reconstruct the data and call onNotificationTap for deep-linking.
+      payload: message.data.isNotEmpty ? jsonEncode(message.data) : null,
     );
   }
 }

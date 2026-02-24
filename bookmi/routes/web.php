@@ -12,6 +12,14 @@ use App\Http\Controllers\Web\TalentNotificationController;
 use App\Http\Controllers\Web\TalentPageController;
 use Illuminate\Support\Facades\Route;
 
+// ── Firebase Service Worker (config injecté depuis .env, sans clé hardcodée) ─
+Route::get('/firebase-messaging-sw.js', function () {
+    return response()
+        ->view('firebase-messaging-sw')
+        ->header('Content-Type', 'application/javascript')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate');
+})->name('firebase.sw');
+
 // ── Public ─────────────────────────────────────────────────────────────────
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/talents', [TalentDiscoveryController::class, 'index'])->name('talents.index');

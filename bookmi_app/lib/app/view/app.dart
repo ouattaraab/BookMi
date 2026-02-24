@@ -14,6 +14,7 @@ import 'package:bookmi_app/features/favorites/bloc/favorites_bloc.dart';
 import 'package:bookmi_app/features/favorites/data/local/favorites_local_source.dart';
 import 'package:bookmi_app/features/favorites/data/repositories/favorites_repository.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
@@ -81,6 +82,7 @@ class _AppDependencies {
     required this.onboardingRepo,
     required this.messagingRepo,
     required this.profileRepo,
+    required this.notificationRepo,
     required this.router,
   });
 
@@ -95,6 +97,7 @@ class _AppDependencies {
   final OnboardingRepository onboardingRepo;
   final MessagingRepository messagingRepo;
   final ProfileRepository profileRepo;
+  final NotificationRepository notificationRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -152,6 +155,7 @@ class _AppDependencies {
     final onboardingRepo = OnboardingRepository(apiClient: apiClient);
     final messagingRepo = MessagingRepository(apiClient: apiClient);
     final profileRepo = ProfileRepository(apiClient: apiClient);
+    final notificationRepo = NotificationRepository(apiClient: apiClient);
 
     final router = buildAppRouter(
       talentProfileRepo,
@@ -162,6 +166,7 @@ class _AppDependencies {
       onboardingRepo,
       messagingRepo,
       profileRepo,
+      notificationRepo,
     );
 
     return _AppDependencies(
@@ -176,6 +181,7 @@ class _AppDependencies {
       onboardingRepo: onboardingRepo,
       messagingRepo: messagingRepo,
       profileRepo: profileRepo,
+      notificationRepo: notificationRepo,
       router: router,
     );
   }

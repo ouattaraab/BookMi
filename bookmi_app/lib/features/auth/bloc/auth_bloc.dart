@@ -98,6 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       case ApiSuccess(:final data):
         await _secureStorage.saveToken(data.token);
         emit(AuthAuthenticated(user: data.user, roles: data.roles));
+        unawaited(_registerFcmToken());
       case ApiFailure(:final code, :final message, :final details):
         emit(AuthFailure(code: code, message: message, details: details));
     }
@@ -167,6 +168,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (token != null) {
         await _authRepository.updateFcmToken(token);
       }
+      // Keep token fresh: when Firebase rotates it, push the new one immediately.
+      NotificationService.instance.setTokenRefreshCallback((newToken) {
+        _authRepository.updateFcmToken(newToken);
+      });
     } catch (_) {
       // Non-critical — ignore FCM token registration failures
     }

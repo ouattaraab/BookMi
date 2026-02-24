@@ -3,7 +3,10 @@ import 'dart:async';
 import 'package:bookmi_app/app/routes/guards/auth_guard.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/app/view/shell_page.dart';
+import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
+import 'package:bookmi_app/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
 import 'package:bookmi_app/features/evaluation/presentation/pages/evaluation_page.dart';
@@ -23,7 +26,6 @@ import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/conversation_list_page.dart';
-import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/favorites_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/identity_verification_page.dart';
@@ -32,6 +34,9 @@ import 'package:bookmi_app/features/profile/presentation/pages/personal_info_pag
 import 'package:bookmi_app/features/profile/presentation/pages/profile_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/support_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/talent_statistics_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/talent_earnings_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/portfolio_manager_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/package_manager_page.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_profile_page.dart';
@@ -66,8 +71,9 @@ GoRouter buildAppRouter(
   OnboardingRepository onboardingRepo,
   MessagingRepository messagingRepo,
   ProfileRepository profileRepo,
+  NotificationRepository notificationRepo,
 ) {
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: RoutePaths.splash,
     refreshListenable: _GoRouterRefreshStream(authBloc.stream),
@@ -76,6 +82,14 @@ GoRouter buildAppRouter(
       return authGuard(context, location);
     },
     routes: [
+      // ── Notifications (pushed above shell, accessible from any screen) ───
+      GoRoute(
+        path: RoutePaths.notifications,
+        name: RouteNames.notifications,
+        builder: (context, state) =>
+            NotificationsPage(repository: notificationRepo),
+      ),
+
       // ── Auth routes (outside shell) ──────────────────────
       GoRoute(
         path: RoutePaths.splash,
@@ -120,7 +134,10 @@ GoRouter buildAppRouter(
       // ── Main app shell (authenticated) ───────────────────
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
-            ShellPage(navigationShell: navigationShell),
+            ShellPage(
+              navigationShell: navigationShell,
+              profileRepository: profileRepo,
+            ),
         branches: [
           // Branch 0: Home
           StatefulShellBranch(
@@ -260,17 +277,16 @@ GoRouter buildAppRouter(
               GoRoute(
                 path: RoutePaths.profile,
                 name: RouteNames.profile,
-                builder: (context, state) => BlocProvider(
-                  create: (_) => ProfileBloc(repository: profileRepo),
-                  child: const ProfilePage(),
-                ),
+                builder: (context, state) => const ProfilePage(),
                 routes: [
                   GoRoute(
                     path: RoutePaths.profilePersonalInfo,
                     name: RouteNames.profilePersonalInfo,
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) =>
-                        const PersonalInfoPage(),
+                    builder: (context, state) => RepositoryProvider.value(
+                      value: profileRepo,
+                      child: const PersonalInfoPage(),
+                    ),
                   ),
                   GoRoute(
                     path: RoutePaths.profileFavorites,
@@ -290,8 +306,10 @@ GoRouter buildAppRouter(
                     path: RoutePaths.profileIdentityVerification,
                     name: RouteNames.profileIdentityVerification,
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) =>
-                        const IdentityVerificationPage(),
+                    builder: (context, state) => RepositoryProvider.value(
+                      value: profileRepo,
+                      child: const IdentityVerificationPage(),
+                    ),
                   ),
                   GoRoute(
                     path: RoutePaths.profileTalentStatistics,
@@ -306,6 +324,27 @@ GoRouter buildAppRouter(
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const SupportPage(),
                   ),
+                  GoRoute(
+                    path: RoutePaths.profileTalentEarnings,
+                    name: RouteNames.profileTalentEarnings,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        TalentEarningsPage(repository: profileRepo),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profilePortfolioManager,
+                    name: RouteNames.profilePortfolioManager,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        PortfolioManagerPage(repository: profileRepo),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profilePackageManager,
+                    name: RouteNames.profilePackageManager,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        PackageManagerPage(repository: profileRepo),
+                  ),
                 ],
               ),
             ],
@@ -314,4 +353,18 @@ GoRouter buildAppRouter(
       ),
     ],
   );
+
+  // Wire FCM notification tap → deep-link.
+  // Booking notifications carry a booking_id → navigate to the detail page.
+  // All other notifications → open the notifications list.
+  NotificationService.instance.onNotificationTap = (message) {
+    final bookingId = message.data['booking_id']?.toString();
+    if (bookingId != null && bookingId.isNotEmpty) {
+      router.push('/bookings/booking/$bookingId');
+    } else {
+      router.push(RoutePaths.notifications);
+    }
+  };
+
+  return router;
 }

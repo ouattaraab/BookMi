@@ -1,21 +1,19 @@
-/**
- * BookMi — Firebase Cloud Messaging Service Worker
- * Handles background push notifications for the admin panel.
- *
- * Firebase config values are public (client-side) — safe to hardcode here.
- * This file MUST be served from the root path /firebase-messaging-sw.js.
- */
-
+{{--
+    BookMi — Firebase Cloud Messaging Service Worker
+    Rendu côté serveur et servi comme application/javascript via :
+        Route::get('/firebase-messaging-sw.js', ...)
+    Les valeurs de config sont injectées depuis .env — rien n'est hardcodé.
+--}}
 importScripts('https://www.gstatic.com/firebasejs/12.9.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/12.9.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-    apiKey:            'AIzaSyB6LbywHNyRH7qJS7m8UB5j1BMZy0sDlgs',
-    authDomain:        'bookmi-ea7a9.firebaseapp.com',
-    projectId:         'bookmi-ea7a9',
-    storageBucket:     'bookmi-ea7a9.firebasestorage.app',
-    messagingSenderId: '372395527538',
-    appId:             '1:372395527538:web:1a3894eb332739e8b661eb',
+    apiKey:            @json(config('services.firebase_web.api_key')),
+    authDomain:        @json(config('services.firebase_web.auth_domain')),
+    projectId:         @json(config('services.firebase_web.project_id')),
+    storageBucket:     @json(config('services.firebase_web.storage_bucket')),
+    messagingSenderId: @json(config('services.firebase_web.messaging_sender_id')),
+    appId:             @json(config('services.firebase_web.app_id')),
 });
 
 const messaging = firebase.messaging();
