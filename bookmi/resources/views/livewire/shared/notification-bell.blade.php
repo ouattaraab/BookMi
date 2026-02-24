@@ -9,8 +9,8 @@
         </svg>
         @if($this->unreadCount > 0)
             <span
-                class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
-                style="background: {{ $accentColor }}"
+                class="absolute rounded-full flex items-center justify-center text-white font-bold"
+                style="top: 1px; right: 1px; width: 13px; height: 13px; font-size: 7px; background: {{ $accentColor }}; line-height: 1;"
             >
                 {{ $this->unreadCount > 9 ? '9+' : $this->unreadCount }}
             </span>
