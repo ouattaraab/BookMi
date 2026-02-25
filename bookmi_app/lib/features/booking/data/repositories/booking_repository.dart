@@ -144,6 +144,40 @@ class BookingRepository {
     }
   }
 
+  /// Accept a pending booking (talent action).
+  Future<ApiResult<BookingModel>> acceptBooking(int id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingAccept(id),
+      );
+      final booking = BookingModel.fromJson(
+        response.data!['data'] as Map<String, dynamic>,
+      );
+      return ApiSuccess(booking);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Reject a pending booking (talent action).
+  Future<ApiResult<BookingModel>> rejectBooking(
+    int id, {
+    String? reason,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingReject(id),
+        data: reason != null ? {'reason': reason} : null,
+      );
+      final booking = BookingModel.fromJson(
+        response.data!['data'] as Map<String, dynamic>,
+      );
+      return ApiSuccess(booking);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   BookingListResponse _parseListResponse(Map<String, dynamic> data) {

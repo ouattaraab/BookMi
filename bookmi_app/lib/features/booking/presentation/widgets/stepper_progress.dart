@@ -103,11 +103,11 @@ class _StepDot extends StatelessWidget {
         color: isCompleted
             ? BookmiColors.brandBlue
             : isActive
-            ? BookmiColors.ctaOrange
+            ? BookmiColors.brandBlueLight
             : Colors.white.withValues(alpha: 0.1),
         border: Border.all(
           color: isActive
-              ? BookmiColors.ctaOrange
+              ? BookmiColors.brandBlueLight
               : isCompleted
               ? BookmiColors.brandBlue
               : Colors.white.withValues(alpha: 0.25),

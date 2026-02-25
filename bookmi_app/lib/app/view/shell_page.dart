@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bookmi_app/core/design_system/components/glass_bottom_nav.dart';
+import 'package:bookmi_app/core/design_system/components/glass_logo_bar.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
@@ -83,9 +84,33 @@ class _ShellPageState extends State<ShellPage> {
             pendingCount = profileState.stats.pendingBookingCount;
           }
           return Scaffold(
-            backgroundColor: BookmiColors.brandNavy,
-            body: widget.navigationShell,
+            backgroundColor: BookmiColors.backgroundDeep,
+            appBar: const GlassLogoBar(),
             extendBody: true,
+            body: Stack(
+              children: [
+                // Atmospheric blue glow from top
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 280,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: Alignment.topCenter,
+                        radius: 1.2,
+                        colors: [
+                          const Color(0xFF2196F3).withValues(alpha: 0.15),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                widget.navigationShell,
+              ],
+            ),
             bottomNavigationBar: GlassBottomNav(
               currentIndex: widget.navigationShell.currentIndex,
               bookingsBadge: pendingCount,

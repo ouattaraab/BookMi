@@ -45,3 +45,22 @@ final class DiscoverySearchChanged extends DiscoveryEvent {
   @override
   int get hashCode => query.hashCode;
 }
+
+/// Triggered by the hero search bar: talent type + optional event date.
+@immutable
+final class DiscoveryDateSearchRequested extends DiscoveryEvent {
+  const DiscoveryDateSearchRequested({this.query, this.eventDate});
+
+  final String? query;
+  final DateTime? eventDate;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is DiscoveryDateSearchRequested &&
+          query == other.query &&
+          eventDate == other.eventDate;
+
+  @override
+  int get hashCode => Object.hash(query, eventDate);
+}

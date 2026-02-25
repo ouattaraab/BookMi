@@ -77,4 +77,8 @@ abstract final class ApiEndpoints {
   static String conversationDelete(int id) => '/conversations/$id';
   static String messageDelete(int convId, int msgId) =>
       '/conversations/$convId/messages/$msgId';
+
+  // Availability notification
+  static String talentNotifyAvailability(int talentId) =>
+      '/talents/$talentId/notify-availability';
 }

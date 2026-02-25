@@ -292,7 +292,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: const Text(
                           'Se connecter',
                           style: TextStyle(
-                            color: BookmiColors.ctaOrange,
+                            color: BookmiColors.brandBlueLight,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

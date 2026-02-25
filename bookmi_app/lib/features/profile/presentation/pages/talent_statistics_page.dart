@@ -23,6 +23,7 @@ class TalentStatisticsPage extends StatefulWidget {
 
 class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
   Map<String, dynamic>? _data;
+  ProfileStats? _stats;
   bool _loading = true;
   String? _error;
 
@@ -37,12 +38,25 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
       _loading = true;
       _error = null;
     });
-    final result = await widget.repository.getFinancialDashboard();
+
+    // Fetch both endpoints in parallel
+    final results = await Future.wait([
+      widget.repository.getFinancialDashboard(),
+      widget.repository.getStats(isTalent: true),
+    ]);
+
     if (!mounted) return;
-    switch (result) {
+
+    final finResult = results[0] as ApiResult<Map<String, dynamic>>;
+    final statsResult = results[1] as ApiResult<ProfileStats>;
+
+    switch (finResult) {
       case ApiSuccess(:final data):
         setState(() {
           _data = data;
+          if (statsResult case ApiSuccess(:final data)) {
+            _stats = data;
+          }
           _loading = false;
         });
       case ApiFailure(:final message):
@@ -120,6 +134,12 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
             ?.cast<Map<String, dynamic>>()) ??
         [];
 
+    final bookingCount = _stats?.bookingCount ?? 0;
+    final viewsToday = _stats?.profileViewsToday ?? 0;
+    final viewsWeek = _stats?.profileViewsWeek ?? 0;
+    final viewsMonth = _stats?.profileViewsMonth ?? 0;
+    final viewsTotal = _stats?.profileViewsTotal ?? 0;
+
     final fmt = NumberFormat('#,###', 'fr_FR');
 
     return RefreshIndicator(
@@ -127,7 +147,85 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Revenue this month
+          // ── Réservations ────────────────────────────────────────────
+          _SectionTitle(title: 'Réservations'),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: 'Réservations totales',
+                  value: '$bookingCount',
+                  icon: Icons.calendar_today_outlined,
+                  color: _primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _StatCard(
+                  label: 'Prestations réalisées',
+                  value: '$nombrePrestations',
+                  icon: Icons.star_outline,
+                  color: _warning,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // ── Vues du profil ──────────────────────────────────────────
+          _SectionTitle(title: 'Vues du profil'),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: "Aujourd'hui",
+                  value: '$viewsToday',
+                  icon: Icons.visibility_outlined,
+                  color: _success,
+                  compact: true,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatCard(
+                  label: 'Cette semaine',
+                  value: '$viewsWeek',
+                  icon: Icons.bar_chart_outlined,
+                  color: const Color(0xFF8B5CF6),
+                  compact: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _StatCard(
+                  label: 'Ce mois',
+                  value: '$viewsMonth',
+                  icon: Icons.calendar_month_outlined,
+                  color: _primary,
+                  compact: true,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _StatCard(
+                  label: 'Total',
+                  value: '$viewsTotal',
+                  icon: Icons.people_outline,
+                  color: _warning,
+                  compact: true,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // ── Revenus ─────────────────────────────────────────────────
+          _SectionTitle(title: 'Revenus'),
+          const SizedBox(height: 8),
           _StatCard(
             label: 'Revenus ce mois',
             value: '${fmt.format(revenusMoisCourant)} FCFA',
@@ -138,8 +236,7 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
                 : null,
             subtitlePositive: comparaison >= 0,
           ),
-          const SizedBox(height: 12),
-          // Grid: total + prestations + moyen + mois précédent
+          const SizedBox(height: 10),
           Row(
             children: [
               Expanded(
@@ -154,10 +251,10 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
               const SizedBox(width: 10),
               Expanded(
                 child: _StatCard(
-                  label: 'Prestations',
-                  value: '$nombrePrestations',
-                  icon: Icons.star_outline,
-                  color: _warning,
+                  label: 'Cachet moyen',
+                  value: '${fmt.format(cachetMoyen)} FCFA',
+                  icon: Icons.paid_outlined,
+                  color: const Color(0xFF8B5CF6),
                   compact: true,
                 ),
               ),
@@ -168,16 +265,6 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
             children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Cachet moyen',
-                  value: '${fmt.format(cachetMoyen)} FCFA',
-                  icon: Icons.paid_outlined,
-                  color: const Color(0xFF8B5CF6),
-                  compact: true,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _StatCard(
                   label: 'Mois précédent',
                   value: '${fmt.format(revenusMoisPrecedent)} FCFA',
                   icon: Icons.history,
@@ -185,6 +272,8 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
                   compact: true,
                 ),
               ),
+              const SizedBox(width: 10),
+              Expanded(child: const SizedBox()),
             ],
           ),
           if (mensuels.isNotEmpty) ...[
@@ -213,7 +302,26 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
               ),
             ),
           ],
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionTitle extends StatelessWidget {
+  const _SectionTitle({required this.title});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      title,
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        color: _mutedFg,
+        letterSpacing: 0.5,
       ),
     );
   }

@@ -157,7 +157,7 @@ class _OnboardingHeader extends StatelessWidget {
                   child: Icon(
                     filled ? Icons.star_rounded : Icons.star_outline_rounded,
                     key: ValueKey(filled),
-                    color: filled ? BookmiColors.ctaOrange : Colors.white24,
+                    color: filled ? BookmiColors.brandBlueLight : Colors.white24,
                     size: 28,
                   ),
                 ),
@@ -192,7 +192,7 @@ class _OnboardingHeader extends StatelessWidget {
                 minHeight: 10,
                 backgroundColor: Colors.white12,
                 valueColor: const AlwaysStoppedAnimation<Color>(
-                  BookmiColors.ctaOrange,
+                  BookmiColors.brandBlueLight,
                 ),
               ),
             ),
@@ -203,7 +203,7 @@ class _OnboardingHeader extends StatelessWidget {
             child: Text(
               '${state.profileCompletionPct}% complet',
               style: const TextStyle(
-                color: BookmiColors.ctaOrangeLight,
+                color: BookmiColors.brandBlueLight,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -243,7 +243,7 @@ class _StepCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isNext
-              ? BookmiColors.ctaOrange.withOpacity(0.6)
+              ? BookmiColors.brandBlueLight.withOpacity(0.6)
               : isCompleted
                   ? BookmiColors.success.withOpacity(0.4)
                   : Colors.white12,
@@ -278,7 +278,7 @@ class _StepCard extends StatelessWidget {
                       height: 48,
                       decoration: BoxDecoration(
                         color: isNext
-                            ? BookmiColors.ctaOrange.withOpacity(0.15)
+                            ? BookmiColors.brandBlueLight.withOpacity(0.15)
                             : Colors.white.withOpacity(0.08),
                         shape: BoxShape.circle,
                       ),
@@ -323,7 +323,7 @@ class _StepCard extends StatelessWidget {
             if (!isCompleted)
               Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: isNext ? BookmiColors.ctaOrange : Colors.white24,
+                color: isNext ? BookmiColors.brandBlueLight : Colors.white24,
                 size: 14,
               ),
           ],

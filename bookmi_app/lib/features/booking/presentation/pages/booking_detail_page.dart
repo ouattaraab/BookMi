@@ -199,7 +199,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                     icon: Icons.bolt,
                     label: 'Type',
                     value: 'Express',
-                    valueColor: BookmiColors.ctaOrange,
+                    valueColor: BookmiColors.brandBlueLight,
                   ),
                 ],
                 if (booking.message != null &&
@@ -427,7 +427,7 @@ class _StatusCircle extends StatelessWidget {
     ),
     'completed' => (Icons.star_outline, BookmiColors.brandBlueLight),
     'cancelled' => (Icons.cancel_outlined, BookmiColors.error),
-    'disputed' => (Icons.report_problem_outlined, BookmiColors.ctaOrange),
+    'disputed' => (Icons.report_problem_outlined, BookmiColors.brandBlueLight),
     _ => (Icons.receipt_long_outlined, Colors.white54),
   };
 }
@@ -463,7 +463,7 @@ class _StatusPill extends StatelessWidget {
     'confirmed' => ('Confirmée', BookmiColors.success),
     'completed' => ('Passée', BookmiColors.brandBlueLight),
     'cancelled' => ('Annulée', BookmiColors.error),
-    'disputed' => ('Litige', BookmiColors.ctaOrange),
+    'disputed' => ('Litige', BookmiColors.brandBlueLight),
     _ => (status, Colors.white54),
   };
 }

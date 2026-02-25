@@ -61,7 +61,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     const Icon(
                       Icons.lock_reset_rounded,
                       size: 60,
-                      color: BookmiColors.ctaOrange,
+                      color: BookmiColors.brandBlueLight,
                     ),
                     const SizedBox(height: BookmiSpacing.spaceBase),
                     Text(

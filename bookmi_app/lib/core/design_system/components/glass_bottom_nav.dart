@@ -10,11 +10,13 @@ class GlassBottomNav extends StatelessWidget {
   const GlassBottomNav({
     required this.currentIndex,
     required this.onTap,
+    this.bookingsBadge = 0,
     super.key,
   });
 
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final int bookingsBadge;
 
   static const _items = <_NavItem>[
     _NavItem(icon: Icons.home_rounded, label: 'Accueil'),
@@ -44,6 +46,7 @@ class GlassBottomNav extends StatelessWidget {
         children: List.generate(_items.length, (index) {
           final item = _items[index];
           final isActive = index == currentIndex;
+          final showBadge = index == 2 && bookingsBadge > 0;
           return Expanded(
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
@@ -51,21 +54,56 @@ class GlassBottomNav extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    item.icon,
-                    color: isActive
-                        ? BookmiColors.brandBlue
-                        : Colors.white.withValues(alpha: 0.5),
-                    size: 24,
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Icon(
+                        item.icon,
+                        color: isActive
+                            ? BookmiColors.brandElectricBlue
+                            : Colors.white.withValues(alpha: 0.5),
+                        size: 24,
+                      ),
+                      if (showBadge)
+                        Positioned(
+                          top: -4,
+                          right: -6,
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: BookmiColors.brandBlueLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              bookingsBadge > 99
+                                  ? '99+'
+                                  : '$bookingsBadge',
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     item.label,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight:
+                          isActive ? FontWeight.w600 : FontWeight.w400,
                       color: isActive
-                          ? BookmiColors.brandBlue
+                          ? BookmiColors.brandElectricBlue
                           : Colors.white.withValues(alpha: 0.5),
                     ),
                   ),

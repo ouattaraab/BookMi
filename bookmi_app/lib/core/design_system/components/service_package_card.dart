@@ -34,7 +34,7 @@ class ServicePackageCard extends StatelessWidget {
   }
 
   Color get _borderColor => switch (type) {
-    'premium' => BookmiColors.ctaOrange,
+    'premium' => BookmiColors.brandBlueLight,
     'standard' => BookmiColors.brandBlue,
     _ => BookmiColors.glassBorder,
   };
@@ -46,7 +46,7 @@ class ServicePackageCard extends StatelessWidget {
   };
 
   Color get _badgeColor => switch (type) {
-    'premium' => BookmiColors.ctaOrange,
+    'premium' => BookmiColors.brandBlueLight,
     'standard' => BookmiColors.brandBlue,
     _ => BookmiColors.glassBorder,
   };
@@ -57,7 +57,7 @@ class ServicePackageCard extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         GlassCard(
-          borderColor: isRecommended ? BookmiColors.ctaOrange : _borderColor,
+          borderColor: isRecommended ? BookmiColors.brandBlueLight : _borderColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -146,7 +146,7 @@ class ServicePackageCard extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: isRecommended ? BookmiColors.ctaOrange : _badgeColor,
+                color: isRecommended ? BookmiColors.brandBlueLight : _badgeColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(

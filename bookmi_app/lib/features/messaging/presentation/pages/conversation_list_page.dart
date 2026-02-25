@@ -10,12 +10,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ── Design tokens ─────────────────────────────────────────────────
-const _primary = Color(0xFF3B9DF2);
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
+// ── Design tokens (dark) ─────────────────────────────────────────
+const _primary = Color(0xFF2196F3);
+const _secondary = Colors.white;
+const _muted = Color(0xFF0D1421);
+const _mutedFg = Color(0xFF94A3B8);
+const _border = Color(0x1AFFFFFF);
 const _admin = Color(0xFF7C3AED); // purple for admin messages
 
 class ConversationListPage extends StatefulWidget {
@@ -26,8 +26,6 @@ class ConversationListPage extends StatefulWidget {
 }
 
 class _ConversationListPageState extends State<ConversationListPage> {
-  int _selectedTab = 1; // 0 = Réservations, 1 = Messages
-
   @override
   void initState() {
     super.initState();
@@ -37,24 +35,11 @@ class _ConversationListPageState extends State<ConversationListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _muted,
+      backgroundColor: Colors.transparent,
       body: Column(
         children: [
-          _MessagesHeader(
-            selectedTab: _selectedTab,
-            onTabChanged: (tab) {
-              if (tab == 0) {
-                context.go('/bookings');
-              } else {
-                setState(() => _selectedTab = tab);
-              }
-            },
-          ),
-          Expanded(
-            child: _selectedTab == 1
-                ? _ConversationsList()
-                : const SizedBox.shrink(),
-          ),
+          const _MessagesHeader(),
+          Expanded(child: _ConversationsList()),
         ],
       ),
     );
@@ -63,83 +48,81 @@ class _ConversationListPageState extends State<ConversationListPage> {
 
 // ── Header ────────────────────────────────────────────────────────
 class _MessagesHeader extends StatelessWidget {
-  const _MessagesHeader({
-    required this.selectedTab,
-    required this.onTabChanged,
-  });
-
-  final int selectedTab;
-  final ValueChanged<int> onTabChanged;
+  const _MessagesHeader();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _secondary,
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 12,
-        left: 16,
-        right: 16,
-        bottom: 16,
+      color: Colors.transparent,
+      padding: const EdgeInsets.only(
+        top: 16,
+        left: 20,
+        right: 20,
+        bottom: 0,
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Book',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    TextSpan(
-                      text: 'Mi',
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: _primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 10),
               Text(
-                '·  Mes Messages',
-                style: GoogleFonts.manrope(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.6),
+                'Messages',
+                style: GoogleFonts.nunito(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
                 ),
               ),
               const Spacer(),
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.add,
+                  color: Colors.white.withValues(alpha: 0.7),
+                  size: 18,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
+          // Glass search bar
           Container(
             height: 42,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: Colors.white.withValues(alpha: 0.06),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
-                _TabToggle(
-                  label: 'Réservations',
-                  isSelected: selectedTab == 0,
-                  onTap: () => onTabChanged(0),
+                const SizedBox(width: 12),
+                Icon(
+                  Icons.search,
+                  color: Colors.white.withValues(alpha: 0.35),
+                  size: 15,
                 ),
-                _TabToggle(
-                  label: 'Messages',
-                  isSelected: selectedTab == 1,
-                  onTap: () => onTabChanged(1),
+                const SizedBox(width: 8),
+                Text(
+                  'Rechercher une conversation…',
+                  style: GoogleFonts.nunito(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.25),
+                  ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -241,10 +224,9 @@ class _ConversationsList extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () => context.read<MessagingCubit>().loadConversations(),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: entries.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (_, i) => entries[i].$2,
       ),
     );
@@ -252,14 +234,14 @@ class _ConversationsList extends StatelessWidget {
 
   Widget _buildLoading() {
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: 5,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const Divider(color: Color(0x0DFFFFFF), height: 1),
       itemBuilder: (_, __) => Container(
-        height: 88,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+        height: 82,
+        margin: const EdgeInsets.symmetric(vertical: 0),
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0x0DFFFFFF))),
         ),
         child: Row(
           children: [
@@ -447,17 +429,11 @@ class _ConversationTile extends StatelessWidget {
             .then((_) => cubit.restoreConversationsIfNeeded());
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0x0DFFFFFF)), // rgba(255,255,255,0.05)
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -737,17 +713,11 @@ class _AdminBroadcastTile extends StatelessWidget {
         );
       },
       child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Color(0x0DFFFFFF)),
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -8,7 +8,7 @@ abstract final class BookmiTheme {
     useMaterial3: true,
     colorScheme: const ColorScheme.light(
       primary: BookmiColors.brandBlue,
-      secondary: BookmiColors.ctaOrange,
+      secondary: BookmiColors.brandBlueLight,
       onSecondary: Colors.white,
       onSurface: BookmiColors.brandNavy,
       error: BookmiColors.error,
@@ -25,7 +25,7 @@ abstract final class BookmiTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: BookmiColors.ctaOrange,
+        backgroundColor: BookmiColors.brandBlueLight,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BookmiRadius.buttonBorder,
@@ -54,7 +54,7 @@ abstract final class BookmiTheme {
     useMaterial3: true,
     colorScheme: const ColorScheme.dark(
       primary: BookmiColors.brandBlue,
-      secondary: BookmiColors.ctaOrange,
+      secondary: BookmiColors.brandBlueLight,
       surface: BookmiColors.brandNavy,
       error: BookmiColors.error,
     ),
@@ -62,7 +62,7 @@ abstract final class BookmiTheme {
       bodyColor: Colors.white,
       displayColor: Colors.white,
     ),
-    scaffoldBackgroundColor: BookmiColors.brandNavy,
+    scaffoldBackgroundColor: BookmiColors.backgroundDeep,
     appBarTheme: const AppBarTheme(
       backgroundColor: Colors.transparent,
       foregroundColor: Colors.white,
@@ -70,7 +70,7 @@ abstract final class BookmiTheme {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: BookmiColors.ctaOrange,
+        backgroundColor: BookmiColors.brandBlueLight,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BookmiRadius.buttonBorder,

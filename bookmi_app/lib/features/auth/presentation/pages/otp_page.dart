@@ -127,7 +127,7 @@ class _OtpPageState extends State<OtpPage> {
                     const Icon(
                       Icons.sms_outlined,
                       size: 60,
-                      color: BookmiColors.ctaOrange,
+                      color: BookmiColors.brandBlueLight,
                     ),
                     const SizedBox(height: BookmiSpacing.spaceBase),
                     Text(
@@ -193,7 +193,7 @@ class _OtpPageState extends State<OtpPage> {
                               child: const Text(
                                 'Renvoyer le code',
                                 style: TextStyle(
-                                  color: BookmiColors.ctaOrange,
+                                  color: BookmiColors.brandBlueLight,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),

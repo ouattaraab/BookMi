@@ -127,7 +127,7 @@ class _Step3RecapState extends State<Step3Recap> {
           if (widget.enableExpress)
             GlassCard(
               borderColor: widget.isExpress
-                  ? BookmiColors.ctaOrange
+                  ? BookmiColors.brandBlueLight
                   : BookmiColors.glassBorder,
               child: Row(
                 children: [
@@ -136,11 +136,11 @@ class _Step3RecapState extends State<Step3Recap> {
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: BookmiColors.ctaOrange.withValues(alpha: 0.15),
+                      color: BookmiColors.brandBlueLight.withValues(alpha: 0.15),
                     ),
                     child: const Icon(
                       Icons.bolt,
-                      color: BookmiColors.ctaOrange,
+                      color: BookmiColors.brandBlueLight,
                       size: 22,
                     ),
                   ),
@@ -170,9 +170,9 @@ class _Step3RecapState extends State<Step3Recap> {
                   Switch(
                     value: widget.isExpress,
                     onChanged: widget.onExpressChanged,
-                    activeColor: BookmiColors.ctaOrange,
+                    activeColor: BookmiColors.brandBlueLight,
                     activeTrackColor:
-                        BookmiColors.ctaOrange.withValues(alpha: 0.3),
+                        BookmiColors.brandBlueLight.withValues(alpha: 0.3),
                   ),
                 ],
               ),

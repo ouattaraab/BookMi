@@ -10,6 +10,7 @@ class AuthUser {
     required this.phone,
     required this.isActive,
     this.phoneVerifiedAt,
+    this.avatarUrl,
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
@@ -21,6 +22,7 @@ class AuthUser {
       phone: json['phone'] as String,
       phoneVerifiedAt: json['phone_verified_at'] as String?,
       isActive: json['is_active'] as bool,
+      avatarUrl: json['avatar_url'] as String?,
     );
   }
 
@@ -31,6 +33,7 @@ class AuthUser {
   final String phone;
   final String? phoneVerifiedAt;
   final bool isActive;
+  final String? avatarUrl;
 
   Map<String, dynamic> toJson() {
     return {
@@ -41,7 +44,30 @@ class AuthUser {
       'phone': phone,
       'phone_verified_at': phoneVerifiedAt,
       'is_active': isActive,
+      'avatar_url': avatarUrl,
     };
+  }
+
+  AuthUser copyWith({
+    int? id,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phone,
+    String? phoneVerifiedAt,
+    bool? isActive,
+    String? avatarUrl,
+  }) {
+    return AuthUser(
+      id: id ?? this.id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      phoneVerifiedAt: phoneVerifiedAt ?? this.phoneVerifiedAt,
+      isActive: isActive ?? this.isActive,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+    );
   }
 
   @override
@@ -54,7 +80,8 @@ class AuthUser {
           email == other.email &&
           phone == other.phone &&
           phoneVerifiedAt == other.phoneVerifiedAt &&
-          isActive == other.isActive;
+          isActive == other.isActive &&
+          avatarUrl == other.avatarUrl;
 
   @override
   int get hashCode => Object.hash(
@@ -65,5 +92,6 @@ class AuthUser {
     phone,
     phoneVerifiedAt,
     isActive,
+    avatarUrl,
   );
 }

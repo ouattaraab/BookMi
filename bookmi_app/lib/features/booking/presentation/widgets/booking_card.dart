@@ -10,141 +10,212 @@ class BookingCard extends StatelessWidget {
   const BookingCard({
     required this.booking,
     required this.onTap,
+    this.onAccept,
+    this.onReject,
     super.key,
   });
 
   final BookingModel booking;
   final VoidCallback onTap;
+  final VoidCallback? onAccept;
+  final VoidCallback? onReject;
 
   @override
   Widget build(BuildContext context) {
+    final showActions =
+        booking.status == 'pending' && (onAccept != null || onReject != null);
+
     return GlassCard(
       onTap: onTap,
       padding: const EdgeInsets.all(BookmiSpacing.spaceSm),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _StatusIcon(status: booking.status),
-          const SizedBox(width: BookmiSpacing.spaceSm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _StatusIcon(status: booking.status),
+              const SizedBox(width: BookmiSpacing.spaceSm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        booking.talentStageName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            booking.talentStageName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(width: BookmiSpacing.spaceXs),
+                        _StatusBadge(status: booking.status),
+                      ],
                     ),
-                    const SizedBox(width: BookmiSpacing.spaceXs),
-                    _StatusBadge(status: booking.status),
-                  ],
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  booking.packageName,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withValues(alpha: 0.65),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: BookmiSpacing.spaceXs),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 12,
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(width: 4),
+                    const SizedBox(height: 2),
                     Text(
-                      booking.startTime != null
-                          ? '${_formatDate(booking.eventDate)} · ${_formatTime(booking.startTime!)}'
-                          : _formatDate(booking.eventDate),
+                      booking.packageName,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Colors.white.withValues(alpha: 0.65),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                GestureDetector(
-                  onTap: () => _openMaps(booking.eventLocation),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_outlined,
-                        size: 12,
-                        color: BookmiColors.brandBlueLight.withValues(alpha: 0.8),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          booking.eventLocation,
+                    const SizedBox(height: BookmiSpacing.spaceXs),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 12,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          booking.startTime != null
+                              ? '${_formatDate(booking.eventDate)} · ${_formatTime(booking.startTime!)}'
+                              : _formatDate(booking.eventDate),
                           style: TextStyle(
                             fontSize: 12,
-                            color: BookmiColors.brandBlueLight.withValues(alpha: 0.8),
-                            decoration: TextDecoration.underline,
-                            decorationColor: BookmiColors.brandBlueLight.withValues(alpha: 0.5),
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: BookmiSpacing.spaceXs),
-                Text(
-                  TalentCard.formatCachet(booking.totalAmount),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: BookmiColors.brandBlueLight,
-                  ),
-                ),
-                if (booking.isExpress)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.bolt,
-                          size: 12,
-                          color: BookmiColors.ctaOrange,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          'Express',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: BookmiColors.ctaOrange,
+                            color: Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 3),
+                    GestureDetector(
+                      onTap: () => _openMaps(booking.eventLocation),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 12,
+                            color: BookmiColors.brandBlueLight
+                                .withValues(alpha: 0.8),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              booking.eventLocation,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: BookmiColors.brandBlueLight
+                                    .withValues(alpha: 0.8),
+                                decoration: TextDecoration.underline,
+                                decorationColor: BookmiColors.brandBlueLight
+                                    .withValues(alpha: 0.5),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: BookmiSpacing.spaceXs),
+                    Text(
+                      TalentCard.formatCachet(booking.totalAmount),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: BookmiColors.brandBlueLight,
+                      ),
+                    ),
+                    if (booking.isExpress)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.bolt,
+                              size: 12,
+                              color: BookmiColors.brandBlueLight,
+                            ),
+                            const SizedBox(width: 2),
+                            const Text(
+                              'Express',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: BookmiColors.brandBlueLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white38,
+                size: 20,
+              ),
+            ],
+          ),
+          if (showActions) ...[
+            const SizedBox(height: BookmiSpacing.spaceSm),
+            Row(
+              children: [
+                if (onReject != null)
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onReject,
+                      icon: const Icon(
+                        Icons.close,
+                        size: 14,
+                        color: BookmiColors.error,
+                      ),
+                      label: const Text(
+                        'Refuser',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: BookmiColors.error,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        side: BorderSide(
+                          color: BookmiColors.error.withValues(alpha: 0.5),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                if (onReject != null && onAccept != null)
+                  const SizedBox(width: 8),
+                if (onAccept != null)
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onAccept,
+                      icon: const Icon(Icons.check, size: 14),
+                      label: const Text(
+                        'Accepter',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        backgroundColor: BookmiColors.success,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
                   ),
               ],
             ),
-          ),
-          const Icon(
-            Icons.chevron_right,
-            color: Colors.white38,
-            size: 20,
-          ),
+          ],
         ],
       ),
     );
@@ -215,7 +286,7 @@ class _StatusBadge extends StatelessWidget {
       'confirmed' => ('Confirmée', BookmiColors.success),
       'completed' => ('Passée', BookmiColors.brandBlueLight),
       'cancelled' => ('Annulée', BookmiColors.error),
-      'disputed' => ('Litige', BookmiColors.ctaOrange),
+      'disputed' => ('Litige', BookmiColors.brandBlueLight),
       _ => (status, Colors.white54),
     };
   }
@@ -248,7 +319,7 @@ class _StatusIcon extends StatelessWidget {
       ),
       'completed' => (Icons.star_outline, BookmiColors.brandBlueLight),
       'cancelled' => (Icons.cancel_outlined, BookmiColors.error),
-      'disputed' => (Icons.report_problem_outlined, BookmiColors.ctaOrange),
+      'disputed' => (Icons.report_problem_outlined, BookmiColors.brandBlueLight),
       _ => (Icons.receipt_long_outlined, Colors.white54),
     };
   }

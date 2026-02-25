@@ -1,11 +1,15 @@
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/bloc/bookings_list/bookings_list_bloc.dart';
 import 'package:bookmi_app/features/booking/bloc/bookings_list/bookings_list_event.dart';
 import 'package:bookmi_app/features/booking/bloc/bookings_list/bookings_list_state.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/booking_card.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/booking_card_skeleton.dart';
+import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -68,49 +72,154 @@ class _BookingsViewState extends State<_BookingsView>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(gradient: BookmiColors.gradientHero),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          title: const Text(
-            'Mes réservations',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+    final authState = context.watch<AuthBloc>().state;
+    final isTalent = authState is AuthAuthenticated &&
+        authState.roles.contains('talent');
+
+    // Pending count from ProfileBloc (available at shell level)
+    int pendingCount = 0;
+    try {
+      final profileState = context.watch<ProfileBloc>().state;
+      if (profileState is ProfileLoaded) {
+        pendingCount = profileState.stats.pendingBookingCount;
+      }
+    } catch (_) {
+      // ProfileBloc may not be available in some test contexts
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Page title
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + 8,
+              20,
+              16,
+            ),
+            child: const Text(
+              'Mes Réservations',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
             ),
           ),
-          bottom: TabBar(
-            controller: _tabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            indicatorColor: BookmiColors.brandBlue,
-            indicatorWeight: 2,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white54,
-            labelStyle: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+          // Segmented glass tab control
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: AnimatedBuilder(
+              animation: _tabController,
+              builder: (context, _) {
+                return Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: _tabs.asMap().entries.map((entry) {
+                        final i = entry.key;
+                        final t = entry.value;
+                        final isActive = i == _tabController.index;
+                        return GestureDetector(
+                          onTap: () => _tabController.animateTo(i),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isActive
+                                  ? BookmiColors.brandBlueLight
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: isActive
+                                  ? [
+                                      BoxShadow(
+                                        color: BookmiColors.brandBlueLight
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  t.label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: isActive
+                                        ? Colors.white
+                                        : Colors.white.withValues(alpha: 0.45),
+                                  ),
+                                ),
+                                if (i == 1 && isTalent && pendingCount > 0) ...[
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 1,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isActive
+                                          ? Colors.white.withValues(alpha: 0.3)
+                                          : BookmiColors.brandBlueLight,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      pendingCount > 99 ? '99+' : '$pendingCount',
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                );
+              },
             ),
-            unselectedLabelStyle: const TextStyle(fontSize: 13),
-            tabs: _tabs.map((t) => Tab(text: t.label)).toList(),
           ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: _tabs
-              .map(
-                (t) => _BookingsTab(
-                  status: t.status,
-                  tabController: _tabController,
-                  tabIndex: _tabs.indexOf(t),
-                ),
-              )
-              .toList(),
-        ),
+          // Tab content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: _tabs
+                  .map(
+                    (t) => _BookingsTab(
+                      status: t.status,
+                      tabController: _tabController,
+                      tabIndex: _tabs.indexOf(t),
+                      isTalent: isTalent,
+                    ),
+                  )
+                  .toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -121,11 +230,13 @@ class _BookingsTab extends StatelessWidget {
     required this.status,
     required this.tabController,
     required this.tabIndex,
+    required this.isTalent,
   });
 
   final String? status;
   final TabController tabController;
   final int tabIndex;
+  final bool isTalent;
 
   @override
   Widget build(BuildContext context) {
@@ -145,8 +256,6 @@ class _BookingsTab extends StatelessWidget {
             color: BookmiColors.brandBlue,
             onRefresh: () async {
               final bloc = context.read<BookingsListBloc>();
-              // Skip current state — wait for the NEXT state emitted after
-              // the refresh request to avoid completing prematurely.
               final future = bloc.stream.firstWhere(
                 (s) => s is BookingsListLoaded || s is BookingsListFailure,
               );
@@ -183,6 +292,7 @@ class _BookingsTab extends StatelessWidget {
                     );
                   }
                   final booking = state.bookings[index];
+                  final isPending = booking.status == 'pending';
                   return BookingCard(
                     booking: booking,
                     onTap: () => context.pushNamed(
@@ -190,6 +300,12 @@ class _BookingsTab extends StatelessWidget {
                       pathParameters: {'id': '${booking.id}'},
                       extra: booking,
                     ),
+                    onAccept: isTalent && isPending
+                        ? () => _handleAccept(context, booking.id)
+                        : null,
+                    onReject: isTalent && isPending
+                        ? () => _handleReject(context, booking.id)
+                        : null,
                   );
                 },
               ),
@@ -199,6 +315,86 @@ class _BookingsTab extends StatelessWidget {
         return _buildSkeletons();
       },
     );
+  }
+
+  Future<void> _handleAccept(BuildContext context, int bookingId) async {
+    final repo = context.read<BookingRepository>();
+    final result = await repo.acceptBooking(bookingId);
+    if (!context.mounted) return;
+    switch (result) {
+      case ApiSuccess():
+        // Refresh current tab
+        context.read<BookingsListBloc>().add(
+          BookingsListFetched(status: status),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Réservation acceptée avec succès'),
+            backgroundColor: Color(0xFF14B8A6),
+          ),
+        );
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+    }
+  }
+
+  Future<void> _handleReject(BuildContext context, int bookingId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(
+          'Refuser la réservation',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
+        content: const Text(
+          'Voulez-vous vraiment refuser cette demande de réservation ?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text(
+              'Refuser',
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.rejectBooking(bookingId);
+    if (!context.mounted) return;
+    switch (result) {
+      case ApiSuccess():
+        context.read<BookingsListBloc>().add(
+          BookingsListFetched(status: status),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Réservation refusée'),
+          ),
+        );
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+    }
   }
 
   Widget _buildSkeletons() {

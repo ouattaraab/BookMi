@@ -80,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Icon(
                       Icons.music_note_rounded,
                       size: 60,
-                      color: BookmiColors.ctaOrange,
+                      color: BookmiColors.brandBlueLight,
                     ),
                     const SizedBox(height: BookmiSpacing.spaceSm),
                     Text(
@@ -175,7 +175,7 @@ class _LoginPageState extends State<LoginPage> {
                           child: const Text(
                             "S'inscrire",
                             style: TextStyle(
-                              color: BookmiColors.ctaOrange,
+                              color: BookmiColors.brandBlueLight,
                               fontWeight: FontWeight.w600,
                             ),
                           ),

@@ -1,21 +1,23 @@
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-// ── Design tokens ─────────────────────────────────────────────────
-const _primary = Color(0xFF3B9DF2);
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
+// ── Design tokens (dark) ─────────────────────────────────────────
+const _primary = Color(0xFF2196F3);
+const _secondary = Colors.white;
+const _muted = Color(0xFF0D1421);
+const _mutedFg = Color(0xFF94A3B8);
+const _border = Color(0x1AFFFFFF);
 const _success = Color(0xFF14B8A6);
 const _destructive = Color(0xFFEF4444);
 const _warning = Color(0xFFFBBF24);
@@ -64,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     .toUpperCase()
             : 'U';
         final isTalent = roles.contains('talent');
+        final avatarUrl = user?.avatarUrl;
 
         return BlocBuilder<ProfileBloc, ProfileState>(
           builder: (context, profileState) {
@@ -72,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 : null;
 
             return Scaffold(
-              backgroundColor: _muted,
+              backgroundColor: Colors.transparent,
               body: RefreshIndicator(
                 onRefresh: () async {
                   context.read<ProfileBloc>().add(
@@ -91,6 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         isTalent: isTalent,
                         nombrePrestations:
                             stats?.nombrePrestations ?? 0,
+                        avatarUrl: avatarUrl,
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -164,6 +168,7 @@ class _ProfileHeader extends StatelessWidget {
     required this.memberSince,
     required this.isTalent,
     required this.nombrePrestations,
+    this.avatarUrl,
   });
 
   final String firstName;
@@ -173,6 +178,7 @@ class _ProfileHeader extends StatelessWidget {
   final String memberSince;
   final bool isTalent;
   final int nombrePrestations;
+  final String? avatarUrl;
 
   String get _badgeLabel {
     if (!isTalent) return 'Client BookMi';
@@ -184,73 +190,64 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _secondary,
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 16,
-        left: 16,
-        right: 16,
+      color: Colors.transparent,
+      padding: const EdgeInsets.only(
+        top: 20,
+        left: 20,
+        right: 20,
         bottom: 28,
       ),
       child: Column(
         children: [
-          // Top bar
-          Row(
-            children: [
-              Text(
-                'Mon Profil',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+          // Settings button aligned right
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () => context.pushNamed(
+                RouteNames.profilePersonalInfo,
+              ),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.settings_outlined,
                   color: Colors.white,
+                  size: 18,
                 ),
               ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () => context.pushNamed(
-                  RouteNames.profilePersonalInfo,
-                ),
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.settings_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           // Avatar
           Container(
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [_primary, Color(0xFF1565C0)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               shape: BoxShape.circle,
               border: Border.all(
                 color: Colors.white.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
-            child: Center(
-              child: Text(
-                initials,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+            child: ClipOval(
+              child: avatarUrl != null
+                  ? CachedNetworkImage(
+                      imageUrl: avatarUrl!,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorWidget: (_, __, ___) => _AvatarFallback(
+                        initials: initials,
+                      ),
+                    )
+                  : _AvatarFallback(initials: initials),
             ),
           ),
           const SizedBox(height: 12),
@@ -278,10 +275,15 @@ class _ProfileHeader extends StatelessWidget {
               vertical: 5,
             ),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_warning, _warning.withValues(alpha: 0.8)],
-              ),
+              color: BookmiColors.brandBlueLight,
               borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: BookmiColors.brandBlueLight.withValues(alpha: 0.4),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -300,6 +302,37 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Avatar fallback (initials) ────────────────────────────────────
+class _AvatarFallback extends StatelessWidget {
+  const _AvatarFallback({required this.initials});
+  final String initials;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [_primary, Color(0xFF1565C0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initials,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
@@ -354,24 +387,18 @@ class _DashboardCard extends StatelessWidget {
     final stat2Value = isLoading
         ? '…'
         : isTalent
-            ? '${stats?.nombrePrestations ?? 0}'
+            ? '${stats?.bookingCount ?? 0}'
             : '${stats?.favoriteCount ?? 0}';
     final stat2Label =
-        isTalent ? 'Prestations totales' : 'Talents favoris';
+        isTalent ? 'Réservations' : 'Talents favoris';
 
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,15 +720,9 @@ class _GeneralSection extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,14 +753,16 @@ class _GeneralSection extends StatelessWidget {
             onTap: () =>
                 context.pushNamed(RouteNames.profileFavorites),
           ),
-          _Divider(),
-          _MenuItem(
-            icon: Icons.payment_outlined,
-            label: 'Moyens de paiement',
-            onTap: () => context.pushNamed(
-              RouteNames.profilePaymentMethods,
+          if (isTalent) ...[
+            _Divider(),
+            _MenuItem(
+              icon: Icons.payment_outlined,
+              label: 'Moyens de paiement',
+              onTap: () => context.pushNamed(
+                RouteNames.profilePaymentMethods,
+              ),
             ),
-          ),
+          ],
           _Divider(),
           _MenuItem(
             icon: Icons.verified_user_outlined,
@@ -758,6 +781,30 @@ class _GeneralSection extends StatelessWidget {
               label: 'Statistiques talent',
               onTap: () => context.pushNamed(
                 RouteNames.profileTalentStatistics,
+              ),
+            ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.account_balance_wallet_outlined,
+              label: 'Mes revenus',
+              onTap: () => context.pushNamed(
+                RouteNames.profileTalentEarnings,
+              ),
+            ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.photo_library_outlined,
+              label: 'Gestion portfolio',
+              onTap: () => context.pushNamed(
+                RouteNames.profilePortfolioManager,
+              ),
+            ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.inventory_2_outlined,
+              label: 'Gestion packages',
+              onTap: () => context.pushNamed(
+                RouteNames.profilePackageManager,
               ),
             ),
           ],

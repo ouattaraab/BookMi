@@ -6,10 +6,15 @@ abstract final class BookmiColors {
   static const brandBlue = Color(0xFF2196F3);
   static const brandBlueDark = Color(0xFF1976D2);
   static const brandBlueLight = Color(0xFF64B5F6);
+  static const brandElectricBlue = Color(0xFF38BDF8);
   static const brandBlue50 = Color(0xFFE3F2FD);
   static const ctaOrange = Color(0xFFFF6B35);
   static const ctaOrangeDark = Color(0xFFE55A2B);
   static const ctaOrangeLight = Color(0xFFFF8C5E);
+
+  // ── Background Colors ─────────────────────────────────────────
+  static const backgroundDeep = Color(0xFF0A0F1E);
+  static const backgroundCard = Color(0xFF0D1421);
 
   // ── Semantic Colors ───────────────────────────────────────────
   static const success = Color(0xFF00C853);
@@ -19,13 +24,13 @@ abstract final class BookmiColors {
   static const info = Color(0xFF2196F3);
 
   // ── Glass Colors ──────────────────────────────────────────────
-  static const glassWhite = Color.fromRGBO(255, 255, 255, 0.15);
-  static const glassWhiteMedium = Color.fromRGBO(255, 255, 255, 0.25);
-  static const glassWhiteStrong = Color.fromRGBO(255, 255, 255, 0.40);
-  static const glassDark = Color.fromRGBO(26, 39, 68, 0.80);
-  static const glassDarkMedium = Color.fromRGBO(26, 39, 68, 0.60);
-  static const glassBorder = Color.fromRGBO(255, 255, 255, 0.25);
-  static const glassBorderBlue = Color.fromRGBO(33, 150, 243, 0.30);
+  static const glassWhite = Color.fromRGBO(255, 255, 255, 0.06);
+  static const glassWhiteMedium = Color.fromRGBO(255, 255, 255, 0.08);
+  static const glassWhiteStrong = Color.fromRGBO(255, 255, 255, 0.12);
+  static const glassDark = Color.fromRGBO(10, 15, 30, 0.85);
+  static const glassDarkMedium = Color.fromRGBO(13, 20, 33, 0.75);
+  static const glassBorder = Color.fromRGBO(255, 255, 255, 0.10);
+  static const glassBorderBlue = Color.fromRGBO(56, 189, 248, 0.30);
 
   // ── Gradients ─────────────────────────────────────────────────
   static const gradientHero = LinearGradient(
@@ -43,7 +48,7 @@ abstract final class BookmiColors {
   static const gradientCta = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFF6B35), Color(0xFFFF8C5E)],
+    colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
   );
 
   static const gradientCard = LinearGradient(

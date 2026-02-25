@@ -44,6 +44,7 @@ class DiscoveryRepository {
     int perPage = 20,
     Map<String, dynamic>? filters,
     String? query,
+    String? eventDate,
   }) async {
     try {
       final queryParameters = <String, dynamic>{
@@ -51,6 +52,7 @@ class DiscoveryRepository {
         // ignore: use_null_aware_elements, conflicts with invalid_null_aware_operator
         if (cursor != null) 'cursor': cursor,
         if (query != null && query.isNotEmpty) 'q': query,
+        if (eventDate != null) 'event_date': eventDate,
         ...?filters,
       };
 
@@ -100,6 +102,27 @@ class DiscoveryRepository {
       final errorData = e.response?.data as Map<String, dynamic>?;
       final error = errorData?['error'] as Map<String, dynamic>?;
 
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
+
+  /// Ask to be notified when [talentId] becomes available on [eventDate].
+  Future<ApiResult<void>> notifyWhenAvailable({
+    required int talentId,
+    required String eventDate,
+  }) async {
+    try {
+      await _dio.post<void>(
+        ApiEndpoints.talentNotifyAvailability(talentId),
+        data: {'event_date': eventDate},
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
         message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',

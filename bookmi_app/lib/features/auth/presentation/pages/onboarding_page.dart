@@ -123,7 +123,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(4),
                             color: index == _currentPage
-                                ? BookmiColors.ctaOrange
+                                ? BookmiColors.brandBlueLight
                                 : Colors.white.withValues(alpha: 0.3),
                           ),
                         ),
@@ -177,7 +177,7 @@ class _SlideWidget extends StatelessWidget {
           Icon(
             data.icon,
             size: 100,
-            color: BookmiColors.ctaOrange,
+            color: BookmiColors.brandBlueLight,
           ),
           const SizedBox(height: BookmiSpacing.spaceXl),
           GlassCard(

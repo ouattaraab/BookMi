@@ -289,7 +289,7 @@ class _StarRating extends StatelessWidget {
             child: Icon(
               isFilled ? Icons.star_rounded : Icons.star_outline_rounded,
               size: 40,
-              color: isFilled ? BookmiColors.ctaOrange : Colors.white30,
+              color: isFilled ? BookmiColors.brandBlueLight : Colors.white30,
             ),
           ),
         );
@@ -351,14 +351,14 @@ class _SuccessScreenState extends State<_SuccessScreen>
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      BookmiColors.ctaOrange.withValues(alpha: 0.3),
+                      BookmiColors.brandBlueLight.withValues(alpha: 0.3),
                       Colors.transparent,
                     ],
                   ),
                 ),
                 child: const Icon(
                   Icons.star_rounded,
-                  color: BookmiColors.ctaOrange,
+                  color: BookmiColors.brandBlueLight,
                   size: 64,
                 ),
               ),

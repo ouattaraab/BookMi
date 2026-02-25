@@ -13,6 +13,7 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     on<DiscoveryFiltersChanged>(_onFiltersChanged);
     on<DiscoveryFilterCleared>(_onFilterCleared);
     on<DiscoverySearchChanged>(_onSearchChanged);
+    on<DiscoveryDateSearchRequested>(_onDateSearchRequested);
   }
 
   final DiscoveryRepository _repository;
@@ -73,14 +74,21 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         nextCursor: currentState.nextCursor,
         activeFilters: currentState.activeFilters,
         categories: currentState.categories,
+        eventDate: currentState.eventDate,
+        searchQuery: currentState.searchQuery,
       ),
     );
+
+    final eventDateStr = currentState.eventDate != null
+        ? _formatDate(currentState.eventDate!)
+        : null;
 
     final result = await _repository.getTalents(
       cursor: currentState.nextCursor,
       filters: currentState.activeFilters.isNotEmpty
           ? currentState.activeFilters
           : null,
+      eventDate: eventDateStr,
     );
 
     switch (result) {
@@ -92,6 +100,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
             nextCursor: data.nextCursor,
             activeFilters: currentState.activeFilters,
             categories: currentState.categories,
+            eventDate: currentState.eventDate,
+            searchQuery: currentState.searchQuery,
           ),
         );
       case ApiFailure():
@@ -102,6 +112,8 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
             nextCursor: currentState.nextCursor,
             activeFilters: currentState.activeFilters,
             categories: currentState.categories,
+            eventDate: currentState.eventDate,
+            searchQuery: currentState.searchQuery,
           ),
         );
     }
@@ -209,4 +221,60 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
         emit(DiscoveryFailure(code: code, message: message));
     }
   }
+
+  /// Hero search: talent type query + optional event date.
+  Future<void> _onDateSearchRequested(
+    DiscoveryDateSearchRequested event,
+    Emitter<DiscoveryState> emit,
+  ) async {
+    final prevCategories =
+        state is DiscoveryLoaded
+            ? (state as DiscoveryLoaded).categories
+            : _cachedCategories;
+
+    // Keep only category filter, clear search-specific params.
+    final prevFilters =
+        state is DiscoveryLoaded
+            ? Map<String, dynamic>.from((state as DiscoveryLoaded).activeFilters)
+            : <String, dynamic>{};
+
+    prevFilters.remove('q');
+    prevFilters.remove('event_date');
+
+    emit(const DiscoveryLoading());
+
+    final eventDateStr =
+        event.eventDate != null ? _formatDate(event.eventDate!) : null;
+
+    final result = await _repository.getTalents(
+      query: (event.query?.isNotEmpty == true) ? event.query : null,
+      eventDate: eventDateStr,
+      filters: prevFilters.isNotEmpty ? prevFilters : null,
+    );
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          DiscoveryLoaded(
+            talents: data.talents,
+            hasMore: data.hasMore,
+            nextCursor: data.nextCursor,
+            activeFilters: {
+              ...prevFilters,
+              if (event.query?.isNotEmpty == true) 'q': event.query!,
+              if (eventDateStr != null) 'event_date': eventDateStr,
+            },
+            categories: prevCategories,
+            eventDate: event.eventDate,
+            searchQuery: event.query,
+          ),
+        );
+      case ApiFailure(:final code, :final message):
+        emit(DiscoveryFailure(code: code, message: message));
+    }
+  }
+
+  /// Format a DateTime to ISO YYYY-MM-DD.
+  String _formatDate(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 }

@@ -72,7 +72,7 @@ class PortfolioGallery extends StatelessWidget {
       'facebook'  => (FontAwesomeIcons.facebook,  const Color(0xFF1877F2)),
       'tiktok'    => (FontAwesomeIcons.tiktok,    Colors.white),
       'twitter' || 'x' => (FontAwesomeIcons.xTwitter, Colors.white),
-      _           => (FontAwesomeIcons.link,       BookmiColors.ctaOrange),
+      _           => (FontAwesomeIcons.link,       BookmiColors.brandBlueLight),
     };
     return ColoredBox(
       color: BookmiColors.glassDarkMedium,

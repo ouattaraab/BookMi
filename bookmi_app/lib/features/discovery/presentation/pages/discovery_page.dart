@@ -1,8 +1,6 @@
+import 'dart:async';
+
 import 'package:bookmi_app/app/routes/route_names.dart';
-import 'package:bookmi_app/core/design_system/components/filter_bar.dart';
-import 'package:bookmi_app/core/design_system/components/glass_app_bar.dart';
-import 'package:bookmi_app/core/design_system/tokens/colors.dart';
-import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_bloc.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_event.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_state.dart';
@@ -12,6 +10,10 @@ import 'package:bookmi_app/features/favorites/bloc/favorites_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// ── Design tokens ─────────────────────────────────────────────────
+const _primary = Color(0xFF2196F3);
 
 class DiscoveryPage extends StatefulWidget {
   const DiscoveryPage({super.key});
@@ -22,272 +24,372 @@ class DiscoveryPage extends StatefulWidget {
 
 class _DiscoveryPageState extends State<DiscoveryPage> {
   final _scrollController = ScrollController();
-  final _scrollOffset = ValueNotifier<double>(0);
-
-  // Categories are loaded dynamically from the API via DiscoveryBloc.
+  final _searchController = TextEditingController();
+  Timer? _debounce;
+  String _selectedCategory = '';
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _searchController.addListener(_onSearchChanged);
     context.read<DiscoveryBloc>().add(const DiscoveryFetched());
     context.read<FavoritesBloc>().add(const FavoritesFetched());
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _scrollController
       ..removeListener(_onScroll)
       ..dispose();
-    _scrollOffset.dispose();
+    _searchController
+      ..removeListener(_onSearchChanged)
+      ..dispose();
     super.dispose();
   }
 
   void _onScroll() {
-    _scrollOffset.value = _scrollController.offset;
-
     final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.position.pixels;
-    if (currentScroll >= maxScroll - 200) {
+    if (_scrollController.position.pixels >= maxScroll - 200) {
       context.read<DiscoveryBloc>().add(const DiscoveryNextPageFetched());
     }
   }
 
-  void _onFilterChanged(String filterKey) {
-    final bloc = context.read<DiscoveryBloc>();
-    final currentState = bloc.state;
-    final currentFilters = currentState is DiscoveryLoaded
-        ? Map<String, dynamic>.from(currentState.activeFilters)
-        : <String, dynamic>{};
-
-    // filterKey is the category ID as a string (e.g. '3').
-    final currentId = currentFilters['category_id']?.toString();
-    if (currentId == filterKey) {
-      currentFilters.remove('category_id');
-    } else {
-      currentFilters['category_id'] = int.tryParse(filterKey) ?? filterKey;
-    }
-
-    if (currentFilters.isEmpty) {
-      bloc.add(const DiscoveryFilterCleared());
-    } else {
-      bloc.add(DiscoveryFiltersChanged(filters: currentFilters));
-    }
+  void _onSearchChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      context.read<DiscoveryBloc>().add(
+        DiscoverySearchChanged(query: _searchController.text.trim()),
+      );
+    });
   }
 
-  void _onClearAll() {
-    context.read<DiscoveryBloc>().add(const DiscoveryFilterCleared());
+  void _onCategoryTap(String key) {
+    setState(() => _selectedCategory = key);
+    final bloc = context.read<DiscoveryBloc>();
+    if (key.isEmpty) {
+      if (_searchController.text.isNotEmpty) {
+        bloc.add(DiscoveryFiltersChanged(
+          filters: {'q': _searchController.text.trim()},
+        ));
+      } else {
+        bloc.add(const DiscoveryFilterCleared());
+      }
+    } else {
+      bloc.add(DiscoveryFiltersChanged(filters: {
+        'category_id': int.tryParse(key) ?? key,
+        if (_searchController.text.isNotEmpty)
+          'q': _searchController.text.trim(),
+      }));
+    }
   }
 
   Future<void> _onTalentTap(Map<String, dynamic> talent) async {
-    final attributes = talent['attributes'] as Map<String, dynamic>;
-    final slug = attributes['slug'] as String? ?? '';
+    final attrs = talent['attributes'] as Map<String, dynamic>? ?? talent;
+    final slug = attrs['slug'] as String? ?? '';
+    if (slug.isEmpty) return;
     await context.pushNamed(
       RouteNames.talentDetail,
       pathParameters: {'slug': slug},
-      extra: {...attributes, 'id': talent['id']},
+      extra: {...attrs, 'id': talent['id']},
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: BookmiColors.gradientHero,
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(kToolbarHeight),
-          child: ValueListenableBuilder<double>(
-            valueListenable: _scrollOffset,
-            builder: (context, offset, _) => GlassAppBar(
-              title: const Text('Recherche'),
-              scrollOffset: offset,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
+          // ── Top bar + search ─────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              MediaQuery.of(context).padding.top + 8,
+              20,
+              12,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Recherche',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // ── Text search field ─────────────────────────────
+                Container(
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.07),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 14),
+                      Icon(
+                        Icons.search,
+                        color: Colors.white.withValues(alpha: 0.4),
+                        size: 18,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          style: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Nom, spécialité, ville…',
+                            hintStyle: GoogleFonts.nunito(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withValues(alpha: 0.3),
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            isDense: true,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                      if (_searchController.text.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            _searchController.clear();
+                            context.read<DiscoveryBloc>().add(
+                              const DiscoveryFilterCleared(),
+                            );
+                            setState(() => _selectedCategory = '');
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(right: 12),
+                            child: Icon(
+                              Icons.close,
+                              size: 16,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(width: 14),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        body: Column(
-          children: [
-            BlocBuilder<DiscoveryBloc, DiscoveryState>(
-              buildWhen: (prev, curr) {
-                final prevFilters = prev is DiscoveryLoaded
-                    ? prev.activeFilters
-                    : const <String, dynamic>{};
-                final currFilters = curr is DiscoveryLoaded
-                    ? curr.activeFilters
-                    : const <String, dynamic>{};
-                return prevFilters != currFilters;
-              },
-              builder: (context, state) {
-                final activeFilters = state is DiscoveryLoaded
-                    ? state.activeFilters
-                    : const <String, dynamic>{};
-                // activeCategory kept for local variable naming — now holds the ID string.
-                final activeCategory =
-                    activeFilters['category_id']?.toString();
+          // ── Category pills ───────────────────────────────────────
+          BlocBuilder<DiscoveryBloc, DiscoveryState>(
+            buildWhen: (prev, curr) {
+              final pCats = prev is DiscoveryLoaded
+                  ? prev.categories
+                  : const <Map<String, dynamic>>[];
+              final cCats = curr is DiscoveryLoaded
+                  ? curr.categories
+                  : const <Map<String, dynamic>>[];
+              return pCats != cCats;
+            },
+            builder: (context, state) {
+              final categories = state is DiscoveryLoaded
+                  ? state.categories
+                  : const <Map<String, dynamic>>[];
+              if (categories.isEmpty) return const SizedBox.shrink();
 
-                // Build filter items dynamically from API categories.
-                final categories = state is DiscoveryLoaded
-                    ? state.categories
-                    : <Map<String, dynamic>>[];
-                // Use ID as key so the filter sends category_id (int) to API.
-                final filters = categories
-                    .map(
-                      (c) => FilterItem(
-                        key: (c['id'] as int?)?.toString() ??
-                            c['slug'] as String? ??
-                            '',
-                        label: c['name'] as String? ?? '',
-                      ),
-                    )
-                    .toList();
+              final items = <(String, String)>[
+                ('', 'Tout'),
+                ...categories.map(
+                  (c) => (
+                    (c['id'] as int?)?.toString() ??
+                        c['slug'] as String? ??
+                        '',
+                    c['name'] as String? ?? '',
+                  ),
+                ),
+              ];
 
-                return FilterBar(
-                  filters: filters,
-                  activeFilters: activeCategory != null
-                      ? {activeCategory}
-                      : const {},
-                  onFilterChanged: _onFilterChanged,
-                  onClearAll: _onClearAll,
+              return Container(
+                color: Colors.transparent,
+                padding: const EdgeInsets.only(bottom: 10),
+                child: SizedBox(
+                  height: 36,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, i) {
+                      final (key, label) = items[i];
+                      final isActive = key == _selectedCategory;
+                      return GestureDetector(
+                        onTap: () => _onCategoryTap(key),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 7,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? _primary
+                                : Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isActive
+                                  ? _primary
+                                  : Colors.white.withValues(alpha: 0.12),
+                            ),
+                          ),
+                          child: Text(
+                            label,
+                            style: GoogleFonts.nunito(
+                              fontSize: 12,
+                              fontWeight: isActive
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isActive
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          // ── Results grid ─────────────────────────────────────────
+          Expanded(
+            child: RefreshIndicator(
+              color: _primary,
+              onRefresh: () async {
+                context.read<DiscoveryBloc>().add(const DiscoveryFetched());
+                await context.read<DiscoveryBloc>().stream.firstWhere(
+                  (s) => s is DiscoveryLoaded || s is DiscoveryFailure,
                 );
               },
-            ),
-            Expanded(
-              child: RefreshIndicator(
-                color: BookmiColors.brandBlue,
-                onRefresh: () async {
-                  context.read<DiscoveryBloc>().add(const DiscoveryFetched());
-                  // Wait for state change
-                  await context.read<DiscoveryBloc>().stream.firstWhere(
-                    (state) =>
-                        state is DiscoveryLoaded || state is DiscoveryFailure,
-                  );
+              child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
+                builder: (context, state) {
+                  return switch (state) {
+                    DiscoveryInitial() ||
+                    DiscoveryLoading() => TalentGrid.skeleton(),
+                    DiscoveryLoaded() => state.talents.isEmpty
+                        ? _buildEmpty()
+                        : TalentGrid(
+                            talents: state.talents,
+                            hasMore: state.hasMore,
+                            isLoadingMore: state is DiscoveryLoadingMore,
+                            scrollController: _scrollController,
+                            onTalentTap: _onTalentTap,
+                          ),
+                    DiscoveryFailure(:final message) => _buildError(message),
+                  };
                 },
-                child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
-                  builder: (context, state) {
-                    return switch (state) {
-                      DiscoveryInitial() ||
-                      DiscoveryLoading() => TalentGrid.skeleton(),
-                      DiscoveryLoaded() =>
-                        state.talents.isEmpty
-                            ? _buildEmptyState()
-                            : TalentGrid(
-                                talents: state.talents,
-                                hasMore: state.hasMore,
-                                isLoadingMore: state is DiscoveryLoadingMore,
-                                scrollController: _scrollController,
-                                onTalentTap: _onTalentTap,
-                              ),
-                      DiscoveryFailure(:final message) => _buildErrorState(
-                        message,
-                      ),
-                    };
-                  },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 52,
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Aucun résultat',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Essayez avec un autre nom ou catégorie',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.3),
+            ),
+          ),
+          const SizedBox(height: 16),
+          GestureDetector(
+            onTap: () {
+              _searchController.clear();
+              setState(() => _selectedCategory = '');
+              context.read<DiscoveryBloc>().add(const DiscoveryFilterCleared());
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Élargir la recherche',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
-    return CustomScrollView(
-      controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverFillRemaining(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(BookmiSpacing.spaceXl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.search_off,
-                    size: 64,
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(height: BookmiSpacing.spaceBase),
-                  const Text(
-                    'Aucun talent trouvé',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: BookmiSpacing.spaceSm),
-                  Text(
-                    "Essayez 'DJ' ou 'Musicien'",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.6),
-                    ),
-                  ),
-                  const SizedBox(height: BookmiSpacing.spaceLg),
-                  OutlinedButton(
-                    onPressed: _onClearAll,
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: BookmiColors.brandBlue),
-                      foregroundColor: BookmiColors.brandBlue,
-                    ),
-                    child: const Text('Élargir la recherche'),
-                  ),
-                ],
-              ),
+  Widget _buildError(String message) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.error_outline,
+            size: 44,
+            color: Colors.white.withValues(alpha: 0.25),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            message,
+            style: const TextStyle(color: Colors.white60),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          TextButton(
+            onPressed: () =>
+                context.read<DiscoveryBloc>().add(const DiscoveryFetched()),
+            child: const Text(
+              'Réessayer',
+              style: TextStyle(color: Color(0xFF64B5F6)),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorState(String message) {
-    return CustomScrollView(
-      controller: _scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverFillRemaining(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(BookmiSpacing.spaceXl),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.white.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(height: BookmiSpacing.spaceBase),
-                  Text(
-                    message,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: BookmiSpacing.spaceLg),
-                  ElevatedButton(
-                    onPressed: () => context.read<DiscoveryBloc>().add(
-                      const DiscoveryFetched(),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BookmiColors.brandBlue,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('Réessayer'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

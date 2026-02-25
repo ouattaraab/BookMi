@@ -6,6 +6,8 @@ import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_bloc.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_event.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_state.dart';
+import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/features/discovery/data/repositories/discovery_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,36 +15,25 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
-import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 
-// ── Design tokens ────────────────────────────────────────────────
-const _primary = Color(0xFF3B9DF2);
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
+// ── Design tokens (dark) ─────────────────────────────────────────
+const _primary = Color(0xFF2196F3);
+const _secondary = Colors.white;
+const _mutedFg = Color(0xFF94A3B8);
+const _border = Color(0x1AFFFFFF);
 const _warning = Color(0xFFFBBF24);
 
-// ── Helpers ───────────────────────────────────────────────────────
-Color _hexColor(String hex) {
-  try {
-    final cleaned = hex.replaceAll('#', '');
-    return Color(int.parse('FF$cleaned', radix: 16));
-  } catch (_) {
-    return const Color(0xFF7C4DFF);
-  }
-}
-
-IconData _iconForSlug(String slug) {
+String _emojiForSlug(String slug) {
   return switch (slug) {
-    'musicien' || 'chanteur' => Icons.music_note,
-    'danseur' => Icons.directions_run,
-    'photographe' => Icons.camera_alt,
-    'dj' || 'groupe-musical' => Icons.headphones,
-    'humoriste' || 'humoriste-comedien' => Icons.sentiment_very_satisfied,
-    'decorateur' => Icons.auto_fix_high,
-    'animateur' || 'mc-animateur' => Icons.mic,
-    _ => Icons.star,
+    'musicien' => '🎸',
+    'chanteur' => '🎤',
+    'danseur' => '💃',
+    'photographe' => '📸',
+    'dj' || 'groupe-musical' => '🎧',
+    'humoriste' || 'humoriste-comedien' => '🎭',
+    'decorateur' => '✨',
+    'animateur' || 'mc-animateur' => '🎙️',
+    _ => '🎵',
   };
 }
 
@@ -64,33 +55,17 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   /// Stores the selected category ID as a string (e.g. '3'), or '' for "Tout".
   String _selectedCategory = '';
-  final _searchController = TextEditingController();
-  Timer? _searchDebounce;
 
   @override
   void initState() {
     super.initState();
     context.read<DiscoveryBloc>().add(const DiscoveryFetched());
-    _searchController.addListener(_onSearchChanged);
   }
 
-  @override
-  void dispose() {
-    _searchDebounce?.cancel();
-    _searchController
-      ..removeListener(_onSearchChanged)
-      ..dispose();
-    super.dispose();
-  }
-
-  void _onSearchChanged() {
-    _searchDebounce?.cancel();
-    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
-      if (!mounted) return;
-      context.read<DiscoveryBloc>().add(
-        DiscoverySearchChanged(query: _searchController.text.trim()),
-      );
-    });
+  void _onHeroSearch(String? query, DateTime? eventDate) {
+    context.read<DiscoveryBloc>().add(
+      DiscoveryDateSearchRequested(query: query, eventDate: eventDate),
+    );
   }
 
   void _onCategoryTap(String key) {
@@ -133,11 +108,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _muted,
+      backgroundColor: Colors.transparent,
       body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           SliverToBoxAdapter(
-            child: _HomeHeader(searchController: _searchController),
+            child: _HomeHeader(onSearch: _onHeroSearch),
           ),
           SliverToBoxAdapter(
             child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
@@ -186,6 +161,8 @@ class _HomePageState extends State<HomePage> {
                         : <Map<String, dynamic>>[];
                 final isLoading =
                     state is DiscoveryLoading || state is DiscoveryInitial;
+                final eventDate =
+                    state is DiscoveryLoaded ? state.eventDate : null;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,15 +188,15 @@ class _HomePageState extends State<HomePage> {
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 colors: [
-                                  Color(0xFFFF6B35),
-                                  Color(0xFFFF8C42),
+                                  Color(0xFF2196F3),
+                                  Color(0xFF64B5F6),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFFFF6B35)
-                                      .withValues(alpha: 0.3),
+                                  color: const Color(0xFF2196F3)
+                                      .withValues(alpha: 0.35),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -292,6 +269,7 @@ class _HomePageState extends State<HomePage> {
                       talents: talents,
                       isLoading: isLoading,
                       onTalentTap: _onTalentTap,
+                      eventDate: eventDate,
                     ),
                     const SizedBox(height: 100),
                   ],
@@ -307,8 +285,8 @@ class _HomePageState extends State<HomePage> {
 
 // ── Header ────────────────────────────────────────────────────────
 class _HomeHeader extends StatelessWidget {
-  const _HomeHeader({required this.searchController});
-  final TextEditingController searchController;
+  const _HomeHeader({required this.onSearch});
+  final void Function(String? query, DateTime? eventDate) onSearch;
 
   @override
   Widget build(BuildContext context) {
@@ -316,46 +294,43 @@ class _HomeHeader extends StatelessWidget {
       builder: (context, authState) {
         final user = authState is AuthAuthenticated ? authState.user : null;
         final firstName = user?.firstName ?? 'Utilisateur';
-        final initials =
-            user != null
-                ? '${user.firstName[0]}${user.lastName.isNotEmpty ? user.lastName[0] : ''}'
-                    .toUpperCase()
-                : 'U';
 
         return Container(
-          color: _secondary,
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 12,
-            left: 16,
-            right: 16,
-            bottom: 16,
+          color: Colors.transparent,
+          padding: const EdgeInsets.only(
+            left: 20,
+            right: 20,
+            bottom: 20,
+            top: 16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: 'Book',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${DateTime.now().hour < 12 ? 'Bonjour' : 'Bonsoir'}, $firstName 👋',
+                        style: GoogleFonts.nunito(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white.withValues(alpha: 0.45),
                         ),
-                        TextSpan(
-                          text: 'Mi',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: _primary,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Découvrir',
+                        style: GoogleFonts.nunito(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   const Spacer(),
                   BlocBuilder<ProfileBloc, ProfileState>(
@@ -372,39 +347,38 @@ class _HomeHeader extends StatelessWidget {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white.withValues(alpha: 0.08),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.12),
+                                ),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: const Icon(
                                 Icons.notifications_outlined,
                                 color: Colors.white,
-                                size: 22,
+                                size: 20,
                               ),
                             ),
                             if (unread > 0)
                               Positioned(
-                                top: -4,
-                                right: -4,
+                                top: -3,
+                                right: -3,
                                 child: Container(
-                                  constraints: const BoxConstraints(
-                                    minWidth: 16,
-                                    minHeight: 16,
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 4,
-                                  ),
+                                  width: 10,
+                                  height: 10,
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFF6B35),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    unread > 99 ? '99+' : '$unread',
-                                    style: const TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
+                                    color: _primary,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: const Color(0xFF0D1421),
+                                      width: 2,
                                     ),
-                                    textAlign: TextAlign.center,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: _primary.withValues(alpha: 0.8),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -413,105 +387,294 @@ class _HomeHeader extends StatelessWidget {
                       );
                     },
                   ),
-                  const SizedBox(width: 10),
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_primary, Color(0xFF1565C0)],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
+                ],
+              ),
+              const SizedBox(height: 14),
+              _HeroSearchBar(onSearch: onSearch),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Hero Search Bar ───────────────────────────────────────────────
+class _HeroSearchBar extends StatefulWidget {
+  const _HeroSearchBar({required this.onSearch});
+  final void Function(String? query, DateTime? eventDate) onSearch;
+
+  @override
+  State<_HeroSearchBar> createState() => _HeroSearchBarState();
+}
+
+class _HeroSearchBarState extends State<_HeroSearchBar> {
+  final _queryController = TextEditingController();
+  DateTime? _selectedDate;
+
+  static const _quickLinks = [
+    ('dj', 'DJ', '🎧'),
+    ('chanteur', 'Chanteur', '🎤'),
+    ('groupe-musical', 'Groupe', '🎸'),
+    ('danseur', 'Danseur', '💃'),
+    ('photographe', 'Photo', '📸'),
+  ];
+
+  @override
+  void dispose() {
+    _queryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? now.add(const Duration(days: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: Color(0xFF2196F3),
+            onPrimary: Colors.white,
+            surface: Color(0xFF0D1421),
+            onSurface: Colors.white,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) setState(() => _selectedDate = picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dateLabel = _selectedDate != null
+        ? DateFormat('d MMM yyyy', 'fr').format(_selectedDate!)
+        : null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Search card ───────────────────────────────────────────
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.07),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+          ),
+          child: Column(
+            children: [
+              // Talent field
+              Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.mic_none_outlined,
+                      size: 16,
+                      color: Colors.white.withValues(alpha: 0.4),
                     ),
-                    child: Center(
-                      child: Text(
-                        initials,
-                        style: GoogleFonts.manrope(
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _queryController,
+                        style: GoogleFonts.nunito(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Quel talent recherchez-vous ?',
+                          hintStyle: GoogleFonts.nunito(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white.withValues(alpha: 0.35),
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ),
+                    if (_queryController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () => setState(() => _queryController.clear()),
+                        child: Icon(
+                          Icons.close,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.white.withValues(alpha: 0.07),
+              ),
+              // Date + search button row
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: _pickDate,
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 15,
+                              color: dateLabel != null
+                                  ? const Color(0xFF64B5F6)
+                                  : Colors.white.withValues(alpha: 0.4),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                dateLabel ?? 'Pour quelle date ?',
+                                style: GoogleFonts.nunito(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  color: dateLabel != null
+                                      ? Colors.white
+                                      : Colors.white.withValues(alpha: 0.35),
+                                ),
+                              ),
+                            ),
+                            if (_selectedDate != null)
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedDate = null),
+                                child: Icon(
+                                  Icons.close,
+                                  size: 13,
+                                  color: Colors.white.withValues(alpha: 0.45),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Search button
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: GestureDetector(
+                      onTap: () {
+                        final q = _queryController.text.trim();
+                        widget.onSearch(q.isNotEmpty ? q : null, _selectedDate);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF2196F3)
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.search,
+                              color: Colors.white,
+                              size: 15,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Chercher',
+                              style: GoogleFonts.nunito(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Bonjour, $firstName',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                'Trouvez le talent parfait',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    const SizedBox(width: 14),
-                    const Icon(Icons.search, color: _mutedFg, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: searchController,
-                        style: GoogleFonts.manrope(
-                          fontSize: 14,
-                          color: _secondary,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Rechercher un talent...',
-                          hintStyle: GoogleFonts.manrope(
-                            fontSize: 14,
-                            color: _mutedFg,
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 40,
-                      height: 36,
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: _primary.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.tune_rounded,
-                        color: _primary,
-                        size: 18,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
-        );
-      },
+        ),
+        const SizedBox(height: 10),
+        // ── Quick-link chips ──────────────────────────────────────
+        SizedBox(
+          height: 30,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _quickLinks.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, i) {
+              final (slug, label, emoji) = _quickLinks[i];
+              final isActive = _queryController.text.toLowerCase() == label.toLowerCase() ||
+                  _queryController.text.toLowerCase() == slug;
+              return GestureDetector(
+                onTap: () => setState(() => _queryController.text = label),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? const Color(0xFF2196F3).withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: isActive
+                          ? const Color(0xFF64B5F6).withValues(alpha: 0.5)
+                          : Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(emoji, style: const TextStyle(fontSize: 11)),
+                      const SizedBox(width: 5),
+                      Text(
+                        label,
+                        style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: isActive
+                              ? const Color(0xFF64B5F6)
+                              : Colors.white.withValues(alpha: 0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -541,7 +704,7 @@ class _CategoryBar extends StatelessWidget {
     ];
 
     return Container(
-      color: _secondary,
+      color: Colors.transparent,
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
         height: 40,
@@ -617,11 +780,12 @@ class _FeaturedSection extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Talents en vedette',
-                style: GoogleFonts.plusJakartaSans(
+                'Top Talents',
+                style: GoogleFonts.nunito(
                   fontSize: 17,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   color: _secondary,
+                  letterSpacing: -0.3,
                 ),
               ),
               const Spacer(),
@@ -637,7 +801,7 @@ class _FeaturedSection extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 260,
+          height: 280,
           child:
               isLoading
                   ? _buildSkeletonList()
@@ -720,111 +884,30 @@ class _FeaturedTalentCard extends StatelessWidget {
       child: Container(
         width: 200,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Clean image — no overlapping elements
             ClipRRect(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
               ),
               child: SizedBox(
-                height: 140,
+                height: 130,
                 width: double.infinity,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    photoUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                          imageUrl: photoUrl,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (_, __) => Container(color: _border),
-                          errorWidget:
-                              (_, __, ___) => Container(
-                                color: _border,
-                                child: const Icon(
-                                  Icons.person,
-                                  color: _mutedFg,
-                                  size: 40,
-                                ),
-                              ),
-                        )
-                        : Container(
-                          color: _border,
-                          child: const Icon(
-                            Icons.person,
-                            color: _mutedFg,
-                            size: 40,
-                          ),
-                        ),
-                    Positioned(
-                      top: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star,
-                              size: 11,
-                              color: _warning,
-                            ),
-                            const SizedBox(width: 3),
-                            Text(
-                              averageRating.toStringAsFixed(1),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _primary,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _formatCachet(cachetAmount),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                child: photoUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                      imageUrl: photoUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => _placeholderPhoto(),
+                      errorWidget: (_, __, ___) => _placeholderPhoto(),
+                    )
+                    : _placeholderPhoto(),
               ),
             ),
             Padding(
@@ -832,14 +915,15 @@ class _FeaturedTalentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Name + verified
                   Row(
                     children: [
                       Expanded(
                         child: Text(
                           stageName,
-                          style: GoogleFonts.plusJakartaSans(
+                          style: GoogleFonts.nunito(
                             fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w800,
                             color: _secondary,
                           ),
                           maxLines: 1,
@@ -885,11 +969,53 @@ class _FeaturedTalentCard extends StatelessWidget {
                       ],
                     ),
                   ],
+                  // Rating (left) + Price (right) — BELOW city
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // Stars + rating
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 12,
+                        color: Color(0xFF64B5F6),
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        averageRating.toStringAsFixed(1),
+                        style: GoogleFonts.nunito(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      const Spacer(),
+                      // Price
+                      Text(
+                        _formatCachet(cachetAmount),
+                        style: GoogleFonts.nunito(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF64B5F6),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _placeholderPhoto() {
+    return Container(
+      color: const Color(0xFF0D1421),
+      child: const Icon(
+        Icons.person,
+        color: Color(0xFF94A3B8),
+        size: 40,
       ),
     );
   }
@@ -914,73 +1040,88 @@ class _PopularCategoriesSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: Text(
-            'Catégories populaires',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: _secondary,
-            ),
+          child: Row(
+            children: [
+              Text(
+                'Catégories',
+                style: GoogleFonts.nunito(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: _secondary,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Voir tout',
+                style: GoogleFonts.nunito(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF38BDF8),
+                ),
+              ),
+            ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.4,
-            ),
+        SizedBox(
+          height: 42,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: categories.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
             itemBuilder: (context, i) {
               final cat = categories[i];
               final slug = cat['slug'] as String? ?? '';
               final name = cat['name'] as String? ?? '';
-              final color = _hexColor(cat['color_hex'] as String? ?? '');
-              final icon = _iconForSlug(slug);
+              final emoji = _emojiForSlug(slug);
+              // First category is visually active (electric blue accent)
+              final isFirst = i == 0;
 
               return GestureDetector(
                 onTap: () => onCategoryTap(
                   (cat['id'] as int?)?.toString() ?? slug,
                 ),
                 child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    color: isFirst
+                        ? const Color(0xFF38BDF8).withValues(alpha: 0.15)
+                        : const Color(0xFFFFFFFF).withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(100),
+                    border: Border.all(
+                      color: isFirst
+                          ? const Color(0xFF38BDF8).withValues(alpha: 0.3)
+                          : Colors.white.withValues(alpha: 0.1),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: color.withValues(alpha: 0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        color: Colors.white.withValues(
+                          alpha: isFirst ? 0.1 : 0.06,
+                        ),
+                        offset: const Offset(0, -1),
+                        blurRadius: 0,
+                        spreadRadius: 0,
                       ),
                     ],
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(icon, color: color, size: 18),
-                      ),
-                      const SizedBox(height: 6),
+                      Text(emoji, style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
                       Text(
                         name,
-                        style: GoogleFonts.manrope(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: _secondary,
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isFirst
+                              ? const Color(0xFF38BDF8)
+                              : Colors.white.withValues(alpha: 0.7),
                         ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -1000,15 +1141,18 @@ class _NearbySection extends StatelessWidget {
     required this.talents,
     required this.isLoading,
     required this.onTalentTap,
+    this.eventDate,
   });
 
   final List<Map<String, dynamic>> talents;
   final bool isLoading;
   final ValueChanged<Map<String, dynamic>> onTalentTap;
+  final DateTime? eventDate;
 
   @override
   Widget build(BuildContext context) {
-    final nearbyTalents = talents.skip(4).take(6).toList();
+    // Show all talents in the full list
+    final allTalents = talents;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1018,7 +1162,7 @@ class _NearbySection extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                'Près de vous',
+                'Tous les talents',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
@@ -1049,22 +1193,23 @@ class _NearbySection extends StatelessWidget {
               ),
             ),
           )
-        else if (nearbyTalents.isEmpty)
+        else if (allTalents.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Aucun talent près de vous',
+              'Aucun talent disponible',
               style: GoogleFonts.manrope(color: _mutedFg),
             ),
           )
         else
-          ...nearbyTalents.map((talent) {
+          ...allTalents.map((talent) {
             final attrs =
                 talent['attributes'] as Map<String, dynamic>? ?? talent;
             return _NearbyTalentCard(
               talent: talent,
               attrs: attrs,
               onTap: () => onTalentTap(talent),
+              eventDate: eventDate,
             );
           }),
       ],
@@ -1077,11 +1222,13 @@ class _NearbyTalentCard extends StatelessWidget {
     required this.talent,
     required this.attrs,
     required this.onTap,
+    this.eventDate,
   });
 
   final Map<String, dynamic> talent;
   final Map<String, dynamic> attrs;
   final VoidCallback onTap;
+  final DateTime? eventDate;
 
   @override
   Widget build(BuildContext context) {
@@ -1095,156 +1242,388 @@ class _NearbyTalentCard extends StatelessWidget {
     final categoryName = category?['name'] as String? ?? '';
     final city = attrs['city'] as String? ?? '';
 
+    // Availability: present only when event_date was sent in the request
+    final availabilityRaw = attrs['is_available'];
+    final bool? isAvailable =
+        eventDate != null && availabilityRaw != null
+            ? availabilityRaw as bool?
+            : null;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isAvailable == false
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.white.withValues(alpha: 0.1),
+          ),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(
-                width: 64,
-                height: 64,
-                child:
-                    photoUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                          imageUrl: photoUrl,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (_, __) => Container(color: _border),
-                          errorWidget:
-                              (_, __, ___) => Container(
-                                color: _border,
-                                child: const Icon(
-                                  Icons.person,
-                                  color: _mutedFg,
+            Row(
+              children: [
+                // Avatar + availability ring
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: SizedBox(
+                        width: 64,
+                        height: 64,
+                        child: ColorFiltered(
+                          colorFilter: isAvailable == false
+                              ? const ColorFilter.matrix([
+                                  0.2, 0, 0, 0, 0,
+                                  0, 0.2, 0, 0, 0,
+                                  0, 0, 0.2, 0, 0,
+                                  0, 0, 0, 1, 0,
+                                ])
+                              : const ColorFilter.mode(
+                                  Colors.transparent,
+                                  BlendMode.multiply,
                                 ),
-                              ),
-                        )
-                        : Container(
-                          color: _border,
-                          child: const Icon(Icons.person, color: _mutedFg),
+                          child: photoUrl.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: photoUrl,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) =>
+                                      Container(color: _border),
+                                  errorWidget: (_, __, ___) => Container(
+                                    color: _border,
+                                    child: const Icon(
+                                      Icons.person,
+                                      color: _mutedFg,
+                                    ),
+                                  ),
+                                )
+                              : Container(
+                                  color: _border,
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: _mutedFg,
+                                  ),
+                                ),
                         ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        stageName,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _secondary,
-                        ),
-                      ),
-                      if (isVerified) ...[
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.verified,
-                          size: 13,
-                          color: _primary,
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  if (categoryName.isNotEmpty)
-                    Text(
-                      categoryName,
-                      style: GoogleFonts.manrope(
-                        fontSize: 12,
-                        color: _mutedFg,
                       ),
                     ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, size: 12, color: _warning),
-                      const SizedBox(width: 3),
-                      Text(
-                        averageRating.toStringAsFixed(1),
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          color: _mutedFg,
-                          fontWeight: FontWeight.w500,
+                    if (isAvailable != null)
+                      Positioned(
+                        bottom: 2,
+                        right: 2,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: isAvailable
+                                ? const Color(0xFF00C853)
+                                : const Color(0xFFEF4444),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF0A0F1E),
+                              width: 2,
+                            ),
+                          ),
                         ),
                       ),
-                      if (city.isNotEmpty) ...[
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 12,
-                          color: _mutedFg,
+                  ],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              stageName,
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: isAvailable == false
+                                    ? Colors.white.withValues(alpha: 0.45)
+                                    : _secondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isVerified) ...[
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.verified,
+                              size: 13,
+                              color: _primary,
+                            ),
+                          ],
+                          // Availability badge
+                          if (isAvailable != null) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isAvailable
+                                    ? const Color(0xFF00C853)
+                                        .withValues(alpha: 0.15)
+                                    : const Color(0xFFEF4444)
+                                        .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: isAvailable
+                                      ? const Color(0xFF00C853)
+                                          .withValues(alpha: 0.4)
+                                      : const Color(0xFFEF4444)
+                                          .withValues(alpha: 0.3),
+                                ),
+                              ),
+                              child: Text(
+                                isAvailable ? 'Disponible' : 'Indisponible',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w700,
+                                  color: isAvailable
+                                      ? const Color(0xFF00C853)
+                                      : const Color(0xFFEF4444),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      if (categoryName.isNotEmpty)
+                        Text(
+                          categoryName,
+                          style: GoogleFonts.manrope(
+                            fontSize: 12,
+                            color: _mutedFg,
+                          ),
                         ),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          child: Text(
-                            city,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.star, size: 12, color: _warning),
+                          const SizedBox(width: 3),
+                          Text(
+                            averageRating.toStringAsFixed(1),
                             style: GoogleFonts.manrope(
                               fontSize: 12,
                               color: _mutedFg,
+                              fontWeight: FontWeight.w500,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                          if (city.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 12,
+                              color: _mutedFg,
+                            ),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(
+                                city,
+                                style: GoogleFonts.manrope(
+                                  fontSize: 12,
+                                  color: _mutedFg,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  _formatCachet(cachetAmount),
-                  style: GoogleFonts.manrope(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: _primary,
-                  ),
                 ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Réserver',
-                    style: GoogleFonts.manrope(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                const SizedBox(width: 8),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _formatCachet(cachetAmount),
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isAvailable == false
+                            ? _mutedFg
+                            : _primary,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isAvailable == false
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : _primary,
+                        borderRadius: BorderRadius.circular(8),
+                        border: isAvailable == false
+                            ? Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                              )
+                            : null,
+                      ),
+                      child: Text(
+                        'Réserver',
+                        style: GoogleFonts.manrope(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isAvailable == false
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
+            // "Notify when available" CTA — only for unavailable talents with a date
+            if (isAvailable == false && eventDate != null)
+              _NotifyAvailabilityButton(
+                talent: talent,
+                attrs: attrs,
+                eventDate: eventDate!,
+              ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Notify availability button ────────────────────────────────────
+class _NotifyAvailabilityButton extends StatefulWidget {
+  const _NotifyAvailabilityButton({
+    required this.talent,
+    required this.attrs,
+    required this.eventDate,
+  });
+
+  final Map<String, dynamic> talent;
+  final Map<String, dynamic> attrs;
+  final DateTime eventDate;
+
+  @override
+  State<_NotifyAvailabilityButton> createState() =>
+      _NotifyAvailabilityButtonState();
+}
+
+class _NotifyAvailabilityButtonState
+    extends State<_NotifyAvailabilityButton> {
+  bool _requested = false;
+  bool _loading = false;
+
+  Future<void> _onNotify() async {
+    if (_requested || _loading) return;
+    setState(() => _loading = true);
+
+    final talentId = widget.talent['id'] as int? ??
+        (widget.attrs['id'] as int? ?? 0);
+    final dateStr =
+        '${widget.eventDate.year}-${widget.eventDate.month.toString().padLeft(2, '0')}-${widget.eventDate.day.toString().padLeft(2, '0')}';
+
+    final repo = context.read<DiscoveryRepository>();
+    final result = await repo.notifyWhenAvailable(
+      talentId: talentId,
+      eventDate: dateStr,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (result is ApiSuccess) _requested = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result is ApiSuccess
+              ? 'Vous serez notifié quand ce talent sera disponible'
+              : 'Une erreur est survenue. Réessayez.',
+        ),
+        backgroundColor: result is ApiSuccess
+            ? const Color(0xFF00C853)
+            : const Color(0xFFEF4444),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: GestureDetector(
+        onTap: _onNotify,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: _requested
+                ? const Color(0xFF00C853).withValues(alpha: 0.1)
+                : Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: _requested
+                  ? const Color(0xFF00C853).withValues(alpha: 0.35)
+                  : Colors.white.withValues(alpha: 0.1),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_loading)
+                const SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                    color: Color(0xFF64B5F6),
+                  ),
+                )
+              else
+                Icon(
+                  _requested
+                      ? Icons.notifications_active_outlined
+                      : Icons.notifications_none_outlined,
+                  size: 13,
+                  color: _requested
+                      ? const Color(0xFF00C853)
+                      : Colors.white.withValues(alpha: 0.55),
+                ),
+              const SizedBox(width: 6),
+              Text(
+                _requested
+                    ? 'Notification activée'
+                    : 'Me notifier quand disponible',
+                style: GoogleFonts.nunito(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _requested
+                      ? const Color(0xFF00C853)
+                      : Colors.white.withValues(alpha: 0.55),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
