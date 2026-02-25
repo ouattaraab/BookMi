@@ -104,23 +104,19 @@ class BookingRepository {
     }
   }
 
-  /// Initiate a Mobile Money payment for the given booking.
+  /// Initialize a Paystack card transaction for the given booking.
   ///
-  /// Returns success when the push notification has been sent to the user's
-  /// phone. The actual payment confirmation is handled asynchronously via
-  /// webhook on the backend.
+  /// Calls the backend which creates a Paystack transaction and returns an
+  /// [access_code]. The Flutter SDK uses this code to present the payment UI.
   Future<ApiResult<Map<String, dynamic>>> initiatePayment({
     required int bookingId,
-    required String paymentMethod,
-    required String phoneNumber,
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         ApiEndpoints.paymentsInitiate,
         data: {
           'booking_id': bookingId,
-          'payment_method': paymentMethod,
-          'phone': phoneNumber,
+          'payment_method': 'card',
         },
       );
       return ApiSuccess(response.data ?? {});

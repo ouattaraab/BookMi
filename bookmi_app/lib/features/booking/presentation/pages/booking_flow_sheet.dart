@@ -1,3 +1,4 @@
+import 'package:bookmi_app/core/design_system/components/celebration_overlay.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
@@ -5,14 +6,15 @@ import 'package:bookmi_app/features/booking/bloc/booking_flow/booking_flow_bloc.
 import 'package:bookmi_app/features/booking/bloc/booking_flow/booking_flow_event.dart';
 import 'package:bookmi_app/features/booking/bloc/booking_flow/booking_flow_state.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
-import 'package:bookmi_app/core/design_system/components/celebration_overlay.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step1_package_selection.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step2_date_location.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step3_recap.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step4_payment.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/stepper_progress.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:paystack_flutter_sdk/paystack_flutter_sdk.dart';
 
 /// Opens the booking flow as a modal bottom sheet.
 ///
@@ -23,6 +25,7 @@ class BookingFlowSheet extends StatefulWidget {
     required this.talentStageName,
     required this.servicePackages,
     required this.enableExpress,
+    required this.paystackPublicKey,
     super.key,
   });
 
@@ -30,9 +33,9 @@ class BookingFlowSheet extends StatefulWidget {
   final String talentStageName;
   final List<Map<String, dynamic>> servicePackages;
   final bool enableExpress;
+  final String paystackPublicKey;
 
-  /// Convenience helper — shows the sheet and returns the created booking or
-  /// null if the user dismissed without completing.
+  /// Convenience helper — shows the booking flow bottom sheet.
   static Future<void> show(
     BuildContext context, {
     required BookingRepository repository,
@@ -40,6 +43,7 @@ class BookingFlowSheet extends StatefulWidget {
     required String talentStageName,
     required List<Map<String, dynamic>> servicePackages,
     required bool enableExpress,
+    required String paystackPublicKey,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -52,6 +56,7 @@ class BookingFlowSheet extends StatefulWidget {
           talentStageName: talentStageName,
           servicePackages: servicePackages,
           enableExpress: enableExpress,
+          paystackPublicKey: paystackPublicKey,
         ),
       ),
     );
@@ -80,8 +85,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
 
   // Step 4 — Payment
   int? _createdBookingId;
-  String? _selectedPaymentMethod;
-  String _paymentPhone = '';
+  final _paystack = Paystack();
 
   // Computed devis (set after step 1 selection)
   int get _cachetAmount {
@@ -114,7 +118,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       0 => _selectedPackageId != null,
       1 => _selectedDate != null && _selectedTime != null && _location.trim().isNotEmpty,
       2 => true,
-      3 => _selectedPaymentMethod != null && _paymentPhone.trim().length >= 8,
+      3 => true,
       _ => false,
     };
   }
@@ -142,14 +146,56 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   }
 
   void _pay() {
-    if (_createdBookingId == null || _selectedPaymentMethod == null) return;
+    if (_createdBookingId == null) return;
     context.read<BookingFlowBloc>().add(
-      BookingFlowPaymentInitiated(
-        bookingId: _createdBookingId!,
-        paymentMethod: _selectedPaymentMethod!,
-        phoneNumber: _paymentPhone.trim(),
-      ),
+      BookingFlowPaymentInitiated(bookingId: _createdBookingId!),
     );
+  }
+
+  Future<void> _launchPaystack(String accessCode) async {
+    try {
+      await _paystack.initialize(widget.paystackPublicKey, false);
+      final response = await _paystack.launch(accessCode);
+      if (!mounted) return;
+
+      if (response.status == 'success') {
+        CelebrationOverlay.show(
+          context,
+          title: 'Paiement réussi !',
+          subtitle: 'Votre réservation a été confirmée. Vous recevrez un '
+              'récapitulatif par notification.',
+          onDismiss: () {
+            if (context.mounted) Navigator.of(context).pop();
+          },
+        );
+      } else if (response.status == 'cancelled') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Paiement annulé.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response.message.isNotEmpty
+                  ? response.message
+                  : 'Le paiement a échoué. Veuillez réessayer.',
+            ),
+            backgroundColor: BookmiColors.error,
+          ),
+        );
+      }
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'Erreur Paystack inattendue.'),
+          backgroundColor: BookmiColors.error,
+        ),
+      );
+    }
   }
 
   void _submit() {
@@ -189,19 +235,9 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             _createdBookingId = state.booking.id;
             _currentStep = 3;
           });
-        } else if (state is BookingFlowPaymentSuccess) {
-          // Payment initiated — celebrate then close
-          CelebrationOverlay.show(
-            context,
-            title: 'Paiement initié !',
-            subtitle:
-                'Approuvez la notification Mobile Money sur votre téléphone '
-                'dans les 15 secondes.',
-            // Guard against popping if widget is disposed before 2.5 s (M1-FIX).
-            onDismiss: () {
-              if (context.mounted) Navigator.of(context).pop();
-            },
-          );
+        } else if (state is BookingFlowPaystackReady) {
+          // Backend initialized a Paystack transaction — launch the SDK UI
+          _launchPaystack(state.accessCode);
         } else if (state is BookingFlowFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -366,14 +402,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           );
         },
       ),
-      3 => Step4Payment(
-        totalAmount: _totalAmount,
-        selectedMethod: _selectedPaymentMethod,
-        phoneNumber: _paymentPhone,
-        onMethodSelected: (method) =>
-            setState(() => _selectedPaymentMethod = method),
-        onPhoneChanged: (v) => setState(() => _paymentPhone = v),
-      ),
+      3 => Step4Payment(totalAmount: _totalAmount),
       _ => const SizedBox.shrink(),
     };
   }

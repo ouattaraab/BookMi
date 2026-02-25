@@ -45,29 +45,22 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
   );
 }
 
-/// Initiate the Mobile Money payment for the created booking (step 4).
+/// Initialise la transaction Paystack pour la réservation créée (step 4).
+/// Le SDK Paystack prend en charge tous les moyens de paiement
+/// (carte, mobile money…) via son propre UI.
 @immutable
 final class BookingFlowPaymentInitiated extends BookingFlowEvent {
-  const BookingFlowPaymentInitiated({
-    required this.bookingId,
-    required this.paymentMethod,
-    required this.phoneNumber,
-  });
+  const BookingFlowPaymentInitiated({required this.bookingId});
 
   final int bookingId;
-  final String paymentMethod;
-  final String phoneNumber;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is BookingFlowPaymentInitiated &&
-          bookingId == other.bookingId &&
-          paymentMethod == other.paymentMethod &&
-          phoneNumber == other.phoneNumber;
+      other is BookingFlowPaymentInitiated && bookingId == other.bookingId;
 
   @override
-  int get hashCode => Object.hash(bookingId, paymentMethod, phoneNumber);
+  int get hashCode => bookingId.hashCode;
 }
 
 /// Reset the flow to initial state.

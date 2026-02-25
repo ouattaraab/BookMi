@@ -48,15 +48,24 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
 
     emit(const BookingFlowPaymentSubmitting());
 
-    final result = await _repository.initiatePayment(
-      bookingId: event.bookingId,
-      paymentMethod: event.paymentMethod,
-      phoneNumber: event.phoneNumber,
-    );
+    final result = await _repository.initiatePayment(bookingId: event.bookingId);
 
     switch (result) {
-      case ApiSuccess():
-        emit(const BookingFlowPaymentSuccess());
+      case ApiSuccess(:final data):
+        // Extract access_code from the response (supports JSON:API and flat formats)
+        final txData = data['data'] as Map<String, dynamic>?;
+        final attrs = txData?['attributes'] as Map<String, dynamic>?;
+        final accessCode = attrs?['access_code'] as String? ??
+            txData?['access_code'] as String? ??
+            data['access_code'] as String?;
+        if (accessCode != null && accessCode.isNotEmpty) {
+          emit(BookingFlowPaystackReady(accessCode: accessCode));
+        } else {
+          emit(const BookingFlowFailure(
+            code: 'PAYMENT_ERROR',
+            message: 'Impossible d\'initialiser le paiement Paystack.',
+          ));
+        }
       case ApiFailure(:final code, :final message):
         emit(BookingFlowFailure(code: code, message: message));
     }

@@ -31,9 +31,20 @@ final class BookingFlowPaymentSubmitting extends BookingFlowState {
   const BookingFlowPaymentSubmitting();
 }
 
-/// Payment was successfully initiated (mobile money push sent to user's phone).
-final class BookingFlowPaymentSuccess extends BookingFlowState {
-  const BookingFlowPaymentSuccess();
+/// Paystack transaction initialized — SDK should launch with this access code.
+@immutable
+final class BookingFlowPaystackReady extends BookingFlowState {
+  const BookingFlowPaystackReady({required this.accessCode});
+
+  final String accessCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookingFlowPaystackReady && accessCode == other.accessCode;
+
+  @override
+  int get hashCode => accessCode.hashCode;
 }
 
 @immutable

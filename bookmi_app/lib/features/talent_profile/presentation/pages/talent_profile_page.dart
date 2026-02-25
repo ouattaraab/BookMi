@@ -500,6 +500,7 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                     servicePackages: servicePackages,
                     enableExpress:
                         profile['enable_express_booking'] as bool? ?? false,
+                    paystackPublicKey: 'pk_test_10307bbe35ff163e237e1f402b4dae7e2377338f',
                   ),
                   child: Center(
                     child: Text(

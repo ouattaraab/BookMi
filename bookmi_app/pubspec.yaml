@@ -31,6 +31,7 @@ dependencies:
   flutter_local_notifications: ^18.0.1
   font_awesome_flutter: ^10.12.0
   image_picker: ^1.1.2
+  paystack_flutter_sdk: ^0.0.1-alpha.2
 
 dev_dependencies:
   bloc_lint: ">=0.3.3 <0.3.6"

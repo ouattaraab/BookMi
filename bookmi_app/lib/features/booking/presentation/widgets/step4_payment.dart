@@ -1,59 +1,18 @@
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/components/glass_shield.dart';
-import 'package:bookmi_app/core/design_system/components/mobile_money_selector.dart';
 import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-/// Step 4 of the booking flow — Mobile Money payment selection.
+/// Step 4 of the booking flow — Paystack payment.
 ///
-/// Lets the user pick their operator and enter their phone number.
-/// The GlassShield visually signals the secure payment zone.
-class Step4Payment extends StatefulWidget {
-  const Step4Payment({
-    required this.totalAmount,
-    required this.selectedMethod,
-    required this.phoneNumber,
-    required this.onMethodSelected,
-    required this.onPhoneChanged,
-    super.key,
-  });
+/// Shows the total amount and Paystack branding. The user taps "Payer
+/// maintenant" (in the bottom CTA) which triggers the Paystack SDK sheet.
+class Step4Payment extends StatelessWidget {
+  const Step4Payment({required this.totalAmount, super.key});
 
   final int totalAmount;
-  final String? selectedMethod;
-  final String phoneNumber;
-  final ValueChanged<String> onMethodSelected;
-  final ValueChanged<String> onPhoneChanged;
-
-  @override
-  State<Step4Payment> createState() => _Step4PaymentState();
-}
-
-class _Step4PaymentState extends State<Step4Payment> {
-  late final TextEditingController _phoneController;
-
-  @override
-  void initState() {
-    super.initState();
-    _phoneController = TextEditingController(text: widget.phoneNumber);
-  }
-
-  @override
-  void didUpdateWidget(Step4Payment oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.phoneNumber != widget.phoneNumber &&
-        _phoneController.text != widget.phoneNumber) {
-      _phoneController.text = widget.phoneNumber;
-    }
-  }
-
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,13 +28,10 @@ class _Step4PaymentState extends State<Step4Payment> {
               children: [
                 const Text(
                   'Montant à payer',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.white70),
                 ),
                 Text(
-                  TalentCard.formatCachet(widget.totalAmount),
+                  TalentCard.formatCachet(totalAmount),
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -87,103 +43,150 @@ class _Step4PaymentState extends State<Step4Payment> {
           ),
           const SizedBox(height: BookmiSpacing.spaceMd),
 
-          // GlassShield wraps the payment form
+          // Paystack branded card
           GlassShield(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Operator selection
-                const Text(
-                  'Choisir votre opérateur',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: BookmiSpacing.spaceSm),
-                MobileMoneySelector(
-                  selectedMethod: widget.selectedMethod,
-                  onMethodSelected: (method) {
-                    // Haptic feedback on operator selection (UX-FEEDBACK-1)
-                    HapticFeedback.selectionClick(); // ignore: discarded_futures
-                    widget.onMethodSelected(method);
-                  },
+                // Paystack header
+                Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00C3F7).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFF00C3F7).withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.payment_outlined,
+                        color: Color(0xFF00C3F7),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Paystack',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            'Paiement sécurisé',
+                            style: TextStyle(fontSize: 11, color: Colors.white54),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.lock_outline,
+                      color: Colors.white.withValues(alpha: 0.35),
+                      size: 16,
+                    ),
+                  ],
                 ),
                 const SizedBox(height: BookmiSpacing.spaceMd),
 
-                // Phone number input
-                const Text(
-                  'Numéro Mobile Money',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                // Info box
+                Container(
+                  padding: const EdgeInsets.all(BookmiSpacing.spaceSm),
+                  decoration: BoxDecoration(
+                    color: BookmiColors.brandBlue.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: BookmiColors.brandBlue.withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: BookmiColors.brandBlue.withValues(alpha: 0.8),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'En appuyant sur "Payer maintenant", une fenêtre de paiement sécurisée s\'ouvrira. Vous pourrez payer par carte bancaire ou Mobile Money.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white70,
+                            height: 1.45,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: BookmiSpacing.spaceSm),
-                TextField(
-                  controller: _phoneController,
-                  onChanged: widget.onPhoneChanged,
-                  keyboardType: TextInputType.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9+]')),
-                  ],
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '+225 07 00 00 00 00',
-                    hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.35),
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.phone_outlined,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      size: 20,
-                    ),
-                    filled: true,
-                    fillColor: BookmiColors.glassDarkMedium,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          BorderSide(color: BookmiColors.glassBorder),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          BorderSide(color: BookmiColors.glassBorder),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                        color: BookmiColors.brandBlue,
+                const SizedBox(height: BookmiSpacing.spaceMd),
+
+                // Accepted payment icons row
+                Row(
+                  children: [
+                    Text(
+                      'Méthodes acceptées :',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.45),
                       ),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: BookmiSpacing.spaceBase,
-                      vertical: BookmiSpacing.spaceSm,
-                    ),
-                  ),
+                    const SizedBox(width: 8),
+                    _PaymentBadge(label: 'Visa'),
+                    const SizedBox(width: 4),
+                    _PaymentBadge(label: 'MoMo'),
+                    const SizedBox(width: 4),
+                    _PaymentBadge(label: 'Orange'),
+                  ],
                 ),
               ],
             ),
           ),
           const SizedBox(height: BookmiSpacing.spaceMd),
 
-          // Info note
           Text(
-            'Vous recevrez une notification de confirmation sur votre '
-            'téléphone. Approuvez-la dans les 15 secondes.',
+            'Vos données de paiement sont chiffrées et sécurisées par Paystack.',
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.35),
               height: 1.4,
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _PaymentBadge extends StatelessWidget {
+  const _PaymentBadge({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: Colors.white70,
+        ),
       ),
     );
   }
