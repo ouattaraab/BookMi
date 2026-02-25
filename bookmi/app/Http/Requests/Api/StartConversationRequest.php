@@ -19,7 +19,8 @@ class StartConversationRequest extends FormRequest
         return [
             'talent_profile_id'  => ['required', 'integer', 'exists:talent_profiles,id'],
             'booking_request_id' => ['sometimes', 'nullable', 'integer', 'exists:booking_requests,id'],
-            'message'            => ['required', 'string', 'min:1', 'max:5000'],
+            // message is optional — omit it to just get/create the conversation without sending a first message
+            'message'            => ['sometimes', 'nullable', 'string', 'min:1', 'max:5000'],
         ];
     }
 }

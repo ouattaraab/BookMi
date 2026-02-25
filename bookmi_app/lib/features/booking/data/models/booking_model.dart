@@ -37,6 +37,7 @@ class BookingModel {
     required this.status,
     required this.clientName,
     required this.talentStageName,
+    required this.talentProfileId,
     required this.packageName,
     required this.packageType,
     required this.eventDate,
@@ -59,6 +60,8 @@ class BookingModel {
   final String status;
   final String clientName;
   final String talentStageName;
+  /// Null if the backend didn't return a talent_profile object.
+  final int? talentProfileId;
   final String packageName;
   final String packageType;
   final String eventDate;
@@ -88,6 +91,7 @@ class BookingModel {
       status: json['status'] as String,
       clientName: client?['name'] as String? ?? 'Client',
       talentStageName: talent?['stage_name'] as String? ?? 'Talent',
+      talentProfileId: talent?['id'] as int?,
       packageName: pkg?['name'] as String? ?? 'Forfait',
       packageType: pkg?['type'] as String? ?? 'standard',
       eventDate: json['event_date'] as String,

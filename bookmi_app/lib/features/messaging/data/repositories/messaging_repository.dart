@@ -47,10 +47,12 @@ class MessagingRepository {
     }
   }
 
-  /// Starts a conversation (or reuses an existing one) and sends the first message.
+  /// Gets or creates a conversation. Optionally sends [message] as the first
+  /// message. When [message] is omitted the backend simply returns the
+  /// conversation so the caller can navigate to the chat screen.
   Future<ApiResult<Map<String, dynamic>>> startConversation({
     required int talentProfileId,
-    required String message,
+    String? message,
     int? bookingRequestId,
   }) async {
     try {
@@ -58,7 +60,7 @@ class MessagingRepository {
         ApiEndpoints.conversations,
         data: {
           'talent_profile_id': talentProfileId,
-          'message': message,
+          if (message != null) 'message': message,
           if (bookingRequestId != null) 'booking_request_id': bookingRequestId,
         },
       );

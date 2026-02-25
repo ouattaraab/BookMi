@@ -4,6 +4,9 @@ import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/features/booking/data/models/booking_model.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
+import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
+import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/features/messaging/presentation/pages/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
@@ -276,6 +279,17 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                     ),
                 ],
               ),
+            ),
+          ],
+
+          // Message talent (only once payment is confirmed)
+          if (booking.status == 'confirmed' &&
+              booking.talentProfileId != null) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _MessageButton(
+              bookingId: booking.id,
+              talentProfileId: booking.talentProfileId!,
+              talentName: booking.talentStageName,
             ),
           ],
 
@@ -743,6 +757,129 @@ class _ContractButtonState extends State<_ContractButton> {
             Icons.download_outlined,
             color: Colors.white38,
             size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Message talent button ────────────────────────────────────────────────────
+
+class _MessageButton extends StatefulWidget {
+  const _MessageButton({
+    required this.bookingId,
+    required this.talentProfileId,
+    required this.talentName,
+  });
+
+  final int bookingId;
+  final int talentProfileId;
+  final String talentName;
+
+  @override
+  State<_MessageButton> createState() => _MessageButtonState();
+}
+
+class _MessageButtonState extends State<_MessageButton> {
+  bool _loading = false;
+
+  Future<void> _openChat() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    final repo = context.read<MessagingRepository>();
+    final result = await repo.startConversation(
+      talentProfileId: widget.talentProfileId,
+      bookingRequestId: widget.bookingId,
+    );
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        final conversationData = data['data'] as Map<String, dynamic>?;
+        final conversationId = conversationData?['id'] as int?;
+        if (conversationId == null) return;
+        if (!mounted) return;
+        // ignore: use_build_context_synchronously
+        await Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => BlocProvider<MessagingCubit>(
+              create: (_) => MessagingCubit(repository: repo),
+              child: ChatPage(
+                conversationId: conversationId,
+                otherPartyName: widget.talentName,
+              ),
+            ),
+          ),
+        );
+      case ApiFailure(:final message):
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: _openChat,
+      borderColor: BookmiColors.brandBlueLight.withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: BookmiColors.brandBlue.withValues(alpha: 0.15),
+            ),
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: BookmiColors.brandBlueLight,
+                    ),
+                  )
+                : const Icon(
+                    Icons.chat_rounded,
+                    color: BookmiColors.brandBlueLight,
+                    size: 20,
+                  ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Envoyer un message à ${widget.talentName}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Text(
+                  'Discutez des détails de votre événement',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: BookmiColors.brandBlueLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
           ),
         ],
       ),

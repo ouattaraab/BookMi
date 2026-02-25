@@ -205,8 +205,11 @@ GoRouter buildAppRouter(
                           ) ??
                           0;
                       final preloaded = state.extra as BookingModel?;
-                      return RepositoryProvider.value(
-                        value: bookingRepo,
+                      return MultiRepositoryProvider(
+                        providers: [
+                          RepositoryProvider.value(value: bookingRepo),
+                          RepositoryProvider.value(value: messagingRepo),
+                        ],
                         child: BookingDetailPage(
                           bookingId: id,
                           preloaded: preloaded,
@@ -363,7 +366,7 @@ GoRouter buildAppRouter(
     final bookingId = message.data['booking_id']?.toString();
     if (bookingId != null && bookingId.isNotEmpty) {
       router.push('/bookings/booking/$bookingId');
-    } else if (type == 'admin_broadcast') {
+    } else if (type == 'new_message' || type == 'admin_broadcast') {
       router.go(RoutePaths.messages);
     } else {
       router.push(RoutePaths.notifications);

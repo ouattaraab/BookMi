@@ -47,21 +47,34 @@ class MessageController extends BaseController
             ], 403);
         }
 
-        [$conversation, $message] = DB::transaction(function () use ($user, $request) {
+        $messageText = $request->filled('message') ? $request->string('message')->toString() : null;
+
+        [$conversation, $message] = DB::transaction(function () use ($user, $request, $messageText) {
             $conversation = $this->messagingService->getOrCreateConversation(
                 client: $user,
                 talentProfileId: $request->integer('talent_profile_id'),
                 bookingRequestId: $request->integer('booking_request_id') ?: null,
             );
 
-            $message = $this->messagingService->sendMessage(
-                conversation: $conversation,
-                sender: $user,
-                content: $request->string('message')->toString(),
-            );
+            $msg = null;
+            if ($messageText !== null) {
+                $msg = $this->messagingService->sendMessage(
+                    conversation: $conversation,
+                    sender: $user,
+                    content: $messageText,
+                );
+            }
 
-            return [$conversation, $message];
+            return [$conversation, $msg];
         });
+
+        // When no message was provided, just return the conversation ID so the
+        // client can navigate to the chat screen.
+        if ($message === null) {
+            return response()->json([
+                'data' => new ConversationResource($conversation->load(['client', 'talentProfile.user', 'latestMessage'])),
+            ], 201);
+        }
 
         $responseData = [
             'data' => [
