@@ -127,6 +127,22 @@ class BookingRepository {
     }
   }
 
+  /// Cancels the most recent pending/processing transaction for a booking.
+  ///
+  /// Called when the Paystack SDK returns 'cancelled' or throws, so the next
+  /// tap on "Payer maintenant" won't be blocked by the duplicate-transaction check.
+  Future<void> cancelPayment({required int bookingId}) async {
+    try {
+      await _dio.post<void>(
+        ApiEndpoints.paymentsCancel,
+        data: {'booking_id': bookingId},
+      );
+    } catch (_) {
+      // Best-effort — failure to cancel is non-fatal. The 5-min auto-expiry
+      // on the backend will clean up any stale transaction automatically.
+    }
+  }
+
   /// Fetch a single booking by id.
   Future<ApiResult<BookingModel>> getBooking(int id) async {
     try {

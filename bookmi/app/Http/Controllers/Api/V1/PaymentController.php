@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\TransactionStatus;
 use App\Http\Requests\Api\InitiatePaymentRequest;
 use App\Http\Requests\Api\SubmitOtpRequest;
 use App\Http\Resources\TransactionResource;
@@ -102,6 +103,30 @@ class PaymentController extends BaseController
         }
 
         return response()->json(['status' => 'received', 'reference' => $reference]);
+    }
+
+    /**
+     * POST /v1/payments/cancel
+     *
+     * Cancel any pending/processing transactions for a booking.
+     * Called by the Flutter client when the user abandons the Paystack payment flow.
+     */
+    public function cancel(Request $request): JsonResponse
+    {
+        $bookingId = $request->input('booking_id');
+        $booking   = BookingRequest::findOrFail($bookingId);
+
+        abort_if(
+            $booking->client_id !== $request->user()->id,
+            403,
+            "Vous n'êtes pas autorisé à annuler cette transaction.",
+        );
+
+        Transaction::where('booking_request_id', $booking->id)
+            ->whereIn('status', [TransactionStatus::Initiated->value, TransactionStatus::Processing->value])
+            ->update(['status' => TransactionStatus::Failed->value]);
+
+        return response()->json(['status' => 'cancelled']);
     }
 
     /**

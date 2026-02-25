@@ -22,6 +22,7 @@ abstract final class ApiEndpoints {
   static String notificationRead(int id) => '/notifications/$id/read';
   static const myFavorites = '/me/favorites';
   static const paymentsInitiate = '/payments/initiate';
+  static const paymentsCancel = '/payments/cancel';
   static const meFinancialDashboard = '/me/financial_dashboard';
   static const mePayouts = '/me/payouts';
   static String talentDetail(String slug) => '/talents/$slug';

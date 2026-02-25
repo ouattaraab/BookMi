@@ -54,6 +54,19 @@ class BookingRequestResource extends JsonResource
                     (int) config('bookmi.commission_rate', 15),
                 ),
             ],
+            // Only included when eager-loaded via ->load('statusLogs.performer')
+            'history' => $this->whenLoaded('statusLogs', fn () =>
+                $this->statusLogs->map(fn ($log) => [
+                    'id'           => $log->id,
+                    'from_status'  => $log->from_status,
+                    'to_status'    => $log->to_status,
+                    'performed_by' => $log->performer ? [
+                        'id'   => $log->performer->id,
+                        'name' => trim($log->performer->first_name . ' ' . $log->performer->last_name),
+                    ] : null,
+                    'created_at'   => $log->created_at?->toIso8601String(),
+                ])->values()
+            ),
         ];
     }
 }

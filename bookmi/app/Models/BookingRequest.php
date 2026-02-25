@@ -19,6 +19,7 @@ class BookingRequest extends Model
         'client_id',
         'talent_profile_id',
         'service_package_id',
+        'package_snapshot',
         'event_date',
         'start_time',
         'event_location',
@@ -49,6 +50,7 @@ class BookingRequest extends Model
             'commission_amount' => 'integer',
             'total_amount'      => 'integer',
             'refund_amount'     => 'integer',
+            'package_snapshot'  => 'array',
         ];
     }
 
@@ -105,6 +107,16 @@ class BookingRequest extends Model
     public function trackingEvents(): HasMany
     {
         return $this->hasMany(TrackingEvent::class)->orderBy('occurred_at');
+    }
+
+    /**
+     * Immutable audit log of all status transitions.
+     *
+     * @return HasMany<BookingStatusLog, $this>
+     */
+    public function statusLogs(): HasMany
+    {
+        return $this->hasMany(BookingStatusLog::class)->orderBy('created_at');
     }
 
     /**

@@ -7,6 +7,7 @@ import 'package:bookmi_app/features/booking/data/repositories/booking_repository
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:intl/intl.dart';
 
 class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({
@@ -280,6 +281,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             _ContractButton(bookingId: booking.id),
           ],
 
+          // Status history timeline
+          if (booking.statusLogs != null && booking.statusLogs!.isNotEmpty) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _StatusHistoryCard(logs: booking.statusLogs!),
+          ],
+
           const SizedBox(height: BookmiSpacing.spaceXl),
         ],
       ),
@@ -420,15 +427,14 @@ class _StatusCircle extends StatelessWidget {
   }
 
   static (IconData, Color) _iconAndColor(String status) => switch (status) {
-    'pending' => (Icons.schedule, BookmiColors.warning),
-    'accepted' || 'paid' || 'confirmed' => (
-      Icons.check_circle_outline,
-      BookmiColors.success,
-    ),
-    'completed' => (Icons.star_outline, BookmiColors.brandBlueLight),
-    'cancelled' => (Icons.cancel_outlined, BookmiColors.error),
-    'disputed' => (Icons.report_problem_outlined, BookmiColors.brandBlueLight),
-    _ => (Icons.receipt_long_outlined, Colors.white54),
+    'pending'             => (Icons.schedule, BookmiColors.warning),
+    'accepted'            => (Icons.verified_outlined, BookmiColors.brandBlueLight),
+    'paid' || 'confirmed' => (Icons.check_circle_outline, BookmiColors.success),
+    'completed'           => (Icons.star_outline, BookmiColors.brandBlueLight),
+    'cancelled'           => (Icons.cancel_outlined, BookmiColors.error),
+    'rejected'            => (Icons.thumb_down_outlined, BookmiColors.error),
+    'disputed'            => (Icons.report_problem_outlined, Colors.amber),
+    _                     => (Icons.receipt_long_outlined, Colors.white54),
   };
 }
 
@@ -458,14 +464,176 @@ class _StatusPill extends StatelessWidget {
   }
 
   static (String, Color) _labelAndColor(String status) => switch (status) {
-    'pending' => ('En attente', BookmiColors.warning),
-    'accepted' || 'paid' => ('Confirmée', BookmiColors.success),
-    'confirmed' => ('Confirmée', BookmiColors.success),
-    'completed' => ('Passée', BookmiColors.brandBlueLight),
-    'cancelled' => ('Annulée', BookmiColors.error),
-    'disputed' => ('Litige', BookmiColors.brandBlueLight),
-    _ => (status, Colors.white54),
+    'pending'             => ('En attente', BookmiColors.warning),
+    'accepted'            => ('Validée', BookmiColors.brandBlueLight),
+    'paid' || 'confirmed' => ('Confirmée', BookmiColors.success),
+    'completed'           => ('Terminée', BookmiColors.brandBlueLight),
+    'cancelled'           => ('Annulée', BookmiColors.error),
+    'rejected'            => ('Rejetée', BookmiColors.error),
+    'disputed'            => ('Litige', Colors.amber),
+    _                     => (status, Colors.white54),
   };
+}
+
+// ── Status History Timeline ──────────────────────────────────────────────────
+
+class _StatusHistoryCard extends StatelessWidget {
+  const _StatusHistoryCard({required this.logs});
+  final List<BookingStatusLog> logs;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionTitle('Historique'),
+          const SizedBox(height: BookmiSpacing.spaceSm),
+          ...logs.asMap().entries.map((entry) {
+            final i = entry.key;
+            final log = entry.value;
+            final isLast = i == logs.length - 1;
+            return _TimelineEntry(log: log, isLast: isLast);
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelineEntry extends StatelessWidget {
+  const _TimelineEntry({required this.log, required this.isLast});
+
+  final BookingStatusLog log;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, icon, color) = _entryMeta(log.fromStatus, log.toStatus);
+    final dateStr = _formatDateTime(log.createdAt);
+    final byStr = log.performedByName != null ? log.performedByName! : '';
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Timeline spine
+          SizedBox(
+            width: 28,
+            child: Column(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: 0.15),
+                    border: Border.all(color: color.withValues(alpha: 0.5)),
+                  ),
+                  child: Icon(icon, size: 13, color: color),
+                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 1.5,
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          // Content
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 11,
+                        color: Colors.white.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        dateStr,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      if (byStr.isNotEmpty) ...[
+                        Text(
+                          '  ·  ',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        Icon(
+                          Icons.person_outline,
+                          size: 11,
+                          color: Colors.white.withValues(alpha: 0.4),
+                        ),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(
+                            byStr,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white.withValues(alpha: 0.5),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static (String, IconData, Color) _entryMeta(
+    String? fromStatus,
+    String toStatus,
+  ) {
+    if (fromStatus == null && toStatus == 'pending') {
+      return ('Demande envoyée', Icons.send_outlined, BookmiColors.warning);
+    }
+    return switch (toStatus) {
+      'accepted'  => ('Réservation validée', Icons.verified_outlined, BookmiColors.brandBlueLight),
+      'paid'      => ('Paiement effectué', Icons.payment_outlined, BookmiColors.success),
+      'confirmed' => ('Paiement confirmé', Icons.check_circle_outline, BookmiColors.success),
+      'completed' => ('Prestation terminée', Icons.star_outline, BookmiColors.brandBlueLight),
+      'cancelled' => ('Réservation annulée', Icons.cancel_outlined, BookmiColors.error),
+      'rejected'  => ('Demande rejetée', Icons.thumb_down_outlined, BookmiColors.error),
+      _           => (toStatus, Icons.info_outline, Colors.white54),
+    };
+  }
+
+  static String _formatDateTime(DateTime dt) {
+    final dateFormatter = DateFormat('d MMM yyyy', 'fr');
+    final timeFormatter = DateFormat('HH:mm', 'fr');
+    return '${dateFormatter.format(dt)} à ${timeFormatter.format(dt)}';
+  }
 }
 
 class _ContractButton extends StatelessWidget {

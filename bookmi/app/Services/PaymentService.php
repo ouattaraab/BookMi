@@ -65,6 +65,12 @@ class PaymentService
                 $lockedBooking->update(['status' => BookingStatus::Accepted]);
             }
 
+            // Auto-expire stale transactions older than 5 min so the client can retry.
+            Transaction::where('booking_request_id', $booking->id)
+                ->whereIn('status', [TransactionStatus::Initiated->value, TransactionStatus::Processing->value])
+                ->where('created_at', '<', now()->subMinutes(5))
+                ->update(['status' => TransactionStatus::Failed->value]);
+
             $hasPending = Transaction::where('booking_request_id', $booking->id)
                 ->whereIn('status', [TransactionStatus::Initiated->value, TransactionStatus::Processing->value])
                 ->lockForUpdate()

@@ -76,7 +76,7 @@ class BookingRequestController extends BaseController
     {
         $this->authorize('view', $booking);
 
-        $booking->load($this->bookingRelations());
+        $booking->load($this->detailRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
     }
@@ -90,7 +90,7 @@ class BookingRequestController extends BaseController
 
         $booking = $this->bookingService->acceptBooking($booking);
 
-        $booking->load($this->bookingRelations());
+        $booking->load($this->detailRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
     }
@@ -104,7 +104,7 @@ class BookingRequestController extends BaseController
 
         $booking = $this->bookingService->rejectBooking($booking, $request->validated('reason'));
 
-        $booking->load($this->bookingRelations());
+        $booking->load($this->detailRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
     }
@@ -118,7 +118,7 @@ class BookingRequestController extends BaseController
 
         $booking = $this->bookingService->cancelBooking($booking);
 
-        $booking->load($this->bookingRelations());
+        $booking->load($this->detailRelations());
 
         return $this->successResponse(new BookingRequestResource($booking));
     }
@@ -144,6 +144,8 @@ class BookingRequestController extends BaseController
     }
 
     /**
+     * Minimal relations for list items.
+     *
      * @return array<int, string>
      */
     private function bookingRelations(): array
@@ -152,6 +154,20 @@ class BookingRequestController extends BaseController
             'client:id,first_name,last_name',
             'talentProfile:id,stage_name,slug',
             'servicePackage:id,name,type,description,inclusions,duration_minutes',
+        ];
+    }
+
+    /**
+     * Full relations for detail view — includes status history.
+     *
+     * @return array<int, string>
+     */
+    private function detailRelations(): array
+    {
+        return [
+            ...$this->bookingRelations(),
+            'statusLogs',
+            'statusLogs.performer:id,first_name,last_name',
         ];
     }
 }

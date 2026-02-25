@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookingsPage extends StatelessWidget {
   const BookingsPage({super.key});
@@ -43,9 +44,10 @@ class _BookingsViewState extends State<_BookingsView>
   static const _tabs = [
     _Tab(label: 'Toutes'),
     _Tab(label: 'En attente', status: 'pending'),
-    _Tab(label: 'Confirmé', status: 'accepted,paid,confirmed'),
-    _Tab(label: 'Terminé', status: 'completed'),
-    _Tab(label: 'Annulé', status: 'cancelled'),
+    _Tab(label: 'Validée', status: 'accepted'),
+    _Tab(label: 'Confirmée', status: 'paid,confirmed'),
+    _Tab(label: 'Terminée', status: 'completed'),
+    _Tab(label: 'Annulée', status: 'cancelled,rejected'),
   ];
 
   @override
@@ -293,6 +295,7 @@ class _BookingsTab extends StatelessWidget {
                   }
                   final booking = state.bookings[index];
                   final isPending = booking.status == 'pending';
+                  final isAccepted = booking.status == 'accepted';
                   return BookingCard(
                     booking: booking,
                     onTap: () => context.pushNamed(
@@ -305,6 +308,9 @@ class _BookingsTab extends StatelessWidget {
                         : null,
                     onReject: isTalent && isPending
                         ? () => _handleReject(context, booking.id)
+                        : null,
+                    onPay: !isTalent && isAccepted
+                        ? () => _handlePay(context, booking.id)
                         : null,
                   );
                 },
@@ -387,6 +393,133 @@ class _BookingsTab extends StatelessWidget {
             content: Text('Réservation refusée'),
           ),
         );
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+    }
+  }
+
+  Future<void> _handlePay(BuildContext context, int bookingId) async {
+    // Show loading while we create the Paystack transaction on the backend.
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            ),
+            SizedBox(width: 12),
+            Text('Initialisation du paiement…'),
+          ],
+        ),
+        duration: Duration(seconds: 20),
+      ),
+    );
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.initiatePayment(bookingId: bookingId);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        // Extract authorization_url — TransactionResource places it directly under data.
+        final txData = data['data'] as Map<String, dynamic>?;
+        final authUrl = txData?['authorization_url'] as String?
+            ?? data['authorization_url'] as String?;
+
+        if (authUrl == null || authUrl.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Erreur : URL de paiement manquante.'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+          return;
+        }
+
+        // Open Paystack checkout in a Chrome Custom Tab.
+        // The user pays, then returns to BookMi; we then verify the result.
+        final uri = Uri.parse(authUrl);
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (!context.mounted) return;
+
+        if (!launched) {
+          await repo.cancelPayment(bookingId: bookingId);
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Impossible d\'ouvrir la page de paiement.'),
+              backgroundColor: Color(0xFFEF4444),
+            ),
+          );
+          return;
+        }
+
+        // Paystack checkout is now open in the browser. Show a dialog when the
+        // user returns so we can verify the payment status.
+        final confirmed = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF0D1421),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Paiement effectué ?',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
+            content: const Text(
+              'Avez-vous complété le paiement sur la page Paystack ?',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: const Text(
+                  'Non, annuler',
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: BookmiColors.brandBlueLight,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: const Text('Oui, vérifier'),
+              ),
+            ],
+          ),
+        );
+
+        if (!context.mounted) return;
+
+        if (confirmed != true) {
+          // User says they didn't pay — cancel the transaction so retry works.
+          await repo.cancelPayment(bookingId: bookingId);
+          return;
+        }
+
+        // User confirmed payment — refresh bookings list to reflect new status.
+        context.read<BookingsListBloc>().add(BookingsListFetched(status: status));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Vérification du paiement…'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+
       case ApiFailure(:final message):
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

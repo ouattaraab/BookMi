@@ -1,5 +1,34 @@
 import 'package:flutter/foundation.dart';
 
+/// One entry in the booking status audit trail.
+@immutable
+class BookingStatusLog {
+  const BookingStatusLog({
+    required this.id,
+    required this.toStatus,
+    required this.createdAt,
+    this.fromStatus,
+    this.performedByName,
+  });
+
+  final int id;
+  final String? fromStatus;
+  final String toStatus;
+  final String? performedByName;
+  final DateTime createdAt;
+
+  factory BookingStatusLog.fromJson(Map<String, dynamic> json) {
+    final performer = json['performed_by'] as Map<String, dynamic>?;
+    return BookingStatusLog(
+      id: json['id'] as int,
+      fromStatus: json['from_status'] as String?,
+      toStatus: json['to_status'] as String,
+      performedByName: performer?['name'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+    );
+  }
+}
+
 /// Immutable model representing a BookingRequest from the API.
 @immutable
 class BookingModel {
@@ -23,6 +52,7 @@ class BookingModel {
     this.refundAmount,
     this.cancellationPolicyApplied,
     this.devisMessage,
+    this.statusLogs,
   });
 
   final int id;
@@ -44,12 +74,14 @@ class BookingModel {
   final int? refundAmount;
   final String? cancellationPolicyApplied;
   final String? devisMessage;
+  final List<BookingStatusLog>? statusLogs;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     final client = json['client'] as Map<String, dynamic>?;
     final talent = json['talent_profile'] as Map<String, dynamic>?;
     final pkg = json['service_package'] as Map<String, dynamic>?;
     final devis = json['devis'] as Map<String, dynamic>?;
+    final historyJson = json['history'] as List<dynamic>?;
 
     return BookingModel(
       id: json['id'] as int,
@@ -72,6 +104,9 @@ class BookingModel {
       cancellationPolicyApplied:
           json['cancellation_policy_applied'] as String?,
       devisMessage: devis?['message'] as String?,
+      statusLogs: historyJson
+          ?.map((e) => BookingStatusLog.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 

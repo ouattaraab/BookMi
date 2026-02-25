@@ -94,7 +94,15 @@ class HandlePaymentWebhook implements ShouldQueue
                 );
             }
 
+            $previousStatus = $booking->status;
             $booking->update(['status' => BookingStatus::Paid->value]);
+
+            \App\Models\BookingStatusLog::create([
+                'booking_request_id' => $booking->id,
+                'from_status'        => $previousStatus instanceof BookingStatus ? $previousStatus->value : $previousStatus,
+                'to_status'          => BookingStatus::Paid->value,
+                'performed_by_id'    => $booking->client_id,
+            ]);
 
             $escrowHold = EscrowHold::create([
                 'transaction_id'       => $fresh->id,

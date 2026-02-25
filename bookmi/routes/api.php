@@ -150,6 +150,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/payments/{transaction}/status', [PaymentController::class, 'status'])
             ->name('payments.status');
 
+        Route::post('/payments/cancel', [PaymentController::class, 'cancel'])
+            ->name('payments.cancel');
+
         // Dashboard financier talent (Story 4.8)
         Route::get('/me/financial_dashboard', [FinancialDashboardController::class, 'dashboard'])
             ->name('me.financial_dashboard');

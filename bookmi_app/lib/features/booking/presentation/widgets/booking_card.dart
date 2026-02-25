@@ -12,6 +12,7 @@ class BookingCard extends StatelessWidget {
     required this.onTap,
     this.onAccept,
     this.onReject,
+    this.onPay,
     super.key,
   });
 
@@ -19,19 +20,26 @@ class BookingCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onAccept;
   final VoidCallback? onReject;
+  final VoidCallback? onPay;
 
   @override
   Widget build(BuildContext context) {
     final showActions =
         booking.status == 'pending' && (onAccept != null || onReject != null);
+    final showPayButton =
+        booking.status == 'accepted' && onPay != null;
 
     return GlassCard(
-      onTap: onTap,
+      // No outer onTap — we wrap only the info row below so that action
+      // buttons (accept / reject / pay) receive touches independently.
       padding: const EdgeInsets.all(BookmiSpacing.spaceSm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _StatusIcon(status: booking.status),
@@ -160,6 +168,7 @@ class BookingCard extends StatelessWidget {
               ),
             ],
           ),
+          ), // GestureDetector (info row)
           if (showActions) ...[
             const SizedBox(height: BookmiSpacing.spaceSm),
             Row(
@@ -214,6 +223,29 @@ class BookingCard extends StatelessWidget {
                     ),
                   ),
               ],
+            ),
+          ],
+          if (showPayButton) ...[
+            const SizedBox(height: BookmiSpacing.spaceSm),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: onPay,
+                icon: const Icon(Icons.payment_outlined, size: 16),
+                label: const Text(
+                  'Payer maintenant',
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  backgroundColor: BookmiColors.brandBlueLight,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 0,
+                ),
+              ),
             ),
           ],
         ],
@@ -281,13 +313,14 @@ class _StatusBadge extends StatelessWidget {
 
   static (String, Color) _labelAndColor(String status) {
     return switch (status) {
-      'pending' => ('En attente', BookmiColors.warning),
-      'accepted' || 'paid' => ('Confirmée', BookmiColors.success),
-      'confirmed' => ('Confirmée', BookmiColors.success),
-      'completed' => ('Passée', BookmiColors.brandBlueLight),
-      'cancelled' => ('Annulée', BookmiColors.error),
-      'disputed' => ('Litige', BookmiColors.brandBlueLight),
-      _ => (status, Colors.white54),
+      'pending'             => ('En attente', BookmiColors.warning),
+      'accepted'            => ('Validée', BookmiColors.brandBlueLight),
+      'paid' || 'confirmed' => ('Confirmée', BookmiColors.success),
+      'completed'           => ('Terminée', BookmiColors.brandBlueLight),
+      'cancelled'           => ('Annulée', BookmiColors.error),
+      'rejected'            => ('Rejetée', BookmiColors.error),
+      'disputed'            => ('Litige', Colors.amber),
+      _                     => (status, Colors.white54),
     };
   }
 }
@@ -312,15 +345,14 @@ class _StatusIcon extends StatelessWidget {
 
   static (IconData, Color) _iconAndColor(String status) {
     return switch (status) {
-      'pending' => (Icons.schedule, BookmiColors.warning),
-      'accepted' || 'paid' || 'confirmed' => (
-        Icons.check_circle_outline,
-        BookmiColors.success,
-      ),
-      'completed' => (Icons.star_outline, BookmiColors.brandBlueLight),
-      'cancelled' => (Icons.cancel_outlined, BookmiColors.error),
-      'disputed' => (Icons.report_problem_outlined, BookmiColors.brandBlueLight),
-      _ => (Icons.receipt_long_outlined, Colors.white54),
+      'pending'             => (Icons.schedule, BookmiColors.warning),
+      'accepted'            => (Icons.verified_outlined, BookmiColors.brandBlueLight),
+      'paid' || 'confirmed' => (Icons.check_circle_outline, BookmiColors.success),
+      'completed'           => (Icons.star_outline, BookmiColors.brandBlueLight),
+      'cancelled'           => (Icons.cancel_outlined, BookmiColors.error),
+      'rejected'            => (Icons.thumb_down_outlined, BookmiColors.error),
+      'disputed'            => (Icons.report_problem_outlined, Colors.amber),
+      _                     => (Icons.receipt_long_outlined, Colors.white54),
     };
   }
 }

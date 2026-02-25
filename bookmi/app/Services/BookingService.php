@@ -10,6 +10,7 @@ use App\Events\BookingCreated;
 use App\Exceptions\BookingException;
 use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
+use App\Models\BookingStatusLog;
 use App\Models\CalendarSlot;
 use App\Models\ServicePackage;
 use App\Models\TalentProfile;
@@ -57,10 +58,21 @@ class BookingService
         $commissionAmount = (int) round(($cachetAmount * $commissionRate) / 100);
         $totalAmount      = $cachetAmount + $commissionAmount;
 
+        $packageSnapshot = [
+            'id'               => $package->id,
+            'name'             => $package->name,
+            'description'      => $package->description,
+            'cachet_amount'    => $package->cachet_amount,
+            'duration_minutes' => $package->duration_minutes,
+            'inclusions'       => $package->inclusions,
+            'type'             => $package->type instanceof \BackedEnum ? $package->type->value : $package->type,
+        ];
+
         $booking = BookingRequest::create([
             'client_id'          => $client->id,
             'talent_profile_id'  => $talentProfile->id,
             'service_package_id' => $package->id,
+            'package_snapshot'   => $packageSnapshot,
             'event_date'         => $data['event_date'],
             'start_time'         => $startTime,
             'event_location'     => $data['event_location'],
@@ -71,6 +83,9 @@ class BookingService
             'commission_amount'  => $commissionAmount,
             'total_amount'       => $totalAmount,
         ]);
+
+        // Log creation
+        $this->logStatusTransition($booking, null, BookingStatus::Pending, $client->id);
 
         BookingCreated::dispatch($booking);
 
@@ -126,7 +141,9 @@ class BookingService
             throw BookingException::invalidStatusTransition();
         }
 
-        DB::transaction(function () use ($booking) {
+        $performerId = $booking->talentProfile?->user_id;
+
+        DB::transaction(function () use ($booking, $performerId) {
             $booking->update(['status' => BookingStatus::Accepted]);
 
             // Only block the whole day when no start_time is set (date-only booking).
@@ -140,6 +157,8 @@ class BookingService
                     ['status' => CalendarSlotStatus::Blocked],
                 );
             }
+
+            $this->logStatusTransition($booking, BookingStatus::Pending, BookingStatus::Accepted, $performerId);
         });
 
         BookingAccepted::dispatch($booking);
@@ -190,11 +209,15 @@ class BookingService
             $policy       = 'partial_refund';
         }
 
+        $fromStatus = $booking->status;
+
         $booking->update([
             'status'                      => BookingStatus::Cancelled,
             'refund_amount'               => $refundAmount,
             'cancellation_policy_applied' => $policy,
         ]);
+
+        $this->logStatusTransition($booking, $fromStatus, BookingStatus::Cancelled, $booking->client_id);
 
         BookingCancelled::dispatch($booking);
 
@@ -204,12 +227,10 @@ class BookingService
     /**
      * Reject a pending booking request (talent action).
      *
-     * Transitions: pending → cancelled
+     * Transitions: pending → rejected
      * Side-effects: stores optional reject_reason, dispatches BookingCancelled.
      *
-     * Only pending bookings can be rejected via this endpoint (AC3).
-     * Even though the state machine allows accepted→cancelled, that is a different
-     * cancellation flow (not the reject-request action).
+     * Only pending bookings can be rejected via this endpoint.
      */
     public function rejectBooking(BookingRequest $booking, ?string $reason = null): BookingRequest
     {
@@ -217,13 +238,36 @@ class BookingService
             throw BookingException::invalidStatusTransition();
         }
 
+        $performerId = $booking->talentProfile?->user_id;
+
         $booking->update([
-            'status'        => BookingStatus::Cancelled,
+            'status'        => BookingStatus::Rejected,
             'reject_reason' => $reason,
         ]);
+
+        $this->logStatusTransition($booking, BookingStatus::Pending, BookingStatus::Rejected, $performerId);
 
         BookingCancelled::dispatch($booking);
 
         return $booking;
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Record a status change in the audit log.
+     */
+    private function logStatusTransition(
+        BookingRequest $booking,
+        ?BookingStatus $fromStatus,
+        BookingStatus $toStatus,
+        ?int $performedById = null,
+    ): void {
+        BookingStatusLog::create([
+            'booking_request_id' => $booking->id,
+            'from_status'        => $fromStatus?->value,
+            'to_status'          => $toStatus->value,
+            'performed_by_id'    => $performedById,
+        ]);
     }
 }
