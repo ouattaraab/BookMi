@@ -62,7 +62,9 @@ class BookingRequestResource extends JsonResource
                 ),
             ],
             // Only included when eager-loaded via ->load('statusLogs.performer')
-            'history' => $this->whenLoaded('statusLogs', fn () =>
+            'history' => $this->whenLoaded(
+                'statusLogs',
+                fn () =>
                 $this->statusLogs->map(fn ($log) => [
                     'id'           => $log->id,
                     'from_status'  => $log->from_status,

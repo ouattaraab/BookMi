@@ -11,6 +11,7 @@ use App\Models\TalentProfile;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\UploadedFile;
 
 class MessagingService
 {
@@ -18,6 +19,7 @@ class MessagingService
         private readonly ContactDetectionService $contactDetector,
     ) {
     }
+
     /**
      * Returns all conversations for the authenticated user,
      * with the latest message eager-loaded, sorted by most recent activity.
@@ -28,7 +30,12 @@ class MessagingService
     {
         $talentProfileId = TalentProfile::where('user_id', $user->id)->value('id');
 
-        return Conversation::with(['client', 'talentProfile.user', 'latestMessage'])
+        $conversations = Conversation::with([
+            'client',
+            'talentProfile.user',
+            'latestMessage',
+            'bookingRequest',
+        ])
             ->where(function ($q) use ($user, $talentProfileId) {
                 $q->where('client_id', $user->id);
                 if ($talentProfileId) {
@@ -37,32 +44,48 @@ class MessagingService
             })
             ->orderByDesc('last_message_at')
             ->get();
+
+        // Attach unread count per conversation (messages from others, not yet read)
+        $conversations->each(function (Conversation $conv) use ($user) {
+            $conv->unread_count = $conv->messages()
+                ->where('sender_id', '!=', $user->id)
+                ->whereNull('read_at')
+                ->count();
+        });
+
+        return $conversations;
     }
 
     /**
-     * Gets or creates a conversation between a client and a talent profile.
-     * An optional booking_request_id can be attached.
+     * Gets or creates a conversation.
+     * When a booking_request_id is provided it is the unique key (1 conversation per booking).
+     * Without a booking_request_id the legacy (client × talent) pair is used as fallback.
      */
     public function getOrCreateConversation(
         User $client,
         int $talentProfileId,
         ?int $bookingRequestId = null,
     ): Conversation {
-        /** @var Conversation $conversation */
-        $conversation = Conversation::firstOrCreate(
-            [
-                'client_id'        => $client->id,
-                'talent_profile_id' => $talentProfileId,
-            ],
-            [
-                'booking_request_id' => $bookingRequestId,
-                'last_message_at'    => now(),
-            ],
-        );
-
-        // Attach booking request if not already set
-        if ($bookingRequestId && $conversation->booking_request_id === null) {
-            $conversation->update(['booking_request_id' => $bookingRequestId]);
+        if ($bookingRequestId !== null) {
+            /** @var Conversation $conversation */
+            $conversation = Conversation::firstOrCreate(
+                ['booking_request_id' => $bookingRequestId],
+                [
+                    'client_id'         => $client->id,
+                    'talent_profile_id' => $talentProfileId,
+                    'last_message_at'   => now(),
+                ],
+            );
+        } else {
+            /** @var Conversation $conversation */
+            $conversation = Conversation::firstOrCreate(
+                [
+                    'client_id'          => $client->id,
+                    'talent_profile_id'  => $talentProfileId,
+                    'booking_request_id' => null,
+                ],
+                ['last_message_at' => now()],
+            );
         }
 
         return $conversation;
@@ -90,8 +113,20 @@ class MessagingService
         string $content,
         MessageType $type = MessageType::Text,
         bool $isAutoReply = false,
+        ?UploadedFile $mediaFile = null,
     ): Message {
-        $isFlagged = $this->contactDetector->containsContactInfo($content);
+        $isFlagged = $type === MessageType::Text
+            ? $this->contactDetector->containsContactInfo($content)
+            : false;
+
+        $mediaPath = null;
+        $mimeType  = null;
+
+        if ($mediaFile !== null) {
+            $dir       = "messages/{$conversation->id}";
+            $mediaPath = $mediaFile->store($dir, 'public');
+            $mimeType  = $mediaFile->getMimeType();
+        }
 
         $message = Message::create([
             'conversation_id' => $conversation->id,
@@ -100,19 +135,16 @@ class MessagingService
             'type'            => $type,
             'is_auto_reply'   => $isAutoReply,
             'is_flagged'      => $isFlagged,
+            'media_path'      => $mediaPath,
+            'media_type'      => $mimeType,
         ]);
 
         $conversation->update(['last_message_at' => now()]);
 
-        // Use broadcast() without toOthers() — the client filters by sender_id.
-        // toOthers() requires a socket ID header absent from REST API calls.
         broadcast(new MessageSent($message));
 
-        // Dispatch FCM push notification to the other participant(s)
         $this->notifyRecipients($conversation, $sender, $message);
 
-        // Trigger auto-reply when a client sends the FIRST message in a new conversation
-        // and the talent has auto-reply enabled.
         if (! $isAutoReply) {
             $this->maybeAutoReply($conversation, $sender, $message);
         }
@@ -125,7 +157,6 @@ class MessagingService
      */
     private function notifyRecipients(Conversation $conversation, User $sender, Message $message): void
     {
-        // Load conversation participants if not already loaded
         $conversation->loadMissing(['client', 'talentProfile.user']);
 
         $recipients = [];
@@ -140,23 +171,25 @@ class MessagingService
         }
 
         $senderName = $sender->first_name ?? 'Quelqu\'un';
-        $preview    = mb_substr($message->content, 0, 80);
+        $preview    = $message->type !== MessageType::Text
+            ? ($message->type === MessageType::Image ? '📷 Photo' : '🎥 Vidéo')
+            : mb_substr($message->content, 0, 80);
 
         foreach ($recipients as $recipient) {
             SendPushNotification::dispatch(
                 userId: $recipient->id,
                 title: "Nouveau message de {$senderName}",
                 body: $preview,
-                data: ['conversation_id' => (string) $conversation->id],
+                data: [
+                    'type'            => 'new_message',
+                    'conversation_id' => (string) $conversation->id,
+                ],
             );
         }
     }
 
     /**
-     * Sends a talent's auto-reply if:
-     *  1. Auto-reply is active on the talent profile
-     *  2. This is the first (and only) message from the client in the conversation
-     *     (i.e., no prior auto-reply has been sent yet)
+     * Sends a talent's auto-reply if conditions are met.
      */
     private function maybeAutoReply(Conversation $conversation, User $sender, Message $triggerMessage): void
     {
@@ -166,7 +199,6 @@ class MessagingService
             return;
         }
 
-        // Only auto-reply once per conversation (no prior auto-reply message exists)
         $alreadyReplied = $conversation->messages()
             ->where('is_auto_reply', true)
             ->exists();
@@ -175,7 +207,6 @@ class MessagingService
             return;
         }
 
-        // The auto-reply is sent "from" the talent user
         $talentUser = $talentProfile->user;
         if (! $talentUser) {
             return;
