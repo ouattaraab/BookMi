@@ -20,22 +20,24 @@ class PaymentService
     }
 
     /**
-     * Initiate a Mobile Money payment via Paystack.
+     * Initiate a Paystack payment for a booking.
      *
      * Pattern: short DB tx (lock + create) → HTTP call outside tx → update record.
      * This prevents holding a DB connection during the HTTP call (up to 15s per NFR4).
      *
-     * 1. Validate booking is accepted
-     * 2. Check method is mobile money
-     * 3. Eager-load client relation
-     * 4. Short DB transaction: lock-check duplicate + create record (initiated)
-     * 5. Call gateway OUTSIDE DB transaction
-     * 6. On failure: mark transaction failed, re-throw
-     * 7. On success: update to processing with gateway reference
+     * 1. Validate booking is payable (pending = instant-book auto-accept, or accepted)
+     * 2. Eager-load client relation
+     * 3. Short DB transaction: lock-check duplicate + auto-accept if pending + create record
+     * 4. Call gateway OUTSIDE DB transaction
+     * 5. On failure: mark transaction failed, re-throw
+     * 6. On success: update to processing with gateway reference
      */
     public function initiatePayment(BookingRequest $booking, array $data): Transaction
     {
-        if ($booking->status !== BookingStatus::Accepted) {
+        // Accept both pending (instant-book flow) and already-accepted bookings.
+        // Cancelled, completed, or other statuses are not payable.
+        $payableStatuses = [BookingStatus::Pending, BookingStatus::Accepted];
+        if (! in_array($booking->status, $payableStatuses, true)) {
             throw PaymentException::bookingNotPayable($booking->status->value);
         }
 
@@ -48,14 +50,19 @@ class PaymentService
 
         // ── Short DB transaction: duplicate check (with lock) + record creation ──
         $transaction = DB::transaction(function () use ($booking, $paymentMethod, $idempotencyKey) {
-            // M3 fix: re-check booking status WITH lock inside the transaction to prevent
-            // a concurrent cancellation from creating a payment on a cancelled booking.
+            // Re-check booking status WITH lock to prevent race conditions.
             $lockedBooking = BookingRequest::where('id', $booking->id)
                 ->lockForUpdate()
                 ->first();
 
-            if (! $lockedBooking || $lockedBooking->status !== BookingStatus::Accepted) {
+            $payableStatuses = [BookingStatus::Pending, BookingStatus::Accepted];
+            if (! $lockedBooking || ! in_array($lockedBooking->status, $payableStatuses, true)) {
                 throw PaymentException::bookingNotPayable($lockedBooking?->status->value ?? 'unknown');
+            }
+
+            // Auto-accept pending bookings (instant-book flow: client pays immediately).
+            if ($lockedBooking->status === BookingStatus::Pending) {
+                $lockedBooking->update(['status' => BookingStatus::Accepted]);
             }
 
             $hasPending = Transaction::where('booking_request_id', $booking->id)
