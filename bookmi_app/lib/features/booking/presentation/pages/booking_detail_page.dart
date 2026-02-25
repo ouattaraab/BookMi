@@ -281,8 +281,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
-          // Message talent (only once payment is confirmed)
-          if (booking.status == 'confirmed' &&
+          // Message talent (available from payment onwards)
+          if (const [
+                'paid',
+                'confirmed',
+                'completed',
+              ].contains(booking.status) &&
               booking.talentProfileId != null) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _MessageButton(
