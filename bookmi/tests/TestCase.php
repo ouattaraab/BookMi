@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use App\Services\FcmService;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
 
@@ -13,6 +14,21 @@ abstract class TestCase extends BaseTestCase
 
         $this->withoutVite();
         $this->registerSqliteMathFunctions();
+        $this->bindFakeFcmService();
+    }
+
+    /**
+     * Replace FcmService with a no-op so Firebase credentials are never
+     * required in the test environment.
+     */
+    private function bindFakeFcmService(): void
+    {
+        $this->app->bind(FcmService::class, fn () => new class () {
+            public function send(string $deviceToken, string $title, string $body, array $data = []): bool
+            {
+                return true; // no-op — push notifications are not sent in tests
+            }
+        });
     }
 
     private function registerSqliteMathFunctions(): void
