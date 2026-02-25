@@ -29,6 +29,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository;
   final SecureStorage _secureStorage;
 
+  /// Set to `true` right after a talent registers so the router can redirect
+  /// to the onboarding page instead of home. Cleared once read.
+  bool isNewTalentRegistration = false;
+
   Future<void> _onCheckRequested(
     AuthCheckRequested event,
     Emitter<AuthState> emit,
@@ -78,7 +82,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await _authRepository.register(event.data);
 
     switch (result) {
+      case ApiSuccess(:final data) when data != null:
+        // New backend: returns token → auto-login.
+        final role = event.data['role'] as String? ?? 'client';
+        isNewTalentRegistration = role == 'talent';
+        await _secureStorage.saveToken(data.token);
+        emit(AuthAuthenticated(user: data.user, roles: data.roles));
+        unawaited(_registerFcmToken());
       case ApiSuccess():
+        // Old backend: no token → emit registration success to show a message.
         final phone = event.data['phone'] as String;
         emit(AuthRegistrationSuccess(phone: phone));
       case ApiFailure(:final code, :final message, :final details):

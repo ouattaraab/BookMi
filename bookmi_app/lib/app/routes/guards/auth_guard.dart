@@ -28,7 +28,15 @@ String? authGuard(BuildContext context, String location) {
   switch (authState) {
     case AuthAuthenticated():
       // Authenticated user trying to access auth pages → redirect to home
-      if (isPublicRoute) return RoutePaths.home;
+      // (or talent onboarding when coming straight from registration).
+      if (isPublicRoute) {
+        final authBloc = context.read<AuthBloc>();
+        if (authBloc.isNewTalentRegistration) {
+          authBloc.isNewTalentRegistration = false; // consume once
+          return RoutePaths.talentOnboarding;
+        }
+        return RoutePaths.home;
+      }
       return null;
     case AuthUnauthenticated():
       // Unauthenticated user trying to access protected pages

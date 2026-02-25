@@ -212,9 +212,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         eventDate:
             '${_selectedDate!.year}-'
             '${_selectedDate!.month.toString().padLeft(2, '0')}-'
-            '${_selectedDate!.day.toString().padLeft(2, '0')}'
-            'T${_selectedTime!.hour.toString().padLeft(2, '0')}:'
-            '${_selectedTime!.minute.toString().padLeft(2, '0')}:00',
+            '${_selectedDate!.day.toString().padLeft(2, '0')}',
+        startTime:
+            '${_selectedTime!.hour.toString().padLeft(2, '0')}:'
+            '${_selectedTime!.minute.toString().padLeft(2, '0')}',
         eventLocation: _location.trim(),
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,

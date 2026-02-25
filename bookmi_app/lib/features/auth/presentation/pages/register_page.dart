@@ -101,8 +101,21 @@ class _RegisterPageState extends State<RegisterPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         switch (state) {
-          case AuthRegistrationSuccess(:final phone):
-            context.go(RoutePaths.otp, extra: phone);
+          // New backend: auto-login → router handles navigation.
+          case AuthAuthenticated():
+            break;
+          // Old backend fallback: no token returned → redirect to login.
+          case AuthRegistrationSuccess():
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(
+                  content: Text('Compte créé ! Connectez-vous.'),
+                  backgroundColor: Color(0xFF4CAF50),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            context.go(RoutePaths.login);
           case AuthFailure(code: 'VALIDATION_FAILED', message: final msg):
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()

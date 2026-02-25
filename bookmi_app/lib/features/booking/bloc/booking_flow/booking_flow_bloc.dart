@@ -27,6 +27,7 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
       talentProfileId: event.talentProfileId,
       servicePackageId: event.servicePackageId,
       eventDate: event.eventDate,
+      startTime: event.startTime,
       eventLocation: event.eventLocation,
       message: event.message,
       isExpress: event.isExpress,

@@ -36,13 +36,18 @@ class AuthRepository {
     }
   }
 
-  Future<ApiResult<void>> register(Map<String, dynamic> data) async {
+  Future<ApiResult<AuthResponse?>> register(Map<String, dynamic> data) async {
     try {
-      await _dio.post<Map<String, dynamic>>(
+      final response = await _dio.post<Map<String, dynamic>>(
         ApiEndpoints.authRegister,
         data: data,
       );
 
+      final body = response.data?['data'] as Map<String, dynamic>?;
+      // New backend returns token for auto-login; old backend returns null.
+      if (body != null && body.containsKey('token')) {
+        return ApiSuccess(AuthResponse.fromJson(body));
+      }
       return const ApiSuccess(null);
     } on DioException catch (e) {
       return _handleError(e);

@@ -11,6 +11,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     required this.talentProfileId,
     required this.servicePackageId,
     required this.eventDate,
+    required this.startTime,
     required this.eventLocation,
     this.message,
     this.isExpress = false,
@@ -18,7 +19,10 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
 
   final int talentProfileId;
   final int servicePackageId;
+  /// Date only, format YYYY-MM-DD (e.g. "2026-03-15").
   final String eventDate;
+  /// Time only, format HH:MM (e.g. "18:00").
+  final String startTime;
   final String eventLocation;
   final String? message;
   final bool isExpress;
@@ -30,6 +34,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
           talentProfileId == other.talentProfileId &&
           servicePackageId == other.servicePackageId &&
           eventDate == other.eventDate &&
+          startTime == other.startTime &&
           eventLocation == other.eventLocation &&
           message == other.message &&
           isExpress == other.isExpress;
@@ -39,6 +44,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     talentProfileId,
     servicePackageId,
     eventDate,
+    startTime,
     eventLocation,
     message,
     isExpress,

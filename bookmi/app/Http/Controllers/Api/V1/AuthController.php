@@ -24,11 +24,10 @@ class AuthController extends BaseController
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $this->authService->register($request->validated());
+        $user   = $this->authService->register($request->validated());
+        $result = $this->authService->buildAuthResponsePublic($user);
 
-        return $this->successResponse([
-            'message' => 'Compte créé. Vérifiez votre téléphone.',
-        ], 201);
+        return $this->successResponse($result, 201);
     }
 
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
