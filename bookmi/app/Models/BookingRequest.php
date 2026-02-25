@@ -120,6 +120,16 @@ class BookingRequest extends Model
     }
 
     /**
+     * Paystack transactions linked to this booking.
+     *
+     * @return HasMany<Transaction, $this>
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
      * Returns true if the user is the client or the talent owner of this booking.
      */
     public function isOwnedByUser(User $user): bool
