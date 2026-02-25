@@ -83,14 +83,14 @@ void main() {
     testWidgets('displays rating', (tester) async {
       await tester.pumpWidget(buildTestCard());
       expect(find.text('4.5'), findsOneWidget);
-      expect(find.byIcon(Icons.star), findsOneWidget);
+      expect(find.byIcon(Icons.star_rounded), findsOneWidget);
     });
 
     testWidgets('shows verified badge when isVerified is true', (tester) async {
       await tester.pumpWidget(
         buildTestCard(),
       );
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(Icons.verified), findsOneWidget);
     });
 
     testWidgets('hides verified badge when isVerified is false', (

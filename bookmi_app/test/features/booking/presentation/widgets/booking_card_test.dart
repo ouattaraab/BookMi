@@ -55,11 +55,23 @@ void main() {
       expect(find.text('En attente'), findsOneWidget);
     });
 
-    testWidgets('displays status badge for confirmed', (tester) async {
+    testWidgets('displays status badge for accepted', (tester) async {
       await tester.pumpWidget(
         _wrap(
           BookingCard(
             booking: _makeBooking(status: 'accepted'),
+            onTap: () {},
+          ),
+        ),
+      );
+      expect(find.text('Validée'), findsOneWidget);
+    });
+
+    testWidgets('displays status badge for confirmed', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          BookingCard(
+            booking: _makeBooking(status: 'confirmed'),
             onTap: () {},
           ),
         ),
@@ -95,12 +107,12 @@ void main() {
       expect(find.text('Express'), findsNothing);
     });
 
-    testWidgets('calls onTap when card is tapped', (tester) async {
+    testWidgets('calls onTap when info row is tapped', (tester) async {
       var tapped = false;
       await tester.pumpWidget(
         _wrap(BookingCard(booking: _makeBooking(), onTap: () => tapped = true)),
       );
-      await tester.tap(find.byType(BookingCard));
+      await tester.tap(find.text('DJ Alpha'));
       expect(tapped, isTrue);
     });
 

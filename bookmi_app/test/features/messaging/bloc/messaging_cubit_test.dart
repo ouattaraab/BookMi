@@ -5,6 +5,7 @@ import 'package:bookmi_app/features/messaging/bloc/messaging_state.dart';
 import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/data/models/message_model.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -46,6 +47,12 @@ void main() {
     // Default: markAsRead is fire-and-forget
     when(() => repository.markAsRead(any())).thenAnswer(
       (_) async => const ApiSuccess(0),
+    );
+    // Default: no admin broadcasts
+    when(() => repository.getAdminBroadcasts()).thenAnswer(
+      (_) async => const ApiSuccess<List<PushNotificationModel>>(
+        <PushNotificationModel>[],
+      ),
     );
   });
 

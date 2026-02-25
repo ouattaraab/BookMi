@@ -65,15 +65,15 @@ void main() {
         expect(BookmiColors.glassWhite.r, closeTo(1.0, 0.01));
         expect(BookmiColors.glassWhite.g, closeTo(1.0, 0.01));
         expect(BookmiColors.glassWhite.b, closeTo(1.0, 0.01));
-        expect(BookmiColors.glassWhite.a, closeTo(0.15, 0.01));
+        expect(BookmiColors.glassWhite.a, closeTo(0.06, 0.01));
       });
 
       test('glassDark has correct RGBA', () {
-        expect(BookmiColors.glassDark.a, closeTo(0.80, 0.01));
+        expect(BookmiColors.glassDark.a, closeTo(0.85, 0.01));
       });
 
       test('glassBorder has correct RGBA', () {
-        expect(BookmiColors.glassBorder.a, closeTo(0.25, 0.01));
+        expect(BookmiColors.glassBorder.a, closeTo(0.10, 0.01));
       });
 
       test('glassBorderBlue has correct RGBA', () {
@@ -90,10 +90,10 @@ void main() {
         expect(BookmiColors.gradientBrand.colors.length, 2);
       });
 
-      test('gradientCta starts with ctaOrange', () {
+      test('gradientCta starts with blue (iOS dark theme)', () {
         expect(
           BookmiColors.gradientCta.colors.first,
-          const Color(0xFFFF6B35),
+          const Color(0xFF2196F3),
         );
       });
 

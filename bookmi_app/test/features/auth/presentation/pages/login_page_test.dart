@@ -229,6 +229,10 @@ void main() {
           _testPassword,
         );
 
+        // Accept terms & conditions checkbox.
+        await tester.tap(find.byType(Checkbox));
+        await tester.pumpAndSettle();
+
         await tester.tap(find.text('Se connecter'));
         await tester.pumpAndSettle();
 

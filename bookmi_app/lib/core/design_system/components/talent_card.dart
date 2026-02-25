@@ -34,11 +34,12 @@ class TalentCard extends StatelessWidget {
   final String photoUrl;
   final VoidCallback? onTap;
 
-  static String formatCachet(int amount) {
+  static String formatCachet(int amountCentimes) {
+    final fcfa = amountCentimes ~/ 100;
     final formatted = NumberFormat(
       '#,###',
       'fr_FR',
-    ).format(amount).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F');
+    ).format(fcfa).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), ' ');
     return '$formatted FCFA';
   }
 
