@@ -7,6 +7,9 @@ import 'package:bookmi_app/features/discovery/bloc/discovery_bloc.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_event.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_state.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/core/design_system/components/talent_card.dart';
+import 'package:bookmi_app/core/design_system/components/talent_card_skeleton.dart';
+import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/features/discovery/data/repositories/discovery_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -803,28 +806,49 @@ class _FeaturedSection extends StatelessWidget {
         ),
         SizedBox(
           height: 280,
-          child:
-              isLoading
-                  ? _buildSkeletonList()
-                  : talents.isEmpty
+          child: isLoading
+              ? _buildSkeletonList()
+              : talents.isEmpty
                   ? _buildEmpty()
                   : ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: talents.take(10).length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (context, i) {
-                      final talent = talents[i];
-                      final attrs =
-                          talent['attributes'] as Map<String, dynamic>? ??
-                          talent;
-                      return _FeaturedTalentCard(
-                        talent: talent,
-                        attrs: attrs,
-                        onTap: () => onTalentTap(talent),
-                      );
-                    },
-                  ),
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: talents.take(10).length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 12),
+                      itemBuilder: (context, i) {
+                        final talent = talents[i];
+                        final attrs =
+                            talent['attributes'] as Map<String, dynamic>? ??
+                            talent;
+                        final category =
+                            attrs['category'] as Map<String, dynamic>?;
+                        final categorySlug = category?['slug'] as String?;
+                        return SizedBox(
+                          // width = height × aspect-ratio (0.72) to match TalentGrid
+                          width: 280 * 0.72,
+                          child: TalentCard(
+                            id: talent['id'] as int,
+                            stageName:
+                                attrs['stage_name'] as String? ?? 'Talent',
+                            categoryName:
+                                category?['name'] as String? ?? '',
+                            categoryColor:
+                                BookmiColors.categoryColor(categorySlug),
+                            city: attrs['city'] as String? ?? '',
+                            cachetAmount:
+                                attrs['cachet_amount'] as int? ?? 0,
+                            averageRating: double.tryParse(
+                                    '${attrs['average_rating']}') ??
+                                0.0,
+                            isVerified:
+                                attrs['is_verified'] as bool? ?? false,
+                            photoUrl:
+                                attrs['photo_url'] as String? ?? '',
+                            onTap: () => onTalentTap(talent),
+                          ),
+                        );
+                      },
+                    ),
         ),
       ],
     );
@@ -836,14 +860,10 @@ class _FeaturedSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: 4,
       separatorBuilder: (_, __) => const SizedBox(width: 12),
-      itemBuilder:
-          (_, __) => Container(
-            width: 200,
-            decoration: BoxDecoration(
-              color: _border,
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
+      itemBuilder: (_, __) => SizedBox(
+        width: 280 * 0.72,
+        child: const TalentCardSkeleton(),
+      ),
     );
   }
 
@@ -852,171 +872,6 @@ class _FeaturedSection extends StatelessWidget {
       child: Text(
         'Aucun talent disponible',
         style: GoogleFonts.manrope(color: _mutedFg),
-      ),
-    );
-  }
-}
-
-class _FeaturedTalentCard extends StatelessWidget {
-  const _FeaturedTalentCard({
-    required this.talent,
-    required this.attrs,
-    required this.onTap,
-  });
-
-  final Map<String, dynamic> talent;
-  final Map<String, dynamic> attrs;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final stageName = attrs['stage_name'] as String? ?? 'Talent';
-    final photoUrl = attrs['photo_url'] as String? ?? '';
-    final cachetAmount = attrs['cachet_amount'] as int? ?? 0;
-    final averageRating =
-        double.tryParse('${attrs['average_rating']}') ?? 0.0;
-    final isVerified = attrs['is_verified'] as bool? ?? false;
-    final category = attrs['category'] as Map<String, dynamic>?;
-    final categoryName = category?['name'] as String? ?? '';
-    final city = attrs['city'] as String? ?? '';
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 200,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Clean image — no overlapping elements
-            ClipRRect(
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
-              ),
-              child: SizedBox(
-                height: 130,
-                width: double.infinity,
-                child: photoUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                      imageUrl: photoUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => _placeholderPhoto(),
-                      errorWidget: (_, __, ___) => _placeholderPhoto(),
-                    )
-                    : _placeholderPhoto(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name + verified
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          stageName,
-                          style: GoogleFonts.nunito(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: _secondary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      if (isVerified) ...[
-                        const SizedBox(width: 4),
-                        const Icon(
-                          Icons.verified,
-                          size: 14,
-                          color: _primary,
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  if (categoryName.isNotEmpty)
-                    Text(
-                      categoryName,
-                      style: GoogleFonts.manrope(
-                        fontSize: 11,
-                        color: _mutedFg,
-                      ),
-                    ),
-                  if (city.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 11,
-                          color: _mutedFg,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          city,
-                          style: GoogleFonts.manrope(
-                            fontSize: 11,
-                            color: _mutedFg,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  // Rating (left) + Price (right) — BELOW city
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      // Stars + rating
-                      const Icon(
-                        Icons.star_rounded,
-                        size: 12,
-                        color: Color(0xFF64B5F6),
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        averageRating.toStringAsFixed(1),
-                        style: GoogleFonts.nunito(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      const Spacer(),
-                      // Price
-                      Text(
-                        _formatCachet(cachetAmount),
-                        style: GoogleFonts.nunito(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF64B5F6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _placeholderPhoto() {
-    return Container(
-      color: const Color(0xFF0D1421),
-      child: const Icon(
-        Icons.person,
-        color: Color(0xFF94A3B8),
-        size: 40,
       ),
     );
   }

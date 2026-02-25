@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Events\PaymentReceived;
 use App\Jobs\SendPushNotification;
 use App\Notifications\PaymentReceivedNotification;
+use App\Notifications\PaymentReceiptClientNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class NotifyTalentOfPaymentReceived implements ShouldQueue
@@ -15,6 +16,7 @@ class NotifyTalentOfPaymentReceived implements ShouldQueue
             'bookingRequest.talentProfile.user',
             'bookingRequest.client',
             'bookingRequest.servicePackage',
+            'bookingRequest.talentProfile',
         ]);
 
         $booking = $transaction->bookingRequest;
@@ -36,8 +38,11 @@ class NotifyTalentOfPaymentReceived implements ShouldQueue
             );
         }
 
-        // Notify client (push only — confirmation)
+        // Notify client (email receipt + push confirmation)
         if ($client) {
+            // Send receipt email with PDF attachment
+            $client->notify(new PaymentReceiptClientNotification($transaction));
+
             SendPushNotification::dispatch(
                 $client->id,
                 'Paiement confirmé',

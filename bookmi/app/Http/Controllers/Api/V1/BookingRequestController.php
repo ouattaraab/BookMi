@@ -9,10 +9,12 @@ use App\Http\Requests\Api\StoreBookingRequestRequest;
 use App\Http\Resources\BookingRequestResource;
 use App\Models\BookingRequest;
 use App\Services\BookingService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class BookingRequestController extends BaseController
 {
@@ -138,6 +140,79 @@ class BookingRequestController extends BaseController
         $filename = "contrat-booking-{$booking->id}.pdf";
 
         return response($content, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * GET /api/v1/booking_requests/{booking}/receipt
+     * Returns a short-lived signed URL to download the PDF receipt (valid 30 min).
+     * Requires authentication; the download URL itself is public but signed.
+     */
+    public function receipt(BookingRequest $booking): JsonResponse
+    {
+        $this->authorize('view', $booking);
+
+        if (! in_array($booking->status, [
+            BookingStatus::Paid,
+            BookingStatus::Confirmed,
+            BookingStatus::Completed,
+        ], true)) {
+            return $this->errorResponse(
+                'RECEIPT_NOT_AVAILABLE',
+                'Le reçu n\'est disponible qu\'après paiement.',
+                404
+            );
+        }
+
+        $signedUrl = URL::temporarySignedRoute(
+            'api.v1.booking_requests.receipt.download',
+            now()->addMinutes(30),
+            ['booking' => $booking->id],
+        );
+
+        return $this->successResponse(['receipt_url' => $signedUrl]);
+    }
+
+    /**
+     * GET /api/v1/booking_requests/{booking}/receipt/download
+     * Public endpoint (no auth required) — validates signed URL signature and streams the PDF.
+     */
+    public function receiptDownload(BookingRequest $booking): Response
+    {
+        // The route already validates the signature via middleware; abort if invalid.
+        if (! request()->hasValidSignature()) {
+            abort(403, 'Lien de téléchargement invalide ou expiré.');
+        }
+
+        $booking->loadMissing([
+            'client:id,first_name,last_name,email',
+            'talentProfile:id,stage_name,user_id',
+            'talentProfile.user:id,email',
+            'servicePackage:id,name',
+            'transactions' => fn ($q) => $q->where('status', 'succeeded')->latest('completed_at')->limit(1),
+        ]);
+
+        $transaction     = $booking->transactions->first();
+        $reference       = $transaction?->idempotency_key ?? $transaction?->gateway_reference ?? '—';
+        $paidAt          = $transaction?->completed_at?->translatedFormat('d F Y à H:i')
+            ?? $booking->updated_at?->translatedFormat('d F Y à H:i')
+            ?? now()->translatedFormat('d F Y à H:i');
+        $commissionRate  = $booking->total_amount > 0
+            ? (int) round(($booking->commission_amount / $booking->total_amount) * 100)
+            : 15;
+
+        $pdf      = Pdf::loadView('pdf.payment-receipt', [
+            'booking'          => $booking,
+            'paidAt'           => $paidAt,
+            'paymentReference' => $reference,
+            'commissionRate'   => $commissionRate,
+        ])->setPaper('a4', 'portrait');
+
+        $filename = "recu-bookmi-" . str_pad((string) $booking->id, 6, '0', STR_PAD_LEFT) . ".pdf";
+
+        return response($pdf->output(), 200, [
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => "inline; filename=\"{$filename}\"",
         ]);

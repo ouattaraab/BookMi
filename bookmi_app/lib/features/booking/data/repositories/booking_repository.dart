@@ -158,6 +158,19 @@ class BookingRepository {
     }
   }
 
+  /// Get a short-lived signed URL to download the PDF receipt for a paid booking.
+  Future<ApiResult<String>> getReceiptUrl(int id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.bookingReceipt(id),
+      );
+      final url = response.data!['data']['receipt_url'] as String;
+      return ApiSuccess(url);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Accept a pending booking (talent action).
   Future<ApiResult<BookingModel>> acceptBooking(int id) async {
     try {

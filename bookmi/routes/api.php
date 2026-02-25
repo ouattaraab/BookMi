@@ -74,6 +74,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/payments/callback', [PaymentController::class, 'callback'])
         ->name('payments.callback');
 
+    // Téléchargement du reçu PDF — public mais URL signée (30 min)
+    Route::get('/booking_requests/{booking}/receipt/download', [BookingRequestController::class, 'receiptDownload'])
+        ->name('booking_requests.receipt.download');
+
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
     Route::get('/talents', [TalentController::class, 'index'])->name('talents.index');
@@ -131,7 +135,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/booking_requests/{booking}/reject', [BookingRequestController::class, 'reject'])->name('booking_requests.reject');
         Route::post('/booking_requests/{booking}/cancel', [BookingRequestController::class, 'cancel'])->name('booking_requests.cancel');
         Route::get('/booking_requests/{booking}/contract', [BookingRequestController::class, 'contract'])->name('booking_requests.contract');
+        Route::get('/booking_requests/{booking}/receipt', [BookingRequestController::class, 'receipt'])->name('booking_requests.receipt');
         Route::post('/booking_requests/{booking}/reschedule', [RescheduleController::class, 'store'])->name('reschedule_requests.store');
+
         Route::post('/booking_requests/{booking}/confirm_delivery', [EscrowController::class, 'confirmDelivery'])->name('booking_requests.confirm_delivery');
 
         // Report de réservation

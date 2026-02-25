@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({
@@ -282,6 +283,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
           if (booking.contractAvailable) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _ContractButton(bookingId: booking.id),
+          ],
+
+          // Receipt download (available once paid)
+          if (['paid', 'confirmed', 'completed'].contains(booking.status)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _ReceiptButton(bookingId: booking.id),
           ],
 
           // Status history timeline
@@ -687,6 +694,110 @@ class _ContractButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: BookmiColors.brandBlueLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.download_outlined,
+            color: Colors.white38,
+            size: 20,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReceiptButton extends StatefulWidget {
+  const _ReceiptButton({required this.bookingId});
+  final int bookingId;
+
+  @override
+  State<_ReceiptButton> createState() => _ReceiptButtonState();
+}
+
+class _ReceiptButtonState extends State<_ReceiptButton> {
+  bool _loading = false;
+
+  Future<void> _download() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.getReceiptUrl(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        final uri = Uri.parse(data);
+        if (await canLaunchUrl(uri)) {
+          // ignore: use_build_context_synchronously
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Impossible d\'ouvrir le reçu'),
+            ),
+          );
+        }
+      case ApiFailure(:final message):
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: _download,
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+            ),
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF4CAF50),
+                    ),
+                  )
+                : const Icon(
+                    Icons.receipt_long_outlined,
+                    color: Color(0xFF4CAF50),
+                    size: 20,
+                  ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reçu de paiement',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Télécharger en PDF',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF4CAF50),
                   ),
                 ),
               ],
