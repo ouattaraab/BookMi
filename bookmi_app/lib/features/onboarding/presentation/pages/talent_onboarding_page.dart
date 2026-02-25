@@ -25,7 +25,7 @@ class _TalentOnboardingView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BookmiColors.brandNavy,
+      backgroundColor: BookmiColors.backgroundDeep,
       body: BlocBuilder<OnboardingCubit, OnboardingState>(
         builder: (context, state) {
           return switch (state) {

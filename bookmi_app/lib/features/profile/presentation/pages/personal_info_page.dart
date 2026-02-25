@@ -13,8 +13,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 // ── Dark design tokens ────────────────────────────────────────────
-const _bg          = Color(0xFF0A0F1E);
-const _cardBg      = Color(0xFF0D1421);
+const _bg          = Color(0xFF112044);
+const _cardBg      = Color(0xFF0D1B38);
 const _primary     = Color(0xFF2196F3);
 const _accent      = Color(0xFF64B5F6);
 const _muted       = Color(0xFF94A3B8);
@@ -325,17 +325,53 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                 )
               : Stack(
                   children: [
-                    // Atmospheric blue glow
+                    // Glow haut
                     Positioned(
-                      top: 0, left: 0, right: 0,
-                      height: 220,
+                      top: -40, left: -20, right: -20,
+                      height: 280,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
-                            center: Alignment.topCenter,
-                            radius: 1.4,
+                            center: const Alignment(0, -0.2),
+                            radius: 1.0,
                             colors: [
-                              _primary.withValues(alpha: 0.08),
+                              _primary.withValues(alpha: 0.28),
+                              const Color(0xFF38BDF8).withValues(alpha: 0.09),
+                              Colors.transparent,
+                            ],
+                            stops: const [0.0, 0.45, 1.0],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Glow bas-gauche teal
+                    Positioned(
+                      bottom: 0, left: -30,
+                      width: 220, height: 220,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(-0.4, 0.6),
+                            radius: 0.9,
+                            colors: [
+                              const Color(0xFF00BCD4).withValues(alpha: 0.16),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Glow bas-droite bleu
+                    Positioned(
+                      bottom: 0, right: -30,
+                      width: 220, height: 220,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: const Alignment(0.4, 0.6),
+                            radius: 0.9,
+                            colors: [
+                              _primary.withValues(alpha: 0.20),
                               Colors.transparent,
                             ],
                           ),

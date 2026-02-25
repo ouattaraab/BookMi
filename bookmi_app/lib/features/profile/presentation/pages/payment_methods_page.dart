@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
+const _secondary = Color(0xFFE8F0FF);
+const _muted = Color(0xFF112044);
+const _mutedFg = Color(0xFF8FA3C0);
 
 class PaymentMethodsPage extends StatelessWidget {
   const PaymentMethodsPage({super.key});
@@ -13,7 +13,7 @@ class PaymentMethodsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: _muted,
       appBar: AppBar(
-        backgroundColor: _secondary,
+        backgroundColor: const Color(0xFF0D1B38),
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(

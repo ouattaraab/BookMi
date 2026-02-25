@@ -37,9 +37,9 @@ class _FinancialDashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BookmiColors.brandNavy,
+      backgroundColor: BookmiColors.backgroundDeep,
       appBar: AppBar(
-        backgroundColor: BookmiColors.brandNavy,
+        backgroundColor: BookmiColors.backgroundDeep,
         elevation: 0,
         title: const Text(
           'Mes revenus',

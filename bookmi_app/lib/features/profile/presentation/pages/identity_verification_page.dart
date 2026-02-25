@@ -7,10 +7,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
+const _secondary = Color(0xFFE8F0FF);
+const _muted = Color(0xFF112044);
+const _mutedFg = Color(0xFF8FA3C0);
+const _border = Color(0x1AFFFFFF);
 const _success = Color(0xFF14B8A6);
 const _primary = Color(0xFF3B9DF2);
 const _orange = Color(0xFFFF6B35);
@@ -163,7 +163,7 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
     return Scaffold(
       backgroundColor: _muted,
       appBar: AppBar(
-        backgroundColor: _secondary,
+        backgroundColor: const Color(0xFF0D1B38),
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
@@ -303,11 +303,11 @@ class _StatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0D1B38),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0x08FFFFFF),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -399,11 +399,11 @@ class _DocumentForm extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0D1B38),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0x08FFFFFF),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -589,7 +589,7 @@ class _DocumentForm extends StatelessWidget {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: const Color(0xFF0D1B38),
                           ),
                         )
                       : Text(
@@ -653,11 +653,11 @@ class _SelfieSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0D1B38),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0x08FFFFFF),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -778,7 +778,7 @@ class _SelfieSection extends StatelessWidget {
                             height: 14,
                             child: CircularProgressIndicator(
                               strokeWidth: 1.5,
-                              color: Colors.white,
+                              color: const Color(0xFF0D1B38),
                             ),
                           )
                         : const Icon(Icons.check, size: 16),
@@ -816,7 +816,7 @@ class _SelfieSection extends StatelessWidget {
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _secondary,
+                  backgroundColor: const Color(0xFF0D1B38),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 13),
                   shape: RoundedRectangleBorder(

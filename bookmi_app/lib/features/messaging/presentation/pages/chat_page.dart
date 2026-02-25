@@ -14,10 +14,10 @@ import 'package:image_picker/image_picker.dart';
 
 // ── Design tokens ─────────────────────────────────────────────────
 const _primary = Color(0xFF3B9DF2);
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
+const _secondary = Color(0xFFE8F0FF);
+const _muted = Color(0xFF112044);
+const _mutedFg = Color(0xFF8FA3C0);
+const _border = Color(0x1AFFFFFF);
 const _warning = Color(0xFFFBBF24);
 
 class ChatPage extends StatefulWidget {
@@ -345,7 +345,7 @@ class _ChatHeader extends StatelessWidget {
           IconButton(
             icon: const Icon(
               Icons.arrow_back_ios_new,
-              color: Colors.white,
+              color: const Color(0xFF0D1B38),
               size: 18,
             ),
             onPressed: () => Navigator.of(context).pop(),
@@ -378,7 +378,7 @@ class _ChatHeader extends StatelessWidget {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: const Color(0xFF0D1B38),
                   ),
                 ),
                 if (_subtitle.isNotEmpty)
@@ -401,7 +401,7 @@ class _ChatHeader extends StatelessWidget {
             ),
             child: const Icon(
               Icons.info_outline,
-              color: Colors.white,
+              color: const Color(0xFF0D1B38),
               size: 18,
             ),
           ),
@@ -427,7 +427,7 @@ class _HeaderInitials extends StatelessWidget {
           style: GoogleFonts.manrope(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: const Color(0xFF0D1B38),
           ),
         ),
       ),
@@ -724,7 +724,7 @@ class _VideoMessage extends StatelessWidget {
             children: [
               const Icon(
                 Icons.play_circle_filled_rounded,
-                color: Colors.white,
+                color: const Color(0xFF0D1B38),
                 size: 48,
               ),
               Positioned(
@@ -747,7 +747,7 @@ class _VideoMessage extends StatelessWidget {
                         'Vidéo',
                         style: GoogleFonts.manrope(
                           fontSize: 10,
-                          color: Colors.white,
+                          color: const Color(0xFF0D1B38),
                         ),
                       ),
                     ],
@@ -835,11 +835,11 @@ class _InputBar extends StatelessWidget {
         bottom: MediaQuery.of(context).padding.bottom + 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0D1B38),
         border: const Border(top: BorderSide(color: _border)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0x08FFFFFF),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

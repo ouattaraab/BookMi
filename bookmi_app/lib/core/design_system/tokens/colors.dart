@@ -13,8 +13,8 @@ abstract final class BookmiColors {
   static const ctaOrangeLight = Color(0xFFFF8C5E);
 
   // ── Background Colors ─────────────────────────────────────────
-  static const backgroundDeep = Color(0xFF0A0F1E);
-  static const backgroundCard = Color(0xFF0D1421);
+  static const backgroundDeep = Color(0xFF112044);
+  static const backgroundCard = Color(0xFF0F1C3A);
 
   // ── Semantic Colors ───────────────────────────────────────────
   static const success = Color(0xFF00C853);

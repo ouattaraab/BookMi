@@ -5,12 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
+const _secondary = Color(0xFFE8F0FF);
+const _muted = Color(0xFF112044);
+const _mutedFg = Color(0xFF8FA3C0);
 const _primary = Color(0xFF3B9DF2);
 const _success = Color(0xFF14B8A6);
-const _border = Color(0xFFE2E8F0);
+const _border = Color(0x1AFFFFFF);
 const _destructive = Color(0xFFEF4444);
 
 class PackageManagerPage extends StatefulWidget {
@@ -126,7 +126,7 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
     return Scaffold(
       backgroundColor: _muted,
       appBar: AppBar(
-        backgroundColor: _secondary,
+        backgroundColor: const Color(0xFF0D1B38),
         foregroundColor: Colors.white,
         elevation: 0,
         title: Text(
@@ -151,7 +151,7 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
         label: Text(
           'Nouveau package',
           style: GoogleFonts.manrope(
-              color: Colors.white, fontWeight: FontWeight.w600),
+              color: const Color(0xFF0D1B38), fontWeight: FontWeight.w600),
         ),
       ),
       body: _loading
@@ -274,12 +274,12 @@ class _PackageCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFF0D1B38),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: _border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: const Color(0x08FFFFFF),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -618,7 +618,7 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            color: Colors.white,
+                            color: const Color(0xFF0D1B38),
                             strokeWidth: 2,
                           ),
                         )

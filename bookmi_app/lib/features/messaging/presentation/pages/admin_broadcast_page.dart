@@ -2,9 +2,9 @@ import 'package:bookmi_app/features/notifications/data/models/push_notification_
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-const _secondary = Color(0xFF00274D);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
+const _secondary = Color(0xFFE8F0FF);
+const _muted = Color(0xFF112044);
+const _mutedFg = Color(0xFF8FA3C0);
 const _admin = Color(0xFF7C3AED);
 
 class AdminBroadcastPage extends StatelessWidget {
@@ -29,7 +29,7 @@ class AdminBroadcastPage extends StatelessWidget {
         children: [
           // Header
           Container(
-            color: _secondary,
+            color: const Color(0xFF0D1B38),
             padding: EdgeInsets.only(
               top: MediaQuery.of(context).padding.top + 8,
               left: 8,
@@ -94,7 +94,7 @@ class AdminBroadcastPage extends StatelessWidget {
                               style: GoogleFonts.manrope(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: _admin,
                               ),
                             ),
                           ),
@@ -157,11 +157,11 @@ class AdminBroadcastPage extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: const Color(0xFF0D1B38),
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
+                          color: const Color(0x08FFFFFF),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),

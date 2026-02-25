@@ -89,19 +89,59 @@ class _ShellPageState extends State<ShellPage> {
             extendBody: true,
             body: Stack(
               children: [
-                // Atmospheric blue glow from top
+                // ── Glow 1 : double halo bleu en haut ──────────────
                 Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 280,
+                  top: -40,
+                  left: -20,
+                  right: -20,
+                  height: 300,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: RadialGradient(
-                        center: Alignment.topCenter,
-                        radius: 1.2,
+                        center: const Alignment(0, -0.2),
+                        radius: 1.0,
                         colors: [
-                          const Color(0xFF2196F3).withValues(alpha: 0.15),
+                          const Color(0xFF2196F3).withValues(alpha: 0.30),
+                          const Color(0xFF38BDF8).withValues(alpha: 0.10),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.45, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                // ── Glow 2 : orbe teal bas-gauche ──────────────────
+                Positioned(
+                  bottom: 0,
+                  left: -30,
+                  width: 240,
+                  height: 240,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(-0.4, 0.6),
+                        radius: 0.9,
+                        colors: [
+                          const Color(0xFF00BCD4).withValues(alpha: 0.18),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                // ── Glow 3 : orbe bleu bas-droite ──────────────────
+                Positioned(
+                  bottom: 0,
+                  right: -30,
+                  width: 240,
+                  height: 240,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: RadialGradient(
+                        center: const Alignment(0.4, 0.6),
+                        radius: 0.9,
+                        colors: [
+                          const Color(0xFF2196F3).withValues(alpha: 0.22),
                           Colors.transparent,
                         ],
                       ),
