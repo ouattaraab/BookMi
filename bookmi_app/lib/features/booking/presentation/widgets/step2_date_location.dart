@@ -4,20 +4,24 @@ import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:flutter/material.dart';
 
-/// Step 2 of the booking flow — pick event date and location.
+/// Step 2 of the booking flow — pick event date, time, and location.
 class Step2DateLocation extends StatefulWidget {
   const Step2DateLocation({
     required this.selectedDate,
+    required this.selectedTime,
     required this.location,
     required this.onDateSelected,
+    required this.onTimeSelected,
     required this.onLocationChanged,
     this.blockedDates = const [],
     super.key,
   });
 
   final DateTime? selectedDate;
+  final TimeOfDay? selectedTime;
   final String location;
   final ValueChanged<DateTime> onDateSelected;
+  final ValueChanged<TimeOfDay> onTimeSelected;
   final ValueChanged<String> onLocationChanged;
   final List<DateTime> blockedDates;
 
@@ -37,18 +41,26 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
   }
 
   @override
-  void didUpdateWidget(Step2DateLocation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.location != widget.location &&
-        _locationController.text != widget.location) {
-      _locationController.text = widget.location;
-    }
-  }
-
-  @override
   void dispose() {
     _locationController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: widget.selectedTime ?? const TimeOfDay(hour: 18, minute: 0),
+      builder: (ctx, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: BookmiColors.brandBlue,
+            surface: Color(0xFF0D1B38),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) widget.onTimeSelected(picked);
   }
 
   bool _isBlocked(DateTime date) {
@@ -72,6 +84,7 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Calendar
           GlassCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,7 +109,73 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
               ],
             ),
           ),
+          // Time picker — shown once a date is selected
+          if (widget.selectedDate != null) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Heure de l\'événement',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: BookmiSpacing.spaceSm),
+                  GestureDetector(
+                    onTap: _pickTime,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: BookmiSpacing.spaceBase,
+                        vertical: BookmiSpacing.spaceSm,
+                      ),
+                      decoration: BoxDecoration(
+                        color: BookmiColors.glassDarkMedium,
+                        borderRadius: BookmiRadius.inputBorder,
+                        border: Border.all(
+                          color: widget.selectedTime != null
+                              ? BookmiColors.brandBlue
+                              : BookmiColors.glassBorder,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.access_time_outlined,
+                            color: Colors.white.withValues(alpha: 0.5),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            widget.selectedTime != null
+                                ? '${widget.selectedTime!.hour.toString().padLeft(2, '0')}:${widget.selectedTime!.minute.toString().padLeft(2, '0')}'
+                                : 'Sélectionner une heure',
+                            style: TextStyle(
+                              color: widget.selectedTime != null
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.4),
+                              fontSize: 14,
+                            ),
+                          ),
+                          const Spacer(),
+                          Icon(
+                            Icons.chevron_right,
+                            color: Colors.white.withValues(alpha: 0.3),
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: BookmiSpacing.spaceMd),
+          // Location
           GlassCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

@@ -71,6 +71,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
 
   // Step 2
   DateTime? _selectedDate;
+  TimeOfDay? _selectedTime;
   String _location = '';
 
   // Step 3
@@ -100,14 +101,18 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       'jan', 'fév', 'mar', 'avr', 'mai', 'juin',
       'juil', 'aoû', 'sep', 'oct', 'nov', 'déc',
     ];
-    return '${_selectedDate!.day} ${months[_selectedDate!.month - 1]}. '
+    final datePart = '${_selectedDate!.day} ${months[_selectedDate!.month - 1]}. '
         '${_selectedDate!.year}';
+    if (_selectedTime == null) return datePart;
+    final h = _selectedTime!.hour.toString().padLeft(2, '0');
+    final m = _selectedTime!.minute.toString().padLeft(2, '0');
+    return '$datePart à $h:$m';
   }
 
   bool get _canProceed {
     return switch (_currentStep) {
       0 => _selectedPackageId != null,
-      1 => _selectedDate != null && _location.trim().isNotEmpty,
+      1 => _selectedDate != null && _selectedTime != null && _location.trim().isNotEmpty,
       2 => true,
       3 => _selectedPaymentMethod != null && _paymentPhone.trim().length >= 8,
       _ => false,
@@ -161,7 +166,9 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         eventDate:
             '${_selectedDate!.year}-'
             '${_selectedDate!.month.toString().padLeft(2, '0')}-'
-            '${_selectedDate!.day.toString().padLeft(2, '0')}',
+            '${_selectedDate!.day.toString().padLeft(2, '0')}'
+            'T${_selectedTime!.hour.toString().padLeft(2, '0')}:'
+            '${_selectedTime!.minute.toString().padLeft(2, '0')}:00',
         eventLocation: _location.trim(),
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,
@@ -334,8 +341,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       ),
       1 => Step2DateLocation(
         selectedDate: _selectedDate,
+        selectedTime: _selectedTime,
         location: _location,
         onDateSelected: (d) => setState(() => _selectedDate = d),
+        onTimeSelected: (t) => setState(() => _selectedTime = t),
         onLocationChanged: (v) => setState(() => _location = v),
       ),
       2 => BlocBuilder<BookingFlowBloc, BookingFlowState>(
