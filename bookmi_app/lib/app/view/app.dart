@@ -14,6 +14,7 @@ import 'package:bookmi_app/features/favorites/bloc/favorites_bloc.dart';
 import 'package:bookmi_app/features/favorites/data/local/favorites_local_source.dart';
 import 'package:bookmi_app/features/favorites/data/repositories/favorites_repository.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
@@ -168,6 +169,7 @@ class _AppDependencies {
       messagingRepo,
       profileRepo,
       notificationRepo,
+      notificationService: NotificationService.instance,
     );
 
     return _AppDependencies(

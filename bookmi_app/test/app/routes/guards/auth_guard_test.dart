@@ -10,7 +10,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {
+  @override
+  bool isNewTalentRegistration = false;
+}
 
 void main() {
   late MockAuthBloc mockBloc;

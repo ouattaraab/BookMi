@@ -71,8 +71,9 @@ GoRouter buildAppRouter(
   OnboardingRepository onboardingRepo,
   MessagingRepository messagingRepo,
   ProfileRepository profileRepo,
-  NotificationRepository notificationRepo,
-) {
+  NotificationRepository notificationRepo, {
+  NotificationService? notificationService,
+}) {
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: RoutePaths.splash,
@@ -361,7 +362,7 @@ GoRouter buildAppRouter(
   // • booking_id present  → booking detail page
   // • admin_broadcast      → messages tab
   // • everything else      → notifications list
-  NotificationService.instance.onNotificationTap = (message) {
+  notificationService?.onNotificationTap = (message) {
     final type = message.data['type'];
     final bookingId = message.data['booking_id']?.toString();
     if (bookingId != null && bookingId.isNotEmpty) {
