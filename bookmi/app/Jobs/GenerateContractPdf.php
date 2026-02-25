@@ -26,7 +26,7 @@ class GenerateContractPdf implements ShouldQueue
     public function handle(): void
     {
         $booking = $this->booking->load([
-            'client:id,name,email,phone',
+            'client:id,first_name,last_name,email,phone',
             'talentProfile:id,stage_name',
             'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ]);
