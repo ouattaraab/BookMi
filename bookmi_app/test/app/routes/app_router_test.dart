@@ -25,7 +25,8 @@ class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockSecureStorage extends Mock implements SecureStorage {}
 
-class MockNotificationRepository extends Mock implements NotificationRepository {}
+class MockNotificationRepository extends Mock
+    implements NotificationRepository {}
 
 void main() {
   late GoRouter router;

@@ -3,7 +3,6 @@ import 'package:bookmi_app/features/onboarding/bloc/onboarding_state.dart';
 import 'package:bookmi_app/features/onboarding/data/models/onboarding_status_model.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:bloc_test/bloc_test.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

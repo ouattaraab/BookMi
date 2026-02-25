@@ -500,10 +500,10 @@ class _TermsCheckbox extends StatelessWidget {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () => launchUrl(
-                              Uri.parse(
-                                'https://bookmi.click/conditions-utilisation',
-                              ),
-                            ),
+                          Uri.parse(
+                            'https://bookmi.click/conditions-utilisation',
+                          ),
+                        ),
                     ),
                     const TextSpan(text: ' et la '),
                     TextSpan(
@@ -514,10 +514,10 @@ class _TermsCheckbox extends StatelessWidget {
                       ),
                       recognizer: TapGestureRecognizer()
                         ..onTap = () => launchUrl(
-                              Uri.parse(
-                                'https://bookmi.click/politique-confidentialite',
-                              ),
-                            ),
+                          Uri.parse(
+                            'https://bookmi.click/politique-confidentialite',
+                          ),
+                        ),
                     ),
                   ],
                 ),

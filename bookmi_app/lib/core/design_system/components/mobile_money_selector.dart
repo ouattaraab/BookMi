@@ -1,4 +1,3 @@
-import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:flutter/material.dart';
 

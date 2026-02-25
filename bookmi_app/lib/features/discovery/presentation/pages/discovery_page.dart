@@ -18,7 +18,6 @@ import 'package:intl/intl.dart';
 const _primary = Color(0xFF2196F3);
 const _secondary = Colors.white;
 const _mutedFg = Color(0xFF94A3B8);
-const _border = Color(0x1AFFFFFF);
 
 enum _ViewMode { grid, list }
 

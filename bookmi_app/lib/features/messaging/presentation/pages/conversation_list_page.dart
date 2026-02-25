@@ -7,13 +7,11 @@ import 'package:bookmi_app/features/notifications/data/models/push_notification_
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ── Design tokens (dark) ─────────────────────────────────────────
 const _primary = Color(0xFF2196F3);
 const _secondary = Colors.white;
-const _muted = Color(0xFF0D1421);
 const _mutedFg = Color(0xFF94A3B8);
 const _border = Color(0x1AFFFFFF);
 const _admin = Color(0xFF7C3AED); // purple for admin messages
@@ -124,47 +122,6 @@ class _MessagesHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-      ),
-    );
-  }
-}
-
-class _TabToggle extends StatelessWidget {
-  const _TabToggle({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.manrope(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected
-                    ? _secondary
-                    : Colors.white.withValues(alpha: 0.7),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

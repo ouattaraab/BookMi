@@ -460,7 +460,7 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
       'type': _type,
     };
 
-    ApiResult result;
+    ApiResult<Object?> result;
     if (widget.existing != null) {
       final id =
           (widget.existing!['id'] as int?) ??

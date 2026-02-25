@@ -14,11 +14,11 @@ class NotificationRepository {
     int page = 1,
   }) async {
     try {
-      final response = await _apiClient.dio.get(
+      final response = await _apiClient.dio.get<Map<String, dynamic>>(
         ApiEndpoints.notifications,
         queryParameters: {'page': page},
       );
-      final items = (response.data['data'] as List<dynamic>? ?? [])
+      final items = (response.data?['data'] as List<dynamic>? ?? [])
           .map((e) => PushNotificationModel.fromJson(e as Map<String, dynamic>))
           .toList();
       return ApiSuccess(items);
@@ -35,8 +35,10 @@ class NotificationRepository {
 
   Future<int> getUnreadCount() async {
     try {
-      final response = await _apiClient.dio.get(ApiEndpoints.notifications);
-      final items = (response.data['data'] as List<dynamic>? ?? []);
+      final response = await _apiClient.dio.get<Map<String, dynamic>>(
+        ApiEndpoints.notifications,
+      );
+      final items = (response.data?['data'] as List<dynamic>? ?? []);
       return items
           .where((e) => (e as Map)['attributes']?['read_at'] == null)
           .length;
@@ -47,7 +49,7 @@ class NotificationRepository {
 
   Future<ApiResult<void>> markRead(int notificationId) async {
     try {
-      await _apiClient.dio.post(
+      await _apiClient.dio.post<void>(
         ApiEndpoints.notificationRead(notificationId),
       );
       return const ApiSuccess(null);
@@ -62,7 +64,7 @@ class NotificationRepository {
 
   Future<ApiResult<void>> markAllRead() async {
     try {
-      await _apiClient.dio.post(ApiEndpoints.notificationsReadAll);
+      await _apiClient.dio.post<void>(ApiEndpoints.notificationsReadAll);
       return const ApiSuccess(null);
     } on DioException catch (e) {
       return ApiFailure(
@@ -75,7 +77,7 @@ class NotificationRepository {
 
   Future<ApiResult<void>> updateFcmToken(String token) async {
     try {
-      await _apiClient.dio.put(
+      await _apiClient.dio.put<void>(
         ApiEndpoints.meUpdateFcmToken,
         data: {'fcm_token': token},
       );

@@ -15,12 +15,10 @@ import 'package:intl/intl.dart';
 // ── Design tokens (dark) ─────────────────────────────────────────
 const _primary = Color(0xFF2196F3);
 const _secondary = Colors.white;
-const _muted = Color(0xFF0D1421);
 const _mutedFg = Color(0xFF94A3B8);
 const _border = Color(0x1AFFFFFF);
 const _success = Color(0xFF14B8A6);
 const _destructive = Color(0xFFEF4444);
-const _warning = Color(0xFFFBBF24);
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
