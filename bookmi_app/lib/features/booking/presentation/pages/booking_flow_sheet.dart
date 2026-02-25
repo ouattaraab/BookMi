@@ -329,11 +329,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           setState(() {
             _selectedPackageId = id;
             _selectedPackage = widget.servicePackages.firstWhere(
-              (p) {
-                final attrs =
-                    p['attributes'] as Map<String, dynamic>? ?? p;
-                return (attrs['id'] as int?) == id;
-              },
+              (p) => (p['id'] as int?) == id,
               orElse: () => {},
             );
           });
