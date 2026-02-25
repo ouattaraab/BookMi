@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Enums\BookingStatus;
 use App\Models\BookingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -44,7 +45,13 @@ class BookingRequestResource extends JsonResource
             'reject_reason'               => $this->reject_reason,
             'refund_amount'               => $this->refund_amount,
             'cancellation_policy_applied' => $this->cancellation_policy_applied,
-            'contract_available'          => $this->contract_path !== null,
+            // Contract is available only after payment AND the PDF has been generated
+            'contract_available' => $this->contract_path !== null
+                && in_array($this->status, [
+                    BookingStatus::Paid,
+                    BookingStatus::Confirmed,
+                    BookingStatus::Completed,
+                ], true),
             'devis'           => [
                 'cachet_amount'     => $this->cachet_amount,
                 'commission_amount' => $this->commission_amount,

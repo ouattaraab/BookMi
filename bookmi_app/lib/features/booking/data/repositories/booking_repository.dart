@@ -158,13 +158,26 @@ class BookingRepository {
     }
   }
 
-  /// Get a short-lived signed URL to download the PDF receipt for a paid booking.
+  /// Get a short-lived download URL (cache token) for the PDF receipt.
   Future<ApiResult<String>> getReceiptUrl(int id) async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.bookingReceipt(id),
       );
       final url = response.data!['data']['receipt_url'] as String;
+      return ApiSuccess(url);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Get a short-lived download URL (cache token) for the PDF contract.
+  Future<ApiResult<String>> getContractUrl(int id) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.bookingContractUrl(id),
+      );
+      final url = response.data!['data']['contract_url'] as String;
       return ApiSuccess(url);
     } on DioException catch (e) {
       return _mapDioError(e);

@@ -7,14 +7,15 @@ use App\Exceptions\BookingException;
 use App\Http\Requests\Api\RejectBookingRequestRequest;
 use App\Http\Requests\Api\StoreBookingRequestRequest;
 use App\Http\Resources\BookingRequestResource;
+use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
 use App\Services\BookingService;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 
 class BookingRequestController extends BaseController
 {
@@ -147,8 +148,8 @@ class BookingRequestController extends BaseController
 
     /**
      * GET /api/v1/booking_requests/{booking}/receipt
-     * Returns a short-lived signed URL to download the PDF receipt (valid 30 min).
-     * Requires authentication; the download URL itself is public but signed.
+     * Returns a short-lived download URL (cache token, 10 min) for the PDF receipt.
+     * The download URL itself is public but single-use.
      */
     public function receipt(BookingRequest $booking): JsonResponse
     {
@@ -166,56 +167,78 @@ class BookingRequestController extends BaseController
             );
         }
 
-        $signedUrl = URL::temporarySignedRoute(
-            'api.v1.booking_requests.receipt.download',
-            now()->addMinutes(30),
-            ['booking' => $booking->id],
-        );
+        $token = Str::uuid()->toString();
+        Cache::put("pdf_download:{$token}", [
+            'type'       => 'receipt',
+            'booking_id' => $booking->id,
+        ], now()->addMinutes(10));
 
-        return $this->successResponse(['receipt_url' => $signedUrl]);
+        return $this->successResponse([
+            'receipt_url' => url("/api/v1/dl/{$token}"),
+        ]);
     }
 
     /**
-     * GET /api/v1/booking_requests/{booking}/receipt/download
-     * Public endpoint (no auth required) — validates signed URL signature and streams the PDF.
+     * GET /api/v1/booking_requests/{booking}/contract-url
+     * Returns a short-lived download URL (cache token, 10 min) for the PDF contract.
      */
-    public function receiptDownload(BookingRequest $booking): Response
+    public function contractUrl(BookingRequest $booking): JsonResponse
     {
-        // The route already validates the signature via middleware; abort if invalid.
-        if (! request()->hasValidSignature()) {
-            abort(403, 'Lien de téléchargement invalide ou expiré.');
+        $this->authorize('view', $booking);
+
+        if (! in_array($booking->status, [
+            BookingStatus::Paid,
+            BookingStatus::Confirmed,
+            BookingStatus::Completed,
+        ], true)) {
+            return $this->errorResponse(
+                'CONTRACT_NOT_AVAILABLE',
+                'Le contrat n\'est disponible qu\'après paiement.',
+                404
+            );
         }
 
-        $booking->loadMissing([
-            'client:id,first_name,last_name,email',
-            'talentProfile:id,stage_name,user_id',
-            'talentProfile.user:id,email',
-            'servicePackage:id,name',
-            'transactions' => fn ($q) => $q->where('status', 'succeeded')->latest('completed_at')->limit(1),
+        if (! $booking->contract_path || ! Storage::disk('local')->exists($booking->contract_path)) {
+            throw BookingException::contractNotReady();
+        }
+
+        $token = Str::uuid()->toString();
+        Cache::put("pdf_download:{$token}", [
+            'type'       => 'contract',
+            'booking_id' => $booking->id,
+        ], now()->addMinutes(10));
+
+        return $this->successResponse([
+            'contract_url' => url("/api/v1/dl/{$token}"),
         ]);
+    }
 
-        $transaction     = $booking->transactions->first();
-        $reference       = $transaction?->idempotency_key ?? $transaction?->gateway_reference ?? '—';
-        $paidAt          = $transaction?->completed_at?->translatedFormat('d F Y à H:i')
-            ?? $booking->updated_at?->translatedFormat('d F Y à H:i')
-            ?? now()->translatedFormat('d F Y à H:i');
-        $commissionRate  = $booking->total_amount > 0
-            ? (int) round(($booking->commission_amount / $booking->total_amount) * 100)
-            : 15;
+    // ── Admin contract management ─────────────────────────────────────────
 
-        $pdf      = Pdf::loadView('pdf.payment-receipt', [
-            'booking'          => $booking,
-            'paidAt'           => $paidAt,
-            'paymentReference' => $reference,
-            'commissionRate'   => $commissionRate,
-        ])->setPaper('a4', 'portrait');
+    /**
+     * POST /api/v1/admin/booking_requests/{booking}/contract/regenerate
+     * Admin — regenerate (or generate for first time) the contract PDF.
+     */
+    public function adminRegenerateContract(BookingRequest $booking): JsonResponse
+    {
+        GenerateContractPdf::dispatch($booking)->onQueue('media');
 
-        $filename = "recu-bookmi-" . str_pad((string) $booking->id, 6, '0', STR_PAD_LEFT) . ".pdf";
+        return $this->successResponse(null, 'Génération du contrat lancée en arrière-plan.');
+    }
 
-        return response($pdf->output(), 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => "inline; filename=\"{$filename}\"",
-        ]);
+    /**
+     * DELETE /api/v1/admin/booking_requests/{booking}/contract
+     * Admin — delete the stored contract PDF and clear the path.
+     */
+    public function adminDeleteContract(BookingRequest $booking): JsonResponse
+    {
+        if ($booking->contract_path && Storage::disk('local')->exists($booking->contract_path)) {
+            Storage::disk('local')->delete($booking->contract_path);
+        }
+
+        $booking->update(['contract_path' => null]);
+
+        return $this->successResponse(null, 'Contrat supprimé.');
     }
 
     /**

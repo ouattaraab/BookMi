@@ -12,6 +12,7 @@ abstract final class ApiEndpoints {
   static const bookingRequests = '/booking_requests';
   static String bookingRequest(int id) => '/booking_requests/$id';
   static String bookingContract(int id) => '/booking_requests/$id/contract';
+  static String bookingContractUrl(int id) => '/booking_requests/$id/contract-url';
   static String bookingReceipt(int id) => '/booking_requests/$id/receipt';
   static const payments = '/payments';
   static const conversations = '/conversations';

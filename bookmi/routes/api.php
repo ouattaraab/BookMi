@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\DownloadController;
 use App\Http\Controllers\Api\V1\AdminDisputeController;
 use App\Http\Controllers\Api\V1\AdminReviewModerationController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
@@ -74,9 +75,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/payments/callback', [PaymentController::class, 'callback'])
         ->name('payments.callback');
 
-    // Téléchargement du reçu PDF — public mais URL signée (30 min)
-    Route::get('/booking_requests/{booking}/receipt/download', [BookingRequestController::class, 'receiptDownload'])
-        ->name('booking_requests.receipt.download');
+    // Téléchargement PDF via token à usage unique (reçu + contrat)
+    Route::get('/dl/{token}', [DownloadController::class, 'serve'])->name('download.serve');
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
@@ -135,6 +135,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/booking_requests/{booking}/reject', [BookingRequestController::class, 'reject'])->name('booking_requests.reject');
         Route::post('/booking_requests/{booking}/cancel', [BookingRequestController::class, 'cancel'])->name('booking_requests.cancel');
         Route::get('/booking_requests/{booking}/contract', [BookingRequestController::class, 'contract'])->name('booking_requests.contract');
+        Route::get('/booking_requests/{booking}/contract-url', [BookingRequestController::class, 'contractUrl'])->name('booking_requests.contract_url');
         Route::get('/booking_requests/{booking}/receipt', [BookingRequestController::class, 'receipt'])->name('booking_requests.receipt');
         Route::post('/booking_requests/{booking}/reschedule', [RescheduleController::class, 'store'])->name('reschedule_requests.store');
 
@@ -261,6 +262,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
             Route::post('/booking_requests/{booking}/refund', [AdminRefundController::class, 'refund'])
                 ->name('booking_requests.refund');
+
+            // Gestion des contrats
+            Route::post('/booking_requests/{booking}/contract/regenerate', [BookingRequestController::class, 'adminRegenerateContract'])
+                ->name('booking_requests.contract.regenerate');
+            Route::delete('/booking_requests/{booking}/contract', [BookingRequestController::class, 'adminDeleteContract'])
+                ->name('booking_requests.contract.delete');
             Route::get('/reports/financial', [AdminReportController::class, 'financial'])
                 ->name('reports.financial');
             Route::get('/disputes/{booking}/messages', [AdminDisputeController::class, 'messages'])

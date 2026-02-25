@@ -279,7 +279,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
-          // Contract download
+          // Contract download (only after payment — controlled by backend flag)
           if (booking.contractAvailable) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _ContractButton(bookingId: booking.id),
@@ -646,21 +646,53 @@ class _TimelineEntry extends StatelessWidget {
   }
 }
 
-class _ContractButton extends StatelessWidget {
+class _ContractButton extends StatefulWidget {
   const _ContractButton({required this.bookingId});
   final int bookingId;
 
   @override
+  State<_ContractButton> createState() => _ContractButtonState();
+}
+
+class _ContractButtonState extends State<_ContractButton> {
+  bool _loading = false;
+
+  Future<void> _download() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.getContractUrl(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        final uri = Uri.parse(data);
+        if (await canLaunchUrl(uri)) {
+          // ignore: use_build_context_synchronously
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Impossible d\'ouvrir le contrat'),
+            ),
+          );
+        }
+      case ApiFailure(:final message):
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GlassCard(
-      onTap: () {
-        // PDF download will be implemented in a future sprint (payment epic)
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Téléchargement du contrat bientôt disponible'),
-          ),
-        );
-      },
+      onTap: _download,
       child: Row(
         children: [
           Container(
@@ -670,11 +702,19 @@ class _ContractButton extends StatelessWidget {
               shape: BoxShape.circle,
               color: BookmiColors.brandBlue.withValues(alpha: 0.15),
             ),
-            child: const Icon(
-              Icons.picture_as_pdf_outlined,
-              color: BookmiColors.brandBlueLight,
-              size: 20,
-            ),
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: BookmiColors.brandBlueLight,
+                    ),
+                  )
+                : const Icon(
+                    Icons.description_outlined,
+                    color: BookmiColors.brandBlueLight,
+                    size: 20,
+                  ),
           ),
           const SizedBox(width: BookmiSpacing.spaceSm),
           const Expanded(
