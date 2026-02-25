@@ -60,6 +60,7 @@ class BookingModel {
   final String status;
   final String clientName;
   final String talentStageName;
+
   /// Null if the backend didn't return a talent_profile object.
   final int? talentProfileId;
   final String packageName;
@@ -105,8 +106,7 @@ class BookingModel {
       message: json['message'] as String?,
       rejectReason: json['reject_reason'] as String?,
       refundAmount: json['refund_amount'] as int?,
-      cancellationPolicyApplied:
-          json['cancellation_policy_applied'] as String?,
+      cancellationPolicyApplied: json['cancellation_policy_applied'] as String?,
       devisMessage: devis?['message'] as String?,
       statusLogs: historyJson
           ?.map((e) => BookingStatusLog.fromJson(e as Map<String, dynamic>))

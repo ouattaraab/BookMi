@@ -187,8 +187,9 @@ class _TotalRevenueCard extends StatelessWidget {
                     Icon(
                       isPositive ? Icons.trending_up : Icons.trending_down,
                       size: 14,
-                      color:
-                          isPositive ? BookmiColors.success : BookmiColors.error,
+                      color: isPositive
+                          ? BookmiColors.success
+                          : BookmiColors.error,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -282,8 +283,18 @@ class _RevenueBarChartPainter extends CustomPainter {
   final List<MonthlyRevenue> mensuels;
 
   static const _monthAbbr = [
-    'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
-    'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
+    'Jan',
+    'Fév',
+    'Mar',
+    'Avr',
+    'Mai',
+    'Jun',
+    'Jul',
+    'Aoû',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Déc',
   ];
 
   @override
@@ -304,8 +315,7 @@ class _RevenueBarChartPainter extends CustomPainter {
         colors: [BookmiColors.brandBlue, BookmiColors.brandBlueDark],
       ).createShader(Rect.fromLTWH(0, 0, size.width, chartHeight));
 
-    final zeroPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08);
+    final zeroPaint = Paint()..color = Colors.white.withValues(alpha: 0.08);
 
     const labelStyle = TextStyle(
       color: Colors.white54,
@@ -456,8 +466,18 @@ class _PayoutListItem extends StatelessWidget {
     try {
       final dt = DateTime.parse(iso).toLocal();
       const months = [
-        'jan', 'fév', 'mar', 'avr', 'mai', 'jun',
-        'jul', 'aoû', 'sep', 'oct', 'nov', 'déc',
+        'jan',
+        'fév',
+        'mar',
+        'avr',
+        'mai',
+        'jun',
+        'jul',
+        'aoû',
+        'sep',
+        'oct',
+        'nov',
+        'déc',
       ];
       return '${dt.day} ${months[dt.month - 1]}. ${dt.year}';
     } on FormatException catch (_) {
@@ -482,8 +502,11 @@ class _PayoutListItem extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: color.withValues(alpha: 0.15),
               ),
-              child: Icon(Icons.account_balance_wallet_outlined,
-                  size: 18, color: color),
+              child: Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 18,
+                color: color,
+              ),
             ),
             const SizedBox(width: BookmiSpacing.spaceSm),
             Expanded(
@@ -517,7 +540,10 @@ class _PayoutListItem extends StatelessWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),

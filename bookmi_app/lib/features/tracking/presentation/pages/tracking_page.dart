@@ -279,9 +279,7 @@ class _TimelineStep extends StatelessWidget {
                     label,
                     style: TextStyle(
                       fontSize: 14,
-                      fontWeight: isCurrent
-                          ? FontWeight.w700
-                          : FontWeight.w400,
+                      fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w400,
                       color: labelColor,
                     ),
                   ),
@@ -385,9 +383,9 @@ class _ActionButton extends StatelessWidget {
               onPressed: isUpdating
                   ? null
                   : () => context.read<TrackingCubit>().postUpdate(
-                        bookingId,
-                        status,
-                      ),
+                      bookingId,
+                      status,
+                    ),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   vertical: BookmiSpacing.spaceMd,

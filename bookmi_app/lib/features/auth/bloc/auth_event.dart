@@ -49,9 +49,7 @@ final class AuthOtpSubmitted extends AuthEvent {
 
   @override
   bool operator ==(Object other) =>
-      other is AuthOtpSubmitted &&
-      other.phone == phone &&
-      other.code == code;
+      other is AuthOtpSubmitted && other.phone == phone && other.code == code;
 
   @override
   int get hashCode => Object.hash(phone, code);

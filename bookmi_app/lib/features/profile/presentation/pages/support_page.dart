@@ -46,8 +46,7 @@ class SupportPage extends StatelessWidget {
             title: 'WhatsApp',
             subtitle: 'Réponse en moins de 24h',
             color: const Color(0xFF25D366),
-            onTap: () =>
-                _launchUrl('https://wa.me/message/bookmi-support'),
+            onTap: () => _launchUrl('https://wa.me/message/bookmi-support'),
           ),
           const SizedBox(height: 20),
           // FAQ section
@@ -251,8 +250,7 @@ class _FaqItemState extends State<_FaqItem> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: ExpansionTile(
-          tilePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
           childrenPadding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
           onExpansionChanged: (v) => setState(() => _expanded = v),
           trailing: Icon(

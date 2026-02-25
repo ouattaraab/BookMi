@@ -9,8 +9,7 @@ import 'package:bookmi_app/features/notifications/data/models/push_notification_
 import 'package:dio/dio.dart';
 
 class MessagingRepository {
-  MessagingRepository({required ApiClient apiClient})
-    : _dio = apiClient.dio;
+  MessagingRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   /// Test-only constructor.
   MessagingRepository.forTesting({required Dio dio}) : _dio = dio;
@@ -166,8 +165,7 @@ class MessagingRepository {
       final response = await _dio.post<Map<String, dynamic>>(
         ApiEndpoints.conversationRead(conversationId),
       );
-      final markedRead =
-          (response.data!['data']?['marked_read'] as int?) ?? 0;
+      final markedRead = (response.data!['data']?['marked_read'] as int?) ?? 0;
       return ApiSuccess(markedRead);
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -179,8 +177,7 @@ class MessagingRepository {
     final error = errorData?['error'] as Map<String, dynamic>?;
     return ApiFailure(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-      message:
-          (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
     );
   }
 }

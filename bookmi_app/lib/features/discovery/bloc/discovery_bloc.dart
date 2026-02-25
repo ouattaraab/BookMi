@@ -123,10 +123,9 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     DiscoveryFiltersChanged event,
     Emitter<DiscoveryState> emit,
   ) async {
-    final prevCategories =
-        state is DiscoveryLoaded
-            ? (state as DiscoveryLoaded).categories
-            : _cachedCategories;
+    final prevCategories = state is DiscoveryLoaded
+        ? (state as DiscoveryLoaded).categories
+        : _cachedCategories;
 
     emit(const DiscoveryLoading());
 
@@ -154,10 +153,9 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     DiscoveryFilterCleared event,
     Emitter<DiscoveryState> emit,
   ) async {
-    final prevCategories =
-        state is DiscoveryLoaded
-            ? (state as DiscoveryLoaded).categories
-            : _cachedCategories;
+    final prevCategories = state is DiscoveryLoaded
+        ? (state as DiscoveryLoaded).categories
+        : _cachedCategories;
 
     emit(const DiscoveryLoading());
 
@@ -182,16 +180,14 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     DiscoverySearchChanged event,
     Emitter<DiscoveryState> emit,
   ) async {
-    final prevCategories =
-        state is DiscoveryLoaded
-            ? (state as DiscoveryLoaded).categories
-            : _cachedCategories;
+    final prevCategories = state is DiscoveryLoaded
+        ? (state as DiscoveryLoaded).categories
+        : _cachedCategories;
 
     // Preserve the active category filter (if any), replace the search query.
-    final prevFilters =
-        state is DiscoveryLoaded
-            ? Map<String, dynamic>.from((state as DiscoveryLoaded).activeFilters)
-            : <String, dynamic>{};
+    final prevFilters = state is DiscoveryLoaded
+        ? Map<String, dynamic>.from((state as DiscoveryLoaded).activeFilters)
+        : <String, dynamic>{};
 
     prevFilters.remove('q');
 
@@ -227,24 +223,23 @@ class DiscoveryBloc extends Bloc<DiscoveryEvent, DiscoveryState> {
     DiscoveryDateSearchRequested event,
     Emitter<DiscoveryState> emit,
   ) async {
-    final prevCategories =
-        state is DiscoveryLoaded
-            ? (state as DiscoveryLoaded).categories
-            : _cachedCategories;
+    final prevCategories = state is DiscoveryLoaded
+        ? (state as DiscoveryLoaded).categories
+        : _cachedCategories;
 
     // Keep only category filter, clear search-specific params.
-    final prevFilters =
-        state is DiscoveryLoaded
-            ? Map<String, dynamic>.from((state as DiscoveryLoaded).activeFilters)
-            : <String, dynamic>{};
+    final prevFilters = state is DiscoveryLoaded
+        ? Map<String, dynamic>.from((state as DiscoveryLoaded).activeFilters)
+        : <String, dynamic>{};
 
     prevFilters.remove('q');
     prevFilters.remove('event_date');
 
     emit(const DiscoveryLoading());
 
-    final eventDateStr =
-        event.eventDate != null ? _formatDate(event.eventDate!) : null;
+    final eventDateStr = event.eventDate != null
+        ? _formatDate(event.eventDate!)
+        : null;
 
     final result = await _repository.getTalents(
       query: (event.query?.isNotEmpty == true) ? event.query : null,

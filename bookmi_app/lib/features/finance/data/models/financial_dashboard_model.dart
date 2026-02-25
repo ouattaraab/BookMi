@@ -51,8 +51,8 @@ class FinancialDashboardModel {
       revenusTotal: data['revenus_total'] as int,
       revenusMoisCourant: data['revenus_mois_courant'] as int,
       revenusMoisPrecedent: data['revenus_mois_precedent'] as int,
-      comparaisonPourcentage:
-          (data['comparaison_pourcentage'] as num).toDouble(),
+      comparaisonPourcentage: (data['comparaison_pourcentage'] as num)
+          .toDouble(),
       nombrePrestations: data['nombre_prestations'] as int,
       cachetMoyen: data['cachet_moyen'] as int,
       devise: data['devise'] as String,

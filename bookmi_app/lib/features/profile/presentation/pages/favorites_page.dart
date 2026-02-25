@@ -138,19 +138,14 @@ class _FavoritesPageState extends State<FavoritesPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final item = _favorites[index];
-          final attrs =
-              item['attributes'] as Map<String, dynamic>? ?? item;
-          final talentRaw =
-              attrs['talent'] as Map<String, dynamic>? ?? {};
+          final attrs = item['attributes'] as Map<String, dynamic>? ?? item;
+          final talentRaw = attrs['talent'] as Map<String, dynamic>? ?? {};
           // TalentResource uses JSON:API-style nesting: { attributes: {...} }
           final talent =
-              talentRaw['attributes'] as Map<String, dynamic>? ??
-              talentRaw;
+              talentRaw['attributes'] as Map<String, dynamic>? ?? talentRaw;
           final slug = talent['slug'] as String? ?? '';
-          final stageName =
-              talent['stage_name'] as String? ?? 'Talent';
-          final categoryData =
-              talent['category'] as Map<String, dynamic>?;
+          final stageName = talent['stage_name'] as String? ?? 'Talent';
+          final categoryData = talent['category'] as Map<String, dynamic>?;
           final category = categoryData?['name'] as String? ?? '';
           // Backend exposes 'photo_url', not 'profile_photo_url'
           final photoUrl = talent['photo_url'] as String?;
@@ -163,10 +158,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
           return GestureDetector(
             onTap: slug.isNotEmpty
                 ? () => context.pushNamed(
-                      RouteNames.talentDetail,
-                      pathParameters: {'slug': slug},
-                      extra: talent,
-                    )
+                    RouteNames.talentDetail,
+                    pathParameters: {'slug': slug},
+                    extra: talent,
+                  )
                 : null,
             child: Container(
               decoration: BoxDecoration(

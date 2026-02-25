@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 
 class NotificationRepository {
   const NotificationRepository({required ApiClient apiClient})
-      : _apiClient = apiClient;
+    : _apiClient = apiClient;
 
   final ApiClient _apiClient;
 
@@ -25,7 +25,8 @@ class NotificationRepository {
     } on DioException catch (e) {
       return ApiFailure(
         code: 'NETWORK_ERROR',
-        message: e.response?.data?['message'] as String? ??
+        message:
+            e.response?.data?['message'] as String? ??
             e.message ??
             'Erreur réseau',
       );

@@ -166,8 +166,7 @@ void main() {
       'hasReviewedAsTalent is true for talent review',
       build: () {
         when(() => repository.getReviews(bookingId)).thenAnswer(
-          (_) async =>
-              const ApiSuccess([fakeClientReview, fakeTalentReview]),
+          (_) async => const ApiSuccess([fakeClientReview, fakeTalentReview]),
         );
         return EvaluationCubit(repository: repository);
       },

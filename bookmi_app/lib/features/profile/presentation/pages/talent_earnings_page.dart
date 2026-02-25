@@ -53,9 +53,8 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
     if (!mounted) return;
     switch (result) {
       case ApiSuccess(:final data):
-        final items = (data['data'] as List?)
-                ?.cast<Map<String, dynamic>>() ??
-            [];
+        final items =
+            (data['data'] as List?)?.cast<Map<String, dynamic>>() ?? [];
         final meta = data['meta'] as Map<String, dynamic>? ?? {};
         setState(() {
           if (_page == 1) {
@@ -64,7 +63,8 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
             _earnings = [..._earnings, ...items];
           }
           _meta = meta;
-          _hasMore = (meta['current_page'] as int? ?? 1) <
+          _hasMore =
+              (meta['current_page'] as int? ?? 1) <
               (meta['last_page'] as int? ?? 1);
           _loading = false;
         });
@@ -82,19 +82,18 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
       _loadingMore = true;
       _page++;
     });
-    final result =
-        await widget.repository.getEarnings(page: _page);
+    final result = await widget.repository.getEarnings(page: _page);
     if (!mounted) return;
     switch (result) {
       case ApiSuccess(:final data):
-        final items = (data['data'] as List?)
-                ?.cast<Map<String, dynamic>>() ??
-            [];
+        final items =
+            (data['data'] as List?)?.cast<Map<String, dynamic>>() ?? [];
         final meta = data['meta'] as Map<String, dynamic>? ?? {};
         setState(() {
           _earnings = [..._earnings, ...items];
           _meta = meta;
-          _hasMore = (meta['current_page'] as int? ?? 1) <
+          _hasMore =
+              (meta['current_page'] as int? ?? 1) <
               (meta['last_page'] as int? ?? 1);
           _loadingMore = false;
         });
@@ -109,10 +108,8 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
   @override
   Widget build(BuildContext context) {
     final fmt = NumberFormat('#,###', 'fr_FR');
-    final totalCachet =
-        (_meta['total_cachet'] as int?) ?? 0;
-    final totalCommission =
-        (_meta['total_commission'] as int?) ?? 0;
+    final totalCachet = (_meta['total_cachet'] as int?) ?? 0;
+    final totalCommission = (_meta['total_commission'] as int?) ?? 0;
     final commissionRate =
         (_meta['commission_rate'] as num?)?.toDouble() ?? 15.0;
 
@@ -134,78 +131,75 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildError()
-              : Column(
-                  children: [
-                    // Summary header
-                    if (_meta.isNotEmpty)
-                      Container(
-                        color: _secondary,
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: _SummaryChip(
-                                label: 'Cachet net total',
-                                value: '${fmt.format(totalCachet)} FCFA',
-                                color: _success,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _SummaryChip(
-                                label: 'Commission (${commissionRate.toStringAsFixed(0)}%)',
-                                value:
-                                    '${fmt.format(totalCommission)} FCFA',
-                                color: Colors.orange,
-                              ),
-                            ),
-                          ],
+          ? _buildError()
+          : Column(
+              children: [
+                // Summary header
+                if (_meta.isNotEmpty)
+                  Container(
+                    color: _secondary,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _SummaryChip(
+                            label: 'Cachet net total',
+                            value: '${fmt.format(totalCachet)} FCFA',
+                            color: _success,
+                          ),
                         ),
-                      ),
-                    Expanded(
-                      child: _earnings.isEmpty
-                          ? _buildEmpty()
-                          : RefreshIndicator(
-                              onRefresh: () => _load(refresh: true),
-                              child: NotificationListener<ScrollNotification>(
-                                onNotification: (notification) {
-                                  if (notification
-                                          is ScrollEndNotification &&
-                                      notification.metrics.pixels >=
-                                          notification
-                                                  .metrics.maxScrollExtent -
-                                              200) {
-                                    _loadMore();
-                                  }
-                                  return false;
-                                },
-                                child: ListView.separated(
-                                  padding: const EdgeInsets.all(16),
-                                  itemCount: _earnings.length +
-                                      (_loadingMore ? 1 : 0),
-                                  separatorBuilder: (_, __) =>
-                                      const SizedBox(height: 10),
-                                  itemBuilder: (context, index) {
-                                    if (index >= _earnings.length) {
-                                      return const Center(
-                                        child: Padding(
-                                          padding: EdgeInsets.all(16),
-                                          child:
-                                              CircularProgressIndicator(),
-                                        ),
-                                      );
-                                    }
-                                    return _EarningCard(
-                                      item: _earnings[index],
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _SummaryChip(
+                            label:
+                                'Commission (${commissionRate.toStringAsFixed(0)}%)',
+                            value: '${fmt.format(totalCommission)} FCFA',
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                Expanded(
+                  child: _earnings.isEmpty
+                      ? _buildEmpty()
+                      : RefreshIndicator(
+                          onRefresh: () => _load(refresh: true),
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: (notification) {
+                              if (notification is ScrollEndNotification &&
+                                  notification.metrics.pixels >=
+                                      notification.metrics.maxScrollExtent -
+                                          200) {
+                                _loadMore();
+                              }
+                              return false;
+                            },
+                            child: ListView.separated(
+                              padding: const EdgeInsets.all(16),
+                              itemCount:
+                                  _earnings.length + (_loadingMore ? 1 : 0),
+                              separatorBuilder: (_, __) =>
+                                  const SizedBox(height: 10),
+                              itemBuilder: (context, index) {
+                                if (index >= _earnings.length) {
+                                  return const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(16),
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                }
+                                return _EarningCard(
+                                  item: _earnings[index],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
                 ),
+              ],
+            ),
     );
   }
 
@@ -214,14 +208,18 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_error!,
-              style: GoogleFonts.manrope(color: _mutedFg),
-              textAlign: TextAlign.center),
+          Text(
+            _error!,
+            style: GoogleFonts.manrope(color: _mutedFg),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: _load,
-            child: Text('Réessayer',
-                style: GoogleFonts.manrope(color: _primary)),
+            child: Text(
+              'Réessayer',
+              style: GoogleFonts.manrope(color: _primary),
+            ),
           ),
         ],
       ),
@@ -233,16 +231,19 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.account_balance_wallet_outlined,
-              size: 56,
-              color: _mutedFg.withValues(alpha: 0.4)),
+          Icon(
+            Icons.account_balance_wallet_outlined,
+            size: 56,
+            color: _mutedFg.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
           Text(
             'Aucun revenu enregistré',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _secondary),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _secondary,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -278,14 +279,19 @@ class _SummaryChip extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: GoogleFonts.plusJakartaSans(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white)),
+          Text(
+            value,
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
           const SizedBox(height: 2),
-          Text(label,
-              style: GoogleFonts.manrope(fontSize: 11, color: Colors.white70)),
+          Text(
+            label,
+            style: GoogleFonts.manrope(fontSize: 11, color: Colors.white70),
+          ),
         ],
       ),
     );
@@ -301,12 +307,10 @@ class _EarningCard extends StatelessWidget {
     final fmt = NumberFormat('#,###', 'fr_FR');
     final bookingId = item['booking_id'] as int? ?? 0;
     final clientName = item['client_name'] as String? ?? 'Client';
-    final packageName =
-        item['package_name'] as String? ?? 'Package';
+    final packageName = item['package_name'] as String? ?? 'Package';
     final eventDate = item['event_date'] as String? ?? '';
     final cachetAmount = (item['cachet_amount'] as num?)?.toInt() ?? 0;
-    final commissionAmount =
-        (item['commission_amount'] as num?)?.toInt() ?? 0;
+    final commissionAmount = (item['commission_amount'] as num?)?.toInt() ?? 0;
     final totalAmount = (item['total_amount'] as num?)?.toInt() ?? 0;
 
     return Container(
@@ -354,7 +358,9 @@ class _EarningCard extends StatelessWidget {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: _success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -374,13 +380,15 @@ class _EarningCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 12, color: _mutedFg),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 12,
+                    color: _mutedFg,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     eventDate,
-                    style:
-                        GoogleFonts.manrope(fontSize: 12, color: _mutedFg),
+                    style: GoogleFonts.manrope(fontSize: 12, color: _mutedFg),
                   ),
                 ],
               ),

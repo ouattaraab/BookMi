@@ -23,9 +23,10 @@ const _border = Color(0x1AFFFFFF);
 enum _ViewMode { grid, list }
 
 String _formatCachet(int amount) {
-  return NumberFormat('#,###', 'fr_FR')
-          .format(amount)
-          .replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F') +
+  return NumberFormat(
+        '#,###',
+        'fr_FR',
+      ).format(amount).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F') +
       ' FCFA';
 }
 
@@ -86,18 +87,24 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
     final bloc = context.read<DiscoveryBloc>();
     if (key.isEmpty) {
       if (_searchController.text.isNotEmpty) {
-        bloc.add(DiscoveryFiltersChanged(
-          filters: {'q': _searchController.text.trim()},
-        ));
+        bloc.add(
+          DiscoveryFiltersChanged(
+            filters: {'q': _searchController.text.trim()},
+          ),
+        );
       } else {
         bloc.add(const DiscoveryFilterCleared());
       }
     } else {
-      bloc.add(DiscoveryFiltersChanged(filters: {
-        'category_id': int.tryParse(key) ?? key,
-        if (_searchController.text.isNotEmpty)
-          'q': _searchController.text.trim(),
-      }));
+      bloc.add(
+        DiscoveryFiltersChanged(
+          filters: {
+            'category_id': int.tryParse(key) ?? key,
+            if (_searchController.text.isNotEmpty)
+              'q': _searchController.text.trim(),
+          },
+        ),
+      );
     }
   }
 
@@ -241,9 +248,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                 ('', 'Tout'),
                 ...categories.map(
                   (c) => (
-                    (c['id'] as int?)?.toString() ??
-                        c['slug'] as String? ??
-                        '',
+                    (c['id'] as int?)?.toString() ?? c['slug'] as String? ?? '',
                     c['name'] as String? ?? '',
                   ),
                 ),
@@ -314,27 +319,28 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
               child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
                 builder: (context, state) {
                   return switch (state) {
-                    DiscoveryInitial() ||
-                    DiscoveryLoading() => _viewMode == _ViewMode.grid
-                        ? TalentGrid.skeleton()
-                        : _TalentList.skeleton(),
-                    DiscoveryLoaded() => state.talents.isEmpty
-                        ? _buildEmpty()
-                        : _viewMode == _ViewMode.grid
-                            ? TalentGrid(
-                                talents: state.talents,
-                                hasMore: state.hasMore,
-                                isLoadingMore: state is DiscoveryLoadingMore,
-                                scrollController: _scrollController,
-                                onTalentTap: _onTalentTap,
-                              )
-                            : _TalentList(
-                                talents: state.talents,
-                                hasMore: state.hasMore,
-                                isLoadingMore: state is DiscoveryLoadingMore,
-                                scrollController: _scrollController,
-                                onTalentTap: _onTalentTap,
-                              ),
+                    DiscoveryInitial() || DiscoveryLoading() =>
+                      _viewMode == _ViewMode.grid
+                          ? TalentGrid.skeleton()
+                          : _TalentList.skeleton(),
+                    DiscoveryLoaded() =>
+                      state.talents.isEmpty
+                          ? _buildEmpty()
+                          : _viewMode == _ViewMode.grid
+                          ? TalentGrid(
+                              talents: state.talents,
+                              hasMore: state.hasMore,
+                              isLoadingMore: state is DiscoveryLoadingMore,
+                              scrollController: _scrollController,
+                              onTalentTap: _onTalentTap,
+                            )
+                          : _TalentList(
+                              talents: state.talents,
+                              hasMore: state.hasMore,
+                              isLoadingMore: state is DiscoveryLoadingMore,
+                              scrollController: _scrollController,
+                              onTalentTap: _onTalentTap,
+                            ),
                     DiscoveryFailure(:final message) => _buildError(message),
                   };
                 },
@@ -502,9 +508,7 @@ class _ToggleBtn extends StatelessWidget {
         child: Icon(
           icon,
           size: 16,
-          color: isActive
-              ? Colors.white
-              : Colors.white.withValues(alpha: 0.45),
+          color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.45),
         ),
       ),
     );
@@ -611,8 +615,7 @@ class _TalentListItem extends StatelessWidget {
     final stageName = attrs['stage_name'] as String? ?? 'Talent';
     final photoUrl = attrs['photo_url'] as String? ?? '';
     final cachetAmount = attrs['cachet_amount'] as int? ?? 0;
-    final averageRating =
-        double.tryParse('${attrs['average_rating']}') ?? 0.0;
+    final averageRating = double.tryParse('${attrs['average_rating']}') ?? 0.0;
     final isVerified = attrs['is_verified'] as bool? ?? false;
     final category = attrs['category'] as Map<String, dynamic>?;
     final categoryName = category?['name'] as String? ?? '';

@@ -135,15 +135,16 @@ class _SplashPageState extends State<SplashPage>
     );
 
     // Logo breath  1 400 → 2 000 ms  (1.0 → 1.042 → 1.0)
-    _logoBreath = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.042), weight: 50),
-      TweenSequenceItem(tween: Tween(begin: 1.042, end: 1.0), weight: 50),
-    ]).animate(
-      CurvedAnimation(
-        parent: _ctrl,
-        curve: const Interval(0.467, 0.667, curve: Curves.easeInOut),
-      ),
-    );
+    _logoBreath =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.042), weight: 50),
+          TweenSequenceItem(tween: Tween(begin: 1.042, end: 1.0), weight: 50),
+        ]).animate(
+          CurvedAnimation(
+            parent: _ctrl,
+            curve: const Interval(0.467, 0.667, curve: Curves.easeInOut),
+          ),
+        );
 
     // Tagline  1 600 → 2 100 ms
     _taglineFade = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -514,14 +515,26 @@ class _StageArcPainter extends CustomPainter {
       ..color = const Color(0xFFFF6B35).withOpacity(opacity * 0.07);
 
     canvas
-      ..drawLine(Offset(size.width * 0.62, 0),
-          Offset(size.width, size.height * 0.38), diag)
-      ..drawLine(Offset(size.width * 0.78, 0),
-          Offset(size.width, size.height * 0.22), diag)
       ..drawLine(
-          Offset(size.width * 0.38, 0), Offset(0, size.height * 0.38), diag)
+        Offset(size.width * 0.62, 0),
+        Offset(size.width, size.height * 0.38),
+        diag,
+      )
       ..drawLine(
-          Offset(size.width * 0.22, 0), Offset(0, size.height * 0.22), diag);
+        Offset(size.width * 0.78, 0),
+        Offset(size.width, size.height * 0.22),
+        diag,
+      )
+      ..drawLine(
+        Offset(size.width * 0.38, 0),
+        Offset(0, size.height * 0.38),
+        diag,
+      )
+      ..drawLine(
+        Offset(size.width * 0.22, 0),
+        Offset(0, size.height * 0.22),
+        diag,
+      );
   }
 
   @override
@@ -651,8 +664,13 @@ class _PulseWavePainter extends CustomPainter {
     }
   }
 
-  void _drawRing(Canvas canvas, Offset center, double maxR, double p,
-      {double alpha = 1.0}) {
+  void _drawRing(
+    Canvas canvas,
+    Offset center,
+    double maxR,
+    double p, {
+    double alpha = 1.0,
+  }) {
     final r = maxR * p;
     final fade = (1.0 - p) * alpha;
     if (fade <= 0) return;

@@ -26,8 +26,7 @@ class BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final showActions =
         booking.status == 'pending' && (onAccept != null || onReject != null);
-    final showPayButton =
-        booking.status == 'accepted' && onPay != null;
+    final showPayButton = booking.status == 'accepted' && onPay != null;
 
     return GlassCard(
       // No outer onTap — we wrap only the info row below so that action
@@ -40,134 +39,136 @@ class BookingCard extends StatelessWidget {
             onTap: onTap,
             behavior: HitTestBehavior.opaque,
             child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _StatusIcon(status: booking.status),
-              const SizedBox(width: BookmiSpacing.spaceSm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            booking.talentStageName,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: BookmiSpacing.spaceXs),
-                        _StatusBadge(status: booking.status),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      booking.packageName,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.65),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: BookmiSpacing.spaceXs),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
-                          size: 12,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          booking.startTime != null
-                              ? '${_formatDate(booking.eventDate)} · ${_formatTime(booking.startTime!)}'
-                              : _formatDate(booking.eventDate),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    GestureDetector(
-                      onTap: () => _openMaps(booking.eventLocation),
-                      child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _StatusIcon(status: booking.status),
+                const SizedBox(width: BookmiSpacing.spaceSm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 12,
-                            color: BookmiColors.brandBlueLight
-                                .withValues(alpha: 0.8),
-                          ),
-                          const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              booking.eventLocation,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: BookmiColors.brandBlueLight
-                                    .withValues(alpha: 0.8),
-                                decoration: TextDecoration.underline,
-                                decorationColor: BookmiColors.brandBlueLight
-                                    .withValues(alpha: 0.5),
+                              booking.talentStageName,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          const SizedBox(width: BookmiSpacing.spaceXs),
+                          _StatusBadge(status: booking.status),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: BookmiSpacing.spaceXs),
-                    Text(
-                      TalentCard.formatCachet(booking.totalAmount),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: BookmiColors.brandBlueLight,
+                      const SizedBox(height: 2),
+                      Text(
+                        booking.packageName,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.65),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    if (booking.isExpress)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.bolt,
-                              size: 12,
-                              color: BookmiColors.brandBlueLight,
+                      const SizedBox(height: BookmiSpacing.spaceXs),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today_outlined,
+                            size: 12,
+                            color: Colors.white.withValues(alpha: 0.5),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            booking.startTime != null
+                                ? '${_formatDate(booking.eventDate)} · ${_formatTime(booking.startTime!)}'
+                                : _formatDate(booking.eventDate),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.7),
                             ),
-                            const SizedBox(width: 2),
-                            const Text(
-                              'Express',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w500,
-                                color: BookmiColors.brandBlueLight,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      GestureDetector(
+                        onTap: () => _openMaps(booking.eventLocation),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              size: 12,
+                              color: BookmiColors.brandBlueLight.withValues(
+                                alpha: 0.8,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                booking.eventLocation,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: BookmiColors.brandBlueLight.withValues(
+                                    alpha: 0.8,
+                                  ),
+                                  decoration: TextDecoration.underline,
+                                  decorationColor: BookmiColors.brandBlueLight
+                                      .withValues(alpha: 0.5),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       ),
-                  ],
+                      const SizedBox(height: BookmiSpacing.spaceXs),
+                      Text(
+                        TalentCard.formatCachet(booking.totalAmount),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: BookmiColors.brandBlueLight,
+                        ),
+                      ),
+                      if (booking.isExpress)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.bolt,
+                                size: 12,
+                                color: BookmiColors.brandBlueLight,
+                              ),
+                              const SizedBox(width: 2),
+                              const Text(
+                                'Express',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: BookmiColors.brandBlueLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-              const Icon(
-                Icons.chevron_right,
-                color: Colors.white38,
-                size: 20,
-              ),
-            ],
-          ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.white38,
+                  size: 20,
+                ),
+              ],
+            ),
           ), // GestureDetector (info row)
           if (showActions) ...[
             const SizedBox(height: BookmiSpacing.spaceSm),
@@ -258,8 +259,18 @@ class BookingCard extends StatelessWidget {
       final parts = isoDate.split('-');
       if (parts.length != 3) return isoDate;
       const months = [
-        'jan', 'fév', 'mar', 'avr', 'mai', 'juin',
-        'juil', 'aoû', 'sep', 'oct', 'nov', 'déc',
+        'jan',
+        'fév',
+        'mar',
+        'avr',
+        'mai',
+        'juin',
+        'juil',
+        'aoû',
+        'sep',
+        'oct',
+        'nov',
+        'déc',
       ];
       final month = int.tryParse(parts[1]);
       if (month == null || month < 1 || month > 12) return isoDate;
@@ -313,14 +324,14 @@ class _StatusBadge extends StatelessWidget {
 
   static (String, Color) _labelAndColor(String status) {
     return switch (status) {
-      'pending'             => ('En attente', BookmiColors.warning),
-      'accepted'            => ('Validée', BookmiColors.brandBlueLight),
+      'pending' => ('En attente', BookmiColors.warning),
+      'accepted' => ('Validée', BookmiColors.brandBlueLight),
       'paid' || 'confirmed' => ('Confirmée', BookmiColors.success),
-      'completed'           => ('Terminée', BookmiColors.brandBlueLight),
-      'cancelled'           => ('Annulée', BookmiColors.error),
-      'rejected'            => ('Rejetée', BookmiColors.error),
-      'disputed'            => ('Litige', Colors.amber),
-      _                     => (status, Colors.white54),
+      'completed' => ('Terminée', BookmiColors.brandBlueLight),
+      'cancelled' => ('Annulée', BookmiColors.error),
+      'rejected' => ('Rejetée', BookmiColors.error),
+      'disputed' => ('Litige', Colors.amber),
+      _ => (status, Colors.white54),
     };
   }
 }
@@ -345,14 +356,15 @@ class _StatusIcon extends StatelessWidget {
 
   static (IconData, Color) _iconAndColor(String status) {
     return switch (status) {
-      'pending'             => (Icons.schedule, BookmiColors.warning),
-      'accepted'            => (Icons.verified_outlined, BookmiColors.brandBlueLight),
-      'paid' || 'confirmed' => (Icons.check_circle_outline, BookmiColors.success),
-      'completed'           => (Icons.star_outline, BookmiColors.brandBlueLight),
-      'cancelled'           => (Icons.cancel_outlined, BookmiColors.error),
-      'rejected'            => (Icons.thumb_down_outlined, BookmiColors.error),
-      'disputed'            => (Icons.report_problem_outlined, Colors.amber),
-      _                     => (Icons.receipt_long_outlined, Colors.white54),
+      'pending' => (Icons.schedule, BookmiColors.warning),
+      'accepted' => (Icons.verified_outlined, BookmiColors.brandBlueLight),
+      'paid' ||
+      'confirmed' => (Icons.check_circle_outline, BookmiColors.success),
+      'completed' => (Icons.star_outline, BookmiColors.brandBlueLight),
+      'cancelled' => (Icons.cancel_outlined, BookmiColors.error),
+      'rejected' => (Icons.thumb_down_outlined, BookmiColors.error),
+      'disputed' => (Icons.report_problem_outlined, Colors.amber),
+      _ => (Icons.receipt_long_outlined, Colors.white54),
     };
   }
 }

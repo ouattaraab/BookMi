@@ -30,8 +30,8 @@ class _TalentOnboardingView extends StatelessWidget {
         builder: (context, state) {
           return switch (state) {
             OnboardingInitial() || OnboardingLoading() => const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              ),
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
             OnboardingError(:final message) => _ErrorView(message: message),
             OnboardingLoaded() => _OnboardingContent(state: state),
           };
@@ -58,7 +58,11 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: BookmiColors.error, size: 48),
+            const Icon(
+              Icons.error_outline,
+              color: BookmiColors.error,
+              size: 48,
+            ),
             const SizedBox(height: 16),
             Text(
               message,
@@ -67,8 +71,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: () =>
-                  context.read<OnboardingCubit>().loadStatus(),
+              onPressed: () => context.read<OnboardingCubit>().loadStatus(),
               child: const Text('Réessayer'),
             ),
           ],
@@ -143,7 +146,11 @@ class _OnboardingHeader extends StatelessWidget {
           // Back button
           GestureDetector(
             onTap: () => Navigator.of(context).maybePop(),
-            child: const Icon(Icons.arrow_back_ios, color: Colors.white70, size: 20),
+            child: const Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white70,
+              size: 20,
+            ),
           ),
           const SizedBox(height: 24),
           // Gamified stars row
@@ -157,7 +164,9 @@ class _OnboardingHeader extends StatelessWidget {
                   child: Icon(
                     filled ? Icons.star_rounded : Icons.star_outline_rounded,
                     key: ValueKey(filled),
-                    color: filled ? BookmiColors.brandBlueLight : Colors.white24,
+                    color: filled
+                        ? BookmiColors.brandBlueLight
+                        : Colors.white24,
                     size: 28,
                   ),
                 ),
@@ -238,15 +247,15 @@ class _StepCard extends StatelessWidget {
         color: isCompleted
             ? BookmiColors.glassWhite
             : isNext
-                ? Colors.white.withOpacity(0.12)
-                : Colors.white.withOpacity(0.05),
+            ? Colors.white.withOpacity(0.12)
+            : Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isNext
               ? BookmiColors.brandBlueLight.withOpacity(0.6)
               : isCompleted
-                  ? BookmiColors.success.withOpacity(0.4)
-                  : Colors.white12,
+              ? BookmiColors.success.withOpacity(0.4)
+              : Colors.white12,
           width: isNext ? 1.5 : 1,
         ),
       ),
@@ -300,8 +309,7 @@ class _StepCard extends StatelessWidget {
                     style: TextStyle(
                       color: isCompleted ? Colors.white70 : Colors.white,
                       fontSize: 15,
-                      fontWeight:
-                          isNext ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isNext ? FontWeight.bold : FontWeight.w500,
                       decoration: isCompleted
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,

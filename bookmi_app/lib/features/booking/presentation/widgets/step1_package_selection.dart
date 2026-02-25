@@ -66,7 +66,8 @@ class Step1PackageSelection extends StatelessWidget {
               description: attrs['description'] as String?,
               cachetAmount: attrs['cachet_amount'] as int? ?? 0,
               durationMinutes: attrs['duration_minutes'] as int?,
-              inclusions: (attrs['inclusions'] as List<dynamic>?)?.cast<String>(),
+              inclusions: (attrs['inclusions'] as List<dynamic>?)
+                  ?.cast<String>(),
               type: type,
               isRecommended: type == 'premium',
             ),

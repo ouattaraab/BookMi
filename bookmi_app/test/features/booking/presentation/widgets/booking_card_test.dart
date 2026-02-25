@@ -3,32 +3,34 @@ import 'package:bookmi_app/features/booking/presentation/widgets/booking_card.da
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-BookingModel _makeBooking({String status = 'pending', bool isExpress = false}) =>
-    BookingModel(
-      id: 1,
-      status: status,
-      clientName: 'Client',
-      talentStageName: 'DJ Alpha',
-      packageName: 'Pack Standard',
-      packageType: 'standard',
-      eventDate: '2026-06-15',
-      eventLocation: 'Abidjan',
-      cachetAmount: 100000,
-      commissionAmount: 15000,
-      totalAmount: 115000,
-      isExpress: isExpress,
-      contractAvailable: false,
-    );
+BookingModel _makeBooking({
+  String status = 'pending',
+  bool isExpress = false,
+}) => BookingModel(
+  id: 1,
+  status: status,
+  clientName: 'Client',
+  talentStageName: 'DJ Alpha',
+  packageName: 'Pack Standard',
+  packageType: 'standard',
+  eventDate: '2026-06-15',
+  eventLocation: 'Abidjan',
+  cachetAmount: 100000,
+  commissionAmount: 15000,
+  totalAmount: 115000,
+  isExpress: isExpress,
+  contractAvailable: false,
+);
 
 Widget _wrap(Widget child) => MaterialApp(
-      home: Scaffold(
-        backgroundColor: const Color(0xFF1A2744),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: child,
-        ),
-      ),
-    );
+  home: Scaffold(
+    backgroundColor: const Color(0xFF1A2744),
+    body: Padding(
+      padding: const EdgeInsets.all(16),
+      child: child,
+    ),
+  ),
+);
 
 void main() {
   group('BookingCard', () {
@@ -42,7 +44,12 @@ void main() {
 
     testWidgets('displays status badge for pending', (tester) async {
       await tester.pumpWidget(
-        _wrap(BookingCard(booking: _makeBooking(status: 'pending'), onTap: () {})),
+        _wrap(
+          BookingCard(
+            booking: _makeBooking(status: 'pending'),
+            onTap: () {},
+          ),
+        ),
       );
       expect(find.text('En attente'), findsOneWidget);
     });
@@ -59,7 +66,9 @@ void main() {
       expect(find.text('Confirmée'), findsOneWidget);
     });
 
-    testWidgets('displays Express badge when isExpress is true', (tester) async {
+    testWidgets('displays Express badge when isExpress is true', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           BookingCard(
@@ -71,8 +80,9 @@ void main() {
       expect(find.text('Express'), findsOneWidget);
     });
 
-    testWidgets('does not display Express badge when isExpress is false',
-        (tester) async {
+    testWidgets('does not display Express badge when isExpress is false', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
           BookingCard(

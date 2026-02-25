@@ -36,8 +36,7 @@ class ProfileStats {
 }
 
 class ProfileRepository {
-  ProfileRepository({required ApiClient apiClient})
-    : _dio = apiClient.dio;
+  ProfileRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   ProfileRepository.forTesting({required Dio dio}) : _dio = dio;
 
@@ -55,14 +54,10 @@ class ProfileRepository {
           (statsData['pending_booking_count'] as int?) ?? 0;
       final unreadNotificationCount =
           (statsData['unread_notification_count'] as int?) ?? 0;
-      final profileViewsToday =
-          (statsData['profile_views_today'] as int?) ?? 0;
-      final profileViewsWeek =
-          (statsData['profile_views_week'] as int?) ?? 0;
-      final profileViewsMonth =
-          (statsData['profile_views_month'] as int?) ?? 0;
-      final profileViewsTotal =
-          (statsData['profile_views_total'] as int?) ?? 0;
+      final profileViewsToday = (statsData['profile_views_today'] as int?) ?? 0;
+      final profileViewsWeek = (statsData['profile_views_week'] as int?) ?? 0;
+      final profileViewsMonth = (statsData['profile_views_month'] as int?) ?? 0;
+      final profileViewsTotal = (statsData['profile_views_total'] as int?) ?? 0;
 
       var revenusMoisCourant = 0;
       var nombrePrestations = 0;
@@ -75,9 +70,8 @@ class ProfileRepository {
         final d = finRes.data?['data'] as Map<String, dynamic>? ?? {};
         revenusMoisCourant = (d['revenus_mois_courant'] as int?) ?? 0;
         nombrePrestations = (d['nombre_prestations'] as int?) ?? 0;
-        mensuels = ((d['mensuels'] as List?)
-                ?.cast<Map<String, dynamic>>()) ??
-            [];
+        mensuels =
+            ((d['mensuels'] as List?)?.cast<Map<String, dynamic>>()) ?? [];
       }
 
       return ApiSuccess(
@@ -104,8 +98,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -118,8 +111,7 @@ class ProfileRepository {
         ApiEndpoints.bookingRequests,
         queryParameters: {'per_page': 200},
       );
-      final bookingCount =
-          (bookingsRes.data?['data'] as List?)?.length ?? 0;
+      final bookingCount = (bookingsRes.data?['data'] as List?)?.length ?? 0;
 
       final favRes = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.myFavorites,
@@ -139,9 +131,8 @@ class ProfileRepository {
           final d = finRes.data?['data'] as Map<String, dynamic>? ?? {};
           revenusMoisCourant = (d['revenus_mois_courant'] as int?) ?? 0;
           nombrePrestations = (d['nombre_prestations'] as int?) ?? 0;
-          mensuels = ((d['mensuels'] as List?)
-                  ?.cast<Map<String, dynamic>>()) ??
-              [];
+          mensuels =
+              ((d['mensuels'] as List?)?.cast<Map<String, dynamic>>()) ?? [];
         } on DioException {
           // Financial dashboard unavailable — keep defaults.
         }
@@ -162,8 +153,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -181,8 +171,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -193,17 +182,15 @@ class ProfileRepository {
         ApiEndpoints.myFavorites,
         queryParameters: {'per_page': 50},
       );
-      final items = (res.data?['data'] as List?)
-              ?.cast<Map<String, dynamic>>() ??
-          [];
+      final items =
+          (res.data?['data'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       return ApiSuccess(items);
     } on DioException catch (e) {
       final errorData = e.response?.data as Map<String, dynamic>?;
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -243,8 +230,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -258,8 +244,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -275,8 +260,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -305,8 +289,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -331,8 +314,7 @@ class ProfileRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }
@@ -364,9 +346,8 @@ class ProfileRepository {
       final res = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.mePortfolio,
       );
-      final items = (res.data?['data'] as List?)
-              ?.cast<Map<String, dynamic>>() ??
-          [];
+      final items =
+          (res.data?['data'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       return ApiSuccess(items);
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -413,9 +394,8 @@ class ProfileRepository {
       final res = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.servicePackages,
       );
-      final items = (res.data?['data'] as List?)
-              ?.cast<Map<String, dynamic>>() ??
-          [];
+      final items =
+          (res.data?['data'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       return ApiSuccess(items);
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -469,8 +449,7 @@ class ProfileRepository {
     final error = errorData?['error'] as Map<String, dynamic>?;
     return ApiFailure(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-      message:
-          (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
     );
   }
 }

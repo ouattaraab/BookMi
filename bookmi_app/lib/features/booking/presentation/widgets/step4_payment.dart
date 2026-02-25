@@ -58,7 +58,9 @@ class Step4Payment extends StatelessWidget {
                         color: const Color(0xFF00C3F7).withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: const Color(0xFF00C3F7).withValues(alpha: 0.25),
+                          color: const Color(
+                            0xFF00C3F7,
+                          ).withValues(alpha: 0.25),
                         ),
                       ),
                       child: const Icon(
@@ -82,7 +84,10 @@ class Step4Payment extends StatelessWidget {
                           ),
                           Text(
                             'Paiement sécurisé',
-                            style: TextStyle(fontSize: 11, color: Colors.white54),
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.white54,
+                            ),
                           ),
                         ],
                       ),

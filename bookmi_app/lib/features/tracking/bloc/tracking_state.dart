@@ -54,7 +54,8 @@ final class TrackingError extends TrackingState {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is TrackingError && message == other.message;
+      identical(this, other) ||
+      other is TrackingError && message == other.message;
 
   @override
   int get hashCode => message.hashCode;

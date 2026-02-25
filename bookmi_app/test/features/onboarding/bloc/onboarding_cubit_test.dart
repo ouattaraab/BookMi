@@ -37,7 +37,10 @@ void main() {
       expect: () => [
         const OnboardingLoading(),
         OnboardingLoaded(
-          completedSteps: const {OnboardingStep.profile, OnboardingStep.category},
+          completedSteps: const {
+            OnboardingStep.profile,
+            OnboardingStep.category,
+          },
           profileCompletionPct: 40,
         ),
       ],
@@ -46,8 +49,9 @@ void main() {
     blocTest<OnboardingCubit, OnboardingState>(
       'loadStatus emits [Loading, Error] on failure',
       build: () {
-        when(() => repository.getOnboardingStatus())
-            .thenThrow(Exception('Erreur réseau'));
+        when(
+          () => repository.getOnboardingStatus(),
+        ).thenThrow(Exception('Erreur réseau'));
         return OnboardingCubit(repository: repository);
       },
       act: (cubit) => cubit.loadStatus(),
@@ -70,16 +74,15 @@ void main() {
             profileCompletionPct: 60,
           ),
         );
-        return OnboardingCubit(repository: repository)
-          ..emit(
-            OnboardingLoaded(
-              completedSteps: const {
-                OnboardingStep.profile,
-                OnboardingStep.category,
-              },
-              profileCompletionPct: 40,
-            ),
-          );
+        return OnboardingCubit(repository: repository)..emit(
+          OnboardingLoaded(
+            completedSteps: const {
+              OnboardingStep.profile,
+              OnboardingStep.category,
+            },
+            profileCompletionPct: 40,
+          ),
+        );
       },
       act: (cubit) => cubit.markStepCompleted(OnboardingStep.packages),
       expect: () => [

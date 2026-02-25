@@ -76,7 +76,10 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Color(0xFFEF4444)),
+              leading: const Icon(
+                Icons.delete_outline,
+                color: Color(0xFFEF4444),
+              ),
               title: Text(
                 'Supprimer ce message',
                 style: GoogleFonts.manrope(
@@ -121,7 +124,10 @@ class _ChatPageState extends State<ChatPage> {
     if (text.isEmpty) return;
     _controller.clear();
     setState(() => _sending = true);
-    await context.read<MessagingCubit>().sendMessage(widget.conversationId, text);
+    await context.read<MessagingCubit>().sendMessage(
+      widget.conversationId,
+      text,
+    );
     if (mounted) setState(() => _sending = false);
     _scrollToBottom();
   }
@@ -136,20 +142,23 @@ class _ChatPageState extends State<ChatPage> {
           children: [
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: Text('Photo depuis la galerie',
-                  style: GoogleFonts.manrope()),
+              title: Text(
+                'Photo depuis la galerie',
+                style: GoogleFonts.manrope(),
+              ),
               onTap: () => Navigator.pop(context, 'photo_gallery'),
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt_outlined),
-              title: Text('Prendre une photo',
-                  style: GoogleFonts.manrope()),
+              title: Text('Prendre une photo', style: GoogleFonts.manrope()),
               onTap: () => Navigator.pop(context, 'photo_camera'),
             ),
             ListTile(
               leading: const Icon(Icons.videocam_outlined),
-              title: Text('Vidéo depuis la galerie',
-                  style: GoogleFonts.manrope()),
+              title: Text(
+                'Vidéo depuis la galerie',
+                style: GoogleFonts.manrope(),
+              ),
               onTap: () => Navigator.pop(context, 'video_gallery'),
             ),
           ],
@@ -163,9 +172,15 @@ class _ChatPageState extends State<ChatPage> {
     String type = 'image';
 
     if (choice == 'photo_gallery') {
-      file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      file = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
     } else if (choice == 'photo_camera') {
-      file = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+      file = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 80,
+      );
     } else if (choice == 'video_gallery') {
       file = await picker.pickVideo(source: ImageSource.gallery);
       type = 'video';
@@ -194,8 +209,9 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : -1;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : -1;
     final isClosed = widget.booking?.isClosed ?? false;
 
     return Scaffold(
@@ -321,8 +337,18 @@ class _ChatHeader extends StatelessWidget {
       final dt = DateTime.tryParse(booking!.eventDate!);
       if (dt != null) {
         const months = [
-          'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
-          'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
+          'Jan',
+          'Fév',
+          'Mar',
+          'Avr',
+          'Mai',
+          'Jun',
+          'Jul',
+          'Aoû',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Déc',
         ];
         parts.add('${dt.day} ${months[dt.month - 1]}');
       }
@@ -563,8 +589,9 @@ class _ChatBubble extends StatelessWidget {
       child: Align(
         alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
         child: Column(
-          crossAxisAlignment:
-              isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMine
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Container(
               constraints: BoxConstraints(
@@ -649,8 +676,9 @@ class _ImageMessage extends StatelessWidget {
       child: Align(
         alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
         child: Column(
-          crossAxisAlignment:
-              isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMine
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
@@ -675,7 +703,10 @@ class _ImageMessage extends StatelessWidget {
                         width: 220,
                         height: 180,
                         color: _border,
-                        child: const Icon(Icons.broken_image_outlined, color: _mutedFg),
+                        child: const Icon(
+                          Icons.broken_image_outlined,
+                          color: _mutedFg,
+                        ),
                       ),
                     )
                   : Container(
@@ -731,8 +762,10 @@ class _VideoMessage extends StatelessWidget {
                 bottom: 8,
                 left: 8,
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(6),
@@ -740,8 +773,11 @@ class _VideoMessage extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.videocam_outlined,
-                          size: 12, color: Colors.white),
+                      const Icon(
+                        Icons.videocam_outlined,
+                        size: 12,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Vidéo',
@@ -877,7 +913,10 @@ class _InputBar extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       controller: controller,
-                      style: GoogleFonts.manrope(fontSize: 14, color: _secondary),
+                      style: GoogleFonts.manrope(
+                        fontSize: 14,
+                        color: _secondary,
+                      ),
                       maxLines: 4,
                       minLines: 1,
                       textCapitalization: TextCapitalization.sentences,
@@ -889,8 +928,9 @@ class _InputBar extends StatelessWidget {
                         ),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                        ),
                       ),
                       onSubmitted: (_) => onSend(),
                     ),

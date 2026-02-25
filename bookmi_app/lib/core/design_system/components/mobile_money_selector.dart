@@ -11,7 +11,8 @@ class MobileMoneyOperator {
     required this.icon,
   });
 
-  final String method; // API value: 'orange_money', 'wave', 'mtn_momo', 'moov_money'
+  final String
+  method; // API value: 'orange_money', 'wave', 'mtn_momo', 'moov_money'
   final String label;
   final Color color;
   final IconData icon;
@@ -66,11 +67,15 @@ class MobileMoneySelector extends StatelessWidget {
       childAspectRatio: 2.2,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      children: _operators.map((op) => _OperatorTile(
-        operator: op,
-        isSelected: selectedMethod == op.method,
-        onTap: () => onMethodSelected(op.method),
-      )).toList(),
+      children: _operators
+          .map(
+            (op) => _OperatorTile(
+              operator: op,
+              isSelected: selectedMethod == op.method,
+              onTap: () => onMethodSelected(op.method),
+            ),
+          )
+          .toList(),
     );
   }
 }

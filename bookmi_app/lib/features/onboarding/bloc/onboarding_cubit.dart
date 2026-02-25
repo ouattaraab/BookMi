@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OnboardingCubit extends Cubit<OnboardingState> {
   OnboardingCubit({required OnboardingRepository repository})
-      : _repository = repository,
-        super(const OnboardingInitial());
+    : _repository = repository,
+      super(const OnboardingInitial());
 
   final OnboardingRepository _repository;
 

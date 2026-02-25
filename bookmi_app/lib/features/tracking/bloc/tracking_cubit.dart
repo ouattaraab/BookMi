@@ -29,7 +29,12 @@ class TrackingCubit extends Cubit<TrackingState> {
         emit(TrackingLoaded(events: currentEvents, bookingId: bookingId));
         addError(Exception(message));
       case ApiSuccess(:final data):
-        emit(TrackingLoaded(events: [...currentEvents, data], bookingId: bookingId));
+        emit(
+          TrackingLoaded(
+            events: [...currentEvents, data],
+            bookingId: bookingId,
+          ),
+        );
     }
   }
 
@@ -40,18 +45,21 @@ class TrackingCubit extends Cubit<TrackingState> {
   }) async {
     final currentEvents = _currentEvents();
     emit(TrackingUpdating(events: currentEvents, bookingId: bookingId));
-    switch (
-      await _repository.checkIn(
-        bookingId,
-        latitude: latitude,
-        longitude: longitude,
-      )
-    ) {
+    switch (await _repository.checkIn(
+      bookingId,
+      latitude: latitude,
+      longitude: longitude,
+    )) {
       case ApiFailure(:final message):
         emit(TrackingLoaded(events: currentEvents, bookingId: bookingId));
         addError(Exception(message));
       case ApiSuccess(:final data):
-        emit(TrackingLoaded(events: [...currentEvents, data], bookingId: bookingId));
+        emit(
+          TrackingLoaded(
+            events: [...currentEvents, data],
+            bookingId: bookingId,
+          ),
+        );
     }
   }
 

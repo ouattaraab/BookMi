@@ -66,7 +66,9 @@ class BookingRepository {
       if (_isNetworkError(e)) {
         final cached = _localStorage.get<Map<dynamic, dynamic>>(_cacheKey);
         if (cached != null) {
-          return ApiSuccess(_parseListResponse(Map<String, dynamic>.from(cached)));
+          return ApiSuccess(
+            _parseListResponse(Map<String, dynamic>.from(cached)),
+          );
         }
       }
       return _mapDioError(e);
@@ -221,8 +223,8 @@ class BookingRepository {
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   BookingListResponse _parseListResponse(Map<String, dynamic> data) {
-    final items =
-        ((data['data'] as List<dynamic>?) ?? []).cast<Map<String, dynamic>>();
+    final items = ((data['data'] as List<dynamic>?) ?? [])
+        .cast<Map<String, dynamic>>();
     final meta = data['meta'] as Map<String, dynamic>? ?? {};
 
     return BookingListResponse(
@@ -241,8 +243,7 @@ class BookingRepository {
     final error = errorData?['error'] as Map<String, dynamic>?;
     return ApiFailure(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-      message:
-          (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
     );
   }
 }

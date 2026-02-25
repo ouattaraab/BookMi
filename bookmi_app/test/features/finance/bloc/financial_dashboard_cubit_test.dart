@@ -23,7 +23,10 @@ void main() {
     devise: 'XOF',
     mensuels: List.generate(
       6,
-      (i) => MonthlyRevenue(month: '2025-${(i + 7).toString().padLeft(2, '0')}', revenue: i * 100_000),
+      (i) => MonthlyRevenue(
+        month: '2025-${(i + 7).toString().padLeft(2, '0')}',
+        revenue: i * 100_000,
+      ),
     ),
   );
 

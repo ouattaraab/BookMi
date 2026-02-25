@@ -57,7 +57,9 @@ class ServicePackageCard extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         GlassCard(
-          borderColor: isRecommended ? BookmiColors.brandBlueLight : _borderColor,
+          borderColor: isRecommended
+              ? BookmiColors.brandBlueLight
+              : _borderColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -146,7 +148,9 @@ class ServicePackageCard extends StatelessWidget {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: isRecommended ? BookmiColors.brandBlueLight : _badgeColor,
+                color: isRecommended
+                    ? BookmiColors.brandBlueLight
+                    : _badgeColor,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(

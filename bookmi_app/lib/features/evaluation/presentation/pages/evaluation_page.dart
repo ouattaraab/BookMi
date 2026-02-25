@@ -40,9 +40,8 @@ class _EvaluationView extends StatelessWidget {
   final int bookingId;
   final String type;
 
-  String get _title => type == 'client_to_talent'
-      ? 'Évaluer le talent'
-      : 'Évaluer le client';
+  String get _title =>
+      type == 'client_to_talent' ? 'Évaluer le talent' : 'Évaluer le client';
 
   @override
   Widget build(BuildContext context) {
@@ -116,13 +115,13 @@ class _EvaluationFormState extends State<_EvaluationForm> {
       return;
     }
     context.read<EvaluationCubit>().submitReview(
-          widget.bookingId,
-          type: widget.type,
-          rating: _rating,
-          comment: _commentController.text.trim().isEmpty
-              ? null
-              : _commentController.text.trim(),
-        );
+      widget.bookingId,
+      type: widget.type,
+      rating: _rating,
+      comment: _commentController.text.trim().isEmpty
+          ? null
+          : _commentController.text.trim(),
+    );
   }
 
   @override

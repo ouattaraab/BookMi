@@ -11,32 +11,33 @@ enum OnboardingStep {
 
 extension OnboardingStepX on OnboardingStep {
   String get label => switch (this) {
-        OnboardingStep.profile => 'Profil',
-        OnboardingStep.category => 'Catégorie',
-        OnboardingStep.packages => 'Packages',
-        OnboardingStep.calendar => 'Calendrier',
-        OnboardingStep.verification => 'Vérification',
-      };
+    OnboardingStep.profile => 'Profil',
+    OnboardingStep.category => 'Catégorie',
+    OnboardingStep.packages => 'Packages',
+    OnboardingStep.calendar => 'Calendrier',
+    OnboardingStep.verification => 'Vérification',
+  };
 
   String get description => switch (this) {
-        OnboardingStep.profile => 'Complétez votre nom de scène, biographie et photo.',
-        OnboardingStep.category =>
-          'Choisissez votre catégorie et sous-catégorie artistique.',
-        OnboardingStep.packages =>
-          'Créez au moins un package de prestation avec tarif.',
-        OnboardingStep.calendar =>
-          'Définissez vos disponibilités pour les prochaines semaines.',
-        OnboardingStep.verification =>
-          'Soumettez votre CNI ou passeport pour être vérifié.',
-      };
+    OnboardingStep.profile =>
+      'Complétez votre nom de scène, biographie et photo.',
+    OnboardingStep.category =>
+      'Choisissez votre catégorie et sous-catégorie artistique.',
+    OnboardingStep.packages =>
+      'Créez au moins un package de prestation avec tarif.',
+    OnboardingStep.calendar =>
+      'Définissez vos disponibilités pour les prochaines semaines.',
+    OnboardingStep.verification =>
+      'Soumettez votre CNI ou passeport pour être vérifié.',
+  };
 
   String get icon => switch (this) {
-        OnboardingStep.profile => '👤',
-        OnboardingStep.category => '🎭',
-        OnboardingStep.packages => '📦',
-        OnboardingStep.calendar => '📅',
-        OnboardingStep.verification => '🛡️',
-      };
+    OnboardingStep.profile => '👤',
+    OnboardingStep.category => '🎭',
+    OnboardingStep.packages => '📦',
+    OnboardingStep.calendar => '📅',
+    OnboardingStep.verification => '🛡️',
+  };
 }
 
 @immutable
@@ -88,7 +89,8 @@ final class OnboardingLoaded extends OnboardingState {
           profileCompletionPct == other.profileCompletionPct;
 
   @override
-  int get hashCode => Object.hash(Object.hashAll(completedSteps), profileCompletionPct);
+  int get hashCode =>
+      Object.hash(Object.hashAll(completedSteps), profileCompletionPct);
 }
 
 @immutable
@@ -99,7 +101,8 @@ final class OnboardingError extends OnboardingState {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is OnboardingError && message == other.message;
+      identical(this, other) ||
+      other is OnboardingError && message == other.message;
 
   @override
   int get hashCode => message.hashCode;

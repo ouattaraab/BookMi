@@ -40,9 +40,9 @@ class _ProfilePageState extends State<ProfilePage> {
       final authState = context.read<AuthBloc>().state;
       if (authState is AuthAuthenticated) {
         final isTalent = authState.roles.contains('talent');
-        context
-            .read<ProfileBloc>()
-            .add(ProfileStatsFetched(isTalent: isTalent));
+        context.read<ProfileBloc>().add(
+          ProfileStatsFetched(isTalent: isTalent),
+        );
       }
     }
   }
@@ -51,8 +51,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
-        final user =
-            authState is AuthAuthenticated ? authState.user : null;
+        final user = authState is AuthAuthenticated ? authState.user : null;
         final roles = authState is AuthAuthenticated
             ? authState.roles
             : <String>[];
@@ -62,8 +61,8 @@ class _ProfilePageState extends State<ProfilePage> {
         final memberSince = _formatMemberSince(user?.phoneVerifiedAt);
         final initials = user != null
             ? '${firstName.isNotEmpty ? firstName[0] : ''}'
-                '${lastName.isNotEmpty ? lastName[0] : ''}'
-                    .toUpperCase()
+                      '${lastName.isNotEmpty ? lastName[0] : ''}'
+                  .toUpperCase()
             : 'U';
         final isTalent = roles.contains('talent');
         final avatarUrl = user?.avatarUrl;
@@ -79,8 +78,8 @@ class _ProfilePageState extends State<ProfilePage> {
               body: RefreshIndicator(
                 onRefresh: () async {
                   context.read<ProfileBloc>().add(
-                        ProfileStatsFetched(isTalent: isTalent),
-                      );
+                    ProfileStatsFetched(isTalent: isTalent),
+                  );
                 },
                 child: CustomScrollView(
                   slivers: [
@@ -92,8 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         initials: initials,
                         memberSince: memberSince,
                         isTalent: isTalent,
-                        nombrePrestations:
-                            stats?.nombrePrestations ?? 0,
+                        nombrePrestations: stats?.nombrePrestations ?? 0,
                         avatarUrl: avatarUrl,
                       ),
                     ),
@@ -115,8 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     SliverToBoxAdapter(
                       child: _GeneralSection(
                         isTalent: isTalent,
-                        isPhoneVerified:
-                            user?.phoneVerifiedAt != null,
+                        isPhoneVerified: user?.phoneVerifiedAt != null,
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -379,18 +376,17 @@ class _DashboardCard extends StatelessWidget {
     final stat1Value = isLoading
         ? '…'
         : isTalent
-            ? '${fmt.format(stats?.revenusMoisCourant ?? 0)} FCFA'
-            : '${stats?.bookingCount ?? 0}';
+        ? '${fmt.format(stats?.revenusMoisCourant ?? 0)} FCFA'
+        : '${stats?.bookingCount ?? 0}';
     final stat1Label = isTalent
         ? 'Revenus ($currentMonthLabel)'
         : 'Réservations';
     final stat2Value = isLoading
         ? '…'
         : isTalent
-            ? '${stats?.bookingCount ?? 0}'
-            : '${stats?.favoriteCount ?? 0}';
-    final stat2Label =
-        isTalent ? 'Réservations' : 'Talents favoris';
+        ? '${stats?.bookingCount ?? 0}'
+        : '${stats?.favoriteCount ?? 0}';
+    final stat2Label = isTalent ? 'Réservations' : 'Talents favoris';
 
     return Container(
       margin: const EdgeInsets.all(16),
@@ -429,9 +425,7 @@ class _DashboardCard extends StatelessWidget {
                 child: _StatCard(
                   label: stat2Label,
                   value: stat2Value,
-                  icon: isTalent
-                      ? Icons.star_outline
-                      : Icons.favorite_border,
+                  icon: isTalent ? Icons.star_outline : Icons.favorite_border,
                   color: _success,
                 ),
               ),
@@ -451,9 +445,7 @@ class _DashboardCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               _MiniBarChart(
-                mensuels: (isTalent && stats != null)
-                    ? stats!.mensuels
-                    : [],
+                mensuels: (isTalent && stats != null) ? stats!.mensuels : [],
               ),
             ],
           ),
@@ -598,8 +590,7 @@ class _MiniBarChart extends StatelessWidget {
         final i = entry.key;
         final m = entry.value;
         final rev = (m['revenus'] as int?) ?? 0;
-        final ratio =
-            maxRevenue > 0 ? (rev / maxRevenue) : 0.0;
+        final ratio = maxRevenue > 0 ? (rev / maxRevenue) : 0.0;
         final moisStr = m['mois'] as String? ?? '';
         final label = _shortMonth(moisStr);
         final isLast = i == mensuels.length - 1;
@@ -611,9 +602,7 @@ class _MiniBarChart extends StatelessWidget {
               width: 28,
               height: (50 * ratio).clamp(4.0, 50.0),
               decoration: BoxDecoration(
-                color: isLast
-                    ? _primary
-                    : _primary.withValues(alpha: 0.25),
+                color: isLast ? _primary : _primary.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
@@ -750,8 +739,7 @@ class _GeneralSection extends StatelessWidget {
           _MenuItem(
             icon: Icons.favorite_border,
             label: 'Mes talents favoris',
-            onTap: () =>
-                context.pushNamed(RouteNames.profileFavorites),
+            onTap: () => context.pushNamed(RouteNames.profileFavorites),
           ),
           if (isTalent) ...[
             _Divider(),
@@ -767,9 +755,7 @@ class _GeneralSection extends StatelessWidget {
           _MenuItem(
             icon: Icons.verified_user_outlined,
             label: "Vérification d'identité",
-            trailing: isPhoneVerified
-                ? _VerifiedBadge()
-                : _UnverifiedBadge(),
+            trailing: isPhoneVerified ? _VerifiedBadge() : _UnverifiedBadge(),
             onTap: () => context.pushNamed(
               RouteNames.profileIdentityVerification,
             ),
@@ -812,8 +798,7 @@ class _GeneralSection extends StatelessWidget {
           _MenuItem(
             icon: Icons.help_outline,
             label: 'Aide et support',
-            onTap: () =>
-                context.pushNamed(RouteNames.profileSupport),
+            onTap: () => context.pushNamed(RouteNames.profileSupport),
           ),
           const SizedBox(height: 8),
         ],
@@ -970,9 +955,7 @@ class _LogoutButton extends StatelessWidget {
                 TextButton(
                   onPressed: () {
                     Navigator.of(ctx).pop();
-                    context
-                        .read<AuthBloc>()
-                        .add(const AuthLogoutRequested());
+                    context.read<AuthBloc>().add(const AuthLogoutRequested());
                   },
                   child: Text(
                     'Déconnecter',

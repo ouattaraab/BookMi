@@ -5,8 +5,7 @@ import 'package:bookmi_app/features/evaluation/data/models/review_model.dart';
 import 'package:dio/dio.dart';
 
 class ReviewRepository {
-  ReviewRepository({required ApiClient apiClient})
-      : _dio = apiClient.dio;
+  ReviewRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   /// Test-only constructor.
   ReviewRepository.forTesting({required Dio dio}) : _dio = dio;

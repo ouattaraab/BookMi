@@ -500,7 +500,6 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                     servicePackages: servicePackages,
                     enableExpress:
                         profile['enable_express_booking'] as bool? ?? false,
-                    paystackPublicKey: 'pk_test_10307bbe35ff163e237e1f402b4dae7e2377338f',
                   ),
                   child: Center(
                     child: Text(
@@ -632,12 +631,12 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
       children: links.entries.map((entry) {
         final (icon, color) = switch (entry.key) {
           'instagram' => (FontAwesomeIcons.instagram, const Color(0xFFE1306C)),
-          'facebook'  => (FontAwesomeIcons.facebook,  const Color(0xFF1877F2)),
+          'facebook' => (FontAwesomeIcons.facebook, const Color(0xFF1877F2)),
           'twitter' || 'x' => (FontAwesomeIcons.xTwitter, Colors.white),
-          'youtube'   => (FontAwesomeIcons.youtube,   const Color(0xFFFF0000)),
-          'tiktok'    => (FontAwesomeIcons.tiktok,    Colors.white),
-          'linkedin'  => (FontAwesomeIcons.linkedin,  const Color(0xFF0A66C2)),
-          'snapchat'  => (FontAwesomeIcons.snapchat,  const Color(0xFFFFFC00)),
+          'youtube' => (FontAwesomeIcons.youtube, const Color(0xFFFF0000)),
+          'tiktok' => (FontAwesomeIcons.tiktok, Colors.white),
+          'linkedin' => (FontAwesomeIcons.linkedin, const Color(0xFF0A66C2)),
+          'snapchat' => (FontAwesomeIcons.snapchat, const Color(0xFFFFFC00)),
           _ => (FontAwesomeIcons.link, BookmiColors.brandBlueLight),
         };
         return Padding(

@@ -270,19 +270,31 @@ class _CalendarPicker extends StatelessWidget {
   }
 
   static const _months = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+    'Janvier',
+    'Février',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juillet',
+    'Août',
+    'Septembre',
+    'Octobre',
+    'Novembre',
+    'Décembre',
   ];
 
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final firstDay =
-        DateTime(focusedMonth.year, focusedMonth.month, 1);
+    final firstDay = DateTime(focusedMonth.year, focusedMonth.month, 1);
     // weekday: 1=Mon..7=Sun, we want Mon=0 offset
     final startOffset = (firstDay.weekday - 1) % 7;
-    final daysInMonth =
-        DateTime(focusedMonth.year, focusedMonth.month + 1, 0).day;
+    final daysInMonth = DateTime(
+      focusedMonth.year,
+      focusedMonth.month + 1,
+      0,
+    ).day;
 
     return Column(
       children: [
@@ -299,8 +311,8 @@ class _CalendarPicker extends StatelessWidget {
               ),
               onPressed: _canNavigatePrevious(focusedMonth)
                   ? () => onMonthChanged(
-                        DateTime(focusedMonth.year, focusedMonth.month - 1),
-                      )
+                      DateTime(focusedMonth.year, focusedMonth.month - 1),
+                    )
                   : null,
             ),
             Text(
@@ -315,8 +327,8 @@ class _CalendarPicker extends StatelessWidget {
               icon: const Icon(Icons.chevron_right, color: Colors.white70),
               onPressed: _canNavigateNext(focusedMonth)
                   ? () => onMonthChanged(
-                        DateTime(focusedMonth.year, focusedMonth.month + 1),
-                      )
+                      DateTime(focusedMonth.year, focusedMonth.month + 1),
+                    )
                   : null,
             ),
           ],
@@ -354,8 +366,9 @@ class _CalendarPicker extends StatelessWidget {
             if (index < startOffset) return const SizedBox.shrink();
             final day = index - startOffset + 1;
             final date = DateTime(focusedMonth.year, focusedMonth.month, day);
-            final isPast =
-                date.isBefore(DateTime(now.year, now.month, now.day));
+            final isPast = date.isBefore(
+              DateTime(now.year, now.month, now.day),
+            );
             final blocked = isBlocked(date);
             final selected = isSelected(date);
             final isDisabled = isPast || blocked;
@@ -385,8 +398,9 @@ class _CalendarPicker extends StatelessWidget {
                       '$day',
                       style: TextStyle(
                         fontSize: 12,
-                        fontWeight:
-                            selected ? FontWeight.w700 : FontWeight.w400,
+                        fontWeight: selected
+                            ? FontWeight.w700
+                            : FontWeight.w400,
                         color: selected
                             ? Colors.white
                             : isDisabled

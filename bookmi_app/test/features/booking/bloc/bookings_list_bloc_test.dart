@@ -11,20 +11,20 @@ import 'package:mocktail/mocktail.dart';
 class _MockBookingRepository extends Mock implements BookingRepository {}
 
 BookingModel _makeBooking(int id) => BookingModel(
-      id: id,
-      status: 'pending',
-      clientName: 'Client',
-      talentStageName: 'Talent $id',
-      packageName: 'Pack',
-      packageType: 'standard',
-      eventDate: '2026-06-01',
-      eventLocation: 'Abidjan',
-      cachetAmount: 50000,
-      commissionAmount: 7500,
-      totalAmount: 57500,
-      isExpress: false,
-      contractAvailable: false,
-    );
+  id: id,
+  status: 'pending',
+  clientName: 'Client',
+  talentStageName: 'Talent $id',
+  packageName: 'Pack',
+  packageType: 'standard',
+  eventDate: '2026-06-01',
+  eventLocation: 'Abidjan',
+  cachetAmount: 50000,
+  commissionAmount: 7500,
+  totalAmount: 57500,
+  isExpress: false,
+  contractAvailable: false,
+);
 
 void main() {
   late _MockBookingRepository repository;

@@ -6,8 +6,7 @@ import 'package:bookmi_app/features/finance/data/models/payout_model.dart';
 import 'package:dio/dio.dart';
 
 class FinancialRepository {
-  FinancialRepository({required ApiClient apiClient})
-    : _dio = apiClient.dio;
+  FinancialRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   /// Test-only constructor.
   FinancialRepository.forTesting({required Dio dio}) : _dio = dio;
@@ -33,8 +32,8 @@ class FinancialRepository {
         ApiEndpoints.mePayouts,
         queryParameters: {'page': page},
       );
-      final items =
-          (response.data!['data'] as List<dynamic>).cast<Map<String, dynamic>>();
+      final items = (response.data!['data'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
       return ApiSuccess(items.map(PayoutModel.fromJson).toList());
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -46,8 +45,7 @@ class FinancialRepository {
     final error = errorData?['error'] as Map<String, dynamic>?;
     return ApiFailure(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-      message:
-          (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
     );
   }
 }

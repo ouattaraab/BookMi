@@ -19,7 +19,8 @@ class OnboardingRepository {
       );
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data?['error']?['message'] ?? 'Erreur de chargement du statut.',
+        e.response?.data?['error']?['message'] ??
+            'Erreur de chargement du statut.',
       );
     }
   }

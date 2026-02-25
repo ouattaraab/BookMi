@@ -67,12 +67,12 @@ class PortfolioGallery extends StatelessWidget {
   Widget _buildLinkTile(Map<String, dynamic> item) {
     final platform = item['link_platform'] as String? ?? '';
     final (icon, color) = switch (platform) {
-      'youtube'   => (FontAwesomeIcons.youtube,   const Color(0xFFFF0000)),
+      'youtube' => (FontAwesomeIcons.youtube, const Color(0xFFFF0000)),
       'instagram' => (FontAwesomeIcons.instagram, const Color(0xFFE1306C)),
-      'facebook'  => (FontAwesomeIcons.facebook,  const Color(0xFF1877F2)),
-      'tiktok'    => (FontAwesomeIcons.tiktok,    Colors.white),
+      'facebook' => (FontAwesomeIcons.facebook, const Color(0xFF1877F2)),
+      'tiktok' => (FontAwesomeIcons.tiktok, Colors.white),
       'twitter' || 'x' => (FontAwesomeIcons.xTwitter, Colors.white),
-      _           => (FontAwesomeIcons.link,       BookmiColors.brandBlueLight),
+      _ => (FontAwesomeIcons.link, BookmiColors.brandBlueLight),
     };
     return ColoredBox(
       color: BookmiColors.glassDarkMedium,

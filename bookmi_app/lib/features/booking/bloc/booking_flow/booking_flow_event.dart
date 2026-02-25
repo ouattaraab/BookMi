@@ -19,8 +19,10 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
 
   final int talentProfileId;
   final int servicePackageId;
+
   /// Date only, format YYYY-MM-DD (e.g. "2026-03-15").
   final String eventDate;
+
   /// Time only, format HH:MM (e.g. "18:00").
   final String startTime;
   final String eventLocation;

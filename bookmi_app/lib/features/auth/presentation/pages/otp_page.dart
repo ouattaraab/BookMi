@@ -98,8 +98,7 @@ class _OtpPageState extends State<OtpPage> {
           case AuthFailure(:final message, :final details):
             _isSubmitting = false;
             _otpKey.currentState?.clear();
-            final remaining =
-                details?['remaining_attempts'] as int?;
+            final remaining = details?['remaining_attempts'] as int?;
             final displayMessage = remaining != null
                 ? '$message ($remaining tentatives restantes)'
                 : message;

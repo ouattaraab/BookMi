@@ -10,12 +10,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ── Dark design tokens ────────────────────────────────────────────
-const _bg      = Color(0xFF112044);
-const _cardBg  = Color(0xFF0D1B38);
+const _bg = Color(0xFF112044);
+const _cardBg = Color(0xFF0D1B38);
 const _primary = Color(0xFF2196F3);
-const _accent  = Color(0xFF64B5F6);
-const _muted   = Color(0xFF94A3B8);
-const _border  = Color(0x1AFFFFFF);
+const _accent = Color(0xFF64B5F6);
+const _muted = Color(0xFF94A3B8);
+const _border = Color(0x1AFFFFFF);
 const _divider = Color(0x0DFFFFFF);
 
 class NotificationsPage extends StatefulWidget {
@@ -28,7 +28,7 @@ class NotificationsPage extends StatefulWidget {
 
 class _NotificationsPageState extends State<NotificationsPage> {
   List<PushNotificationModel> _items = [];
-  bool    _loading = true;
+  bool _loading = true;
   String? _error;
 
   @override
@@ -49,7 +49,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   };
 
   void _navigate(PushNotificationModel n) {
-    final type      = n.data?['type'] as String?;
+    final type = n.data?['type'] as String?;
     final bookingId = n.data?['booking_id']?.toString();
 
     if (bookingId != null && bookingId.isNotEmpty) {
@@ -64,7 +64,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   Future<void> _load() async {
     setState(() {
       _loading = true;
-      _error   = null;
+      _error = null;
     });
     final result = await widget.repository.getNotifications();
     if (!mounted) return;
@@ -76,12 +76,12 @@ class _NotificationsPageState extends State<NotificationsPage> {
           }),
         );
         setState(() {
-          _items   = data;
+          _items = data;
           _loading = false;
         });
       case ApiFailure(:final message):
         setState(() {
-          _error   = message;
+          _error = message;
           _loading = false;
         });
     }
@@ -91,14 +91,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
     await widget.repository.markAllRead();
     NotificationService.instance.notifyNotificationsRead();
     setState(() {
-      _items = _items.map((n) => PushNotificationModel(
-        id:        n.id,
-        title:     n.title,
-        body:      n.body,
-        data:      n.data,
-        readAt:    DateTime.now(),
-        createdAt: n.createdAt,
-      )).toList();
+      _items = _items
+          .map(
+            (n) => PushNotificationModel(
+              id: n.id,
+              title: n.title,
+              body: n.body,
+              data: n.data,
+              readAt: DateTime.now(),
+              createdAt: n.createdAt,
+            ),
+          )
+          .toList();
     });
   }
 
@@ -211,7 +215,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
         children: [
           // Glow haut
           Positioned(
-            top: -40, left: -20, right: -20,
+            top: -40,
+            left: -20,
+            right: -20,
             height: 280,
             child: DecoratedBox(
               decoration: BoxDecoration(
@@ -230,8 +236,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
           // Glow bas-gauche teal
           Positioned(
-            bottom: 0, left: -30,
-            width: 220, height: 220,
+            bottom: 0,
+            left: -30,
+            width: 220,
+            height: 220,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
@@ -247,8 +255,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
           ),
           // Glow bas-droite bleu
           Positioned(
-            bottom: 0, right: -30,
-            width: 220, height: 220,
+            bottom: 0,
+            right: -30,
+            width: 220,
+            height: 220,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: RadialGradient(
@@ -288,11 +298,11 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         NotificationService.instance.notifyNotificationsRead();
                         setState(() {
                           _items[index] = PushNotificationModel(
-                            id:        n.id,
-                            title:     n.title,
-                            body:      n.body,
-                            data:      n.data,
-                            readAt:    DateTime.now(),
+                            id: n.id,
+                            title: n.title,
+                            body: n.body,
+                            data: n.data,
+                            readAt: DateTime.now(),
                             createdAt: n.createdAt,
                           );
                         });
@@ -429,33 +439,34 @@ class _NotificationCard extends StatelessWidget {
   });
 
   final PushNotificationModel notification;
-  final VoidCallback          onTap;
+  final VoidCallback onTap;
 
   IconData _iconFor(String? type) => switch (type) {
-    'booking_requested'                       => Icons.calendar_today_rounded,
-    'booking_accepted'                        => Icons.check_circle_rounded,
+    'booking_requested' => Icons.calendar_today_rounded,
+    'booking_accepted' => Icons.check_circle_rounded,
     'booking_rejected' || 'booking_cancelled' => Icons.cancel_rounded,
     'payment_received' || 'payment_confirmed' => Icons.payments_rounded,
-    'booking_completed'                       => Icons.star_rounded,
-    'escrow_released'                         => Icons.account_balance_wallet_rounded,
-    'admin_message' || 'admin_broadcast'      => Icons.campaign_rounded,
-    _                                         => Icons.notifications_rounded,
+    'booking_completed' => Icons.star_rounded,
+    'escrow_released' => Icons.account_balance_wallet_rounded,
+    'admin_message' || 'admin_broadcast' => Icons.campaign_rounded,
+    _ => Icons.notifications_rounded,
   };
 
   Color _colorFor(String? type) => switch (type) {
-    'booking_accepted'                        => const Color(0xFF00C853),
+    'booking_accepted' => const Color(0xFF00C853),
     'booking_rejected' || 'booking_cancelled' => const Color(0xFFFF4444),
-    'payment_received' || 'payment_confirmed' ||
-    'escrow_released'                         => const Color(0xFF00BFA5),
-    'booking_completed'                       => const Color(0xFFFFB300),
-    'admin_message' || 'admin_broadcast'      => const Color(0xFF7C4DFF),
-    _                                         => _primary,
+    'payment_received' ||
+    'payment_confirmed' ||
+    'escrow_released' => const Color(0xFF00BFA5),
+    'booking_completed' => const Color(0xFFFFB300),
+    'admin_message' || 'admin_broadcast' => const Color(0xFF7C4DFF),
+    _ => _primary,
   };
 
   @override
   Widget build(BuildContext context) {
-    final type     = notification.data?['type'] as String?;
-    final color    = _colorFor(type);
+    final type = notification.data?['type'] as String?;
+    final color = _colorFor(type);
     final isUnread = notification.isUnread;
 
     return GestureDetector(
@@ -480,7 +491,9 @@ class _NotificationCard extends StatelessWidget {
               // Left accent strip — unread only
               if (isUnread)
                 Positioned(
-                  left: 0, top: 0, bottom: 0,
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
                   child: Container(
                     width: 3,
                     decoration: BoxDecoration(
@@ -499,7 +512,9 @@ class _NotificationCard extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.fromLTRB(
                   isUnread ? 19 : 14,
-                  12, 12, 12,
+                  12,
+                  12,
+                  12,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -605,11 +620,11 @@ class _NotificationCard extends StatelessWidget {
   }
 
   String _formatDate(DateTime dt) {
-    final now  = DateTime.now();
+    final now = DateTime.now();
     final diff = now.difference(dt);
     if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes} min';
-    if (diff.inHours < 24)   return 'Il y a ${diff.inHours}h';
-    if (diff.inDays == 1)    return 'Hier';
+    if (diff.inHours < 24) return 'Il y a ${diff.inHours}h';
+    if (diff.inDays == 1) return 'Hier';
     return '${dt.day}/${dt.month}/${dt.year}';
   }
 }

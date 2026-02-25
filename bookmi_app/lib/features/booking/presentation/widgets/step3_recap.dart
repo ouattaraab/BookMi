@@ -136,7 +136,9 @@ class _Step3RecapState extends State<Step3Recap> {
                     height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: BookmiColors.brandBlueLight.withValues(alpha: 0.15),
+                      color: BookmiColors.brandBlueLight.withValues(
+                        alpha: 0.15,
+                      ),
                     ),
                     child: const Icon(
                       Icons.bolt,
@@ -171,8 +173,9 @@ class _Step3RecapState extends State<Step3Recap> {
                     value: widget.isExpress,
                     onChanged: widget.onExpressChanged,
                     activeColor: BookmiColors.brandBlueLight,
-                    activeTrackColor:
-                        BookmiColors.brandBlueLight.withValues(alpha: 0.3),
+                    activeTrackColor: BookmiColors.brandBlueLight.withValues(
+                      alpha: 0.3,
+                    ),
                   ),
                 ],
               ),

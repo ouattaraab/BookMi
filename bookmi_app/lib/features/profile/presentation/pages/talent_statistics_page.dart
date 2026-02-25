@@ -17,8 +17,7 @@ class TalentStatisticsPage extends StatefulWidget {
   final ProfileRepository repository;
 
   @override
-  State<TalentStatisticsPage> createState() =>
-      _TalentStatisticsPageState();
+  State<TalentStatisticsPage> createState() => _TalentStatisticsPageState();
 }
 
 class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
@@ -124,15 +123,12 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
     final d = _data ?? {};
     final revenusTotal = (d['revenus_total'] as int?) ?? 0;
     final revenusMoisCourant = (d['revenus_mois_courant'] as int?) ?? 0;
-    final revenusMoisPrecedent =
-        (d['revenus_mois_precedent'] as int?) ?? 0;
-    final comparaison =
-        (d['comparaison_pourcentage'] as num?)?.toDouble() ?? 0;
+    final revenusMoisPrecedent = (d['revenus_mois_precedent'] as int?) ?? 0;
+    final comparaison = (d['comparaison_pourcentage'] as num?)?.toDouble() ?? 0;
     final nombrePrestations = (d['nombre_prestations'] as int?) ?? 0;
     final cachetMoyen = (d['cachet_moyen'] as int?) ?? 0;
-    final mensuels = ((d['mensuels'] as List?)
-            ?.cast<Map<String, dynamic>>()) ??
-        [];
+    final mensuels =
+        ((d['mensuels'] as List?)?.cast<Map<String, dynamic>>()) ?? [];
 
     final bookingCount = _stats?.bookingCount ?? 0;
     final viewsToday = _stats?.profileViewsToday ?? 0;
@@ -448,9 +444,7 @@ class _RevenueBarChart extends StatelessWidget {
                   style: GoogleFonts.manrope(
                     fontSize: 10,
                     color: isLast ? _secondary : _mutedFg,
-                    fontWeight: isLast
-                        ? FontWeight.w600
-                        : FontWeight.normal,
+                    fontWeight: isLast ? FontWeight.w600 : FontWeight.normal,
                   ),
                   textAlign: TextAlign.center,
                 ),

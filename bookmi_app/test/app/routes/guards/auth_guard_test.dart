@@ -10,8 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState>
-    implements AuthBloc {}
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 void main() {
   late MockAuthBloc mockBloc;
@@ -83,8 +82,9 @@ void main() {
         expect(result, isNull);
       });
 
-      testWidgets('returns null when unauthenticated on splash',
-          (tester) async {
+      testWidgets('returns null when unauthenticated on splash', (
+        tester,
+      ) async {
         final result = await pumpAndGuard(
           tester,
           state: const AuthUnauthenticated(),

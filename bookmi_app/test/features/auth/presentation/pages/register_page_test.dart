@@ -141,14 +141,14 @@ void main() {
   // -----------------------------------------------------------------------
   // 7. Password length validation
   // -----------------------------------------------------------------------
-  testWidgets('shows error for password shorter than 8 characters',
-      (tester) async {
+  testWidgets('shows error for password shorter than 8 characters', (
+    tester,
+  ) async {
     await tester.pumpWidget(buildSubject(mockBloc, mockRepo));
     await tester.pumpAndSettle();
 
     // Enter a short password.
-    final passwordField =
-        find.widgetWithText(TextFormField, 'Mot de passe');
+    final passwordField = find.widgetWithText(TextFormField, 'Mot de passe');
     await tester.enterText(passwordField, '1234');
 
     // Trigger validation via submit.
@@ -171,12 +171,13 @@ void main() {
     await tester.pumpWidget(buildSubject(mockBloc, mockRepo));
     await tester.pumpAndSettle();
 
-    final passwordField =
-        find.widgetWithText(TextFormField, 'Mot de passe');
+    final passwordField = find.widgetWithText(TextFormField, 'Mot de passe');
     await tester.enterText(passwordField, 'Password123');
 
-    final confirmField =
-        find.widgetWithText(TextFormField, 'Confirmer le mot de passe');
+    final confirmField = find.widgetWithText(
+      TextFormField,
+      'Confirmer le mot de passe',
+    );
     await tester.enterText(confirmField, 'Different456');
 
     // Trigger validation via submit.
@@ -203,9 +204,9 @@ void main() {
   // -----------------------------------------------------------------------
   // 10. Loading state shows spinner
   // -----------------------------------------------------------------------
-  testWidgets(
-      'shows CircularProgressIndicator when state is AuthLoading',
-      (tester) async {
+  testWidgets('shows CircularProgressIndicator when state is AuthLoading', (
+    tester,
+  ) async {
     // Emit AuthLoading so the AuthButton renders the spinner.
     when(() => mockBloc.state).thenReturn(const AuthLoading());
     whenListen(

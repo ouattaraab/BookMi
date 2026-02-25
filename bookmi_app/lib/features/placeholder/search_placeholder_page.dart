@@ -18,10 +18,11 @@ const _mutedFg = Color(0xFF94A3B8);
 const _border = Color(0x1AFFFFFF);
 
 String _formatCachet(int amount) =>
-    NumberFormat('#,###', 'fr_FR')
-            .format(amount)
-            .replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F') +
-        ' FCFA';
+    NumberFormat(
+      '#,###',
+      'fr_FR',
+    ).format(amount).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F') +
+    ' FCFA';
 
 class SearchPlaceholderPage extends StatelessWidget {
   const SearchPlaceholderPage({super.key});
@@ -82,15 +83,24 @@ class _SearchViewState extends State<_SearchView> {
     final bloc = context.read<DiscoveryBloc>();
     if (key.isEmpty) {
       if (_searchController.text.isNotEmpty) {
-        bloc.add(DiscoveryFiltersChanged(filters: {'q': _searchController.text.trim()}));
+        bloc.add(
+          DiscoveryFiltersChanged(
+            filters: {'q': _searchController.text.trim()},
+          ),
+        );
       } else {
         bloc.add(const DiscoveryFilterCleared());
       }
     } else {
-      bloc.add(DiscoveryFiltersChanged(filters: {
-        'category_id': int.tryParse(key) ?? key,
-        if (_searchController.text.isNotEmpty) 'q': _searchController.text.trim(),
-      }));
+      bloc.add(
+        DiscoveryFiltersChanged(
+          filters: {
+            'category_id': int.tryParse(key) ?? key,
+            if (_searchController.text.isNotEmpty)
+              'q': _searchController.text.trim(),
+          },
+        ),
+      );
     }
   }
 
@@ -224,9 +234,7 @@ class _SearchViewState extends State<_SearchView> {
                 ('', 'Tout'),
                 ...categories.map(
                   (c) => (
-                    (c['id'] as int?)?.toString() ??
-                        c['slug'] as String? ??
-                        '',
+                    (c['id'] as int?)?.toString() ?? c['slug'] as String? ?? '',
                     c['name'] as String? ?? '',
                   ),
                 ),
@@ -301,33 +309,30 @@ class _SearchViewState extends State<_SearchView> {
                   return RefreshIndicator(
                     color: _primary,
                     onRefresh: () async {
-                      context.read<DiscoveryBloc>().add(const DiscoveryFetched());
-                      await context
-                          .read<DiscoveryBloc>()
-                          .stream
-                          .firstWhere(
-                            (s) =>
-                                s is DiscoveryLoaded ||
-                                s is DiscoveryFailure,
-                          );
+                      context.read<DiscoveryBloc>().add(
+                        const DiscoveryFetched(),
+                      );
+                      await context.read<DiscoveryBloc>().stream.firstWhere(
+                        (s) => s is DiscoveryLoaded || s is DiscoveryFailure,
+                      );
                     },
                     child: NotificationListener<ScrollNotification>(
                       onNotification: (n) {
                         if (n is ScrollEndNotification &&
                             n.metrics.pixels >=
                                 n.metrics.maxScrollExtent - 200) {
-                          context
-                              .read<DiscoveryBloc>()
-                              .add(const DiscoveryNextPageFetched());
+                          context.read<DiscoveryBloc>().add(
+                            const DiscoveryNextPageFetched(),
+                          );
                         }
                         return false;
                       },
                       child: ListView.separated(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
-                        itemCount: state.talents.length +
+                        itemCount:
+                            state.talents.length +
                             (state is DiscoveryLoadingMore ? 1 : 0),
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 8),
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, i) {
                           if (i >= state.talents.length) {
                             return const Padding(
@@ -342,8 +347,7 @@ class _SearchViewState extends State<_SearchView> {
                           }
                           final talent = state.talents[i];
                           final attrs =
-                              talent['attributes']
-                                  as Map<String, dynamic>? ??
+                              talent['attributes'] as Map<String, dynamic>? ??
                               talent;
                           return _SearchTalentCard(
                             talent: talent,
@@ -458,8 +462,7 @@ class _SearchTalentCard extends StatelessWidget {
     final stageName = attrs['stage_name'] as String? ?? 'Talent';
     final photoUrl = attrs['photo_url'] as String? ?? '';
     final cachetAmount = attrs['cachet_amount'] as int? ?? 0;
-    final averageRating =
-        double.tryParse('${attrs['average_rating']}') ?? 0.0;
+    final averageRating = double.tryParse('${attrs['average_rating']}') ?? 0.0;
     final isVerified = attrs['is_verified'] as bool? ?? false;
     final category = attrs['category'] as Map<String, dynamic>?;
     final categoryName = category?['name'] as String? ?? '';
@@ -485,8 +488,7 @@ class _SearchTalentCard extends StatelessWidget {
                     ? CachedNetworkImage(
                         imageUrl: photoUrl,
                         fit: BoxFit.cover,
-                        placeholder: (_, __) =>
-                            Container(color: _border),
+                        placeholder: (_, __) => Container(color: _border),
                         errorWidget: (_, __, ___) => Container(
                           color: _border,
                           child: const Icon(
@@ -497,8 +499,7 @@ class _SearchTalentCard extends StatelessWidget {
                       )
                     : Container(
                         color: _border,
-                        child:
-                            const Icon(Icons.person, color: _mutedFg),
+                        child: const Icon(Icons.person, color: _mutedFg),
                       ),
               ),
             ),

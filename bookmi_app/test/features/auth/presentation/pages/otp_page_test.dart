@@ -8,8 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState>
-    implements AuthBloc {}
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 Widget buildSubject(AuthBloc bloc, {String phone = '+2250701020304'}) {
   return MaterialApp(
@@ -112,8 +111,9 @@ void main() {
       );
     });
 
-    testWidgets('resend button dispatches AuthOtpResendRequested',
-        (tester) async {
+    testWidgets('resend button dispatches AuthOtpResendRequested', (
+      tester,
+    ) async {
       await tester.pumpWidget(buildSubject(mockAuthBloc));
       await tester.pump();
 

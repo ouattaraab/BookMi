@@ -18,8 +18,7 @@ import 'package:mocktail/mocktail.dart';
 // Mocks
 // ---------------------------------------------------------------------------
 
-class MockAuthBloc extends MockBloc<AuthEvent, AuthState>
-    implements AuthBloc {}
+class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {}
 
 class MockGoRouter extends Mock implements GoRouter {}
 
@@ -215,30 +214,32 @@ void main() {
   // 4. Submit dispatches AuthLoginSubmitted
   // =========================================================================
   group('submit', () {
-    testWidgets('dispatches AuthLoginSubmitted with trimmed email and password',
-        (tester) async {
-      await tester.pumpWidget(_buildSubject(mockBloc));
+    testWidgets(
+      'dispatches AuthLoginSubmitted with trimmed email and password',
+      (tester) async {
+        await tester.pumpWidget(_buildSubject(mockBloc));
 
-      // Fill in fields (email has leading/trailing spaces to verify trim).
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        '  $_testEmail  ',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        _testPassword,
-      );
+        // Fill in fields (email has leading/trailing spaces to verify trim).
+        await tester.enterText(
+          find.byType(TextFormField).at(0),
+          '  $_testEmail  ',
+        );
+        await tester.enterText(
+          find.byType(TextFormField).at(1),
+          _testPassword,
+        );
 
-      await tester.tap(find.text('Se connecter'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Se connecter'));
+        await tester.pumpAndSettle();
 
-      final captured = verify(() => mockBloc.add(captureAny())).captured;
-      expect(captured, hasLength(1));
+        final captured = verify(() => mockBloc.add(captureAny())).captured;
+        expect(captured, hasLength(1));
 
-      final event = captured.first as AuthLoginSubmitted;
-      expect(event.email, equals(_testEmail));
-      expect(event.password, equals(_testPassword));
-    });
+        final event = captured.first as AuthLoginSubmitted;
+        expect(event.email, equals(_testEmail));
+        expect(event.password, equals(_testPassword));
+      },
+    );
 
     testWidgets('does not dispatch when form is invalid', (tester) async {
       await tester.pumpWidget(_buildSubject(mockBloc));
@@ -255,8 +256,9 @@ void main() {
   // 5. BlocListener – error SnackBar on AuthFailure
   // =========================================================================
   group('BlocListener error handling', () {
-    testWidgets('shows SnackBar with error message on AuthFailure',
-        (tester) async {
+    testWidgets('shows SnackBar with error message on AuthFailure', (
+      tester,
+    ) async {
       final controller = StreamController<AuthState>();
       addTearDown(controller.close);
 
@@ -310,8 +312,9 @@ void main() {
       verify(() => mockRouter.go(RoutePaths.home)).called(1);
     });
 
-    testWidgets('navigates to OTP on AUTH_PHONE_NOT_VERIFIED failure',
-        (tester) async {
+    testWidgets('navigates to OTP on AUTH_PHONE_NOT_VERIFIED failure', (
+      tester,
+    ) async {
       final mockRouter = MockGoRouter();
       final controller = StreamController<AuthState>();
       addTearDown(controller.close);
@@ -343,8 +346,9 @@ void main() {
   // 7. Loading state
   // =========================================================================
   group('loading state', () {
-    testWidgets('shows CircularProgressIndicator when state is AuthLoading',
-        (tester) async {
+    testWidgets('shows CircularProgressIndicator when state is AuthLoading', (
+      tester,
+    ) async {
       when(() => mockBloc.state).thenReturn(const AuthLoading());
       whenListen(
         mockBloc,
@@ -359,8 +363,9 @@ void main() {
       expect(find.text('Se connecter'), findsNothing);
     });
 
-    testWidgets('does not show spinner when state is AuthInitial',
-        (tester) async {
+    testWidgets('does not show spinner when state is AuthInitial', (
+      tester,
+    ) async {
       await tester.pumpWidget(_buildSubject(mockBloc));
 
       expect(find.byType(CircularProgressIndicator), findsNothing);

@@ -42,9 +42,10 @@ String _emojiForSlug(String slug) {
 
 String _formatCachet(int amount) {
   // cachet_amount is stored in FCFA directly (no centimes conversion needed).
-  return NumberFormat('#,###', 'fr_FR')
-          .format(amount)
-          .replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F') +
+  return NumberFormat(
+        '#,###',
+        'fr_FR',
+      ).format(amount).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F') +
       ' FCFA';
 }
 
@@ -76,10 +77,9 @@ class _HomePageState extends State<HomePage> {
     final bloc = context.read<DiscoveryBloc>();
     final currentState = bloc.state;
     // Preserve any active search query when changing category.
-    final currentQuery =
-        currentState is DiscoveryLoaded
-            ? currentState.activeFilters['q'] as String? ?? ''
-            : '';
+    final currentQuery = currentState is DiscoveryLoaded
+        ? currentState.activeFilters['q'] as String? ?? ''
+        : '';
 
     if (key.isEmpty) {
       if (currentQuery.isNotEmpty) {
@@ -129,10 +129,9 @@ class _HomePageState extends State<HomePage> {
                 return prevCats != currCats;
               },
               builder: (context, state) {
-                final categories =
-                    state is DiscoveryLoaded
-                        ? state.categories
-                        : <Map<String, dynamic>>[];
+                final categories = state is DiscoveryLoaded
+                    ? state.categories
+                    : <Map<String, dynamic>>[];
                 return _CategoryBar(
                   categories: categories,
                   selected: _selectedCategory,
@@ -154,18 +153,17 @@ class _HomePageState extends State<HomePage> {
             physics: const AlwaysScrollableScrollPhysics(),
             child: BlocBuilder<DiscoveryBloc, DiscoveryState>(
               builder: (context, state) {
-                final talents =
-                    state is DiscoveryLoaded
-                        ? state.talents
-                        : <Map<String, dynamic>>[];
-                final categories =
-                    state is DiscoveryLoaded
-                        ? state.categories
-                        : <Map<String, dynamic>>[];
+                final talents = state is DiscoveryLoaded
+                    ? state.talents
+                    : <Map<String, dynamic>>[];
+                final categories = state is DiscoveryLoaded
+                    ? state.categories
+                    : <Map<String, dynamic>>[];
                 final isLoading =
                     state is DiscoveryLoading || state is DiscoveryInitial;
-                final eventDate =
-                    state is DiscoveryLoaded ? state.eventDate : null;
+                final eventDate = state is DiscoveryLoaded
+                    ? state.eventDate
+                    : null;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,8 +173,7 @@ class _HomePageState extends State<HomePage> {
                         if (profileState is! ProfileLoaded) {
                           return const SizedBox.shrink();
                         }
-                        final pending =
-                            profileState.stats.pendingBookingCount;
+                        final pending = profileState.stats.pendingBookingCount;
                         if (!profileState.stats.isTalent || pending == 0) {
                           return const SizedBox.shrink();
                         }
@@ -198,8 +195,9 @@ class _HomePageState extends State<HomePage> {
                               borderRadius: BorderRadius.circular(14),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF2196F3)
-                                      .withValues(alpha: 0.35),
+                                  color: const Color(
+                                    0xFF2196F3,
+                                  ).withValues(alpha: 0.35),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -211,8 +209,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 36,
                                   height: 36,
                                   decoration: BoxDecoration(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: const Icon(
@@ -239,8 +236,9 @@ class _HomePageState extends State<HomePage> {
                                         'Accepter ou refuser maintenant',
                                         style: GoogleFonts.manrope(
                                           fontSize: 12,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.85),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.85,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -342,7 +340,8 @@ class _HomeHeader extends StatelessWidget {
                           ? profileState.stats.unreadNotificationCount
                           : 0;
                       return GestureDetector(
-                        onTap: () => context.pushNamed(RouteNames.notifications),
+                        onTap: () =>
+                            context.pushNamed(RouteNames.notifications),
                         child: Stack(
                           clipBehavior: Clip.none,
                           children: [
@@ -591,8 +590,9 @@ class _HeroSearchBarState extends State<_HeroSearchBar> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF2196F3)
-                                  .withValues(alpha: 0.4),
+                              color: const Color(
+                                0xFF2196F3,
+                              ).withValues(alpha: 0.4),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -635,7 +635,8 @@ class _HeroSearchBarState extends State<_HeroSearchBar> {
             separatorBuilder: (_, __) => const SizedBox(width: 8),
             itemBuilder: (context, i) {
               final (slug, label, emoji) = _quickLinks[i];
-              final isActive = _queryController.text.toLowerCase() == label.toLowerCase() ||
+              final isActive =
+                  _queryController.text.toLowerCase() == label.toLowerCase() ||
                   _queryController.text.toLowerCase() == slug;
               return GestureDetector(
                 onTap: () => setState(() => _queryController.text = label),
@@ -701,10 +702,12 @@ class _CategoryBar extends StatelessWidget {
     // Key is the category ID (as string) so the filter sends category_id (int).
     final items = <(String key, String label)>[
       ('', 'Tout'),
-      ...categories.map((c) => (
-        (c['id'] as int?)?.toString() ?? c['slug'] as String? ?? '',
-        c['name'] as String? ?? '',
-      )),
+      ...categories.map(
+        (c) => (
+          (c['id'] as int?)?.toString() ?? c['slug'] as String? ?? '',
+          c['name'] as String? ?? '',
+        ),
+      ),
     ];
 
     return Container(
@@ -729,28 +732,24 @@ class _CategoryBar extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color:
-                      isActive
-                          ? _primary
-                          : Colors.white.withValues(alpha: 0.1),
+                  color: isActive
+                      ? _primary
+                      : Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color:
-                        isActive
-                            ? _primary
-                            : Colors.white.withValues(alpha: 0.15),
+                    color: isActive
+                        ? _primary
+                        : Colors.white.withValues(alpha: 0.15),
                   ),
                 ),
                 child: Text(
                   label,
                   style: GoogleFonts.manrope(
                     fontSize: 13,
-                    fontWeight:
-                        isActive ? FontWeight.w600 : FontWeight.w400,
-                    color:
-                        isActive
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.7),
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    color: isActive
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -809,46 +808,38 @@ class _FeaturedSection extends StatelessWidget {
           child: isLoading
               ? _buildSkeletonList()
               : talents.isEmpty
-                  ? _buildEmpty()
-                  : ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: talents.take(10).length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 12),
-                      itemBuilder: (context, i) {
-                        final talent = talents[i];
-                        final attrs =
-                            talent['attributes'] as Map<String, dynamic>? ??
-                            talent;
-                        final category =
-                            attrs['category'] as Map<String, dynamic>?;
-                        final categorySlug = category?['slug'] as String?;
-                        return SizedBox(
-                          // width = height × aspect-ratio (0.72) to match TalentGrid
-                          width: 280 * 0.72,
-                          child: TalentCard(
-                            id: talent['id'] as int,
-                            stageName:
-                                attrs['stage_name'] as String? ?? 'Talent',
-                            categoryName:
-                                category?['name'] as String? ?? '',
-                            categoryColor:
-                                BookmiColors.categoryColor(categorySlug),
-                            city: attrs['city'] as String? ?? '',
-                            cachetAmount:
-                                attrs['cachet_amount'] as int? ?? 0,
-                            averageRating: double.tryParse(
-                                    '${attrs['average_rating']}') ??
-                                0.0,
-                            isVerified:
-                                attrs['is_verified'] as bool? ?? false,
-                            photoUrl:
-                                attrs['photo_url'] as String? ?? '',
-                            onTap: () => onTalentTap(talent),
-                          ),
-                        );
-                      },
-                    ),
+              ? _buildEmpty()
+              : ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: talents.take(10).length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, i) {
+                    final talent = talents[i];
+                    final attrs =
+                        talent['attributes'] as Map<String, dynamic>? ?? talent;
+                    final category = attrs['category'] as Map<String, dynamic>?;
+                    final categorySlug = category?['slug'] as String?;
+                    return SizedBox(
+                      // width = height × aspect-ratio (0.72) to match TalentGrid
+                      width: 280 * 0.72,
+                      child: TalentCard(
+                        id: talent['id'] as int,
+                        stageName: attrs['stage_name'] as String? ?? 'Talent',
+                        categoryName: category?['name'] as String? ?? '',
+                        categoryColor: BookmiColors.categoryColor(categorySlug),
+                        city: attrs['city'] as String? ?? '',
+                        cachetAmount: attrs['cachet_amount'] as int? ?? 0,
+                        averageRating:
+                            double.tryParse('${attrs['average_rating']}') ??
+                            0.0,
+                        isVerified: attrs['is_verified'] as bool? ?? false,
+                        photoUrl: attrs['photo_url'] as String? ?? '',
+                        onTap: () => onTalentTap(talent),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );
@@ -1091,8 +1082,7 @@ class _NearbyTalentCard extends StatelessWidget {
     final stageName = attrs['stage_name'] as String? ?? 'Talent';
     final photoUrl = attrs['photo_url'] as String? ?? '';
     final cachetAmount = attrs['cachet_amount'] as int? ?? 0;
-    final averageRating =
-        double.tryParse('${attrs['average_rating']}') ?? 0.0;
+    final averageRating = double.tryParse('${attrs['average_rating']}') ?? 0.0;
     final isVerified = attrs['is_verified'] as bool? ?? false;
     final category = attrs['category'] as Map<String, dynamic>?;
     final categoryName = category?['name'] as String? ?? '';
@@ -1100,10 +1090,9 @@ class _NearbyTalentCard extends StatelessWidget {
 
     // Availability: present only when event_date was sent in the request
     final availabilityRaw = attrs['is_available'];
-    final bool? isAvailable =
-        eventDate != null && availabilityRaw != null
-            ? availabilityRaw as bool?
-            : null;
+    final bool? isAvailable = eventDate != null && availabilityRaw != null
+        ? availabilityRaw as bool?
+        : null;
 
     return GestureDetector(
       onTap: onTap,
@@ -1135,10 +1124,26 @@ class _NearbyTalentCard extends StatelessWidget {
                         child: ColorFiltered(
                           colorFilter: isAvailable == false
                               ? const ColorFilter.matrix([
-                                  0.2, 0, 0, 0, 0,
-                                  0, 0.2, 0, 0, 0,
-                                  0, 0, 0.2, 0, 0,
-                                  0, 0, 0, 1, 0,
+                                  0.2,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0.2,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0.2,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  0,
+                                  1,
+                                  0,
                                 ])
                               : const ColorFilter.mode(
                                   Colors.transparent,
@@ -1228,17 +1233,21 @@ class _NearbyTalentCard extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: isAvailable
-                                    ? const Color(0xFF00C853)
-                                        .withValues(alpha: 0.15)
-                                    : const Color(0xFFEF4444)
-                                        .withValues(alpha: 0.12),
+                                    ? const Color(
+                                        0xFF00C853,
+                                      ).withValues(alpha: 0.15)
+                                    : const Color(
+                                        0xFFEF4444,
+                                      ).withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
                                   color: isAvailable
-                                      ? const Color(0xFF00C853)
-                                          .withValues(alpha: 0.4)
-                                      : const Color(0xFFEF4444)
-                                          .withValues(alpha: 0.3),
+                                      ? const Color(
+                                          0xFF00C853,
+                                        ).withValues(alpha: 0.4)
+                                      : const Color(
+                                          0xFFEF4444,
+                                        ).withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Text(
@@ -1311,9 +1320,7 @@ class _NearbyTalentCard extends StatelessWidget {
                       style: GoogleFonts.manrope(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: isAvailable == false
-                            ? _mutedFg
-                            : _primary,
+                        color: isAvailable == false ? _mutedFg : _primary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -1379,8 +1386,7 @@ class _NotifyAvailabilityButton extends StatefulWidget {
       _NotifyAvailabilityButtonState();
 }
 
-class _NotifyAvailabilityButtonState
-    extends State<_NotifyAvailabilityButton> {
+class _NotifyAvailabilityButtonState extends State<_NotifyAvailabilityButton> {
   bool _requested = false;
   bool _loading = false;
 
@@ -1388,8 +1394,8 @@ class _NotifyAvailabilityButtonState
     if (_requested || _loading) return;
     setState(() => _loading = true);
 
-    final talentId = widget.talent['id'] as int? ??
-        (widget.attrs['id'] as int? ?? 0);
+    final talentId =
+        widget.talent['id'] as int? ?? (widget.attrs['id'] as int? ?? 0);
     final dateStr =
         '${widget.eventDate.year}-${widget.eventDate.month.toString().padLeft(2, '0')}-${widget.eventDate.day.toString().padLeft(2, '0')}';
 

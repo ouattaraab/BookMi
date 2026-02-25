@@ -204,7 +204,8 @@ class _ConversationsList extends StatelessWidget {
         c.lastMessageAt ?? DateTime(2000),
         _DismissibleTile(
           key: ValueKey('conv_${c.id}'),
-          onDismissed: () => context.read<MessagingCubit>().deleteConversation(c.id),
+          onDismissed: () =>
+              context.read<MessagingCubit>().deleteConversation(c.id),
           child: _ConversationTile(conversation: c),
         ),
       ));
@@ -214,7 +215,8 @@ class _ConversationsList extends StatelessWidget {
         b.createdAt,
         _DismissibleTile(
           key: ValueKey('bcast_${b.id}'),
-          onDismissed: () => context.read<MessagingCubit>().removeBroadcast(b.id),
+          onDismissed: () =>
+              context.read<MessagingCubit>().removeBroadcast(b.id),
           child: _AdminBroadcastTile(broadcast: b),
         ),
       ));
@@ -236,7 +238,8 @@ class _ConversationsList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: 5,
-      separatorBuilder: (_, __) => const Divider(color: Color(0x0DFFFFFF), height: 1),
+      separatorBuilder: (_, __) =>
+          const Divider(color: Color(0x0DFFFFFF), height: 1),
       itemBuilder: (_, __) => Container(
         height: 82,
         margin: const EdgeInsets.symmetric(vertical: 0),
@@ -290,7 +293,8 @@ class _ConversationsList extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             TextButton(
-              onPressed: () => context.read<MessagingCubit>().loadConversations(),
+              onPressed: () =>
+                  context.read<MessagingCubit>().loadConversations(),
               child: const Text('Réessayer'),
             ),
           ],
@@ -382,7 +386,9 @@ class _ConversationTile extends StatelessWidget {
     if (msg == null) return 'Appuyez pour voir les échanges';
     if (msg.type == 'image') return '📷 Photo';
     if (msg.type == 'video') return '🎥 Vidéo';
-    return msg.content.isNotEmpty ? msg.content : 'Appuyez pour voir les échanges';
+    return msg.content.isNotEmpty
+        ? msg.content
+        : 'Appuyez pour voir les échanges';
   }
 
   String get _timeLabel {
@@ -432,7 +438,9 @@ class _ConversationTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: const BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Color(0x0DFFFFFF)), // rgba(255,255,255,0.05)
+            bottom: BorderSide(
+              color: Color(0x0DFFFFFF),
+            ), // rgba(255,255,255,0.05)
           ),
         ),
         child: Row(
@@ -657,8 +665,18 @@ class _ConversationTile extends StatelessWidget {
     final dt = DateTime.tryParse(isoDate);
     if (dt == null) return isoDate;
     const months = [
-      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
-      'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc',
+      'Jan',
+      'Fév',
+      'Mar',
+      'Avr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Aoû',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Déc',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }

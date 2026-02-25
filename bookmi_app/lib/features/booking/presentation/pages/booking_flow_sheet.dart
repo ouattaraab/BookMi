@@ -9,12 +9,9 @@ import 'package:bookmi_app/features/booking/data/repositories/booking_repository
 import 'package:bookmi_app/features/booking/presentation/widgets/step1_package_selection.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step2_date_location.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step3_recap.dart';
-import 'package:bookmi_app/features/booking/presentation/widgets/step4_payment.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/stepper_progress.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:paystack_flutter_sdk/paystack_flutter_sdk.dart';
 
 /// Opens the booking flow as a modal bottom sheet.
 ///
@@ -25,7 +22,6 @@ class BookingFlowSheet extends StatefulWidget {
     required this.talentStageName,
     required this.servicePackages,
     required this.enableExpress,
-    required this.paystackPublicKey,
     super.key,
   });
 
@@ -33,7 +29,6 @@ class BookingFlowSheet extends StatefulWidget {
   final String talentStageName;
   final List<Map<String, dynamic>> servicePackages;
   final bool enableExpress;
-  final String paystackPublicKey;
 
   /// Convenience helper — shows the booking flow bottom sheet.
   static Future<void> show(
@@ -43,7 +38,6 @@ class BookingFlowSheet extends StatefulWidget {
     required String talentStageName,
     required List<Map<String, dynamic>> servicePackages,
     required bool enableExpress,
-    required String paystackPublicKey,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -56,7 +50,6 @@ class BookingFlowSheet extends StatefulWidget {
           talentStageName: talentStageName,
           servicePackages: servicePackages,
           enableExpress: enableExpress,
-          paystackPublicKey: paystackPublicKey,
         ),
       ),
     );
@@ -68,7 +61,7 @@ class BookingFlowSheet extends StatefulWidget {
 
 class _BookingFlowSheetState extends State<BookingFlowSheet> {
   int _currentStep = 0;
-  static const int _totalSteps = 4;
+  static const int _totalSteps = 3;
 
   // Step 1
   int? _selectedPackageId;
@@ -82,10 +75,6 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   // Step 3
   bool _isExpress = false;
   String _message = '';
-
-  // Step 4 — Payment
-  int? _createdBookingId;
-  final _paystack = Paystack();
 
   // Computed devis (set after step 1 selection)
   int get _cachetAmount {
@@ -102,10 +91,21 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   String get _formattedDate {
     if (_selectedDate == null) return '';
     const months = [
-      'jan', 'fév', 'mar', 'avr', 'mai', 'juin',
-      'juil', 'aoû', 'sep', 'oct', 'nov', 'déc',
+      'jan',
+      'fév',
+      'mar',
+      'avr',
+      'mai',
+      'juin',
+      'juil',
+      'aoû',
+      'sep',
+      'oct',
+      'nov',
+      'déc',
     ];
-    final datePart = '${_selectedDate!.day} ${months[_selectedDate!.month - 1]}. '
+    final datePart =
+        '${_selectedDate!.day} ${months[_selectedDate!.month - 1]}. '
         '${_selectedDate!.year}';
     if (_selectedTime == null) return datePart;
     final h = _selectedTime!.hour.toString().padLeft(2, '0');
@@ -116,9 +116,11 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   bool get _canProceed {
     return switch (_currentStep) {
       0 => _selectedPackageId != null,
-      1 => _selectedDate != null && _selectedTime != null && _location.trim().isNotEmpty,
+      1 =>
+        _selectedDate != null &&
+            _selectedTime != null &&
+            _location.trim().isNotEmpty,
       2 => true,
-      3 => true,
       _ => false,
     };
   }
@@ -130,10 +132,8 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       case 1:
         setState(() => _currentStep++);
       case 2:
-        // Submit booking request — listener advances to step 3 on success
+        // Submit booking request — listener closes sheet on success
         _submit();
-      case 3:
-        _pay();
     }
   }
 
@@ -142,59 +142,6 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       setState(() => _currentStep--);
     } else {
       Navigator.of(context).pop();
-    }
-  }
-
-  void _pay() {
-    if (_createdBookingId == null) return;
-    context.read<BookingFlowBloc>().add(
-      BookingFlowPaymentInitiated(bookingId: _createdBookingId!),
-    );
-  }
-
-  Future<void> _launchPaystack(String accessCode) async {
-    try {
-      await _paystack.initialize(widget.paystackPublicKey, false);
-      final response = await _paystack.launch(accessCode);
-      if (!mounted) return;
-
-      if (response.status == 'success') {
-        CelebrationOverlay.show(
-          context,
-          title: 'Paiement réussi !',
-          subtitle: 'Votre réservation a été confirmée. Vous recevrez un '
-              'récapitulatif par notification.',
-          onDismiss: () {
-            if (context.mounted) Navigator.of(context).pop();
-          },
-        );
-      } else if (response.status == 'cancelled') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Paiement annulé.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response.message.isNotEmpty
-                  ? response.message
-                  : 'Le paiement a échoué. Veuillez réessayer.',
-            ),
-            backgroundColor: BookmiColors.error,
-          ),
-        );
-      }
-    } on PlatformException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? 'Erreur Paystack inattendue.'),
-          backgroundColor: BookmiColors.error,
-        ),
-      );
     }
   }
 
@@ -231,14 +178,18 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     return BlocListener<BookingFlowBloc, BookingFlowState>(
       listener: (context, state) {
         if (state is BookingFlowSuccess) {
-          // Booking created — store ID and advance to payment step
-          setState(() {
-            _createdBookingId = state.booking.id;
-            _currentStep = 3;
-          });
-        } else if (state is BookingFlowPaystackReady) {
-          // Backend initialized a Paystack transaction — launch the SDK UI
-          _launchPaystack(state.accessCode);
+          // Booking request sent — show success overlay then close the sheet.
+          // The client will pay once the talent accepts.
+          CelebrationOverlay.show(
+            context,
+            title: 'Demande envoyée !',
+            subtitle:
+                'Le talent ${widget.talentStageName} va recevoir votre demande. '
+                'Vous serez notifié dès validation.',
+            onDismiss: () {
+              if (context.mounted) Navigator.of(context).pop();
+            },
+          );
         } else if (state is BookingFlowFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -278,9 +229,8 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
               ),
               child: Row(
                 children: [
-                  // Hide back button on payment step — booking already created,
-                  // going back would risk re-submitting it (H1-FIX).
-                  if (_currentStep > 0 && _currentStep < 3)
+                  // Show back button on steps 1 and 2 only
+                  if (_currentStep > 0)
                     IconButton(
                       icon: const Icon(
                         Icons.arrow_back_ios_new,
@@ -353,7 +303,6 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     0 => 'Choisir un package',
     1 => 'Date & lieu',
     2 => 'Récapitulatif',
-    3 => 'Paiement',
     _ => '',
   };
 
@@ -403,7 +352,6 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           );
         },
       ),
-      3 => Step4Payment(totalAmount: _totalAmount),
       _ => const SizedBox.shrink(),
     };
   }
@@ -428,12 +376,10 @@ class _BottomCta extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BookingFlowBloc, BookingFlowState>(
       builder: (context, state) {
-        final isSubmitting = state is BookingFlowSubmitting ||
-            state is BookingFlowPaymentSubmitting;
+        final isSubmitting = state is BookingFlowSubmitting;
         final isLastStep = currentStep == totalSteps - 1;
         final label = switch (currentStep) {
-          2 => 'Confirmer la réservation',
-          _ when isLastStep => 'Payer maintenant',
+          2 => 'Envoyer la réservation',
           _ => 'Continuer',
         };
 
@@ -448,9 +394,9 @@ class _BottomCta extends StatelessWidget {
             height: 52,
             decoration: BoxDecoration(
               gradient: canProceed && !isSubmitting
-                  ? (isLastStep || currentStep == 2
-                      ? BookmiColors.gradientCta
-                      : BookmiColors.gradientBrand)
+                  ? (isLastStep
+                        ? BookmiColors.gradientCta
+                        : BookmiColors.gradientBrand)
                   : null,
               color: canProceed && !isSubmitting
                   ? null

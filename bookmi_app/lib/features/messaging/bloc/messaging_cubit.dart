@@ -33,7 +33,8 @@ class MessagingCubit extends Cubit<MessagingState> {
         emit(MessagingError(message));
         return;
       case ApiSuccess(:final data):
-        final broadcasts = broadResult is ApiSuccess<List<PushNotificationModel>>
+        final broadcasts =
+            broadResult is ApiSuccess<List<PushNotificationModel>>
             ? broadResult.data
             : <PushNotificationModel>[];
         final loaded = ConversationsLoaded(
@@ -63,14 +64,26 @@ class MessagingCubit extends Cubit<MessagingState> {
   /// Send a text message in a conversation.
   Future<void> sendMessage(int conversationId, String content) async {
     final currentMessages = _currentMessages();
-    emit(MessageSending(conversationId: conversationId, messages: currentMessages));
+    emit(
+      MessageSending(conversationId: conversationId, messages: currentMessages),
+    );
 
     switch (await _repository.sendMessage(conversationId, content: content)) {
       case ApiFailure(:final message):
-        emit(MessagesLoaded(conversationId: conversationId, messages: currentMessages));
+        emit(
+          MessagesLoaded(
+            conversationId: conversationId,
+            messages: currentMessages,
+          ),
+        );
         addError(Exception(message));
       case ApiSuccess(:final data):
-        emit(MessagesLoaded(conversationId: conversationId, messages: [...currentMessages, data]));
+        emit(
+          MessagesLoaded(
+            conversationId: conversationId,
+            messages: [...currentMessages, data],
+          ),
+        );
     }
   }
 
@@ -82,7 +95,9 @@ class MessagingCubit extends Cubit<MessagingState> {
     String caption = '',
   }) async {
     final currentMessages = _currentMessages();
-    emit(MessageSending(conversationId: conversationId, messages: currentMessages));
+    emit(
+      MessageSending(conversationId: conversationId, messages: currentMessages),
+    );
 
     switch (await _repository.sendMediaMessage(
       conversationId,
@@ -91,10 +106,20 @@ class MessagingCubit extends Cubit<MessagingState> {
       caption: caption,
     )) {
       case ApiFailure(:final message):
-        emit(MessagesLoaded(conversationId: conversationId, messages: currentMessages));
+        emit(
+          MessagesLoaded(
+            conversationId: conversationId,
+            messages: currentMessages,
+          ),
+        );
         addError(Exception(message));
       case ApiSuccess(:final data):
-        emit(MessagesLoaded(conversationId: conversationId, messages: [...currentMessages, data]));
+        emit(
+          MessagesLoaded(
+            conversationId: conversationId,
+            messages: [...currentMessages, data],
+          ),
+        );
     }
   }
 
@@ -111,7 +136,9 @@ class MessagingCubit extends Cubit<MessagingState> {
     final s = _conversationsCache ?? state;
     if (s is! ConversationsLoaded) return;
     final updated = ConversationsLoaded(
-      conversations: s.conversations.where((c) => c.id != conversationId).toList(),
+      conversations: s.conversations
+          .where((c) => c.id != conversationId)
+          .toList(),
       broadcasts: s.broadcasts,
     );
     _conversationsCache = updated;

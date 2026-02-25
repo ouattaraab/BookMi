@@ -20,8 +20,7 @@ class PortfolioManagerPage extends StatefulWidget {
   final ProfileRepository repository;
 
   @override
-  State<PortfolioManagerPage> createState() =>
-      _PortfolioManagerPageState();
+  State<PortfolioManagerPage> createState() => _PortfolioManagerPageState();
 }
 
 class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
@@ -84,42 +83,44 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
               child: Text(
                 'Ajouter au portfolio',
                 style: GoogleFonts.plusJakartaSans(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    color: _secondary),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: _secondary,
+                ),
               ),
             ),
             const Divider(height: 16),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined,
-                  color: _primary),
-              title: Text('Photo depuis la galerie',
-                  style: GoogleFonts.manrope()),
-              onTap: () =>
-                  Navigator.of(ctx).pop(_MediaSource.imageGallery),
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: _primary,
+              ),
+              title: Text(
+                'Photo depuis la galerie',
+                style: GoogleFonts.manrope(),
+              ),
+              onTap: () => Navigator.of(ctx).pop(_MediaSource.imageGallery),
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined,
-                  color: _primary),
-              title: Text('Vidéo depuis la galerie',
-                  style: GoogleFonts.manrope()),
-              onTap: () =>
-                  Navigator.of(ctx).pop(_MediaSource.videoGallery),
+              leading: const Icon(Icons.videocam_outlined, color: _primary),
+              title: Text(
+                'Vidéo depuis la galerie',
+                style: GoogleFonts.manrope(),
+              ),
+              onTap: () => Navigator.of(ctx).pop(_MediaSource.videoGallery),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt_outlined,
-                  color: _primary),
-              title: Text('Prendre une photo',
-                  style: GoogleFonts.manrope()),
-              onTap: () =>
-                  Navigator.of(ctx).pop(_MediaSource.imageCamera),
+              leading: const Icon(Icons.camera_alt_outlined, color: _primary),
+              title: Text('Prendre une photo', style: GoogleFonts.manrope()),
+              onTap: () => Navigator.of(ctx).pop(_MediaSource.imageCamera),
             ),
             ListTile(
               leading: const Icon(Icons.videocam, color: _primary),
-              title: Text('Enregistrer une vidéo',
-                  style: GoogleFonts.manrope()),
-              onTap: () =>
-                  Navigator.of(ctx).pop(_MediaSource.videoCamera),
+              title: Text(
+                'Enregistrer une vidéo',
+                style: GoogleFonts.manrope(),
+              ),
+              onTap: () => Navigator.of(ctx).pop(_MediaSource.videoCamera),
             ),
             const SizedBox(height: 8),
           ],
@@ -135,10 +136,14 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
     switch (source) {
       case _MediaSource.imageGallery:
         picked = await picker.pickImage(
-            source: ImageSource.gallery, imageQuality: 85);
+          source: ImageSource.gallery,
+          imageQuality: 85,
+        );
       case _MediaSource.imageCamera:
         picked = await picker.pickImage(
-            source: ImageSource.camera, imageQuality: 85);
+          source: ImageSource.camera,
+          imageQuality: 85,
+        );
       case _MediaSource.videoGallery:
         picked = await picker.pickVideo(source: ImageSource.gallery);
       case _MediaSource.videoCamera:
@@ -156,7 +161,9 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
         title: Text(
           'Légende (optionnel)',
           style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w700, color: _secondary),
+            fontWeight: FontWeight.w700,
+            color: _secondary,
+          ),
         ),
         content: TextField(
           controller: captionController,
@@ -180,7 +187,9 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
             child: Text(
               'Ajouter',
               style: GoogleFonts.manrope(
-                  color: _primary, fontWeight: FontWeight.w600),
+                color: _primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -227,7 +236,9 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
         title: Text(
           'Supprimer cette photo ?',
           style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w700, color: _secondary),
+            fontWeight: FontWeight.w700,
+            color: _secondary,
+          ),
         ),
         content: Text(
           'Cette action est irréversible.',
@@ -243,7 +254,9 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
             child: Text(
               'Supprimer',
               style: GoogleFonts.manrope(
-                  color: _destructive, fontWeight: FontWeight.w600),
+                color: _destructive,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -255,9 +268,11 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
     if (!mounted) return;
     switch (result) {
       case ApiSuccess():
-        setState(() => _items.removeWhere(
-              (i) => (i['id'] as int?) == itemId,
-            ));
+        setState(
+          () => _items.removeWhere(
+            (i) => (i['id'] as int?) == itemId,
+          ),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Photo supprimée')),
         );
@@ -346,53 +361,57 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
         label: Text(
           _uploading ? 'Envoi...' : 'Ajouter un média',
           style: GoogleFonts.manrope(
-              color: const Color(0xFF0D1B38), fontWeight: FontWeight.w600),
+            color: const Color(0xFF0D1B38),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildError()
-              : _items.isEmpty
-                  ? _buildEmpty()
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1,
-                        ),
-                        itemCount: _items.length,
-                        itemBuilder: (context, index) {
-                          final item = _items[index];
-                          final id = item['id'] as int? ?? 0;
-                          final attrs = item['attributes'] as Map<String, dynamic>? ?? item;
-                          final mediaUrl = attrs['media_url'] as String? ??
-                              attrs['url'] as String? ?? '';
-                          final caption = attrs['caption'] as String? ?? '';
-                          final isApproved = attrs['is_approved'] as bool? ?? true;
-                          final status = isApproved ? 'approved' : 'pending';
-                          final mediaType = attrs['media_type'] as String? ?? 'image';
+          ? _buildError()
+          : _items.isEmpty
+          ? _buildEmpty()
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                ),
+                itemCount: _items.length,
+                itemBuilder: (context, index) {
+                  final item = _items[index];
+                  final id = item['id'] as int? ?? 0;
+                  final attrs =
+                      item['attributes'] as Map<String, dynamic>? ?? item;
+                  final mediaUrl =
+                      attrs['media_url'] as String? ??
+                      attrs['url'] as String? ??
+                      '';
+                  final caption = attrs['caption'] as String? ?? '';
+                  final isApproved = attrs['is_approved'] as bool? ?? true;
+                  final status = isApproved ? 'approved' : 'pending';
+                  final mediaType = attrs['media_type'] as String? ?? 'image';
 
-                          return _PortfolioItem(
-                            mediaUrl: mediaUrl,
-                            caption: caption,
-                            status: status,
-                            mediaType: mediaType,
-                            onDelete: () => _delete(id),
-                            onTap: () => _openItem(
-                              mediaUrl: mediaUrl,
-                              mediaType: mediaType,
-                              caption: caption,
-                            ),
-                          );
-                        },
-                      ),
+                  return _PortfolioItem(
+                    mediaUrl: mediaUrl,
+                    caption: caption,
+                    status: status,
+                    mediaType: mediaType,
+                    onDelete: () => _delete(id),
+                    onTap: () => _openItem(
+                      mediaUrl: mediaUrl,
+                      mediaType: mediaType,
+                      caption: caption,
                     ),
+                  );
+                },
+              ),
+            ),
     );
   }
 
@@ -401,14 +420,18 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_error!,
-              style: GoogleFonts.manrope(color: _mutedFg),
-              textAlign: TextAlign.center),
+          Text(
+            _error!,
+            style: GoogleFonts.manrope(color: _mutedFg),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: _load,
-            child: Text('Réessayer',
-                style: GoogleFonts.manrope(color: _primary)),
+            child: Text(
+              'Réessayer',
+              style: GoogleFonts.manrope(color: _primary),
+            ),
           ),
         ],
       ),
@@ -420,15 +443,19 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.photo_library_outlined,
-              size: 56, color: _mutedFg.withValues(alpha: 0.4)),
+          Icon(
+            Icons.photo_library_outlined,
+            size: 56,
+            color: _mutedFg.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
           Text(
             'Portfolio vide',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _secondary),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _secondary,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -473,144 +500,156 @@ class _PortfolioItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: isLink
-              ? _buildLinkTile()
-              : mediaUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: mediaUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) =>
-                          Container(color: _border),
-                      errorWidget: (_, __, ___) => Container(
-                        color: _border,
-                        child: const Icon(Icons.image_not_supported,
-                            color: _mutedFg),
-                      ),
-                    )
-                  : Container(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: isLink
+                ? _buildLinkTile()
+                : mediaUrl.isNotEmpty
+                ? CachedNetworkImage(
+                    imageUrl: mediaUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => Container(color: _border),
+                    errorWidget: (_, __, ___) => Container(
                       color: _border,
-                      child: const Icon(Icons.image, color: _mutedFg, size: 40),
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        color: _mutedFg,
+                      ),
                     ),
-        ),
-        // Video badge
-        if (isVideo)
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.65),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.play_circle_outline,
-                      size: 12, color: Colors.white),
-                  SizedBox(width: 3),
-                  Text('Vidéo',
+                  )
+                : Container(
+                    color: _border,
+                    child: const Icon(Icons.image, color: _mutedFg, size: 40),
+                  ),
+          ),
+          // Video badge
+          if (isVideo)
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.play_circle_outline,
+                      size: 12,
+                      color: Colors.white,
+                    ),
+                    SizedBox(width: 3),
+                    Text(
+                      'Vidéo',
                       style: TextStyle(
-                          fontSize: 9,
-                          color: const Color(0xFF0D1B38),
-                          fontWeight: FontWeight.w600)),
-                ],
+                        fontSize: 9,
+                        color: const Color(0xFF0D1B38),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        // Status chip
-        if (status != 'approved')
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: status == 'pending'
-                    ? Colors.orange
-                    : _destructive,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                status == 'pending' ? 'En attente' : 'Rejeté',
-                style: GoogleFonts.manrope(
+          // Status chip
+          if (status != 'approved')
+            Positioned(
+              top: 8,
+              left: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: status == 'pending' ? Colors.orange : _destructive,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  status == 'pending' ? 'En attente' : 'Rejeté',
+                  style: GoogleFonts.manrope(
                     fontSize: 9,
                     color: const Color(0xFF0D1B38),
-                    fontWeight: FontWeight.w600),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
             ),
-          ),
-        // Caption overlay
-        if (caption.isNotEmpty)
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(12),
-                bottomRight: Radius.circular(12),
+          // Caption overlay
+          if (caption.isNotEmpty)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
+                child: Container(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  padding: const EdgeInsets.all(6),
+                  child: Text(
+                    caption,
+                    style: GoogleFonts.manrope(
+                      fontSize: 10,
+                      color: Colors.white,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ),
+            ),
+          // Delete button — stops propagation to onTap
+          Positioned(
+            top: 6,
+            right: 6,
+            child: GestureDetector(
+              onTap: onDelete,
+              behavior: HitTestBehavior.opaque,
               child: Container(
-                color: Colors.black.withValues(alpha: 0.5),
-                padding: const EdgeInsets.all(6),
-                child: Text(
-                  caption,
-                  style: GoogleFonts.manrope(
-                      fontSize: 10, color: Colors.white),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.delete_outline,
+                  size: 16,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
-        // Delete button — stops propagation to onTap
-        Positioned(
-          top: 6,
-          right: 6,
-          child: GestureDetector(
-            onTap: onDelete,
-            behavior: HitTestBehavior.opaque,
-            child: Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.55),
-                shape: BoxShape.circle,
+          // Tap hint overlay (play icon for video/link)
+          if (mediaType == 'video' || mediaType == 'link')
+            Center(
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.45),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.play_arrow_rounded,
+                  size: 30,
+                  color: Colors.white,
+                ),
               ),
-              child: const Icon(Icons.delete_outline,
-                  size: 16, color: Colors.white),
             ),
-          ),
-        ),
-        // Tap hint overlay (play icon for video/link)
-        if (mediaType == 'video' || mediaType == 'link')
-          Center(
-            child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.45),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.play_arrow_rounded,
-                  size: 30, color: Colors.white),
-            ),
-          ),
-      ],
+        ],
       ),
     );
   }
 
   Widget _buildLinkTile() {
-    final isYoutube = mediaUrl.contains('youtube') ||
-        mediaUrl.contains('youtu.be');
+    final isYoutube =
+        mediaUrl.contains('youtube') || mediaUrl.contains('youtu.be');
     final isSoundcloud = mediaUrl.contains('soundcloud');
     final isDeezer = mediaUrl.contains('deezer');
 
@@ -745,7 +784,10 @@ class _FullScreenImageViewer extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                        Icons.close, color: const Color(0xFF0D1B38), size: 22),
+                      Icons.close,
+                      color: const Color(0xFF0D1B38),
+                      size: 22,
+                    ),
                   ),
                 ),
               ),

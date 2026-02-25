@@ -81,9 +81,7 @@ class GlassBottomNav extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              bookingsBadge > 99
-                                  ? '99+'
-                                  : '$bookingsBadge',
+                              bookingsBadge > 99 ? '99+' : '$bookingsBadge',
                               style: const TextStyle(
                                 fontSize: 9,
                                 fontWeight: FontWeight.w700,
@@ -100,8 +98,7 @@ class GlassBottomNav extends StatelessWidget {
                     item.label,
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight:
-                          isActive ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                       color: isActive
                           ? BookmiColors.brandElectricBlue
                           : Colors.white.withValues(alpha: 0.5),

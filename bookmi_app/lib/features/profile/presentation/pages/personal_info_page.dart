@@ -13,15 +13,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
 // ── Dark design tokens ────────────────────────────────────────────
-const _bg          = Color(0xFF112044);
-const _cardBg      = Color(0xFF0D1B38);
-const _primary     = Color(0xFF2196F3);
-const _accent      = Color(0xFF64B5F6);
-const _muted       = Color(0xFF94A3B8);
-const _border      = Color(0x1AFFFFFF);  // white 10%
-const _divider     = Color(0x0DFFFFFF);  // white 5%
-const _success     = Color(0xFF00C853);
-const _errorRed    = Color(0xFFFF1744);
+const _bg = Color(0xFF112044);
+const _cardBg = Color(0xFF0D1B38);
+const _primary = Color(0xFF2196F3);
+const _accent = Color(0xFF64B5F6);
+const _muted = Color(0xFF94A3B8);
+const _border = Color(0x1AFFFFFF); // white 10%
+const _divider = Color(0x0DFFFFFF); // white 5%
+const _success = Color(0xFF00C853);
+const _errorRed = Color(0xFFFF1744);
 
 class PersonalInfoPage extends StatefulWidget {
   const PersonalInfoPage({super.key});
@@ -31,14 +31,14 @@ class PersonalInfoPage extends StatefulWidget {
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  bool _isEditing    = false;
-  bool _isSaving     = false;
+  bool _isEditing = false;
+  bool _isSaving = false;
 
   late TextEditingController _firstNameCtrl;
   late TextEditingController _lastNameCtrl;
 
   File? _pendingAvatarFile;
-  bool  _deletingAvatar = false;
+  bool _deletingAvatar = false;
 
   @override
   void initState() {
@@ -46,7 +46,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     final authState = context.read<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     _firstNameCtrl = TextEditingController(text: user?.firstName ?? '');
-    _lastNameCtrl  = TextEditingController(text: user?.lastName  ?? '');
+    _lastNameCtrl = TextEditingController(text: user?.lastName ?? '');
   }
 
   @override
@@ -79,7 +79,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
           dialogBackgroundColor: _cardBg,
         ),
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           title: Text(
             'Supprimer la photo',
             style: GoogleFonts.nunito(
@@ -139,25 +141,28 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     if (_isSaving) return;
 
     final firstName = _firstNameCtrl.text.trim();
-    final lastName  = _lastNameCtrl.text.trim();
+    final lastName = _lastNameCtrl.text.trim();
 
     if (firstName.isEmpty || lastName.isEmpty) {
-      _showSnack('Le prénom et le nom ne peuvent pas être vides.', isError: true);
+      _showSnack(
+        'Le prénom et le nom ne peuvent pas être vides.',
+        isError: true,
+      );
       return;
     }
 
     setState(() => _isSaving = true);
 
-    final repo   = context.read<ProfileRepository>();
+    final repo = context.read<ProfileRepository>();
     final result = await repo.updateProfile(
-      firstName:   firstName,
-      lastName:    lastName,
-      avatarFile:  _pendingAvatarFile,
+      firstName: firstName,
+      lastName: lastName,
+      avatarFile: _pendingAvatarFile,
     );
 
     if (!mounted) return;
     setState(() {
-      _isSaving  = false;
+      _isSaving = false;
       _isEditing = false;
     });
 
@@ -166,9 +171,17 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
         final authState = context.read<AuthBloc>().state;
         if (authState is AuthAuthenticated) {
           final updatedUser = authState.user.copyWith(
-            firstName: (data['user'] as Map<String, dynamic>?)?['first_name'] as String? ?? firstName,
-            lastName:  (data['user'] as Map<String, dynamic>?)?['last_name']  as String? ?? lastName,
-            avatarUrl: (data['user'] as Map<String, dynamic>?)?['avatar_url'] as String?,
+            firstName:
+                (data['user'] as Map<String, dynamic>?)?['first_name']
+                    as String? ??
+                firstName,
+            lastName:
+                (data['user'] as Map<String, dynamic>?)?['last_name']
+                    as String? ??
+                lastName,
+            avatarUrl:
+                (data['user'] as Map<String, dynamic>?)?['avatar_url']
+                    as String?,
           );
           context.read<AuthBloc>().add(AuthProfileUpdated(updatedUser));
         }
@@ -183,10 +196,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     final authState = context.read<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     setState(() {
-      _isEditing         = false;
+      _isEditing = false;
       _pendingAvatarFile = null;
       _firstNameCtrl.text = user?.firstName ?? '';
-      _lastNameCtrl.text  = user?.lastName  ?? '';
+      _lastNameCtrl.text = user?.lastName ?? '';
     });
   }
 
@@ -327,7 +340,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                   children: [
                     // Glow haut
                     Positioned(
-                      top: -40, left: -20, right: -20,
+                      top: -40,
+                      left: -20,
+                      right: -20,
                       height: 280,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
@@ -346,8 +361,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                     ),
                     // Glow bas-gauche teal
                     Positioned(
-                      bottom: 0, left: -30,
-                      width: 220, height: 220,
+                      bottom: 0,
+                      left: -30,
+                      width: 220,
+                      height: 220,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
@@ -363,8 +380,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                     ),
                     // Glow bas-droite bleu
                     Positioned(
-                      bottom: 0, right: -30,
-                      width: 220, height: 220,
+                      bottom: 0,
+                      right: -30,
+                      width: 220,
+                      height: 220,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: RadialGradient(
@@ -475,7 +494,9 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                     ? null
                                     : [
                                         BoxShadow(
-                                          color: _primary.withValues(alpha: 0.4),
+                                          color: _primary.withValues(
+                                            alpha: 0.4,
+                                          ),
                                           blurRadius: 18,
                                           offset: const Offset(0, 6),
                                         ),
@@ -554,15 +575,15 @@ class _AvatarSection extends StatelessWidget {
   });
 
   final AuthUser user;
-  final File?    pendingAvatarFile;
-  final bool     isEditing;
-  final bool     deletingAvatar;
+  final File? pendingAvatarFile;
+  final bool isEditing;
+  final bool deletingAvatar;
   final VoidCallback onPickAvatar;
   final VoidCallback onDeleteAvatar;
 
   String get _initials =>
       '${user.firstName.isNotEmpty ? user.firstName[0] : ''}'
-      '${user.lastName.isNotEmpty  ? user.lastName[0]  : ''}'
+              '${user.lastName.isNotEmpty ? user.lastName[0] : ''}'
           .toUpperCase();
 
   @override
@@ -691,14 +712,16 @@ class _AvatarSection extends StatelessWidget {
     if (pendingAvatarFile != null) {
       return Image.file(
         pendingAvatarFile!,
-        width: 96, height: 96,
+        width: 96,
+        height: 96,
         fit: BoxFit.cover,
       );
     }
     if (user.avatarUrl != null) {
       return CachedNetworkImage(
         imageUrl: user.avatarUrl!,
-        width: 96, height: 96,
+        width: 96,
+        height: 96,
         fit: BoxFit.cover,
         errorWidget: (_, __, ___) => _buildInitials(),
       );
@@ -732,10 +755,10 @@ class _GhostButton extends StatelessWidget {
     this.isDestructive = false,
   });
 
-  final String   label;
+  final String label;
   final IconData icon;
   final VoidCallback onTap;
-  final bool     isDestructive;
+  final bool isDestructive;
 
   @override
   Widget build(BuildContext context) {
@@ -840,16 +863,16 @@ class _InfoRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.trailing,
-    this.isLast    = false,
+    this.isLast = false,
     this.isReadOnly = false,
     this.icon,
   });
 
-  final String   label;
-  final String   value;
-  final Widget?  trailing;
-  final bool     isLast;
-  final bool     isReadOnly;
+  final String label;
+  final String value;
+  final Widget? trailing;
+  final bool isLast;
+  final bool isReadOnly;
   final IconData? icon;
 
   @override
@@ -872,9 +895,7 @@ class _InfoRow extends StatelessWidget {
               label,
               style: GoogleFonts.manrope(
                 fontSize: 12,
-                color: isReadOnly
-                    ? _muted.withValues(alpha: 0.6)
-                    : _muted,
+                color: isReadOnly ? _muted.withValues(alpha: 0.6) : _muted,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -909,7 +930,7 @@ class _StatusChip extends StatelessWidget {
   const _StatusChip({required this.label, required this.color});
 
   final String label;
-  final Color  color;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {

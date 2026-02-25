@@ -74,7 +74,8 @@ final class EvaluationError extends EvaluationState {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is EvaluationError && message == other.message;
+      identical(this, other) ||
+      other is EvaluationError && message == other.message;
 
   @override
   int get hashCode => message.hashCode;

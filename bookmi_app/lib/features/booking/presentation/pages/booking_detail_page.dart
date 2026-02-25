@@ -210,8 +210,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                     valueColor: BookmiColors.brandBlueLight,
                   ),
                 ],
-                if (booking.message != null &&
-                    booking.message!.isNotEmpty) ...[
+                if (booking.message != null && booking.message!.isNotEmpty) ...[
                   const SizedBox(height: BookmiSpacing.spaceSm),
                   _DetailRow(
                     icon: Icons.chat_bubble_outline,
@@ -412,13 +411,15 @@ class _DevisRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fontSize = small ? 12.0 : 14.0;
-    final color =
-        small ? Colors.white.withValues(alpha: 0.6) : Colors.white;
+    final color = small ? Colors.white.withValues(alpha: 0.6) : Colors.white;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: fontSize, color: color)),
+        Text(
+          label,
+          style: TextStyle(fontSize: fontSize, color: color),
+        ),
         Text(
           value,
           style: TextStyle(
@@ -451,14 +452,14 @@ class _StatusCircle extends StatelessWidget {
   }
 
   static (IconData, Color) _iconAndColor(String status) => switch (status) {
-    'pending'             => (Icons.schedule, BookmiColors.warning),
-    'accepted'            => (Icons.verified_outlined, BookmiColors.brandBlueLight),
+    'pending' => (Icons.schedule, BookmiColors.warning),
+    'accepted' => (Icons.verified_outlined, BookmiColors.brandBlueLight),
     'paid' || 'confirmed' => (Icons.check_circle_outline, BookmiColors.success),
-    'completed'           => (Icons.star_outline, BookmiColors.brandBlueLight),
-    'cancelled'           => (Icons.cancel_outlined, BookmiColors.error),
-    'rejected'            => (Icons.thumb_down_outlined, BookmiColors.error),
-    'disputed'            => (Icons.report_problem_outlined, Colors.amber),
-    _                     => (Icons.receipt_long_outlined, Colors.white54),
+    'completed' => (Icons.star_outline, BookmiColors.brandBlueLight),
+    'cancelled' => (Icons.cancel_outlined, BookmiColors.error),
+    'rejected' => (Icons.thumb_down_outlined, BookmiColors.error),
+    'disputed' => (Icons.report_problem_outlined, Colors.amber),
+    _ => (Icons.receipt_long_outlined, Colors.white54),
   };
 }
 
@@ -488,14 +489,14 @@ class _StatusPill extends StatelessWidget {
   }
 
   static (String, Color) _labelAndColor(String status) => switch (status) {
-    'pending'             => ('En attente', BookmiColors.warning),
-    'accepted'            => ('Validée', BookmiColors.brandBlueLight),
+    'pending' => ('En attente', BookmiColors.warning),
+    'accepted' => ('Validée', BookmiColors.brandBlueLight),
     'paid' || 'confirmed' => ('Confirmée', BookmiColors.success),
-    'completed'           => ('Terminée', BookmiColors.brandBlueLight),
-    'cancelled'           => ('Annulée', BookmiColors.error),
-    'rejected'            => ('Rejetée', BookmiColors.error),
-    'disputed'            => ('Litige', Colors.amber),
-    _                     => (status, Colors.white54),
+    'completed' => ('Terminée', BookmiColors.brandBlueLight),
+    'cancelled' => ('Annulée', BookmiColors.error),
+    'rejected' => ('Rejetée', BookmiColors.error),
+    'disputed' => ('Litige', Colors.amber),
+    _ => (status, Colors.white54),
   };
 }
 
@@ -643,13 +644,37 @@ class _TimelineEntry extends StatelessWidget {
       return ('Demande envoyée', Icons.send_outlined, BookmiColors.warning);
     }
     return switch (toStatus) {
-      'accepted'  => ('Réservation validée', Icons.verified_outlined, BookmiColors.brandBlueLight),
-      'paid'      => ('Paiement effectué', Icons.payment_outlined, BookmiColors.success),
-      'confirmed' => ('Paiement confirmé', Icons.check_circle_outline, BookmiColors.success),
-      'completed' => ('Prestation terminée', Icons.star_outline, BookmiColors.brandBlueLight),
-      'cancelled' => ('Réservation annulée', Icons.cancel_outlined, BookmiColors.error),
-      'rejected'  => ('Demande rejetée', Icons.thumb_down_outlined, BookmiColors.error),
-      _           => (toStatus, Icons.info_outline, Colors.white54),
+      'accepted' => (
+        'Réservation validée',
+        Icons.verified_outlined,
+        BookmiColors.brandBlueLight,
+      ),
+      'paid' => (
+        'Paiement effectué',
+        Icons.payment_outlined,
+        BookmiColors.success,
+      ),
+      'confirmed' => (
+        'Paiement confirmé',
+        Icons.check_circle_outline,
+        BookmiColors.success,
+      ),
+      'completed' => (
+        'Prestation terminée',
+        Icons.star_outline,
+        BookmiColors.brandBlueLight,
+      ),
+      'cancelled' => (
+        'Réservation annulée',
+        Icons.cancel_outlined,
+        BookmiColors.error,
+      ),
+      'rejected' => (
+        'Demande rejetée',
+        Icons.thumb_down_outlined,
+        BookmiColors.error,
+      ),
+      _ => (toStatus, Icons.info_outline, Colors.white54),
     };
   }
 

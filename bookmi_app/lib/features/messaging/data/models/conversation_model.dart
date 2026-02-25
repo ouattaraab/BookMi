@@ -63,8 +63,9 @@ class ConversationModel {
       clientAvatarUrl: client?['avatar_url'] as String?,
       talentName: talent?['name'] as String?,
       talentAvatarUrl: talent?['avatar_url'] as String?,
-      latestMessage:
-          latestMsg != null ? MessageModel.fromJson(latestMsg) : null,
+      latestMessage: latestMsg != null
+          ? MessageModel.fromJson(latestMsg)
+          : null,
       booking: bookingJson != null ? BookingInfo.fromJson(bookingJson) : null,
       unreadCount: json['unread_count'] as int? ?? 0,
     );

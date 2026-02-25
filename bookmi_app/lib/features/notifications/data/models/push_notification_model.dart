@@ -27,7 +27,8 @@ class PushNotificationModel {
       readAt: attrs['read_at'] != null
           ? DateTime.tryParse(attrs['read_at'] as String)
           : null,
-      createdAt: DateTime.tryParse(attrs['created_at'] as String? ?? '') ??
+      createdAt:
+          DateTime.tryParse(attrs['created_at'] as String? ?? '') ??
           DateTime.now(),
     );
   }

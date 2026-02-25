@@ -145,8 +145,7 @@ class DiscoveryRepository {
       final error = errorData?['error'] as Map<String, dynamic>?;
       return ApiFailure(
         code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-        message:
-            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
       );
     }
   }

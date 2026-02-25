@@ -75,8 +75,8 @@ class _BookingsViewState extends State<_BookingsView>
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthBloc>().state;
-    final isTalent = authState is AuthAuthenticated &&
-        authState.roles.contains('talent');
+    final isTalent =
+        authState is AuthAuthenticated && authState.roles.contains('talent');
 
     // Pending count from ProfileBloc (available at shell level)
     int pendingCount = 0;
@@ -185,7 +185,9 @@ class _BookingsViewState extends State<_BookingsView>
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      pendingCount > 99 ? '99+' : '$pendingCount',
+                                      pendingCount > 99
+                                          ? '99+'
+                                          : '$pendingCount',
                                       style: const TextStyle(
                                         fontSize: 9,
                                         fontWeight: FontWeight.w700,
@@ -277,7 +279,8 @@ class _BookingsTab extends StatelessWidget {
               },
               child: ListView.separated(
                 padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
-                itemCount: state.bookings.length +
+                itemCount:
+                    state.bookings.length +
                     (state is BookingsListLoadingMore ? 1 : 0),
                 separatorBuilder: (_, __) =>
                     const SizedBox(height: BookmiSpacing.spaceSm),
@@ -412,7 +415,10 @@ class _BookingsTab extends StatelessWidget {
             SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
             ),
             SizedBox(width: 12),
             Text('Initialisation du paiement…'),
@@ -431,8 +437,9 @@ class _BookingsTab extends StatelessWidget {
       case ApiSuccess(:final data):
         // Extract authorization_url — TransactionResource places it directly under data.
         final txData = data['data'] as Map<String, dynamic>?;
-        final authUrl = txData?['authorization_url'] as String?
-            ?? data['authorization_url'] as String?;
+        final authUrl =
+            txData?['authorization_url'] as String? ??
+            data['authorization_url'] as String?;
 
         if (authUrl == null || authUrl.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -465,7 +472,9 @@ class _BookingsTab extends StatelessWidget {
 
         // Payment completed — webhook will update the booking status
         // asynchronously. Refresh the list so the user sees the change.
-        context.read<BookingsListBloc>().add(BookingsListFetched(status: status));
+        context.read<BookingsListBloc>().add(
+          BookingsListFetched(status: status),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Paiement effectué — mise à jour en cours…'),
@@ -487,7 +496,8 @@ class _BookingsTab extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
       itemCount: 4,
-      separatorBuilder: (_, __) => const SizedBox(height: BookmiSpacing.spaceSm),
+      separatorBuilder: (_, __) =>
+          const SizedBox(height: BookmiSpacing.spaceSm),
       itemBuilder: (_, __) => const BookingCardSkeleton(),
     );
   }

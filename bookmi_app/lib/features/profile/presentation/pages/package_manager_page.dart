@@ -76,7 +76,9 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
         title: Text(
           'Supprimer "$name" ?',
           style: GoogleFonts.plusJakartaSans(
-              fontWeight: FontWeight.w700, color: _secondary),
+            fontWeight: FontWeight.w700,
+            color: _secondary,
+          ),
         ),
         content: Text(
           'Cette action est irréversible.',
@@ -89,9 +91,13 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Supprimer',
-                style: GoogleFonts.manrope(
-                    color: _destructive, fontWeight: FontWeight.w600)),
+            child: Text(
+              'Supprimer',
+              style: GoogleFonts.manrope(
+                color: _destructive,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -102,9 +108,11 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
     if (!mounted) return;
     switch (result) {
       case ApiSuccess():
-        setState(() => _packages.removeWhere(
-              (p) => _getId(p) == id,
-            ));
+        setState(
+          () => _packages.removeWhere(
+            (p) => _getId(p) == id,
+          ),
+        );
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Package "$name" supprimé')),
         );
@@ -151,51 +159,46 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
         label: Text(
           'Nouveau package',
           style: GoogleFonts.manrope(
-              color: const Color(0xFF0D1B38), fontWeight: FontWeight.w600),
+            color: const Color(0xFF0D1B38),
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? _buildError()
-              : _packages.isEmpty
-                  ? _buildEmpty()
-                  : RefreshIndicator(
-                      onRefresh: _load,
-                      child: ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                        itemCount: _packages.length,
-                        separatorBuilder: (_, __) =>
-                            const SizedBox(height: 10),
-                        itemBuilder: (context, index) {
-                          final pkg = _packages[index];
-                          final attrs =
-                              pkg['attributes'] as Map<String, dynamic>? ??
-                                  pkg;
-                          final id = _getId(pkg);
-                          final name =
-                              attrs['name'] as String? ?? 'Package';
-                          final desc =
-                              attrs['description'] as String? ?? '';
-                          final cachet =
-                              (attrs['cachet_amount'] as num?)?.toInt() ?? 0;
-                          final duration =
-                              (attrs['duration_minutes'] as int?) ?? 0;
-                          final type =
-                              attrs['type'] as String? ?? 'standard';
+          ? _buildError()
+          : _packages.isEmpty
+          ? _buildEmpty()
+          : RefreshIndicator(
+              onRefresh: _load,
+              child: ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                itemCount: _packages.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final pkg = _packages[index];
+                  final attrs =
+                      pkg['attributes'] as Map<String, dynamic>? ?? pkg;
+                  final id = _getId(pkg);
+                  final name = attrs['name'] as String? ?? 'Package';
+                  final desc = attrs['description'] as String? ?? '';
+                  final cachet = (attrs['cachet_amount'] as num?)?.toInt() ?? 0;
+                  final duration = (attrs['duration_minutes'] as int?) ?? 0;
+                  final type = attrs['type'] as String? ?? 'standard';
 
-                          return _PackageCard(
-                            name: name,
-                            description: desc,
-                            cachetAmount: cachet,
-                            durationMinutes: duration,
-                            type: type,
-                            onEdit: () => _openForm(existing: pkg),
-                            onDelete: () => _delete(id, name),
-                          );
-                        },
-                      ),
-                    ),
+                  return _PackageCard(
+                    name: name,
+                    description: desc,
+                    cachetAmount: cachet,
+                    durationMinutes: duration,
+                    type: type,
+                    onEdit: () => _openForm(existing: pkg),
+                    onDelete: () => _delete(id, name),
+                  );
+                },
+              ),
+            ),
     );
   }
 
@@ -204,14 +207,18 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(_error!,
-              style: GoogleFonts.manrope(color: _mutedFg),
-              textAlign: TextAlign.center),
+          Text(
+            _error!,
+            style: GoogleFonts.manrope(color: _mutedFg),
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 12),
           TextButton(
             onPressed: _load,
-            child: Text('Réessayer',
-                style: GoogleFonts.manrope(color: _primary)),
+            child: Text(
+              'Réessayer',
+              style: GoogleFonts.manrope(color: _primary),
+            ),
           ),
         ],
       ),
@@ -223,15 +230,19 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.inventory_2_outlined,
-              size: 56, color: _mutedFg.withValues(alpha: 0.4)),
+          Icon(
+            Icons.inventory_2_outlined,
+            size: 56,
+            color: _mutedFg.withValues(alpha: 0.4),
+          ),
           const SizedBox(height: 12),
           Text(
             'Aucun package',
             style: GoogleFonts.plusJakartaSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: _secondary),
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: _secondary,
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -304,7 +315,9 @@ class _PackageCard extends StatelessWidget {
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: _primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -312,8 +325,10 @@ class _PackageCard extends StatelessWidget {
                   child: Text(
                     type,
                     style: GoogleFonts.manrope(
-                        fontSize: 10, color: _primary,
-                        fontWeight: FontWeight.w600),
+                      fontSize: 10,
+                      color: _primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
@@ -322,8 +337,7 @@ class _PackageCard extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 description,
-                style: GoogleFonts.manrope(
-                    fontSize: 12, color: _mutedFg),
+                style: GoogleFonts.manrope(fontSize: 12, color: _mutedFg),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -331,37 +345,42 @@ class _PackageCard extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                Icon(Icons.attach_money_outlined,
-                    size: 14, color: _success),
+                Icon(Icons.attach_money_outlined, size: 14, color: _success),
                 const SizedBox(width: 4),
                 Text(
                   '${fmt.format(cachetAmount)} FCFA',
                   style: GoogleFonts.manrope(
-                      fontSize: 13,
-                      color: _success,
-                      fontWeight: FontWeight.w700),
+                    fontSize: 13,
+                    color: _success,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Icon(Icons.schedule_outlined, size: 14, color: _mutedFg),
                 const SizedBox(width: 4),
                 Text(
                   durationStr,
-                  style: GoogleFonts.manrope(
-                      fontSize: 12, color: _mutedFg),
+                  style: GoogleFonts.manrope(fontSize: 12, color: _mutedFg),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: onEdit,
-                  icon: const Icon(Icons.edit_outlined,
-                      size: 18, color: _primary),
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: _primary,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
                 const SizedBox(width: 12),
                 IconButton(
                   onPressed: onDelete,
-                  icon: const Icon(Icons.delete_outline,
-                      size: 18, color: _destructive),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: _destructive,
+                  ),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),
@@ -402,17 +421,20 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
   @override
   void initState() {
     super.initState();
-    final attrs = widget.existing?['attributes'] as Map<String, dynamic>? ??
+    final attrs =
+        widget.existing?['attributes'] as Map<String, dynamic>? ??
         widget.existing ??
         {};
-    _nameCtrl = TextEditingController(
-        text: attrs['name'] as String? ?? '');
+    _nameCtrl = TextEditingController(text: attrs['name'] as String? ?? '');
     _descCtrl = TextEditingController(
-        text: attrs['description'] as String? ?? '');
+      text: attrs['description'] as String? ?? '',
+    );
     _cachetCtrl = TextEditingController(
-        text: attrs['cachet_amount']?.toString() ?? '');
+      text: attrs['cachet_amount']?.toString() ?? '',
+    );
     _durationCtrl = TextEditingController(
-        text: attrs['duration_minutes']?.toString() ?? '');
+      text: attrs['duration_minutes']?.toString() ?? '',
+    );
     _type = attrs['type'] as String? ?? 'standard';
     if (!_types.contains(_type)) _type = 'standard';
   }
@@ -440,8 +462,10 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
 
     ApiResult result;
     if (widget.existing != null) {
-      final id = (widget.existing!['id'] as int?) ??
-          ((widget.existing!['attributes'] as Map<String, dynamic>?)?['id'] as int?) ??
+      final id =
+          (widget.existing!['id'] as int?) ??
+          ((widget.existing!['attributes'] as Map<String, dynamic>?)?['id']
+              as int?) ??
           0;
       result = await widget.repository.updateServicePackage(id, data);
     } else {
@@ -534,8 +558,8 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
                       ],
                       validator: (v) =>
                           v == null || int.tryParse(v.trim()) == null
-                              ? 'Nombre valide requis'
-                              : null,
+                          ? 'Nombre valide requis'
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -550,8 +574,8 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
                       ],
                       validator: (v) =>
                           v == null || int.tryParse(v.trim()) == null
-                              ? 'Nombre valide requis'
-                              : null,
+                          ? 'Nombre valide requis'
+                          : null,
                     ),
                   ),
                 ],
@@ -560,9 +584,10 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
               Text(
                 'Type de package',
                 style: GoogleFonts.manrope(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: _secondary),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _secondary,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -575,14 +600,14 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected ? _primary : Colors.transparent,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isSelected
-                                ? _primary
-                                : _border,
+                            color: isSelected ? _primary : _border,
                           ),
                         ),
                         child: Text(
@@ -625,7 +650,9 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
                       : Text(
                           isEdit ? 'Enregistrer' : 'Créer le package',
                           style: GoogleFonts.manrope(
-                              fontWeight: FontWeight.w600, fontSize: 15),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 15,
+                          ),
                         ),
                 ),
               ),
@@ -664,9 +691,10 @@ class _Field extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.manrope(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: _secondary),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: _secondary,
+          ),
         ),
         const SizedBox(height: 6),
         TextFormField(
@@ -692,7 +720,9 @@ class _Field extends StatelessWidget {
               borderSide: const BorderSide(color: _primary),
             ),
             contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14, vertical: 12),
+              horizontal: 14,
+              vertical: 12,
+            ),
           ),
         ),
       ],

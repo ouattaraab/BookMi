@@ -5,8 +5,7 @@ import 'package:bookmi_app/features/tracking/data/models/tracking_event_model.da
 import 'package:dio/dio.dart';
 
 class TrackingRepository {
-  TrackingRepository({required ApiClient apiClient})
-      : _dio = apiClient.dio;
+  TrackingRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   /// Test-only constructor.
   TrackingRepository.forTesting({required Dio dio}) : _dio = dio;

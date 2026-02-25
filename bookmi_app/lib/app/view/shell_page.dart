@@ -70,7 +70,8 @@ class _ShellPageState extends State<ShellPage> {
     return BlocProvider(
       create: (context) {
         final authState = context.read<AuthBloc>().state;
-        final isTalent = authState is AuthAuthenticated &&
+        final isTalent =
+            authState is AuthAuthenticated &&
             authState.roles.contains('talent');
         final bloc = ProfileBloc(repository: widget.profileRepository)
           ..add(ProfileStatsFetched(isTalent: isTalent));

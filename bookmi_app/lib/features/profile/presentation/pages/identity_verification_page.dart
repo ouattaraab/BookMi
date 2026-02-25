@@ -140,7 +140,9 @@ class _IdentityVerificationPageState extends State<IdentityVerificationPage> {
 
     switch (result) {
       case ApiSuccess():
-        _showSnack('Selfie soumis. Votre identité est en cours de vérification.');
+        _showSnack(
+          'Selfie soumis. Votre identité est en cours de vérification.',
+        );
         await _loadStatus();
       case ApiFailure(:final message):
         _showSnack(message, isError: true);
@@ -271,33 +273,33 @@ class _StatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, color, title, subtitle) = switch (status) {
       'approved' => (
-          Icons.verified_user_outlined,
-          _success,
-          'Identité vérifiée',
-          'Votre identité a été validée avec succès.',
-        ),
+        Icons.verified_user_outlined,
+        _success,
+        'Identité vérifiée',
+        'Votre identité a été validée avec succès.',
+      ),
       'pending' => (
-          Icons.hourglass_top_outlined,
-          _primary,
-          selfieSubmitted
-              ? 'Vérification en cours'
-              : 'Document soumis — selfie requis',
-          selfieSubmitted
-              ? 'Vos documents sont en cours de révision par notre équipe.'
-              : 'Veuillez soumettre votre selfie pour finaliser la vérification.',
-        ),
+        Icons.hourglass_top_outlined,
+        _primary,
+        selfieSubmitted
+            ? 'Vérification en cours'
+            : 'Document soumis — selfie requis',
+        selfieSubmitted
+            ? 'Vos documents sont en cours de révision par notre équipe.'
+            : 'Veuillez soumettre votre selfie pour finaliser la vérification.',
+      ),
       'rejected' => (
-          Icons.cancel_outlined,
-          Colors.red,
-          'Vérification refusée',
-          rejectionReason ?? 'Veuillez soumettre à nouveau vos documents.',
-        ),
+        Icons.cancel_outlined,
+        Colors.red,
+        'Vérification refusée',
+        rejectionReason ?? 'Veuillez soumettre à nouveau vos documents.',
+      ),
       _ => (
-          Icons.gpp_maybe_outlined,
-          Colors.orange,
-          'Identité non vérifiée',
-          'Soumettez votre pièce d\'identité pour vérifier votre compte.',
-        ),
+        Icons.gpp_maybe_outlined,
+        Colors.orange,
+        'Identité non vérifiée',
+        'Soumettez votre pièce d\'identité pour vérifier votre compte.',
+      ),
     };
 
     return Container(
@@ -423,7 +425,11 @@ class _DocumentForm extends StatelessWidget {
                     color: _orange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.badge_outlined, size: 18, color: _orange),
+                  child: const Icon(
+                    Icons.badge_outlined,
+                    size: 18,
+                    color: _orange,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Text(
@@ -437,7 +443,10 @@ class _DocumentForm extends StatelessWidget {
                 if (isPending) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: _primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -461,7 +470,10 @@ class _DocumentForm extends StatelessWidget {
                 value: selectedDocType,
                 decoration: InputDecoration(
                   labelText: 'Type de pièce',
-                  labelStyle: GoogleFonts.manrope(fontSize: 13, color: _mutedFg),
+                  labelStyle: GoogleFonts.manrope(
+                    fontSize: 13,
+                    color: _mutedFg,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: _border),
@@ -480,12 +492,22 @@ class _DocumentForm extends StatelessWidget {
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 'cni', child: Text('Carte Nationale d\'Identité')),
-                  DropdownMenuItem(value: 'passeport', child: Text('Passeport')),
-                  DropdownMenuItem(value: 'permis', child: Text('Permis de conduire')),
+                  DropdownMenuItem(
+                    value: 'cni',
+                    child: Text('Carte Nationale d\'Identité'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'passeport',
+                    child: Text('Passeport'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'permis',
+                    child: Text('Permis de conduire'),
+                  ),
                 ],
                 onChanged: onDocTypeChanged,
-                validator: (v) => v == null ? 'Veuillez sélectionner un type' : null,
+                validator: (v) =>
+                    v == null ? 'Veuillez sélectionner un type' : null,
               ),
               const SizedBox(height: 12),
               // Document number
@@ -493,7 +515,10 @@ class _DocumentForm extends StatelessWidget {
                 controller: docNumberCtrl,
                 decoration: InputDecoration(
                   labelText: 'Numéro du document',
-                  labelStyle: GoogleFonts.manrope(fontSize: 13, color: _mutedFg),
+                  labelStyle: GoogleFonts.manrope(
+                    fontSize: 13,
+                    color: _mutedFg,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: const BorderSide(color: _border),
@@ -675,7 +700,11 @@ class _SelfieSection extends StatelessWidget {
                   color: _secondary.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.face_outlined, size: 18, color: _secondary),
+                child: const Icon(
+                  Icons.face_outlined,
+                  size: 18,
+                  color: _secondary,
+                ),
               ),
               const SizedBox(width: 10),
               Text(
@@ -709,7 +738,8 @@ class _SelfieSection extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                ...['Tenez votre pièce d\'identité juste en dessous de votre visage',
+                ...[
+                  'Tenez votre pièce d\'identité juste en dessous de votre visage',
                   'Assurez-vous que votre visage et le document sont bien visibles',
                   'Prenez la photo dans un endroit bien éclairé',
                 ].map(
@@ -718,7 +748,13 @@ class _SelfieSection extends StatelessWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('• ', style: GoogleFonts.manrope(fontSize: 12, color: Colors.amber.shade800)),
+                        Text(
+                          '• ',
+                          style: GoogleFonts.manrope(
+                            fontSize: 12,
+                            color: Colors.amber.shade800,
+                          ),
+                        ),
                         Expanded(
                           child: Text(
                             instruction,

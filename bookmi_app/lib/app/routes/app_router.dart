@@ -133,11 +133,10 @@ GoRouter buildAppRouter(
 
       // ── Main app shell (authenticated) ───────────────────
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) =>
-            ShellPage(
-              navigationShell: navigationShell,
-              profileRepository: profileRepo,
-            ),
+        builder: (context, state, navigationShell) => ShellPage(
+          navigationShell: navigationShell,
+          profileRepository: profileRepo,
+        ),
         branches: [
           // Branch 0: Home
           StatefulShellBranch(
@@ -200,7 +199,8 @@ GoRouter buildAppRouter(
                     name: RouteNames.bookingDetail,
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) {
-                      final id = int.tryParse(
+                      final id =
+                          int.tryParse(
                             state.pathParameters['id'] ?? '',
                           ) ??
                           0;
@@ -222,7 +222,8 @@ GoRouter buildAppRouter(
                         name: RouteNames.tracking,
                         parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) {
-                          final id = int.tryParse(
+                          final id =
+                              int.tryParse(
                                 state.pathParameters['id'] ?? '',
                               ) ??
                               0;
@@ -237,7 +238,8 @@ GoRouter buildAppRouter(
                         name: RouteNames.evaluation,
                         parentNavigatorKey: rootNavigatorKey,
                         builder: (context, state) {
-                          final id = int.tryParse(
+                          final id =
+                              int.tryParse(
                                 state.pathParameters['id'] ?? '',
                               ) ??
                               0;
@@ -266,8 +268,7 @@ GoRouter buildAppRouter(
                 builder: (context, state) => RepositoryProvider.value(
                   value: messagingRepo,
                   child: BlocProvider(
-                    create: (_) =>
-                        MessagingCubit(repository: messagingRepo),
+                    create: (_) => MessagingCubit(repository: messagingRepo),
                     child: const ConversationListPage(),
                   ),
                 ),
@@ -302,8 +303,7 @@ GoRouter buildAppRouter(
                     path: RoutePaths.profilePaymentMethods,
                     name: RouteNames.profilePaymentMethods,
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) =>
-                        const PaymentMethodsPage(),
+                    builder: (context, state) => const PaymentMethodsPage(),
                   ),
                   GoRoute(
                     path: RoutePaths.profileIdentityVerification,
