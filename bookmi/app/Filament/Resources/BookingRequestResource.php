@@ -4,12 +4,14 @@ namespace App\Filament\Resources;
 
 use App\Enums\BookingStatus;
 use App\Filament\Resources\BookingRequestResource\Pages;
+use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Storage;
 
 class BookingRequestResource extends Resource
 {
@@ -76,6 +78,24 @@ class BookingRequestResource extends Resource
                         ->label('Total (FCFA)')
                         ->disabled(),
                 ])->columns(3),
+
+            Forms\Components\Section::make('Contrat')
+                ->icon('heroicon-o-document-text')
+                ->schema([
+                    Forms\Components\Placeholder::make('contract_status')
+                        ->label('Statut du contrat')
+                        ->content(fn (BookingRequest $record): string => $record->contract_path
+                            ? '✅ PDF généré — ' . $record->contract_path
+                            : '❌ Aucun contrat généré'),
+
+                    Forms\Components\FileUpload::make('contract_path')
+                        ->label('Uploader un PDF manuellement')
+                        ->disk('local')
+                        ->directory('contracts')
+                        ->acceptedFileTypes(['application/pdf'])
+                        ->maxSize(10240)
+                        ->helperText('Remplace le contrat existant si présent.'),
+                ]),
         ]);
     }
 
@@ -141,6 +161,15 @@ class BookingRequestResource extends Resource
                     ->trueColor('warning')
                     ->falseColor('gray'),
 
+                Tables\Columns\IconColumn::make('contract_path')
+                    ->label('Contrat')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-document-check')
+                    ->falseIcon('heroicon-o-document-minus')
+                    ->trueColor('success')
+                    ->falseColor('gray')
+                    ->getStateUsing(fn (BookingRequest $record): bool => $record->contract_path !== null),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Créé le')
                     ->dateTime('d/m/Y H:i')
@@ -162,6 +191,43 @@ class BookingRequestResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->label('Voir'),
+
+                Tables\Actions\Action::make('download_contract')
+                    ->label('Contrat')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->visible(fn (BookingRequest $record): bool =>
+                        $record->contract_path !== null
+                        && Storage::disk('local')->exists($record->contract_path))
+                    ->action(fn (BookingRequest $record) => response()->streamDownload(
+                        fn () => print(Storage::disk('local')->get($record->contract_path)),
+                        'contrat-reservation-' . $record->id . '.pdf',
+                        ['Content-Type' => 'application/pdf'],
+                    )),
+
+                Tables\Actions\Action::make('regenerate_contract')
+                    ->label('Régénérer')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Régénérer le contrat')
+                    ->modalDescription('Le contrat PDF existant sera supprimé et un nouveau sera généré.')
+                    ->visible(fn (BookingRequest $record): bool =>
+                        in_array($record->status, [
+                            BookingStatus::Accepted,
+                            BookingStatus::Paid,
+                            BookingStatus::Confirmed,
+                            BookingStatus::Completed,
+                        ], true))
+                    ->action(function (BookingRequest $record): void {
+                        if ($record->contract_path && Storage::disk('local')->exists($record->contract_path)) {
+                            Storage::disk('local')->delete($record->contract_path);
+                        }
+                        $record->update(['contract_path' => null]);
+                        GenerateContractPdf::dispatch($record)->onQueue('media');
+                    })
+                    ->successNotificationTitle('Génération du contrat lancée'),
+
                 Tables\Actions\DeleteAction::make()
                     ->label('Supprimer'),
             ])
@@ -181,8 +247,9 @@ class BookingRequestResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBookingRequests::route('/'),
-            'view'  => Pages\ViewBookingRequest::route('/{record}'),
+            'index'  => Pages\ListBookingRequests::route('/'),
+            'view'   => Pages\ViewBookingRequest::route('/{record}'),
+            'edit'   => Pages\EditBookingRequest::route('/{record}/edit'),
         ];
     }
 }
