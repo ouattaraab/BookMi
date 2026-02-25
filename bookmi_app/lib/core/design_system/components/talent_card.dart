@@ -5,6 +5,7 @@ import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/features/favorites/widgets/favorite_button.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class TalentCard extends StatelessWidget {
@@ -48,156 +49,164 @@ class TalentCard extends StatelessWidget {
       child: GlassCard(
         padding: EdgeInsets.zero,
         onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            _buildPhotoSection(),
-            Padding(
-              padding: const EdgeInsets.all(BookmiSpacing.spaceSm),
-              child: _buildInfoSection(),
+            // ── Full-card image ──────────────────────────────────
+            ClipRRect(
+              borderRadius: BookmiRadius.cardBorder,
+              child: photoUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: photoUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (_, __) => _placeholder(),
+                      errorWidget: (_, __, ___) => _placeholder(),
+                    )
+                  : _placeholder(),
             ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildPhotoSection() {
-    return SizedBox(
-      height: 120,
-      width: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(BookmiRadius.card),
-              topRight: Radius.circular(BookmiRadius.card),
-            ),
-            child: CachedNetworkImage(
-              imageUrl: photoUrl,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const ColoredBox(
-                color: BookmiColors.glassDarkMedium,
-                child: Center(
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white38,
-                    size: 40,
-                  ),
-                ),
-              ),
-              errorWidget: (context, url, error) => const ColoredBox(
-                color: BookmiColors.glassDarkMedium,
-                child: Center(
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white38,
-                    size: 40,
+            // ── Gradient overlay (top subtle + bottom strong) ────
+            ClipRRect(
+              borderRadius: BookmiRadius.cardBorder,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.0, 0.35, 0.65, 1.0],
+                    colors: [
+                      Color(0x55000000), // légère ombre en haut
+                      Colors.transparent,
+                      Color(0x99000000),
+                      Color(0xE8000000), // opaque en bas
+                    ],
                   ),
                 ),
               ),
             ),
-          ),
-          // FavoriteButton top-left
-          Positioned(
-            top: BookmiSpacing.spaceXs,
-            left: BookmiSpacing.spaceXs,
-            child: FavoriteButton(talentId: id, size: 20),
-          ),
-          // Verified badge top-right
-          if (isVerified)
+
+            // ── Info section anchored at bottom ──────────────────
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Stage name
+                    Text(
+                      stageName,
+                      style: GoogleFonts.nunito(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    // Category
+                    Text(
+                      categoryName,
+                      style: GoogleFonts.manrope(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: categoryColor,
+                        height: 1.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    // Cachet + Rating row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            formatCachet(cachetAmount),
+                            style: GoogleFonts.nunito(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: BookmiColors.brandBlueLight,
+                              height: 1.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.star_rounded,
+                          size: 13,
+                          color: BookmiColors.brandBlueLight,
+                        ),
+                        const SizedBox(width: 2),
+                        Text(
+                          averageRating.toStringAsFixed(1),
+                          style: GoogleFonts.nunito(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white70,
+                            height: 1.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Favorite button — top left ────────────────────────
             Positioned(
               top: BookmiSpacing.spaceXs,
-              right: BookmiSpacing.spaceXs,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: BookmiColors.glassWhiteMedium,
-                  border: Border.all(
-                    color: BookmiColors.glassBorder,
+              left: BookmiSpacing.spaceXs,
+              child: FavoriteButton(talentId: id, size: 20),
+            ),
+
+            // ── Verified badge — top right ────────────────────────
+            if (isVerified)
+              Positioned(
+                top: BookmiSpacing.spaceXs,
+                right: BookmiSpacing.spaceXs,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: BookmiColors.brandBlue.withValues(alpha: 0.85),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.verified,
+                    size: 13,
+                    color: Colors.white,
                   ),
                 ),
-                child: const Icon(
-                  Icons.check,
-                  size: 14,
-                  color: Colors.white,
-                ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildInfoSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Stage name
-        Text(
-          stageName,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            height: 1.3,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+  Widget _placeholder() {
+    return ColoredBox(
+      color: BookmiColors.glassDarkMedium,
+      child: Center(
+        child: Icon(
+          Icons.person,
+          color: Colors.white.withValues(alpha: 0.25),
+          size: 48,
         ),
-        const SizedBox(height: 2),
-        // Category
-        Text(
-          categoryName,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: categoryColor,
-            height: 1.3,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: BookmiSpacing.spaceXs),
-        // Cachet
-        Text(
-          formatCachet(cachetAmount),
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: BookmiColors.brandBlueLight,
-            height: 1.3,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 2),
-        // Rating
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.star,
-              size: 14,
-              color: BookmiColors.warning,
-            ),
-            const SizedBox(width: 2),
-            Text(
-              averageRating.toStringAsFixed(1),
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: BookmiColors.warning,
-                height: 1.3,
-              ),
-            ),
-          ],
-        ),
-      ],
+      ),
     );
   }
 }

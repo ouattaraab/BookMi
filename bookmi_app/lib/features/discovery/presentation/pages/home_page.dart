@@ -430,6 +430,7 @@ class _HeroSearchBarState extends State<_HeroSearchBar> {
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
+      locale: const Locale('fr'),
       initialDate: _selectedDate ?? now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),

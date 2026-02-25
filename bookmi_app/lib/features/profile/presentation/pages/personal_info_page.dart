@@ -12,13 +12,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 
-const _secondary = Color(0xFF00274D);
-const _primary = Color(0xFF3B9DF2);
-const _orange = Color(0xFFFF6B35);
-const _muted = Color(0xFFF8FAFC);
-const _mutedFg = Color(0xFF64748B);
-const _border = Color(0xFFE2E8F0);
-const _success = Color(0xFF14B8A6);
+// ── Dark design tokens ────────────────────────────────────────────
+const _bg          = Color(0xFF0A0F1E);
+const _cardBg      = Color(0xFF0D1421);
+const _primary     = Color(0xFF2196F3);
+const _accent      = Color(0xFF64B5F6);
+const _muted       = Color(0xFF94A3B8);
+const _border      = Color(0x1AFFFFFF);  // white 10%
+const _divider     = Color(0x0DFFFFFF);  // white 5%
+const _success     = Color(0xFF00C853);
+const _errorRed    = Color(0xFFFF1744);
 
 class PersonalInfoPage extends StatefulWidget {
   const PersonalInfoPage({super.key});
@@ -28,14 +31,14 @@ class PersonalInfoPage extends StatefulWidget {
 }
 
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
-  bool _isEditing = false;
-  bool _isSaving = false;
+  bool _isEditing    = false;
+  bool _isSaving     = false;
 
   late TextEditingController _firstNameCtrl;
   late TextEditingController _lastNameCtrl;
 
   File? _pendingAvatarFile;
-  bool _deletingAvatar = false;
+  bool  _deletingAvatar = false;
 
   @override
   void initState() {
@@ -43,7 +46,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     final authState = context.read<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     _firstNameCtrl = TextEditingController(text: user?.firstName ?? '');
-    _lastNameCtrl = TextEditingController(text: user?.lastName ?? '');
+    _lastNameCtrl  = TextEditingController(text: user?.lastName  ?? '');
   }
 
   @override
@@ -61,47 +64,54 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       maxWidth: 800,
       maxHeight: 800,
     );
-    if (picked != null) {
-      setState(() {
-        _pendingAvatarFile = File(picked.path);
-      });
-    }
+    if (picked != null) setState(() => _pendingAvatarFile = File(picked.path));
   }
 
   Future<void> _deleteAvatar() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(
-          'Supprimer la photo',
-          style: GoogleFonts.plusJakartaSans(
-            fontWeight: FontWeight.w700,
-            color: _secondary,
+      builder: (ctx) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            surface: _cardBg,
+            primary: _primary,
           ),
+          dialogBackgroundColor: _cardBg,
         ),
-        content: Text(
-          'Voulez-vous supprimer votre photo de profil ?',
-          style: GoogleFonts.manrope(color: _mutedFg),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(
-              'Annuler',
-              style: GoogleFonts.manrope(color: _mutedFg),
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          title: Text(
+            'Supprimer la photo',
+            style: GoogleFonts.nunito(
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              fontSize: 17,
             ),
           ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(
-              'Supprimer',
-              style: GoogleFonts.manrope(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
+          content: Text(
+            'Voulez-vous supprimer votre photo de profil ?',
+            style: GoogleFonts.manrope(color: _muted, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                'Annuler',
+                style: GoogleFonts.manrope(color: _muted),
               ),
             ),
-          ),
-        ],
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                'Supprimer',
+                style: GoogleFonts.manrope(
+                  color: _errorRed,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
     if (confirmed != true) return;
@@ -114,7 +124,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
     switch (result) {
       case ApiSuccess():
-        // Refresh user profile in AuthBloc
         final authState = context.read<AuthBloc>().state;
         if (authState is AuthAuthenticated) {
           final updatedUser = authState.user.copyWith(avatarUrl: null);
@@ -130,7 +139,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     if (_isSaving) return;
 
     final firstName = _firstNameCtrl.text.trim();
-    final lastName = _lastNameCtrl.text.trim();
+    final lastName  = _lastNameCtrl.text.trim();
 
     if (firstName.isEmpty || lastName.isEmpty) {
       _showSnack('Le prénom et le nom ne peuvent pas être vides.', isError: true);
@@ -139,27 +148,26 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
 
     setState(() => _isSaving = true);
 
-    final repo = context.read<ProfileRepository>();
+    final repo   = context.read<ProfileRepository>();
     final result = await repo.updateProfile(
-      firstName: firstName,
-      lastName: lastName,
-      avatarFile: _pendingAvatarFile,
+      firstName:   firstName,
+      lastName:    lastName,
+      avatarFile:  _pendingAvatarFile,
     );
 
     if (!mounted) return;
     setState(() {
-      _isSaving = false;
+      _isSaving  = false;
       _isEditing = false;
     });
 
     switch (result) {
       case ApiSuccess(:final data):
-        // Build updated user from response
         final authState = context.read<AuthBloc>().state;
         if (authState is AuthAuthenticated) {
           final updatedUser = authState.user.copyWith(
             firstName: (data['user'] as Map<String, dynamic>?)?['first_name'] as String? ?? firstName,
-            lastName: (data['user'] as Map<String, dynamic>?)?['last_name'] as String? ?? lastName,
+            lastName:  (data['user'] as Map<String, dynamic>?)?['last_name']  as String? ?? lastName,
             avatarUrl: (data['user'] as Map<String, dynamic>?)?['avatar_url'] as String?,
           );
           context.read<AuthBloc>().add(AuthProfileUpdated(updatedUser));
@@ -175,20 +183,129 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     final authState = context.read<AuthBloc>().state;
     final user = authState is AuthAuthenticated ? authState.user : null;
     setState(() {
-      _isEditing = false;
+      _isEditing         = false;
       _pendingAvatarFile = null;
       _firstNameCtrl.text = user?.firstName ?? '';
-      _lastNameCtrl.text = user?.lastName ?? '';
+      _lastNameCtrl.text  = user?.lastName  ?? '';
     });
   }
 
   void _showSnack(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: GoogleFonts.manrope()),
-        backgroundColor: isError ? Colors.red.shade700 : _success,
+        content: Text(message, style: GoogleFonts.manrope(color: Colors.white)),
+        backgroundColor: isError ? _errorRed : _success,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  // ── AppBar ──────────────────────────────────────────────────────
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(56),
+      child: Container(
+        color: _cardBg,
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 55,
+                child: Row(
+                  children: [
+                    // Back button
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 0, 4, 0),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.07),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: _border),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 15,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    // Title
+                    Expanded(
+                      child: Text(
+                        'Informations personnelles',
+                        style: GoogleFonts.nunito(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ),
+                    // Action
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: _isEditing
+                          ? GestureDetector(
+                              onTap: _cancelEdit,
+                              child: Text(
+                                'Annuler',
+                                style: GoogleFonts.manrope(
+                                  fontSize: 13,
+                                  color: Colors.white.withValues(alpha: 0.55),
+                                ),
+                              ),
+                            )
+                          : GestureDetector(
+                              onTap: () => setState(() => _isEditing = true),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 7,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.07),
+                                  borderRadius: BorderRadius.circular(9),
+                                  border: Border.all(color: _border),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.edit_outlined,
+                                      size: 13,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      'Modifier',
+                                      style: GoogleFonts.manrope(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              // Bottom divider
+              Container(height: 0.5, color: _divider),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -200,169 +317,158 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
         final user = state is AuthAuthenticated ? state.user : null;
 
         return Scaffold(
-          backgroundColor: _muted,
-          appBar: AppBar(
-            backgroundColor: _secondary,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: Text(
-              'Informations personnelles',
-              style: GoogleFonts.plusJakartaSans(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                fontSize: 16,
-              ),
-            ),
-            actions: [
-              if (!_isEditing)
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  tooltip: 'Modifier',
-                  onPressed: () => setState(() => _isEditing = true),
-                )
-              else ...[
-                TextButton(
-                  onPressed: _cancelEdit,
-                  child: Text(
-                    'Annuler',
-                    style: GoogleFonts.manrope(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ],
-            ],
-          ),
+          backgroundColor: _bg,
+          appBar: _buildAppBar(),
           body: user == null
-              ? const Center(child: CircularProgressIndicator())
-              : ListView(
-                  padding: const EdgeInsets.all(16),
+              ? const Center(
+                  child: CircularProgressIndicator(color: _primary),
+                )
+              : Stack(
                   children: [
-                    // ── Avatar section ──────────────────────────────
-                    _AvatarSection(
-                      user: user,
-                      pendingAvatarFile: _pendingAvatarFile,
-                      isEditing: _isEditing,
-                      deletingAvatar: _deletingAvatar,
-                      onPickAvatar: _pickAvatar,
-                      onDeleteAvatar: _deleteAvatar,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Name fields ─────────────────────────────────
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
+                    // Atmospheric blue glow
+                    Positioned(
+                      top: 0, left: 0, right: 0,
+                      height: 220,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: RadialGradient(
+                            center: Alignment.topCenter,
+                            radius: 1.4,
+                            colors: [
+                              _primary.withValues(alpha: 0.08),
+                              Colors.transparent,
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          _isEditing
-                              ? _EditRow(
-                                  label: 'Prénom',
-                                  controller: _firstNameCtrl,
-                                )
-                              : _InfoRow(
-                                  label: 'Prénom',
-                                  value: user.firstName,
-                                ),
-                          const Divider(
-                            color: _border,
-                            height: 1,
-                            indent: 16,
-                            endIndent: 16,
-                          ),
-                          _isEditing
-                              ? _EditRow(
-                                  label: 'Nom',
-                                  controller: _lastNameCtrl,
-                                )
-                              : _InfoRow(
-                                  label: 'Nom',
-                                  value: user.lastName,
-                                ),
-                          const Divider(
-                            color: _border,
-                            height: 1,
-                            indent: 16,
-                            endIndent: 16,
-                          ),
-                          _InfoRow(
-                            label: 'Email',
-                            value: user.email,
-                            isReadOnly: true,
-                          ),
-                          const Divider(
-                            color: _border,
-                            height: 1,
-                            indent: 16,
-                            endIndent: 16,
-                          ),
-                          _InfoRow(
-                            label: 'Téléphone',
-                            value: user.phone,
-                            isReadOnly: true,
-                            trailing: user.phoneVerifiedAt != null
-                                ? _VerifiedChip()
-                                : _UnverifiedChip(),
-                          ),
-                          const Divider(
-                            color: _border,
-                            height: 1,
-                            indent: 16,
-                            endIndent: 16,
-                          ),
-                          _InfoRow(
-                            label: 'Compte actif',
-                            value: user.isActive ? 'Oui' : 'Non',
-                            isLast: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // ── Save button (edit mode only) ────────────────
-                    if (_isEditing)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isSaving ? null : _save,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _orange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: _isSaving
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Text(
-                                  'Enregistrer les modifications',
-                                  style: GoogleFonts.manrope(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                ),
                         ),
                       ),
+                    ),
+                    // Scrollable content
+                    ListView(
+                      padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+                      children: [
+                        // ── Avatar ─────────────────────────────────
+                        _AvatarSection(
+                          user: user,
+                          pendingAvatarFile: _pendingAvatarFile,
+                          isEditing: _isEditing,
+                          deletingAvatar: _deletingAvatar,
+                          onPickAvatar: _pickAvatar,
+                          onDeleteAvatar: _deleteAvatar,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // ── Info fields ────────────────────────────
+                        _GlassCard(
+                          child: Column(
+                            children: [
+                              _isEditing
+                                  ? _EditRow(
+                                      label: 'Prénom',
+                                      controller: _firstNameCtrl,
+                                    )
+                                  : _InfoRow(
+                                      label: 'Prénom',
+                                      value: user.firstName,
+                                    ),
+                              _Divider(),
+                              _isEditing
+                                  ? _EditRow(
+                                      label: 'Nom',
+                                      controller: _lastNameCtrl,
+                                    )
+                                  : _InfoRow(
+                                      label: 'Nom',
+                                      value: user.lastName,
+                                    ),
+                              _Divider(),
+                              _InfoRow(
+                                label: 'Email',
+                                value: user.email,
+                                isReadOnly: true,
+                                icon: Icons.mail_outline_rounded,
+                              ),
+                              _Divider(),
+                              _InfoRow(
+                                label: 'Téléphone',
+                                value: user.phone,
+                                isReadOnly: true,
+                                icon: Icons.phone_outlined,
+                                trailing: user.phoneVerifiedAt != null
+                                    ? _StatusChip(
+                                        label: 'Vérifié',
+                                        color: _success,
+                                      )
+                                    : _StatusChip(
+                                        label: 'Non vérifié',
+                                        color: const Color(0xFFFFB300),
+                                      ),
+                              ),
+                              _Divider(),
+                              _InfoRow(
+                                label: 'Compte actif',
+                                value: user.isActive ? 'Oui' : 'Non',
+                                icon: Icons.verified_user_outlined,
+                                isLast: true,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // ── Save button (edit mode) ─────────────────
+                        if (_isEditing)
+                          GestureDetector(
+                            onTap: _isSaving ? null : _save,
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              height: 52,
+                              decoration: BoxDecoration(
+                                gradient: _isSaving
+                                    ? null
+                                    : const LinearGradient(
+                                        colors: [
+                                          Color(0xFF2196F3),
+                                          Color(0xFF64B5F6),
+                                        ],
+                                      ),
+                                color: _isSaving
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : null,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: _isSaving
+                                    ? null
+                                    : [
+                                        BoxShadow(
+                                          color: _primary.withValues(alpha: 0.4),
+                                          blurRadius: 18,
+                                          offset: const Offset(0, 6),
+                                        ),
+                                      ],
+                              ),
+                              child: Center(
+                                child: _isSaving
+                                    ? const SizedBox(
+                                        width: 22,
+                                        height: 22,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        'Enregistrer les modifications',
+                                        style: GoogleFonts.nunito(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
         );
@@ -371,7 +477,36 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   }
 }
 
-// ── Avatar section widget ──────────────────────────────────────────
+// ── Glass card wrapper ────────────────────────────────────────────
+class _GlassCard extends StatelessWidget {
+  const _GlassCard({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: _border),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _Divider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 0.5,
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      color: _divider,
+    );
+  }
+}
+
+// ── Avatar section ────────────────────────────────────────────────
 class _AvatarSection extends StatelessWidget {
   const _AvatarSection({
     required this.user,
@@ -383,180 +518,167 @@ class _AvatarSection extends StatelessWidget {
   });
 
   final AuthUser user;
-  final File? pendingAvatarFile;
-  final bool isEditing;
-  final bool deletingAvatar;
+  final File?    pendingAvatarFile;
+  final bool     isEditing;
+  final bool     deletingAvatar;
   final VoidCallback onPickAvatar;
   final VoidCallback onDeleteAvatar;
 
   String get _initials =>
       '${user.firstName.isNotEmpty ? user.firstName[0] : ''}'
-      '${user.lastName.isNotEmpty ? user.lastName[0] : ''}'
+      '${user.lastName.isNotEmpty  ? user.lastName[0]  : ''}'
           .toUpperCase();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Avatar circle
-          Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: _orange.withValues(alpha: 0.4),
-                    width: 2.5,
-                  ),
-                ),
-                child: ClipOval(
-                  child: _buildAvatarContent(),
-                ),
-              ),
-              if (isEditing)
-                GestureDetector(
-                  onTap: onPickAvatar,
-                  child: Container(
-                    width: 28,
-                    height: 28,
-                    decoration: BoxDecoration(
-                      color: _orange,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      size: 14,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${user.firstName} ${user.lastName}',
-            style: GoogleFonts.plusJakartaSans(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: _secondary,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            user.email,
-            style: GoogleFonts.manrope(fontSize: 13, color: _mutedFg),
-          ),
-          // Buttons (edit mode)
-          if (isEditing) ...[
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+    return _GlassCard(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+        child: Column(
+          children: [
+            // Avatar circle with glow
+            Stack(
+              alignment: Alignment.bottomRight,
               children: [
-                OutlinedButton.icon(
-                  onPressed: onPickAvatar,
-                  icon: const Icon(Icons.photo_library_outlined, size: 15),
-                  label: Text(
-                    'Modifier la photo',
-                    style: GoogleFonts.manrope(fontSize: 12),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: _primary,
-                    side: const BorderSide(color: _primary),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isEditing
+                          ? _accent
+                          : _accent.withValues(alpha: 0.35),
+                      width: 2,
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 8,
-                    ),
+                    boxShadow: isEditing
+                        ? [
+                            BoxShadow(
+                              color: _primary.withValues(alpha: 0.4),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                          ]
+                        : [
+                            BoxShadow(
+                              color: _primary.withValues(alpha: 0.15),
+                              blurRadius: 10,
+                            ),
+                          ],
                   ),
+                  child: ClipOval(child: _buildAvatarContent()),
                 ),
-                if (user.avatarUrl != null || pendingAvatarFile != null) ...[
-                  const SizedBox(width: 8),
-                  OutlinedButton.icon(
-                    onPressed: deletingAvatar ? null : onDeleteAvatar,
-                    icon: deletingAvatar
-                        ? const SizedBox(
-                            width: 12,
-                            height: 12,
-                            child: CircularProgressIndicator(strokeWidth: 1.5),
-                          )
-                        : const Icon(Icons.delete_outline, size: 15),
-                    label: Text(
-                      'Supprimer',
-                      style: GoogleFonts.manrope(fontSize: 12),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                if (isEditing)
+                  GestureDetector(
+                    onTap: onPickAvatar,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2196F3), Color(0xFF64B5F6)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFF0D1421),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _primary.withValues(alpha: 0.5),
+                            blurRadius: 8,
+                          ),
+                        ],
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 8,
+                      child: const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 14,
+                        color: Colors.white,
                       ),
                     ),
                   ),
-                ],
               ],
             ),
+            const SizedBox(height: 14),
+            // Name
+            Text(
+              '${user.firstName} ${user.lastName}',
+              style: GoogleFonts.nunito(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 3),
+            // Email
+            Text(
+              user.email,
+              style: GoogleFonts.manrope(
+                fontSize: 13,
+                color: _muted,
+              ),
+            ),
+            // Edit buttons
+            if (isEditing) ...[
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _GhostButton(
+                    label: 'Modifier la photo',
+                    icon: Icons.photo_library_outlined,
+                    onTap: onPickAvatar,
+                  ),
+                  if (user.avatarUrl != null || pendingAvatarFile != null) ...[
+                    const SizedBox(width: 8),
+                    _GhostButton(
+                      label: deletingAvatar ? '…' : 'Supprimer',
+                      icon: Icons.delete_outline_rounded,
+                      onTap: deletingAvatar ? () {} : onDeleteAvatar,
+                      isDestructive: true,
+                    ),
+                  ],
+                ],
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildAvatarContent() {
-    // 1. Pending local file (selected but not yet saved)
     if (pendingAvatarFile != null) {
       return Image.file(
         pendingAvatarFile!,
-        width: 90,
-        height: 90,
+        width: 96, height: 96,
         fit: BoxFit.cover,
       );
     }
-    // 2. Remote avatar URL
     if (user.avatarUrl != null) {
       return CachedNetworkImage(
         imageUrl: user.avatarUrl!,
-        width: 90,
-        height: 90,
+        width: 96, height: 96,
         fit: BoxFit.cover,
         errorWidget: (_, __, ___) => _buildInitials(),
       );
     }
-    // 3. Fallback: initials
     return _buildInitials();
   }
 
   Widget _buildInitials() {
     return Container(
-      color: _primary,
+      color: _primary.withValues(alpha: 0.25),
       child: Center(
         child: Text(
           _initials,
-          style: GoogleFonts.plusJakartaSans(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
+          style: GoogleFonts.nunito(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
             color: Colors.white,
           ),
         ),
@@ -565,7 +687,53 @@ class _AvatarSection extends StatelessWidget {
   }
 }
 
-// ── Editable row ──────────────────────────────────────────────────
+// ── Ghost action button ───────────────────────────────────────────
+class _GhostButton extends StatelessWidget {
+  const _GhostButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    this.isDestructive = false,
+  });
+
+  final String   label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool     isDestructive;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDestructive ? const Color(0xFFFF4444) : _accent;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: color),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Editable field row ────────────────────────────────────────────
 class _EditRow extends StatelessWidget {
   const _EditRow({required this.label, required this.controller});
 
@@ -579,10 +747,14 @@ class _EditRow extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 90,
+            width: 86,
             child: Text(
               label,
-              style: GoogleFonts.manrope(fontSize: 13, color: _mutedFg),
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: _muted,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Expanded(
@@ -590,22 +762,32 @@ class _EditRow extends StatelessWidget {
               controller: controller,
               style: GoogleFonts.manrope(
                 fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: _secondary,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
+                  horizontal: 12,
+                  vertical: 10,
                 ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: _border),
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: _orange),
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _primary, width: 1.5),
                 ),
               ),
             ),
@@ -622,106 +804,92 @@ class _InfoRow extends StatelessWidget {
     required this.label,
     required this.value,
     this.trailing,
-    this.isLast = false,
+    this.isLast    = false,
     this.isReadOnly = false,
+    this.icon,
   });
 
+  final String   label;
+  final String   value;
+  final Widget?  trailing;
+  final bool     isLast;
+  final bool     isReadOnly;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      child: Row(
+        children: [
+          if (icon != null) ...[
+            Icon(
+              icon,
+              size: 15,
+              color: _muted.withValues(alpha: 0.6),
+            ),
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: isReadOnly
+                    ? _muted.withValues(alpha: 0.6)
+                    : _muted,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value.isNotEmpty ? value : '—',
+              style: GoogleFonts.manrope(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isReadOnly
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.white,
+              ),
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (trailing != null) ...[
+            const SizedBox(width: 8),
+            trailing!,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Status chip ───────────────────────────────────────────────────
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.label, required this.color});
+
   final String label;
-  final String value;
-  final Widget? trailing;
-  final bool isLast;
-  final bool isReadOnly;
+  final Color  color;
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  label,
-                  style: GoogleFonts.manrope(
-                    fontSize: 13,
-                    color: isReadOnly ? _mutedFg.withValues(alpha: 0.7) : _mutedFg,
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  value.isNotEmpty ? value : '—',
-                  style: GoogleFonts.manrope(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: isReadOnly ? _secondary.withValues(alpha: 0.6) : _secondary,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              ),
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing!,
-              ],
-            ],
-          ),
-        ),
-        if (!isLast)
-          const Divider(
-            color: _border,
-            height: 1,
-            indent: 16,
-            endIndent: 16,
-          ),
-      ],
-    );
-  }
-}
-
-class _VerifiedChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: _success.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _success.withValues(alpha: 0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
-        'Vérifié',
+        label,
         style: GoogleFonts.manrope(
           fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: _success,
-        ),
-      ),
-    );
-  }
-}
-
-class _UnverifiedChip extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.orange.shade200),
-      ),
-      child: Text(
-        'Non vérifié',
-        style: GoogleFonts.manrope(
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: Colors.orange.shade700,
+          fontWeight: FontWeight.w700,
+          color: color,
         ),
       ),
     );

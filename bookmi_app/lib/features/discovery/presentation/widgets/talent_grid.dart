@@ -31,7 +31,7 @@ class TalentGrid extends StatelessWidget {
             crossAxisCount: 2,
             crossAxisSpacing: BookmiSpacing.spaceMd,
             mainAxisSpacing: BookmiSpacing.spaceMd,
-            childAspectRatio: 0.65,
+            childAspectRatio: 0.72,
             children: List.generate(
               6,
               (_) => const TalentCardSkeleton(),
@@ -55,7 +55,7 @@ class TalentGrid extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: BookmiSpacing.spaceMd,
               mainAxisSpacing: BookmiSpacing.spaceMd,
-              childAspectRatio: 0.65,
+              childAspectRatio: 0.72,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) => _buildTalentCard(talents[index]),
