@@ -159,9 +159,9 @@
                 <div>
                     <p style="font-weight:800; font-size:0.8rem; color:white; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1.2rem;">Légal</p>
                     <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.75rem;">
-                        @foreach(["Conditions d'utilisation", 'FAQ', 'Confidentialité'] as $label)
-                        <li><a href="#" style="color:rgba(255,255,255,0.45); text-decoration:none; font-size:0.875rem; font-weight:500; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">{{ $label }}</a></li>
-                        @endforeach
+                        <li><a href="{{ route('legal.conditions') }}" style="color:rgba(255,255,255,0.45); text-decoration:none; font-size:0.875rem; font-weight:500; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">Conditions d'utilisation</a></li>
+                        <li><a href="{{ route('legal.privacy') }}" style="color:rgba(255,255,255,0.45); text-decoration:none; font-size:0.875rem; font-weight:500; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">Politique de confidentialité</a></li>
+                        <li><a href="#" style="color:rgba(255,255,255,0.45); text-decoration:none; font-size:0.875rem; font-weight:500; transition:color 0.15s;" onmouseover="this.style.color='rgba(255,255,255,0.85)'" onmouseout="this.style.color='rgba(255,255,255,0.45)'">FAQ</a></li>
                     </ul>
                 </div>
 

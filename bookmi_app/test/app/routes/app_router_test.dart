@@ -7,6 +7,7 @@ import 'package:bookmi_app/features/auth/data/repositories/auth_repository.dart'
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
@@ -23,6 +24,8 @@ class MockLocalStorage extends Mock implements LocalStorage {}
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockSecureStorage extends Mock implements SecureStorage {}
+
+class MockNotificationRepository extends Mock implements NotificationRepository {}
 
 void main() {
   late GoRouter router;
@@ -53,6 +56,8 @@ void main() {
     final messagingRepo = MessagingRepository.forTesting(dio: mockDio);
     final profileRepo = ProfileRepository.forTesting(dio: mockDio);
 
+    final notificationRepo = MockNotificationRepository();
+
     router = buildAppRouter(
       repo,
       authBloc,
@@ -62,6 +67,7 @@ void main() {
       onboardingRepo,
       messagingRepo,
       profileRepo,
+      notificationRepo,
     );
   });
 

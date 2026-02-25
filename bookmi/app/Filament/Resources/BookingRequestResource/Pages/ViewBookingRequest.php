@@ -21,14 +21,21 @@ class ViewBookingRequest extends ViewRecord
                 ->label('Télécharger le contrat')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
-                ->visible(fn (): bool =>
-                    $this->record->contract_path !== null
-                    && Storage::disk('local')->exists($this->record->contract_path))
-                ->action(fn () => response()->streamDownload(
-                    fn () => print(Storage::disk('local')->get($this->record->contract_path)),
-                    'contrat-reservation-' . $this->record->id . '.pdf',
-                    ['Content-Type' => 'application/pdf'],
-                )),
+                ->visible(function (): bool {
+                    /** @var BookingRequest $booking */
+                    $booking = $this->record;
+                    return $booking->contract_path !== null
+                        && Storage::disk('local')->exists($booking->contract_path);
+                })
+                ->action(function () {
+                    /** @var BookingRequest $booking */
+                    $booking = $this->record;
+                    return response()->streamDownload(
+                        fn () => print(Storage::disk('local')->get($booking->contract_path)),
+                        'contrat-reservation-' . $booking->id . '.pdf',
+                        ['Content-Type' => 'application/pdf'],
+                    );
+                }),
 
             Actions\Action::make('regenerate_contract')
                 ->label('Régénérer le contrat')
@@ -37,13 +44,16 @@ class ViewBookingRequest extends ViewRecord
                 ->requiresConfirmation()
                 ->modalHeading('Régénérer le contrat PDF')
                 ->modalDescription('Supprime le PDF existant et en génère un nouveau en arrière-plan.')
-                ->visible(fn (): bool =>
-                    in_array($this->record->status, [
+                ->visible(function (): bool {
+                    /** @var BookingRequest $booking */
+                    $booking = $this->record;
+                    return in_array($booking->status, [
                         BookingStatus::Accepted,
                         BookingStatus::Paid,
                         BookingStatus::Confirmed,
                         BookingStatus::Completed,
-                    ], true))
+                    ], true);
+                })
                 ->action(function (): void {
                     /** @var BookingRequest $booking */
                     $booking = $this->record;

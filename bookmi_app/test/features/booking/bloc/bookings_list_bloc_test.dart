@@ -15,6 +15,7 @@ BookingModel _makeBooking(int id) => BookingModel(
   status: 'pending',
   clientName: 'Client',
   talentStageName: 'Talent $id',
+  talentProfileId: id,
   packageName: 'Pack',
   packageType: 'standard',
   eventDate: '2026-06-01',

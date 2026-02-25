@@ -127,6 +127,12 @@
         .auth-footer { text-align: center; font-size: 0.875rem; color: #9CA3AF; margin-top: 1.25rem; font-weight: 600; }
         .auth-footer a { font-weight: 800; color: #FF6B35; text-decoration: none; }
         .auth-footer a:hover { text-decoration: underline; }
+
+        .terms-row { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 1.5rem; }
+        .terms-row input[type=checkbox] { width: 17px; height: 17px; min-width: 17px; margin-top: 2px; border-radius: 4px; accent-color: #2196F3; cursor: pointer; }
+        .terms-row label { font-size: 0.825rem; font-weight: 600; color: #6B7280; cursor: pointer; line-height: 1.5; }
+        .terms-row a { color: #2196F3; text-decoration: none; font-weight: 700; }
+        .terms-row a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -189,6 +195,14 @@
                 <div class="remember-row">
                     <input type="checkbox" name="remember" id="remember">
                     <label for="remember">Se souvenir de moi</label>
+                </div>
+
+                <div class="terms-row">
+                    <input type="checkbox" name="terms" id="terms" required>
+                    <label for="terms">
+                        J'accepte les <a href="{{ route('legal.conditions') }}" target="_blank">Conditions d'utilisation</a>
+                        et la <a href="{{ route('legal.privacy') }}" target="_blank">Politique de confidentialité</a>
+                    </label>
                 </div>
 
                 <button type="submit" class="auth-btn">Se connecter</button>

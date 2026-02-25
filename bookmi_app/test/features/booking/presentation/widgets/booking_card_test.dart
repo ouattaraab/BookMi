@@ -11,6 +11,7 @@ BookingModel _makeBooking({
   status: status,
   clientName: 'Client',
   talentStageName: 'DJ Alpha',
+  talentProfileId: 1,
   packageName: 'Pack Standard',
   packageType: 'standard',
   eventDate: '2026-06-15',

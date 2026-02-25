@@ -14,9 +14,11 @@ import 'package:bookmi_app/features/auth/data/repositories/auth_repository.dart'
 import 'package:bookmi_app/features/auth/presentation/widgets/auth_button.dart';
 import 'package:bookmi_app/features/auth/presentation/widgets/auth_text_field.dart';
 import 'package:bookmi_app/features/auth/presentation/widgets/phone_field.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -35,6 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
 
   String _role = 'client';
+  bool _termsAccepted = false;
   int? _categoryId;
   int? _subcategoryId;
   List<Map<String, dynamic>> _categories = [];
@@ -71,6 +74,19 @@ class _RegisterPageState extends State<RegisterPage> {
 
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
+    if (!_termsAccepted) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Veuillez accepter les conditions d'utilisation pour continuer.",
+            ),
+            backgroundColor: Color(0xFFE53E3E),
+          ),
+        );
+      return;
+    }
 
     final phone = '+225${_phoneController.text.replaceAll(' ', '')}';
 
@@ -277,6 +293,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             ],
                           ],
                           const SizedBox(height: BookmiSpacing.spaceLg),
+                          _TermsCheckbox(
+                            value: _termsAccepted,
+                            onChanged: (v) =>
+                                setState(() => _termsAccepted = v ?? false),
+                          ),
+                          const SizedBox(height: BookmiSpacing.spaceBase),
                           BlocBuilder<AuthBloc, AuthState>(
                             builder: (context, state) {
                               return AuthButton(
@@ -431,6 +453,79 @@ class _RegisterPageState extends State<RegisterPage> {
         );
       }).toList(),
       onChanged: (value) => setState(() => _subcategoryId = value),
+    );
+  }
+}
+
+class _TermsCheckbox extends StatelessWidget {
+  const _TermsCheckbox({required this.value, required this.onChanged});
+
+  final bool value;
+  final ValueChanged<bool?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Checkbox(
+          value: value,
+          onChanged: onChanged,
+          activeColor: BookmiColors.brandBlue,
+          side: const BorderSide(color: BookmiColors.glassBorder, width: 1.5),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          visualDensity: VisualDensity.compact,
+        ),
+        const SizedBox(width: 4),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => onChanged(!value),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
+                  children: [
+                    const TextSpan(text: "J'accepte les "),
+                    TextSpan(
+                      text: "Conditions d'utilisation",
+                      style: const TextStyle(
+                        color: BookmiColors.brandBlueLight,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => launchUrl(
+                              Uri.parse(
+                                'https://bookmi.click/conditions-utilisation',
+                              ),
+                            ),
+                    ),
+                    const TextSpan(text: ' et la '),
+                    TextSpan(
+                      text: 'Politique de confidentialité',
+                      style: const TextStyle(
+                        color: BookmiColors.brandBlueLight,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () => launchUrl(
+                              Uri.parse(
+                                'https://bookmi.click/politique-confidentialite',
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

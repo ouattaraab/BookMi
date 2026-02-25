@@ -17,6 +17,7 @@ void main() {
     talentProfileId: 1,
     servicePackageId: 2,
     eventDate: '2026-06-15',
+    startTime: '18:00',
     eventLocation: 'Abidjan',
   );
 
@@ -25,6 +26,7 @@ void main() {
     status: 'pending',
     clientName: 'Test Client',
     talentStageName: 'DJ Alpha',
+    talentProfileId: 1,
     packageName: 'Pack Standard',
     packageType: 'standard',
     eventDate: '2026-06-15',
@@ -58,6 +60,7 @@ void main() {
             talentProfileId: any(named: 'talentProfileId'),
             servicePackageId: any(named: 'servicePackageId'),
             eventDate: any(named: 'eventDate'),
+            startTime: any(named: 'startTime'),
             eventLocation: any(named: 'eventLocation'),
             message: any(named: 'message'),
             isExpress: any(named: 'isExpress'),
@@ -80,6 +83,7 @@ void main() {
             talentProfileId: any(named: 'talentProfileId'),
             servicePackageId: any(named: 'servicePackageId'),
             eventDate: any(named: 'eventDate'),
+            startTime: any(named: 'startTime'),
             eventLocation: any(named: 'eventLocation'),
             message: any(named: 'message'),
             isExpress: any(named: 'isExpress'),
@@ -111,6 +115,7 @@ void main() {
           talentProfileId: any(named: 'talentProfileId'),
           servicePackageId: any(named: 'servicePackageId'),
           eventDate: any(named: 'eventDate'),
+          startTime: any(named: 'startTime'),
           eventLocation: any(named: 'eventLocation'),
           message: any(named: 'message'),
           isExpress: any(named: 'isExpress'),
@@ -136,31 +141,29 @@ void main() {
     );
   });
 
-  // ── BookingFlowPaymentInitiated (Story 4.10) ───────────────────────────────
+  // ── BookingFlowPaymentInitiated (Paystack) ────────────────────────────────
 
   group('BookingFlowPaymentInitiated', () {
-    const paymentEvent = BookingFlowPaymentInitiated(
-      bookingId: 42,
-      paymentMethod: 'orange_money',
-      phoneNumber: '+2250700000000',
-    );
+    const paymentEvent = BookingFlowPaymentInitiated(bookingId: 42);
 
     blocTest<BookingFlowBloc, BookingFlowState>(
-      'emits [PaymentSubmitting, PaymentSuccess] on successful payment',
+      'emits [PaymentSubmitting, PaystackReady] on successful payment init',
       build: () {
         when(
           () => repository.initiatePayment(
             bookingId: any(named: 'bookingId'),
-            paymentMethod: any(named: 'paymentMethod'),
-            phoneNumber: any(named: 'phoneNumber'),
           ),
-        ).thenAnswer((_) async => const ApiSuccess(<String, dynamic>{}));
+        ).thenAnswer(
+          (_) async => const ApiSuccess(<String, dynamic>{
+            'access_code': 'test_access_code',
+          }),
+        );
         return BookingFlowBloc(repository: repository);
       },
       act: (bloc) => bloc.add(paymentEvent),
       expect: () => [
         isA<BookingFlowPaymentSubmitting>(),
-        isA<BookingFlowPaymentSuccess>(),
+        isA<BookingFlowPaystackReady>(),
       ],
     );
 
@@ -170,8 +173,6 @@ void main() {
         when(
           () => repository.initiatePayment(
             bookingId: any(named: 'bookingId'),
-            paymentMethod: any(named: 'paymentMethod'),
-            phoneNumber: any(named: 'phoneNumber'),
           ),
         ).thenAnswer(
           (_) async => const ApiFailure(
@@ -200,12 +201,12 @@ void main() {
         when(
           () => repository.initiatePayment(
             bookingId: any(named: 'bookingId'),
-            paymentMethod: any(named: 'paymentMethod'),
-            phoneNumber: any(named: 'phoneNumber'),
           ),
         ).thenAnswer((_) async {
           await Future<void>.delayed(const Duration(milliseconds: 100));
-          return const ApiSuccess(<String, dynamic>{});
+          return const ApiSuccess(<String, dynamic>{
+            'access_code': 'test_access_code',
+          });
         });
         return BookingFlowBloc(repository: repository);
       },

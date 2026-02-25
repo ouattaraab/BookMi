@@ -26,6 +26,10 @@ Route::get('/talents', [TalentDiscoveryController::class, 'index'])->name('talen
 Route::post('/talents/notify', [TalentNotificationController::class, 'store'])->name('talents.notify');
 Route::get('/talents/{slug}', [TalentPageController::class, 'show'])->name('talent.show');
 
+// ── Pages légales ───────────────────────────────────────────────────────────
+Route::get('/conditions-utilisation', fn () => view('legal.conditions-utilisation'))->name('legal.conditions');
+Route::get('/politique-confidentialite', fn () => view('legal.politique-confidentialite'))->name('legal.privacy');
+
 // ── Auth (guest only) ───────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login', [WebLoginController::class, 'showForm'])->name('login');
