@@ -151,7 +151,7 @@ class PaymentControllerTest extends TestCase
         Http::preventStrayRequests();
 
         $client  = User::factory()->create();
-        $booking = BookingRequest::factory()->pending()->create(['client_id' => $client->id]);
+        $booking = BookingRequest::factory()->cancelled()->create(['client_id' => $client->id]);
 
         $response = $this->actingAs($client, 'sanctum')
             ->postJson('/api/v1/payments/initiate', [

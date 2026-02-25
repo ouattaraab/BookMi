@@ -159,12 +159,12 @@ class BookingStatusTransitionTest extends TestCase
         ]);
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.status', 'cancelled')
+            ->assertJsonPath('data.status', 'rejected')
             ->assertJsonPath('data.reject_reason', 'Déjà engagé ce jour-là.');
 
         $this->assertDatabaseHas('booking_requests', [
             'id'            => $booking->id,
-            'status'        => 'cancelled',
+            'status'        => 'rejected',
             'reject_reason' => 'Déjà engagé ce jour-là.',
         ]);
 
@@ -185,12 +185,12 @@ class BookingStatusTransitionTest extends TestCase
         $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/reject");
 
         $response->assertStatus(200)
-            ->assertJsonPath('data.status', 'cancelled')
+            ->assertJsonPath('data.status', 'rejected')
             ->assertJsonPath('data.reject_reason', null);
 
         $this->assertDatabaseHas('booking_requests', [
             'id'            => $booking->id,
-            'status'        => 'cancelled',
+            'status'        => 'rejected',
             'reject_reason' => null,
         ]);
 

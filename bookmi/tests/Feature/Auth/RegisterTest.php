@@ -59,7 +59,7 @@ class RegisterTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', $this->validClientData());
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.message', 'Compte créé. Vérifiez votre téléphone.');
+            ->assertJsonStructure(['data' => ['token', 'user', 'roles']]);
 
         $this->assertDatabaseHas('users', [
             'email' => 'aminata@example.com',
@@ -81,7 +81,7 @@ class RegisterTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', $this->validTalentData());
 
         $response->assertStatus(201)
-            ->assertJsonPath('data.message', 'Compte créé. Vérifiez votre téléphone.');
+            ->assertJsonStructure(['data' => ['token', 'user', 'roles']]);
 
         $user = User::where('email', 'kerozen@example.com')->first();
         $this->assertNotNull($user);

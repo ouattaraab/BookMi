@@ -203,7 +203,7 @@ class BookingContractTest extends TestCase
         [, $talent, $package] = $this->createTalentWithPackage();
         $client  = $this->createClientUser();
         $booking = $this->createBooking($client, $talent, $package, [
-            'status'        => BookingStatus::Accepted,
+            'status'        => BookingStatus::Confirmed,
             'contract_path' => 'contracts/booking-99.pdf',
         ]);
 
