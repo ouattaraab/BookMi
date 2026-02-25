@@ -110,4 +110,62 @@ class FinancialDashboardController extends BaseController
             ],
         ]);
     }
+
+    /**
+     * GET /api/v1/me/earnings
+     *
+     * Returns paginated list of completed bookings with earnings breakdown.
+     */
+    public function earnings(Request $request): JsonResponse
+    {
+        $talentProfile = TalentProfile::where('user_id', $request->user()->id)->first();
+
+        if (! $talentProfile) {
+            return $this->errorResponse('TALENT_PROFILE_NOT_FOUND', 'Aucun profil talent trouvé.', 404);
+        }
+
+        $perPage = min(max((int) $request->query('per_page', 20), 1), 50);
+
+        $bookings = \App\Models\BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->where('status', \App\Enums\BookingStatus::Completed->value)
+            ->with(['client:id,first_name,last_name'])
+            ->orderByDesc('event_date')
+            ->paginate($perPage);
+
+        $totalCachet     = (int) \App\Models\BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->where('status', \App\Enums\BookingStatus::Completed->value)
+            ->sum('cachet_amount');
+        $totalCommission = (int) \App\Models\BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->where('status', \App\Enums\BookingStatus::Completed->value)
+            ->sum('commission_amount');
+
+        $items = collect($bookings->items())->map(fn ($b) => [
+            'booking_id'        => $b->id,
+            'event_date'        => $b->event_date instanceof \Carbon\Carbon
+                ? $b->event_date->toDateString()
+                : (string) $b->event_date,
+            'client_name'       => trim(($b->client?->first_name ?? '') . ' ' . ($b->client?->last_name ?? '')),
+            'package_name'      => isset($b->package_snapshot['name'])
+                ? $b->package_snapshot['name']
+                : 'Prestation libre',
+            'cachet_amount'     => $b->cachet_amount,
+            'commission_amount' => $b->commission_amount,
+            'total_amount'      => $b->total_amount,
+            'commission_rate'   => (int) config('bookmi.commission_rate', 15),
+        ]);
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page'     => $bookings->currentPage(),
+                'last_page'        => $bookings->lastPage(),
+                'per_page'         => $bookings->perPage(),
+                'total'            => $bookings->total(),
+                'total_cachet'     => $totalCachet,
+                'total_commission' => $totalCommission,
+                'commission_rate'  => (int) config('bookmi.commission_rate', 15),
+                'devise'           => 'XOF',
+            ],
+        ]);
+    }
 }

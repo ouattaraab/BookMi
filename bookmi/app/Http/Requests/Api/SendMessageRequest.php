@@ -18,9 +18,16 @@ class SendMessageRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isMedia = in_array($this->input('type'), ['image', 'video'], true)
+                || $this->hasFile('file');
+
         return [
-            'content' => ['required', 'string', 'min:1', 'max:5000'],
+            // Content is required for text messages, optional for media (can be a caption)
+            'content' => $isMedia
+                ? ['sometimes', 'nullable', 'string', 'max:1000']
+                : ['required', 'string', 'min:1', 'max:5000'],
             'type'    => ['sometimes', 'string', Rule::enum(MessageType::class)],
+            'file'    => ['sometimes', 'nullable', 'file', 'mimes:jpeg,jpg,png,gif,mp4,mov,webm', 'max:51200'], // 50 MB
         ];
     }
 }

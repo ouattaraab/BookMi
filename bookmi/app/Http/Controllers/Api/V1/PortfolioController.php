@@ -280,6 +280,49 @@ class PortfolioController extends Controller
     }
 
     /**
+     * GET /talent_profiles/me/portfolio
+     *
+     * Returns ALL portfolio items for the authenticated talent (including unapproved client submissions).
+     */
+    public function indexOwn(Request $request): JsonResponse
+    {
+        $user    = $request->user();
+        $profile = TalentProfile::where('user_id', $user->id)->firstOrFail();
+
+        $items = PortfolioItem::where('talent_profile_id', $profile->id)
+            ->latest()
+            ->get()
+            ->map(fn ($item) => $this->format($item));
+
+        return response()->json(['data' => $items]);
+    }
+
+    /**
+     * PATCH /talent_profiles/me/portfolio/{portfolioItem}
+     *
+     * Updates caption of a portfolio item owned by the authenticated talent.
+     */
+    public function update(Request $request, PortfolioItem $portfolioItem): JsonResponse
+    {
+        $user    = $request->user();
+        $profile = TalentProfile::where('user_id', $user->id)->first();
+
+        if (! $profile || $portfolioItem->talent_profile_id !== $profile->id) {
+            return response()->json([
+                'error' => ['code' => 'FORBIDDEN', 'message' => 'Ce média n\'appartient pas à votre profil.'],
+            ], 403);
+        }
+
+        $request->validate([
+            'caption' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $portfolioItem->update(['caption' => $request->input('caption')]);
+
+        return response()->json(['data' => $this->format($portfolioItem->fresh())]);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function format(PortfolioItem $item): array

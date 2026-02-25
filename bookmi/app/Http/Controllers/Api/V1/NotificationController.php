@@ -55,6 +55,23 @@ class NotificationController extends BaseController
     }
 
     /**
+     * GET /api/v1/me/broadcasts
+     * Returns the latest admin_broadcast push notifications for the authenticated user.
+     */
+    public function broadcasts(Request $request): JsonResponse
+    {
+        $items = PushNotification::where('user_id', $request->user()->id)
+            ->where('data->type', 'admin_broadcast')
+            ->orderByDesc('created_at')
+            ->take(30)
+            ->get();
+
+        return $this->successResponse(
+            $items->map(fn ($n) => new PushNotificationResource($n))->values(),
+        );
+    }
+
+    /**
      * PUT /api/v1/me/fcm_token
      * Register or update the FCM device token for the authenticated user.
      */
