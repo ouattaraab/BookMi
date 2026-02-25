@@ -32,8 +32,11 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   void initState() {
     super.initState();
     if (widget.preloaded != null) {
+      // Show the preloaded booking immediately while the full detail
+      // (including statusLogs history) is fetched in the background.
       _booking = widget.preloaded;
       _loading = false;
+      _fetch(); // background fetch for history
     } else {
       _fetch();
     }

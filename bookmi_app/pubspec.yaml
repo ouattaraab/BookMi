@@ -32,6 +32,7 @@ dependencies:
   font_awesome_flutter: ^10.12.0
   image_picker: ^1.1.2
   paystack_flutter_sdk: ^0.0.1-alpha.2
+  webview_flutter: ^4.10.0
 
 dev_dependencies:
   bloc_lint: ">=0.3.3 <0.3.6"

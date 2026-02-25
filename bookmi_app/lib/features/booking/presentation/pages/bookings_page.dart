@@ -14,7 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:bookmi_app/features/payment/presentation/pages/paystack_webview_page.dart';
 
 class BookingsPage extends StatelessWidget {
   const BookingsPage({super.key});
@@ -444,79 +444,32 @@ class _BookingsTab extends StatelessWidget {
           return;
         }
 
-        // Open Paystack checkout in a Chrome Custom Tab.
-        // The user pays, then returns to BookMi; we then verify the result.
-        final uri = Uri.parse(authUrl);
-        final launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-
-        if (!context.mounted) return;
-
-        if (!launched) {
-          await repo.cancelPayment(bookingId: bookingId);
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Impossible d\'ouvrir la page de paiement.'),
-              backgroundColor: Color(0xFFEF4444),
-            ),
-          );
-          return;
-        }
-
-        // Paystack checkout is now open in the browser. Show a dialog when the
-        // user returns so we can verify the payment status.
-        final confirmed = await showDialog<bool>(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            backgroundColor: const Color(0xFF0D1421),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text(
-              'Paiement effectué ?',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-            ),
-            content: const Text(
-              'Avez-vous complété le paiement sur la page Paystack ?',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text(
-                  'Non, annuler',
-                  style: TextStyle(color: Colors.white54),
-                ),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BookmiColors.brandBlueLight,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                onPressed: () => Navigator.of(ctx).pop(true),
-                child: const Text('Oui, vérifier'),
-              ),
-            ],
+        // Open Paystack checkout inside the app in a secure WebView modal.
+        // The WebView intercepts the Paystack callback redirect and returns
+        // the payment reference when done (or null if the user cancelled).
+        final reference = await Navigator.of(context).push<String?>(
+          MaterialPageRoute<String?>(
+            builder: (_) => PaystackWebViewPage(authorizationUrl: authUrl),
+            fullscreenDialog: true,
           ),
         );
 
         if (!context.mounted) return;
 
-        if (confirmed != true) {
-          // User says they didn't pay — cancel the transaction so retry works.
+        if (reference == null) {
+          // User closed the WebView without completing payment — cancel
+          // the pending transaction so a retry does not hit the duplicate check.
           await repo.cancelPayment(bookingId: bookingId);
           return;
         }
 
-        // User confirmed payment — refresh bookings list to reflect new status.
+        // Payment completed — webhook will update the booking status
+        // asynchronously. Refresh the list so the user sees the change.
         context.read<BookingsListBloc>().add(BookingsListFetched(status: status));
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Vérification du paiement…'),
-            duration: Duration(seconds: 3),
+            content: Text('Paiement effectué — mise à jour en cours…'),
+            duration: Duration(seconds: 4),
           ),
         );
 
