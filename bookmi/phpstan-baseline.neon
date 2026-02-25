@@ -13,12 +13,6 @@ parameters:
 			path: app/Console/Commands/RecalculateTalentLevels.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\TalentLevel will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Console/Commands/RecalculateTalentLevels.php
-
-		-
 			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -97,12 +91,6 @@ parameters:
 			path: app/Filament/Pages/TwoFactorChallengePage.php
 
 		-
-			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Filament/Resources/AdminAlertResource.php
-
-		-
 			message: '#^Using nullsafe property access on non\-nullable type \*NEVER\*\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -149,12 +137,6 @@ parameters:
 			identifier: property.nonObject
 			count: 5
 			path: app/Filament/Resources/ClientResource/Pages/ViewClient.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\VerificationStatus\:\:PENDING will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 2
-			path: app/Filament/Resources/IdentityVerificationResource.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -241,18 +223,6 @@ parameters:
 			path: app/Gateways/PaymentGatewayResolver.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Disputed will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 2
-			path: app/Http/Controllers/Api/V1/AdminDisputeController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
-			path: app/Http/Controllers/Api/V1/AdminDisputeController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$commission_amount\.$#'
 			identifier: property.notFound
 			count: 1
@@ -265,18 +235,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AdminReportController.php
 
 		-
-			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 2
-			path: app/Http/Controllers/Api/V1/AdminReportController.php
-
-		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
-			count: 1
-			path: app/Http/Controllers/Api/V1/AdminReportController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>commission_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -284,6 +242,12 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/AdminReportController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/AdminReportController.php
@@ -301,26 +265,8 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AnalyticsController.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between true and true will always evaluate to true\.$#'
-			identifier: identical.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Api/V1/AuthController.php
-
-		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed, App\\Enums\\BookingStatus\:\:Completed\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 2
-			path: app/Http/Controllers/Api/V1/BookingRequestController.php
-
-		-
 			message: '#^Parameter \#2 \$statusCode of method App\\Http\\Controllers\\Api\\V1\\BaseController\:\:successResponse\(\) expects int, string given\.$#'
 			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/Api/V1/BookingRequestController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 2
 			path: app/Http/Controllers/Api/V1/BookingRequestController.php
 
@@ -367,18 +313,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/EscrowController.php
 
 		-
-			message: '#^Instanceof between string and Carbon\\Carbon will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Http/Controllers/Api/V1/FinancialDashboardController.php
-
-		-
-			message: '#^Offset ''name'' on string\|null in isset\(\) does not exist\.$#'
-			identifier: isset.offset
-			count: 1
-			path: app/Http/Controllers/Api/V1/FinancialDashboardController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -409,38 +343,14 @@ parameters:
 			path: app/Http/Controllers/Api/V1/PortfolioController.php
 
 		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
 			count: 1
 			path: app/Http/Controllers/Api/V1/ReportController.php
 
 		-
-			message: '#^Negated boolean expression is always true\.$#'
-			identifier: booleanNot.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Api/V1/ReportController.php
-
-		-
-			message: '#^Result of && is always true\.$#'
-			identifier: booleanAnd.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Api/V1/ReportController.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Completed will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Api/V1/ReportController.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Http/Controllers/Api/V1/ReportController.php
-
-		-
-			message: '#^Expression on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.expr
+			message: '#^Using nullsafe property access "\?\-\>bookings_count" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/RevenueCertificateController.php
 
@@ -505,18 +415,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/TrackingController.php
 
 		-
-			message: '#^Instanceof between App\\Enums\\TransactionStatus and BackedEnum will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: app/Http/Controllers/Web/Client/BookingController.php
-
-		-
-			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Http/Controllers/Web/Client/MessageController.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -541,20 +439,8 @@ parameters:
 			path: app/Http/Controllers/Web/Talent/CalendarController.php
 
 		-
-			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Http/Controllers/Web/Talent/MessageController.php
-
-		-
 			message: '#^Anonymous function should return Illuminate\\Support\\Collection\<int, array\{id\: int, from_status\: string\|null, to_status\: string, performed_by\: array\{id\: int, name\: string\}\|null, created_at\: mixed\}\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, from_status\: string\|null, to_status\: string, performed_by\: array\{id\: int, name\: string\}\|null, created_at\: mixed\}\>\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Http/Resources/BookingRequestResource.php
-
-		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed, App\\Enums\\BookingStatus\:\:Completed\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
 			count: 1
 			path: app/Http/Resources/BookingRequestResource.php
 
@@ -577,20 +463,8 @@ parameters:
 			path: app/Http/Resources/BookingRequestResource.php
 
 		-
-			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Http/Resources/BookingRequestResource.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\BookingStatusLog\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Resources/BookingRequestResource.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
 			count: 1
 			path: app/Http/Resources/BookingRequestResource.php
 
@@ -633,12 +507,6 @@ parameters:
 		-
 			message: '#^Cannot call method toISOString\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
-			path: app/Http/Resources/ConversationResource.php
-
-		-
-			message: '#^Offset ''name'' on array\{\}\|string on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Http/Resources/ConversationResource.php
 
@@ -767,12 +635,6 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Jobs/CompressPortfolioImage.php
-
-		-
-			message: '#^Instanceof between string and App\\Enums\\BookingStatus will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Jobs/HandlePaymentWebhook.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -1165,12 +1027,6 @@ parameters:
 			path: app/Notifications/PaymentReceivedNotification.php
 
 		-
-			message: '#^Instanceof between string and Carbon\\Carbon will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Observers/BookingRequestObserver.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1179,7 +1035,7 @@ parameters:
 		-
 			message: '#^Anonymous function has an unused use \$admin\.$#'
 			identifier: closure.unusedUse
-			count: 2
+			count: 3
 			path: app/Services/AdminService.php
 
 		-
@@ -1187,24 +1043,6 @@ parameters:
 			identifier: argument.unresolvableType
 			count: 1
 			path: app/Services/AdminService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Disputed will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/AdminService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Services/AdminService.php
-
-		-
-			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Services/AuthService.php
 
 		-
 			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
@@ -1225,26 +1063,8 @@ parameters:
 			path: app/Services/BookingService.php
 
 		-
-			message: '#^Instanceof between string and BackedEnum will always evaluate to false\.$#'
-			identifier: instanceof.alwaysFalse
-			count: 1
-			path: app/Services/BookingService.php
-
-		-
 			message: '#^Parameter \#2 \$fromStatus of method App\\Services\\BookingService\:\:logStatusTransition\(\) expects App\\Enums\\BookingStatus\|null, string given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Services/BookingService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Pending will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/BookingService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
 			count: 1
 			path: app/Services/BookingService.php
 
@@ -1297,45 +1117,9 @@ parameters:
 			path: app/Services/EscrowService.php
 
 		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: app/Services/EscrowService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Paid will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/EscrowService.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Paid will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/EscrowService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Services/EscrowService.php
-
-		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
 			count: 1
-			path: app/Services/ManagerService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'' and App\\Enums\\BookingStatus\:\:Pending will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 2
-			path: app/Services/ManagerService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 2
 			path: app/Services/ManagerService.php
 
 		-
@@ -1363,68 +1147,20 @@ parameters:
 			path: app/Services/MessagingService.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\MessageType\:\:Text will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/MessagingService.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\MessageType\:\:Image will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/MessagingService.php
-
-		-
 			message: '#^Type App\\Models\\Message in generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\Message\> in PHPDoc tag @return is not subtype of template type TKey of \(int\|string\) of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\.$#'
 			identifier: generics.notSubtype
 			count: 1
 			path: app/Services/MessagingService.php
 
 		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Pending, App\\Enums\\BookingStatus\:\:Accepted\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Method App\\Services\\PaymentService\:\:initializeTransactionForCard\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Method App\\Services\\PaymentService\:\:initiateChargeForMobileMoney\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Services/PaymentService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
+			count: 2
 			path: app/Services/PaymentService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$talent_profile_id\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Services/PayoutService.php
-
-		-
-			message: '#^Negated boolean expression is always true\.$#'
-			identifier: booleanNot.alwaysTrue
-			count: 1
-			path: app/Services/PayoutService.php
-
-		-
-			message: '#^Offset ''recipient_code'' on array\{non\-falsy\-string\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/PayoutService.php
 
@@ -1435,34 +1171,10 @@ parameters:
 			path: app/Services/PayoutService.php
 
 		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Accepted, App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
 			path: app/Services/RescheduleService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\RescheduleStatus\:\:Pending will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 2
-			path: app/Services/RescheduleService.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 3
-			path: app/Services/RescheduleService.php
-
-		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Confirmed, App\\Enums\\BookingStatus\:\:Completed\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/ReviewService.php
-
-		-
-			message: '#^Call to function in_array\(\) with arguments ''accepted''\|''cancelled''\|''completed''\|''confirmed''\|''disputed''\|''paid''\|''pending'', array\{App\\Enums\\BookingStatus\:\:Paid, App\\Enums\\BookingStatus\:\:Confirmed\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/TrackingService.php
 
 		-
 			message: '#^Cannot access property \$value on string\.$#'
