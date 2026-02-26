@@ -9,8 +9,7 @@ use App\Http\Requests\Api\UpdatePayoutMethodRequest;
 use App\Http\Requests\Api\UpdateTalentProfileRequest;
 use App\Http\Resources\TalentProfileResource;
 use App\Models\TalentProfile;
-use App\Models\User;
-use App\Notifications\PayoutMethodAddedNotification;
+use App\Services\AdminNotificationService;
 use App\Services\TalentProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,8 +18,7 @@ class TalentProfileController extends BaseController
 {
     public function __construct(
         private readonly TalentProfileService $service,
-    ) {
-    }
+    ) {}
 
     public function store(StoreTalentProfileRequest $request): JsonResponse
     {
@@ -79,7 +77,7 @@ class TalentProfileController extends BaseController
     public function getPayoutMethod(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user    = $request->user();
+        $user = $request->user();
         $profile = $this->service->getByUserId($user->id);
 
         if (! $profile) {
@@ -91,10 +89,10 @@ class TalentProfileController extends BaseController
         }
 
         return $this->successResponse([
-            'payout_method'             => $profile->payout_method,
-            'payout_details'            => $profile->payout_details,
+            'payout_method' => $profile->payout_method,
+            'payout_details' => $profile->payout_details,
             'payout_method_verified_at' => $profile->payout_method_verified_at?->toISOString(),
-            'available_balance'         => $profile->available_balance,
+            'available_balance' => $profile->available_balance,
         ]);
     }
 
@@ -107,7 +105,7 @@ class TalentProfileController extends BaseController
     public function updatePayoutMethod(UpdatePayoutMethodRequest $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user    = $request->user();
+        $user = $request->user();
         $profile = $this->service->getByUserId($user->id);
 
         if (! $profile) {
@@ -119,29 +117,22 @@ class TalentProfileController extends BaseController
         }
 
         $profile->update([
-            'payout_method'             => $request->validated('payout_method'),
-            'payout_details'            => $request->validated('payout_details'),
+            'payout_method' => $request->validated('payout_method'),
+            'payout_details' => $request->validated('payout_details'),
             'payout_method_verified_at' => null, // Reset validation on account change
             'payout_method_verified_by' => null,
         ]);
 
         $profile->refresh();
 
-        // Notifier les admins qu'un compte est à valider
-        try {
-            $admins = User::role('admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new PayoutMethodAddedNotification($profile));
-            }
-        } catch (\Spatie\Permission\Exceptions\RoleDoesNotExist) {
-            // Role not yet seeded — skip admin notifications gracefully
-        }
+        // Notifier les admins qu'un compte est à valider (email + push in-app)
+        AdminNotificationService::payoutMethodAdded($profile);
 
         return $this->successResponse([
-            'payout_method'             => $profile->payout_method,
-            'payout_details'            => $profile->payout_details,
+            'payout_method' => $profile->payout_method,
+            'payout_details' => $profile->payout_details,
             'payout_method_verified_at' => null,
-            'available_balance'         => $profile->available_balance,
+            'available_balance' => $profile->available_balance,
         ]);
     }
 
@@ -153,7 +144,7 @@ class TalentProfileController extends BaseController
     public function updateInfo(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user    = $request->user();
+        $user = $request->user();
         $profile = $this->service->getByUserId($user->id);
 
         if (! $profile) {
@@ -165,13 +156,13 @@ class TalentProfileController extends BaseController
         }
 
         $validated = $request->validate([
-            'bio'                    => ['nullable', 'string', 'max:1000'],
-            'social_links'           => ['nullable', 'array'],
+            'bio' => ['nullable', 'string', 'max:1000'],
+            'social_links' => ['nullable', 'array'],
             'social_links.instagram' => ['nullable', 'url'],
-            'social_links.facebook'  => ['nullable', 'url'],
-            'social_links.youtube'   => ['nullable', 'url'],
-            'social_links.tiktok'    => ['nullable', 'url'],
-            'social_links.twitter'   => ['nullable', 'url'],
+            'social_links.facebook' => ['nullable', 'url'],
+            'social_links.youtube' => ['nullable', 'url'],
+            'social_links.tiktok' => ['nullable', 'url'],
+            'social_links.twitter' => ['nullable', 'url'],
         ]);
 
         $profile->update($validated);
@@ -189,7 +180,7 @@ class TalentProfileController extends BaseController
     public function updateAutoReply(UpdateAutoReplyRequest $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user    = $request->user();
+        $user = $request->user();
         $profile = $this->service->getByUserId($user->id);
 
         if (! $profile) {
@@ -201,12 +192,12 @@ class TalentProfileController extends BaseController
         }
 
         $profile->update([
-            'auto_reply_message'   => $request->validated('auto_reply_message'),
+            'auto_reply_message' => $request->validated('auto_reply_message'),
             'auto_reply_is_active' => $request->validated('auto_reply_is_active'),
         ]);
 
         return $this->successResponse([
-            'auto_reply_message'   => $profile->fresh()->auto_reply_message,
+            'auto_reply_message' => $profile->fresh()->auto_reply_message,
             'auto_reply_is_active' => $profile->fresh()->auto_reply_is_active,
         ]);
     }

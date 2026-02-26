@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Web\Talent;
 use App\Enums\PaymentMethod;
 use App\Enums\WithdrawalStatus;
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\WithdrawalRequest;
-use App\Notifications\PayoutMethodAddedNotification;
-use App\Notifications\WithdrawalRequestedNotification;
+use App\Services\AdminNotificationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,12 +21,12 @@ class PaiementController extends Controller
 
         if (! $profile) {
             return view('talent.coming-soon', [
-                'title'       => 'Moyens de paiement',
+                'title' => 'Moyens de paiement',
                 'description' => 'Configurez votre profil talent pour gérer vos paiements.',
             ]);
         }
 
-        $isVerified       = (bool) $profile->payout_method_verified_at;
+        $isVerified = (bool) $profile->payout_method_verified_at;
         $availableBalance = $profile->available_balance ?? 0;
 
         $withdrawals = WithdrawalRequest::where('talent_profile_id', $profile->id)
@@ -64,8 +62,8 @@ class PaiementController extends Controller
         }
 
         $validated = $request->validate([
-            'payout_method'        => ['required', 'string', Rule::in(array_column(PaymentMethod::cases(), 'value'))],
-            'payout_details'       => ['required', 'array'],
+            'payout_method' => ['required', 'string', Rule::in(array_column(PaymentMethod::cases(), 'value'))],
+            'payout_details' => ['required', 'array'],
             'payout_details.phone' => [
                 Rule::requiredIf(fn () => in_array($request->input('payout_method'), [
                     PaymentMethod::OrangeMoney->value,
@@ -90,25 +88,22 @@ class PaiementController extends Controller
                 'max:20',
             ],
         ], [
-            'payout_details.phone.regex'               => 'Numéro de téléphone invalide (8 à 15 chiffres).',
-            'payout_details.phone.required'            => 'Le numéro de téléphone est obligatoire.',
-            'payout_details.account_number.required'   => 'Le numéro de compte est obligatoire.',
-            'payout_details.bank_code.required'        => 'Le code banque est obligatoire.',
+            'payout_details.phone.regex' => 'Numéro de téléphone invalide (8 à 15 chiffres).',
+            'payout_details.phone.required' => 'Le numéro de téléphone est obligatoire.',
+            'payout_details.account_number.required' => 'Le numéro de compte est obligatoire.',
+            'payout_details.bank_code.required' => 'Le code banque est obligatoire.',
         ]);
 
         $isNew = ! $profile->payout_method;
 
         $profile->update([
-            'payout_method'             => $validated['payout_method'],
-            'payout_details'            => $validated['payout_details'],
+            'payout_method' => $validated['payout_method'],
+            'payout_details' => $validated['payout_details'],
             'payout_method_verified_at' => null,
             'payout_method_verified_by' => null,
         ]);
 
-        $admins = User::role('admin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new PayoutMethodAddedNotification($profile));
-        }
+        AdminNotificationService::payoutMethodAdded($profile);
 
         $message = $isNew
             ? 'Compte de paiement enregistré. En attente de validation par l\'administration.'
@@ -145,8 +140,8 @@ class PaiementController extends Controller
             'amount' => ['required', 'integer', 'min:1000'],
         ], [
             'amount.required' => 'Le montant est obligatoire.',
-            'amount.integer'  => 'Le montant doit être un nombre entier.',
-            'amount.min'      => 'Le montant minimum est de 1 000 XOF.',
+            'amount.integer' => 'Le montant doit être un nombre entier.',
+            'amount.min' => 'Le montant minimum est de 1 000 XOF.',
         ]);
 
         $amount = (int) $validated['amount'];
@@ -163,17 +158,14 @@ class PaiementController extends Controller
 
             return WithdrawalRequest::create([
                 'talent_profile_id' => $profile->id,
-                'amount'            => $amount,
-                'status'            => WithdrawalStatus::Pending->value,
-                'payout_method'     => $profile->payout_method,
-                'payout_details'    => $profile->payout_details,
+                'amount' => $amount,
+                'status' => WithdrawalStatus::Pending->value,
+                'payout_method' => $profile->payout_method,
+                'payout_details' => $profile->payout_details,
             ]);
         });
 
-        $admins = User::role('admin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new WithdrawalRequestedNotification($withdrawalRequest));
-        }
+        AdminNotificationService::withdrawalRequested($withdrawalRequest);
 
         return back()->with('success', 'Demande de reversement soumise avec succès.');
     }

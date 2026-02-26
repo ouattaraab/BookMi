@@ -13,8 +13,7 @@ class PayoutMethodAddedNotification extends Notification
 
     public function __construct(
         private readonly TalentProfile $talentProfile,
-    ) {
-    }
+    ) {}
 
     /** @return array<int, string> */
     public function via(object $notifiable): array
@@ -24,15 +23,15 @@ class PayoutMethodAddedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $profile   = $this->talentProfile;
+        $profile = $this->talentProfile;
         $talentName = $profile->stage_name
-            ?? trim(($profile->user?->first_name ?? '') . ' ' . ($profile->user?->last_name ?? ''))
+            ?? trim(($profile->user?->first_name ?? '').' '.($profile->user?->last_name ?? ''))
             ?: 'Talent';
-        $method   = $profile->payout_method ?? '—';
-        $phone    = data_get($profile->payout_details, 'phone', '—');
-        $adminUrl = url('/admin/talent-profiles/' . $profile->id);
+        $method = $profile->payout_method ?? '—';
+        $phone = data_get($profile->payout_details, 'phone', '—');
+        $adminUrl = url('/admin/payout-methods');
 
-        return (new MailMessage())
+        return (new MailMessage)
             ->subject('Nouveau compte de paiement à valider — BookMi')
             ->greeting('Bonjour,')
             ->line("**{$talentName}** vient de renseigner ses coordonnées bancaires.")

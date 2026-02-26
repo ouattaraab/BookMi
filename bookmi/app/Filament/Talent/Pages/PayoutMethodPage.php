@@ -5,7 +5,7 @@ namespace App\Filament\Talent\Pages;
 use App\Enums\PaymentMethod;
 use App\Models\TalentProfile;
 use App\Models\User;
-use App\Notifications\PayoutMethodAddedNotification;
+use App\Services\AdminNotificationService;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -18,11 +18,15 @@ class PayoutMethodPage extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon  = 'heroicon-o-credit-card';
+    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+
     protected static ?string $navigationLabel = 'Mon compte de paiement';
-    protected static ?string $title           = 'Compte de paiement';
-    protected static ?int    $navigationSort  = 10;
-    protected static string  $view            = 'filament.talent.pages.payout-method-page';
+
+    protected static ?string $title = 'Compte de paiement';
+
+    protected static ?int $navigationSort = 10;
+
+    protected static string $view = 'filament.talent.pages.payout-method-page';
 
     public ?array $data = [];
 
@@ -31,12 +35,12 @@ class PayoutMethodPage extends Page implements HasForms
     public function mount(): void
     {
         /** @var User $user */
-        $user          = Auth::user();
+        $user = Auth::user();
         $this->profile = TalentProfile::where('user_id', $user->id)->first();
 
         $this->form->fill([
-            'payout_method'         => $this->profile?->payout_method,
-            'payout_details_phone'  => data_get($this->profile?->payout_details, 'phone'),
+            'payout_method' => $this->profile?->payout_method,
+            'payout_details_phone' => data_get($this->profile?->payout_details, 'phone'),
         ]);
     }
 
@@ -51,9 +55,9 @@ class PayoutMethodPage extends Page implements HasForms
                             ->label('Méthode')
                             ->options([
                                 PaymentMethod::OrangeMoney->value => 'Orange Money',
-                                PaymentMethod::Wave->value        => 'Wave',
-                                PaymentMethod::MtnMomo->value     => 'MTN Mobile Money',
-                                PaymentMethod::MoovMoney->value   => 'Moov Money',
+                                PaymentMethod::Wave->value => 'Wave',
+                                PaymentMethod::MtnMomo->value => 'MTN Mobile Money',
+                                PaymentMethod::MoovMoney->value => 'Moov Money',
                                 PaymentMethod::BankTransfer->value => 'Virement bancaire',
                             ])
                             ->required()
@@ -98,7 +102,7 @@ class PayoutMethodPage extends Page implements HasForms
             return;
         }
 
-        $data   = $this->form->getState();
+        $data = $this->form->getState();
         $method = $data['payout_method'];
 
         $details = [];
@@ -111,23 +115,20 @@ class PayoutMethodPage extends Page implements HasForms
             $details['phone'] = $data['payout_details_phone'];
         } else {
             $details['account_number'] = $data['payout_details_account'] ?? '';
-            $details['bank_code']      = $data['payout_details_bank_code'] ?? '';
+            $details['bank_code'] = $data['payout_details_bank_code'] ?? '';
         }
 
         $this->profile->update([
-            'payout_method'             => $method,
-            'payout_details'            => $details,
+            'payout_method' => $method,
+            'payout_details' => $details,
             'payout_method_verified_at' => null,
             'payout_method_verified_by' => null,
         ]);
 
         $this->profile->refresh();
 
-        // Notifier les admins
-        $admins = \App\Models\User::role('admin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new PayoutMethodAddedNotification($this->profile));
-        }
+        // Notifier les admins (email + push in-app)
+        AdminNotificationService::payoutMethodAdded($this->profile);
 
         Notification::make()
             ->title('Compte enregistré — en attente de validation')
@@ -140,10 +141,10 @@ class PayoutMethodPage extends Page implements HasForms
     public function getViewData(): array
     {
         return [
-            'profile'           => $this->profile,
-            'isVerified'        => $this->profile?->payout_method_verified_at !== null,
-            'availableBalance'  => $this->profile?->available_balance ?? 0,
-            'verifiedAt'        => $this->profile?->payout_method_verified_at,
+            'profile' => $this->profile,
+            'isVerified' => $this->profile?->payout_method_verified_at !== null,
+            'availableBalance' => $this->profile?->available_balance ?? 0,
+            'verifiedAt' => $this->profile?->payout_method_verified_at,
         ];
     }
 }

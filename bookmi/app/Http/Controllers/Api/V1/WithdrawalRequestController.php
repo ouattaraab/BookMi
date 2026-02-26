@@ -5,9 +5,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\WithdrawalStatus;
 use App\Http\Requests\Api\StoreWithdrawalRequestRequest;
 use App\Models\TalentProfile;
-use App\Models\User;
 use App\Models\WithdrawalRequest;
-use App\Notifications\WithdrawalRequestedNotification;
+use App\Services\AdminNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,7 @@ class WithdrawalRequestController extends BaseController
     public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user    = $request->user();
+        $user = $request->user();
         $profile = TalentProfile::where('user_id', $user->id)->first();
 
         if (! $profile) {
@@ -34,9 +33,9 @@ class WithdrawalRequestController extends BaseController
             ->paginate(20);
 
         return $this->successResponse([
-            'data'  => $requests->map(fn (WithdrawalRequest $r) => $this->formatRequest($r)),
+            'data' => $requests->map(fn (WithdrawalRequest $r) => $this->formatRequest($r)),
             'total' => $requests->total(),
-            'page'  => $requests->currentPage(),
+            'page' => $requests->currentPage(),
         ]);
     }
 
@@ -53,7 +52,7 @@ class WithdrawalRequestController extends BaseController
     public function store(StoreWithdrawalRequestRequest $request): JsonResponse
     {
         /** @var \App\Models\User $user */
-        $user    = $request->user();
+        $user = $request->user();
         $profile = TalentProfile::where('user_id', $user->id)->first();
 
         if (! $profile) {
@@ -104,18 +103,15 @@ class WithdrawalRequestController extends BaseController
 
             return WithdrawalRequest::create([
                 'talent_profile_id' => $profile->id,
-                'amount'            => $amount,
-                'status'            => WithdrawalStatus::Pending->value,
-                'payout_method'     => $profile->payout_method,
-                'payout_details'    => $profile->payout_details,
+                'amount' => $amount,
+                'status' => WithdrawalStatus::Pending->value,
+                'payout_method' => $profile->payout_method,
+                'payout_details' => $profile->payout_details,
             ]);
         });
 
-        // Notifier les admins par email
-        $admins = User::role('admin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new WithdrawalRequestedNotification($withdrawalRequest));
-        }
+        // Notifier les admins (email + push in-app)
+        AdminNotificationService::withdrawalRequested($withdrawalRequest);
 
         return $this->successResponse($this->formatRequest($withdrawalRequest), 201);
     }
@@ -124,15 +120,15 @@ class WithdrawalRequestController extends BaseController
     private function formatRequest(WithdrawalRequest $r): array
     {
         return [
-            'id'             => $r->id,
-            'amount'         => $r->amount,
-            'status'         => $r->status->value,
-            'status_label'   => $r->status->label(),
-            'payout_method'  => $r->payout_method?->value,
+            'id' => $r->id,
+            'amount' => $r->amount,
+            'status' => $r->status->value,
+            'status_label' => $r->status->label(),
+            'payout_method' => $r->payout_method?->value,
             'payout_details' => $r->payout_details,
-            'note'           => $r->note,
-            'processed_at'   => $r->processed_at?->toISOString(),
-            'created_at'     => $r->created_at?->toISOString(),
+            'note' => $r->note,
+            'processed_at' => $r->processed_at?->toISOString(),
+            'created_at' => $r->created_at?->toISOString(),
         ];
     }
 }

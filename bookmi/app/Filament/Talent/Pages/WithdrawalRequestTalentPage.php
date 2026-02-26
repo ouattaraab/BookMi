@@ -4,9 +4,8 @@ namespace App\Filament\Talent\Pages;
 
 use App\Enums\WithdrawalStatus;
 use App\Models\TalentProfile;
-use App\Models\User;
 use App\Models\WithdrawalRequest;
-use App\Notifications\WithdrawalRequestedNotification;
+use App\Services\AdminNotificationService;
 use Filament\Forms;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -21,22 +20,28 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon  = 'heroicon-o-banknotes';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
     protected static ?string $navigationLabel = 'Mes reversements';
-    protected static ?string $title           = 'Demandes de reversement';
-    protected static ?int    $navigationSort  = 20;
-    protected static string  $view            = 'filament.talent.pages.withdrawal-request-talent-page';
+
+    protected static ?string $title = 'Demandes de reversement';
+
+    protected static ?int $navigationSort = 20;
+
+    protected static string $view = 'filament.talent.pages.withdrawal-request-talent-page';
 
     public ?array $data = [];
 
-    public ?TalentProfile $profile     = null;
-    public bool           $canRequest  = false;
-    public Collection     $history;
+    public ?TalentProfile $profile = null;
+
+    public bool $canRequest = false;
+
+    public Collection $history;
 
     public function mount(): void
     {
-        /** @var User $user */
-        $user          = Auth::user();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         $this->profile = TalentProfile::where('user_id', $user->id)->first();
         $this->history = collect();
 
@@ -72,7 +77,7 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
                             ->minValue(1000)
                             ->maxValue($max)
                             ->required()
-                            ->helperText("Solde disponible : " . number_format($max, 0, ',', ' ') . " XOF"),
+                            ->helperText('Solde disponible : '.number_format($max, 0, ',', ' ').' XOF'),
                     ]),
             ])
             ->statePath('data');
@@ -86,7 +91,7 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
             return;
         }
 
-        $data   = $this->form->getState();
+        $data = $this->form->getState();
         $amount = (int) $data['amount'];
 
         if ($amount > $this->profile->available_balance) {
@@ -104,18 +109,15 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
 
             return WithdrawalRequest::create([
                 'talent_profile_id' => $this->profile->id,
-                'amount'            => $amount,
-                'status'            => WithdrawalStatus::Pending->value,
-                'payout_method'     => $this->profile->payout_method,
-                'payout_details'    => $this->profile->payout_details,
+                'amount' => $amount,
+                'status' => WithdrawalStatus::Pending->value,
+                'payout_method' => $this->profile->payout_method,
+                'payout_details' => $this->profile->payout_details,
             ]);
         });
 
-        // Notifier les admins
-        $admins = User::role('admin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new WithdrawalRequestedNotification($withdrawalRequest));
-        }
+        // Notifier les admins (email + push in-app)
+        AdminNotificationService::withdrawalRequested($withdrawalRequest);
 
         // Rafraîchir l'état
         $this->profile->refresh();
@@ -137,11 +139,11 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
     public function getViewData(): array
     {
         return [
-            'profile'          => $this->profile,
-            'isVerified'       => $this->profile?->payout_method_verified_at !== null,
+            'profile' => $this->profile,
+            'isVerified' => $this->profile?->payout_method_verified_at !== null,
             'availableBalance' => $this->profile?->available_balance ?? 0,
-            'canRequest'       => $this->canRequest,
-            'history'          => $this->history,
+            'canRequest' => $this->canRequest,
+            'history' => $this->history,
         ];
     }
 }
