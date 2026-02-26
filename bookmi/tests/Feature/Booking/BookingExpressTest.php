@@ -10,7 +10,7 @@ use App\Models\TalentProfile;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Bus;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -64,7 +64,7 @@ class BookingExpressTest extends TestCase
     #[Test]
     public function express_booking_is_automatically_accepted(): void
     {
-        Queue::fake([GenerateContractPdf::class]);
+        Bus::fake([GenerateContractPdf::class]);
 
         [, $talent, $package] = $this->createTalentWithPackage(expressEnabled: true);
         $client = $this->createClientUser();
@@ -93,7 +93,7 @@ class BookingExpressTest extends TestCase
     #[Test]
     public function express_booking_dispatches_generate_contract_pdf_job(): void
     {
-        Queue::fake([GenerateContractPdf::class]);
+        Bus::fake([GenerateContractPdf::class]);
 
         [, $talent, $package] = $this->createTalentWithPackage(expressEnabled: true);
         $client = $this->createClientUser();
@@ -108,7 +108,7 @@ class BookingExpressTest extends TestCase
             'is_express'         => true,
         ])->assertStatus(201);
 
-        Queue::assertPushedOn('media', GenerateContractPdf::class);
+        Bus::assertDispatchedSync(GenerateContractPdf::class);
     }
 
     // ─── AC2: Talent sans express → 422 ────────────────────────────────────────

@@ -10,7 +10,7 @@ use App\Models\TalentProfile;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -81,7 +81,7 @@ class BookingContractTest extends TestCase
     #[Test]
     public function accepting_a_booking_dispatches_generate_contract_pdf_job(): void
     {
-        Queue::fake([GenerateContractPdf::class]);
+        Bus::fake([GenerateContractPdf::class]);
 
         [$talentUser, $talent, $package] = $this->createTalentWithPackage();
         $client  = $this->createClientUser();
@@ -92,7 +92,7 @@ class BookingContractTest extends TestCase
         $this->postJson("/api/v1/booking_requests/{$booking->id}/accept")
             ->assertStatus(200);
 
-        Queue::assertPushedOn('media', GenerateContractPdf::class, fn ($job) => $job->booking->id === $booking->id);
+        Bus::assertDispatchedSync(GenerateContractPdf::class, fn ($job) => $job->booking->id === $booking->id);
     }
 
     // ─── AC3 & AC4: Téléchargement du contrat ─────────────────────────────────

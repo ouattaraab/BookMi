@@ -17,6 +17,7 @@ use App\Models\TalentProfile;
 use App\Models\User;
 use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BookingService
 {
@@ -162,7 +163,18 @@ class BookingService
         });
 
         BookingAccepted::dispatch($booking);
-        GenerateContractPdf::dispatch($booking)->onQueue('media');
+
+        // Generate contract synchronously so it is available immediately
+        // regardless of queue driver (critical on shared hosting).
+        // A failure only logs a warning — the admin can regenerate from the panel.
+        try {
+            GenerateContractPdf::dispatchSync($booking);
+        } catch (\Throwable $e) {
+            Log::warning('Contract PDF generation failed after acceptance', [
+                'booking_id' => $booking->id,
+                'error'      => $e->getMessage(),
+            ]);
+        }
 
         return $booking;
     }

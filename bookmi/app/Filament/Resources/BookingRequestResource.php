@@ -224,9 +224,9 @@ class BookingRequestResource extends Resource
                             Storage::disk('local')->delete($record->contract_path);
                         }
                         $record->update(['contract_path' => null]);
-                        GenerateContractPdf::dispatch($record)->onQueue('media');
+                        GenerateContractPdf::dispatchSync($record);
                     })
-                    ->successNotificationTitle('Génération du contrat lancée'),
+                    ->successNotificationTitle('Contrat régénéré avec succès'),
 
                 Tables\Actions\DeleteAction::make()
                     ->label('Supprimer'),
