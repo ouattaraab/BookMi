@@ -18,7 +18,8 @@ class TalentProfileController extends BaseController
 {
     public function __construct(
         private readonly TalentProfileService $service,
-    ) {}
+    ) {
+    }
 
     public function store(StoreTalentProfileRequest $request): JsonResponse
     {
