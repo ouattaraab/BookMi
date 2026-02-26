@@ -76,6 +76,14 @@ class StatisticsController extends Controller
             'pending'   => BookingRequest::where('talent_profile_id', $profile->id)->where('status', BookingStatus::Pending->value)->count(),
         ];
 
+        // ── Monthly booking activity table (last 6 months) ────────────────
+        $monthly = BookingRequest::where('talent_profile_id', $profile->id)
+            ->selectRaw('YEAR(created_at) as year, MONTH(created_at) as month, COUNT(*) as count, SUM(cachet_amount) as revenue')
+            ->where('created_at', '>=', $now->copy()->subMonths(6))
+            ->groupBy('year', 'month')
+            ->orderBy('year')->orderBy('month')
+            ->get();
+
         $financial = compact(
             'revenusTotal',
             'revenusMoisCourant',
@@ -86,6 +94,6 @@ class StatisticsController extends Controller
             'mensuels'
         );
 
-        return view('talent.statistics.index', compact('profileViews', 'financial', 'bookingStats'));
+        return view('talent.statistics.index', compact('profileViews', 'financial', 'bookingStats', 'monthly'));
     }
 }

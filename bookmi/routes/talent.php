@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Web\Talent\AnalyticsController;
 use App\Http\Controllers\Web\Talent\BookingController;
 use App\Http\Controllers\Web\Talent\CalendarController;
 use App\Http\Controllers\Web\Talent\CertificateController;
@@ -41,9 +40,6 @@ Route::delete('/packages/{id}', [PackageController::class, 'destroy'])->name('pa
 Route::get('/messages', [MessageController::class, 'index'])->name('messages');
 Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
 Route::post('/messages/{id}', [MessageController::class, 'send'])->name('messages.send');
-
-// Analytiques
-Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
 // Statistiques
 Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');

@@ -250,5 +250,67 @@
 
     </div>
 
+    {{-- ── Section 4 : Tableau mensuel détaillé ── --}}
+    <div class="stat-fade" style="animation-delay:240ms;background:#FFFFFF;border-radius:20px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);overflow:hidden;">
+        <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
+            <div class="dot" style="background:#1D4ED8;"></div>
+            <h2 style="font-size:0.95rem;font-weight:900;color:#1A2744;margin:0;">Activité mensuelle — 6 derniers mois</h2>
+        </div>
+
+        @if($monthly->isEmpty())
+            <div style="padding:40px 24px;text-align:center;font-size:0.875rem;color:#8A8278;">
+                Aucune activité enregistrée pour la période.
+            </div>
+        @else
+        @php
+            $fullMonthNames = ['','Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+            $maxMonthRevenue = $monthly->max('revenue') ?: 1;
+        @endphp
+        <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+                <thead>
+                    <tr style="border-bottom:1px solid #EAE7E0;background:#FAFAF8;">
+                        <th style="padding:10px 24px;text-align:left;font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;">Mois</th>
+                        <th style="padding:10px 16px;text-align:right;font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;">Réservations</th>
+                        <th style="padding:10px 16px;text-align:right;font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;">Revenu (FCFA)</th>
+                        <th style="padding:10px 24px;text-align:right;font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;">Moy./réserv.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($monthly as $row)
+                    <tr style="border-bottom:1px solid #F5F3EF;transition:background 0.15s;" onmouseover="this.style.background='#FAFAF8'" onmouseout="this.style.background=''">
+                        <td style="padding:13px 24px;font-size:0.875rem;font-weight:600;color:#1A2744;">
+                            {{ $fullMonthNames[(int)$row->month] ?? $row->month }} {{ $row->year }}
+                        </td>
+                        <td style="padding:13px 16px;text-align:right;">
+                            <span style="font-size:0.875rem;font-weight:700;color:#1A2744;">{{ $row->count }}</span>
+                        </td>
+                        <td style="padding:13px 16px;text-align:right;">
+                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+                                <div style="width:80px;background:#EAE7E0;border-radius:9999px;height:5px;overflow:hidden;">
+                                    <div style="height:5px;border-radius:9999px;background:#FF6B35;width:{{ round(($row->revenue / $maxMonthRevenue) * 100) }}%"></div>
+                                </div>
+                                <span style="font-size:0.875rem;font-weight:700;color:#FF6B35;min-width:80px;text-align:right;">{{ number_format($row->revenue, 0, ',', ' ') }}</span>
+                            </div>
+                        </td>
+                        <td style="padding:13px 24px;text-align:right;font-size:0.82rem;color:#8A8278;">
+                            {{ $row->count > 0 ? number_format($row->revenue / $row->count, 0, ',', ' ') : '—' }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr style="border-top:2px solid #E5E1DA;background:#F5F3EF;">
+                        <td style="padding:11px 24px;font-size:0.75rem;font-weight:800;color:#4A4540;text-transform:uppercase;letter-spacing:0.05em;">Total</td>
+                        <td style="padding:11px 16px;text-align:right;font-size:0.875rem;font-weight:800;color:#1A2744;">{{ $monthly->sum('count') }}</td>
+                        <td style="padding:11px 16px;text-align:right;font-size:0.875rem;font-weight:800;color:#FF6B35;">{{ number_format($monthly->sum('revenue'), 0, ',', ' ') }}</td>
+                        <td style="padding:11px 24px;"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        @endif
+    </div>
+
 </div>
 @endsection
