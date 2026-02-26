@@ -117,13 +117,16 @@ class PayoutMethodResource extends Resource
                 Tables\Columns\TextColumn::make('payout_details')
                     ->label('Coordonnées')
                     ->formatStateUsing(function ($state): string {
-                        if (! is_array($state)) {
+                        if (! is_array($state) || empty($state)) {
                             return '—';
                         }
 
+                        // Prefer the phone key for mobile money methods,
+                        // then account_number for bank transfer,
+                        // otherwise join all values (covers any future key).
                         return $state['phone']
                             ?? $state['account_number']
-                            ?? '—';
+                            ?? implode(' / ', array_filter(array_values($state)));
                     }),
 
                 Tables\Columns\TextColumn::make('updated_at')
