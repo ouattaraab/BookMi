@@ -6,6 +6,69 @@ Ce fichier recense toutes les actions réalisées sur le projet : fonctionnalit�
 
 ## 2026-02-26
 
+### Feat — Notifications : push FCM + in-app vers le talent sur toutes les actions admin
+
+**Problème :** Seul l'e-mail était envoyé au talent lors des actions admin (validation/rejet de compte de paiement, changements de statut des reversements). Le push FCM et la notification in-app (cloche) manquaient.
+
+**Solution :** Ajout de `SendPushNotification::dispatch()` après chaque `$user->notify()` dans les deux ressources concernées.
+
+**Tableau récapitulatif :**
+
+| Flow | Destinataire | Email | Push FCM + in-app |
+|------|-------------|-------|-------------------|
+| Talent soumet un compte de paiement | Admin | ✅ | ✅ (déjà présent) |
+| Admin **valide** le compte | Talent | ✅ | ✅ *(ajouté)* |
+| Admin **refuse** le compte | Talent | ✅ | ✅ *(ajouté)* |
+| Talent soumet une demande de reversement | Admin | ✅ | ✅ (déjà présent) |
+| Admin **approuve** la demande | Talent | ✅ | ✅ *(ajouté)* |
+| Admin marque **en cours** | Talent | ✅ | ✅ *(ajouté)* |
+| Admin marque **complété** | Talent | ✅ | ✅ *(ajouté)* |
+| Admin **rejette** la demande | Talent | ✅ | ✅ *(ajouté)* |
+
+**Types FCM et deep-links :**
+- `payout_method_verified` → `/talent-portal/withdrawal-request`
+- `payout_method_rejected` → `/talent-portal/payout-method`
+- `withdrawal_approved` → `/talent-portal/withdrawal-request`
+- `withdrawal_processing` → `/talent-portal/withdrawal-request`
+- `withdrawal_completed` → `/talent-portal/withdrawal-request`
+- `withdrawal_rejected` → `/talent-portal/withdrawal-request`
+
+**Fichiers modifiés :**
+- `app/Filament/Resources/PayoutMethodResource.php`
+- `app/Filament/Resources/WithdrawalRequestResource.php`
+
+---
+
+### Feat — Traçabilité complète des comptes de paiement (payout_method_status)
+
+**Problème :** Lors du rejet d'un compte de paiement, les données étaient effacées (`payout_method = null`) → historique perdu. Seuls les comptes en attente étaient listés dans `/admin/payout-methods`.
+
+**Solution :** Ajout d'un statut explicite `payout_method_status` (pending / verified / rejected) sur `TalentProfile` et conservation des données lors d'un rejet.
+
+**Détails :**
+- Migration : `2026_02_26_120000_add_payout_method_status_to_talent_profiles.php`
+  - Nouvelles colonnes : `payout_method_status` (string nullable), `payout_method_rejection_reason` (text nullable)
+  - Backfill automatique des lignes existantes
+- `PayoutMethodResource` :
+  - Liste **tous** les comptes soumis (toutes statuts), pas seulement les en attente
+  - Badge de statut coloré : orange (en attente) / vert (validé) / rouge (refusé)
+  - Filtre par statut dans le tableau
+  - Badge nav : compte uniquement les **en attente**
+  - Action **Refuser** : ne plus effacer les données — marque `rejected` + stocke le motif
+  - Action **Valider** : marque `verified` + efface le motif de refus précédent
+  - Form view : affiche le statut, la date de validation et le motif de refus
+- `PayoutMethodPage.php` + `TalentProfileController` : définissent `payout_method_status = 'pending'` à chaque nouvelle soumission
+- `WithdrawalRequestResource` : déjà correct — historique complet, aucun changement nécessaire
+
+**Fichiers modifiés/créés :**
+- `database/migrations/2026_02_26_120000_add_payout_method_status_to_talent_profiles.php` *(créé)*
+- `app/Models/TalentProfile.php`
+- `app/Filament/Resources/PayoutMethodResource.php`
+- `app/Filament/Talent/Pages/PayoutMethodPage.php`
+- `app/Http/Controllers/Api/V1/TalentProfileController.php`
+
+---
+
 ### Fix — Admin : champs vides dans les pages ViewRecord
 
 **Problème racine :** Les pages `ViewRecord` de Filament remplissent le formulaire via `$record->toArray()` qui expose les relations eager-loadées en snake_case (ex. `talent_profile`), alors que les champs formulaire utilisent du camelCase dot-notation (ex. `talentProfile.stage_name`). La correspondance échouait silencieusement → tous les champs de relation apparaissaient vides.
@@ -143,3 +206,34 @@ Les pages avec `hasInfolist(): true` ne sont **pas** concernées — Filament r�
 ### Notifications admin
 
 Toujours passer par `AdminNotificationService` pour notifier les admins — ne jamais appeler directement `$admin->notify()` ou `SendPushNotification::dispatch()` en dehors de ce service.
+
+### Notifications talent — pattern complet
+
+Chaque action admin qui affecte un talent doit envoyer **les trois canaux** : e-mail + notification in-app (cloche) + push FCM. Pattern à respecter :
+
+```php
+$user = $record->user; // ou $record->talentProfile?->user
+if ($user) {
+    // 1. E-mail
+    $user->notify(new MyNotification($record));
+
+    // 2. Push in-app + FCM
+    SendPushNotification::dispatch(
+        $user->id,
+        'Titre lisible',
+        'Corps du message contextuel.',
+        [
+            'type' => 'event_type',   // snake_case, utilisé par l'app mobile pour le routing
+            'url'  => '/talent-portal/...',
+        ],
+    );
+}
+```
+
+**Types FCM définis (routing côté app mobile) :**
+- `payout_method_verified` — compte de paiement validé
+- `payout_method_rejected` — compte de paiement refusé
+- `withdrawal_approved` — demande de reversement approuvée
+- `withdrawal_processing` — reversement en cours de traitement
+- `withdrawal_completed` — reversement effectué
+- `withdrawal_rejected` — demande de reversement refusée
