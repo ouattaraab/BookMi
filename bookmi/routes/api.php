@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\V1\ServicePackageController;
 use App\Http\Controllers\Api\V1\TalentProfileController;
 use App\Http\Controllers\Api\V1\VerificationController;
 use App\Http\Controllers\Api\V1\IdentityVerificationController;
+use App\Http\Controllers\Api\V1\WithdrawalRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -113,8 +114,12 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::post('/talent_profiles', [TalentProfileController::class, 'store'])->name('talent_profiles.store');
         Route::get('/talent_profiles/me', [TalentProfileController::class, 'showOwn'])->name('talent_profiles.me');
+        Route::get('/talent_profiles/me/payout_method', [TalentProfileController::class, 'getPayoutMethod'])->name('talent_profiles.payout_method.get');
         Route::patch('/talent_profiles/me/payout_method', [TalentProfileController::class, 'updatePayoutMethod'])->name('talent_profiles.payout_method');
         Route::put('/talent_profiles/me/auto_reply', [TalentProfileController::class, 'updateAutoReply'])->name('talent_profiles.auto_reply');
+
+        Route::get('/me/withdrawal_requests', [WithdrawalRequestController::class, 'index'])->name('me.withdrawal_requests.index');
+        Route::post('/me/withdrawal_requests', [WithdrawalRequestController::class, 'store'])->name('me.withdrawal_requests.store');
         Route::patch('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'update'])->name('talent_profiles.update');
         Route::delete('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'destroy'])->name('talent_profiles.destroy');
 

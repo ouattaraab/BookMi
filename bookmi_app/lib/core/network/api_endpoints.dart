@@ -85,4 +85,10 @@ abstract final class ApiEndpoints {
   // Availability notification
   static String talentNotifyAvailability(int talentId) =>
       '/talents/$talentId/notify-availability';
+
+  // Payout method (talent)
+  static const mePayoutMethod = '/talent_profiles/me/payout_method';
+
+  // Withdrawal requests (talent)
+  static const meWithdrawalRequests = '/me/withdrawal_requests';
 }

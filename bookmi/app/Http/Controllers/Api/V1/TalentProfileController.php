@@ -9,6 +9,8 @@ use App\Http\Requests\Api\UpdatePayoutMethodRequest;
 use App\Http\Requests\Api\UpdateTalentProfileRequest;
 use App\Http\Resources\TalentProfileResource;
 use App\Models\TalentProfile;
+use App\Models\User;
+use App\Notifications\PayoutMethodAddedNotification;
 use App\Services\TalentProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -70,9 +72,37 @@ class TalentProfileController extends BaseController
     }
 
     /**
+     * GET /v1/talent_profiles/me/payout_method
+     *
+     * Retourne le compte de paiement actuel du talent et son statut de validation.
+     */
+    public function getPayoutMethod(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user    = $request->user();
+        $profile = $this->service->getByUserId($user->id);
+
+        if (! $profile) {
+            return $this->errorResponse(
+                'TALENT_PROFILE_NOT_FOUND',
+                'Aucun profil talent trouvé pour cet utilisateur.',
+                404,
+            );
+        }
+
+        return $this->successResponse([
+            'payout_method'             => $profile->payout_method,
+            'payout_details'            => $profile->payout_details,
+            'payout_method_verified_at' => $profile->payout_method_verified_at?->toISOString(),
+            'available_balance'         => $profile->available_balance,
+        ]);
+    }
+
+    /**
      * PATCH /v1/talent_profiles/me/payout_method
      *
-     * Talent configures their payout method and details for automatic payouts.
+     * Talent configures their payout method and details.
+     * Resets verification status and notifies admins.
      */
     public function updatePayoutMethod(UpdatePayoutMethodRequest $request): JsonResponse
     {
@@ -89,13 +119,25 @@ class TalentProfileController extends BaseController
         }
 
         $profile->update([
-            'payout_method'  => $request->validated('payout_method'),
-            'payout_details' => $request->validated('payout_details'),
+            'payout_method'             => $request->validated('payout_method'),
+            'payout_details'            => $request->validated('payout_details'),
+            'payout_method_verified_at' => null, // Reset validation on account change
+            'payout_method_verified_by' => null,
         ]);
 
+        $profile->refresh();
+
+        // Notifier les admins qu'un compte est à valider
+        $admins = User::role('admin')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new PayoutMethodAddedNotification($profile));
+        }
+
         return $this->successResponse([
-            'payout_method'  => $profile->fresh()->payout_method,
-            'payout_details' => $profile->fresh()->payout_details,
+            'payout_method'             => $profile->payout_method,
+            'payout_details'            => $profile->payout_details,
+            'payout_method_verified_at' => null,
+            'available_balance'         => $profile->available_balance,
         ]);
     }
 

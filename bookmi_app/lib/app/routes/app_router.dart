@@ -27,6 +27,7 @@ import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/conversation_list_page.dart';
+import 'package:bookmi_app/features/profile/data/repositories/payout_method_repository.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/favorites_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/identity_verification_page.dart';
@@ -72,7 +73,8 @@ GoRouter buildAppRouter(
   OnboardingRepository onboardingRepo,
   MessagingRepository messagingRepo,
   ProfileRepository profileRepo,
-  NotificationRepository notificationRepo, {
+  NotificationRepository notificationRepo,
+  PayoutMethodRepository payoutMethodRepo, {
   NotificationService? notificationService,
 }) {
   final router = GoRouter(
@@ -306,7 +308,10 @@ GoRouter buildAppRouter(
                     path: RoutePaths.profilePaymentMethods,
                     name: RouteNames.profilePaymentMethods,
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) => const PaymentMethodsPage(),
+                    builder: (context, state) => RepositoryProvider.value(
+                      value: payoutMethodRepo,
+                      child: const PaymentMethodsPage(),
+                    ),
                   ),
                   GoRoute(
                     path: RoutePaths.profileIdentityVerification,

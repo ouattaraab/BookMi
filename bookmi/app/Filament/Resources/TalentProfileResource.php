@@ -7,10 +7,12 @@ use App\Filament\Resources\TalentProfileResource\Pages;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 
 class TalentProfileResource extends Resource
 {
@@ -80,6 +82,22 @@ class TalentProfileResource extends Resource
                         ->disabled(),
                     Forms\Components\TextInput::make('talentProfile.profile_completion_percentage')
                         ->label('Complétion du profil (%)')
+                        ->disabled(),
+                ])->columns(2),
+
+            Forms\Components\Section::make('Compte de paiement')
+                ->schema([
+                    Forms\Components\TextInput::make('talentProfile.payout_method')
+                        ->label('Méthode')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.available_balance')
+                        ->label('Solde disponible (XOF)')
+                        ->disabled(),
+                    Forms\Components\KeyValue::make('talentProfile.payout_details')
+                        ->label('Coordonnées')
+                        ->disabled(),
+                    Forms\Components\DateTimePicker::make('talentProfile.payout_method_verified_at')
+                        ->label('Validé le')
                         ->disabled(),
                 ])->columns(2),
 
@@ -164,6 +182,28 @@ class TalentProfileResource extends Resource
                     ->formatStateUsing(fn ($state): string => $state !== null ? $state . '%' : '—')
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('talentProfile.payout_method')
+                    ->label('Méthode paiement')
+                    ->formatStateUsing(fn ($state) => $state ?? '—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\IconColumn::make('talentProfile.payout_method_verified_at')
+                    ->label('Compte validé')
+                    ->boolean()
+                    ->getStateUsing(fn (User $record): bool => $record->talentProfile?->payout_method_verified_at !== null)
+                    ->trueIcon('heroicon-o-check-badge')
+                    ->falseIcon('heroicon-o-clock')
+                    ->trueColor('success')
+                    ->falseColor('warning')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('talentProfile.available_balance')
+                    ->label('Solde (XOF)')
+                    ->numeric(thousandsSeparator: ' ')
+                    ->default('—')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Inscrit le')
                     ->dateTime('d/m/Y')
@@ -207,8 +247,88 @@ class TalentProfileResource extends Resource
                         false: fn (Builder $query) => $query->whereDoesntHave('talentProfile'),
                         blank: fn (Builder $query) => $query,
                     ),
+
+                Tables\Filters\TernaryFilter::make('payout_verified')
+                    ->label('Compte de paiement')
+                    ->placeholder('Tous')
+                    ->trueLabel('Compte validé')
+                    ->falseLabel('En attente de validation')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereHas(
+                            'talentProfile',
+                            fn ($q) => $q->whereNotNull('payout_method_verified_at')
+                        ),
+                        false: fn (Builder $query) => $query->whereHas(
+                            'talentProfile',
+                            fn ($q) => $q->whereNotNull('payout_method')->whereNull('payout_method_verified_at')
+                        ),
+                        blank: fn (Builder $query) => $query,
+                    ),
             ])
             ->actions([
+                // ── Valider le compte de paiement ───────────────────────────
+                Tables\Actions\Action::make('verify_payout')
+                    ->label('Valider compte')
+                    ->icon('heroicon-o-check-badge')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Valider le compte de paiement')
+                    ->modalDescription('Le talent pourra effectuer des demandes de reversement une fois son compte validé.')
+                    ->visible(
+                        fn (User $record): bool =>
+                        $record->talentProfile !== null
+                        && $record->talentProfile->payout_method !== null
+                        && $record->talentProfile->payout_method_verified_at === null
+                    )
+                    ->action(function (User $record): void {
+                        $profile = $record->talentProfile;
+                        if (! $profile) {
+                            return;
+                        }
+
+                        $profile->update([
+                            'payout_method_verified_at' => now(),
+                            'payout_method_verified_by' => Auth::id(),
+                        ]);
+
+                        // Notifier le talent par push
+                        dispatch(new \App\Jobs\SendPushNotification(
+                            userId: $record->id,
+                            title:  'Compte validé',
+                            body:   'Votre compte de paiement a été validé. Vous pouvez maintenant demander un reversement.',
+                            data:   ['type' => 'payout_verified'],
+                        ));
+
+                        Notification::make()
+                            ->title('Compte de paiement validé')
+                            ->success()
+                            ->send();
+                    }),
+
+                // ── Invalider le compte de paiement ─────────────────────────
+                Tables\Actions\Action::make('invalidate_payout')
+                    ->label('Invalider compte')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Invalider le compte de paiement')
+                    ->modalDescription('Le talent devra re-soumettre et faire valider son compte avant de demander un reversement.')
+                    ->visible(
+                        fn (User $record): bool =>
+                        $record->talentProfile?->payout_method_verified_at !== null
+                    )
+                    ->action(function (User $record): void {
+                        $record->talentProfile?->update([
+                            'payout_method_verified_at' => null,
+                            'payout_method_verified_by' => null,
+                        ]);
+
+                        Notification::make()
+                            ->title('Compte de paiement invalidé')
+                            ->warning()
+                            ->send();
+                    }),
+
                 Tables\Actions\ViewAction::make()
                     ->label('Voir'),
             ])

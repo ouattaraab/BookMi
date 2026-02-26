@@ -18,6 +18,7 @@ import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:bookmi_app/features/profile/data/repositories/payout_method_repository.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
@@ -89,6 +90,7 @@ class _AppDependencies {
     required this.messagingRepo,
     required this.profileRepo,
     required this.notificationRepo,
+    required this.payoutMethodRepo,
     required this.router,
   });
 
@@ -104,6 +106,7 @@ class _AppDependencies {
   final MessagingRepository messagingRepo;
   final ProfileRepository profileRepo;
   final NotificationRepository notificationRepo;
+  final PayoutMethodRepository payoutMethodRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -171,6 +174,7 @@ class _AppDependencies {
     final messagingRepo = MessagingRepository(apiClient: apiClient);
     final profileRepo = ProfileRepository(apiClient: apiClient);
     final notificationRepo = NotificationRepository(apiClient: apiClient);
+    final payoutMethodRepo = PayoutMethodRepository(apiClient: apiClient);
 
     final router = buildAppRouter(
       talentProfileRepo,
@@ -182,6 +186,7 @@ class _AppDependencies {
       messagingRepo,
       profileRepo,
       notificationRepo,
+      payoutMethodRepo,
       notificationService: NotificationService.instance,
     );
 
@@ -198,6 +203,7 @@ class _AppDependencies {
       messagingRepo: messagingRepo,
       profileRepo: profileRepo,
       notificationRepo: notificationRepo,
+      payoutMethodRepo: payoutMethodRepo,
       router: router,
     );
   }

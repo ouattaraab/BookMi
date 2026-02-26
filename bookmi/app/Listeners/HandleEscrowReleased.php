@@ -3,36 +3,42 @@
 namespace App\Listeners;
 
 use App\Events\EscrowReleased;
-use App\Jobs\ProcessPayout;
 use App\Jobs\SendPushNotification;
 
 class HandleEscrowReleased
 {
     /**
-     * Dispatch the ProcessPayout job with a configurable delay (default 24h per NFR).
-     * The delay allows BookMi to review the payout before it hits the talent's account.
+     * Lorsqu'un escrow est libéré :
+     * 1. Crédite le solde disponible du talent (available_balance).
+     * 2. Notifie le talent par push.
      */
     public function handle(EscrowReleased $event): void
     {
-        $delayHours = config('bookmi.escrow.payout_delay_hours', 24);
-
-        ProcessPayout::dispatch($event->escrowHold->id)
-            ->delay(now()->addHours($delayHours));
-
-        // Notify talent that payout is being processed
         $escrowHold = $event->escrowHold;
         $booking    = $escrowHold->bookingRequest;
-        if ($booking) {
-            $talent = $booking->talentProfile;
-            if ($talent && $talent->user_id) {
-                $amount = number_format($escrowHold->cachet_amount / 100, 0, ',', ' ');
-                dispatch(new SendPushNotification(
-                    userId: $talent->user_id,
-                    title:  'Virement en cours',
-                    body:   "Votre virement de {$amount} XOF a été initié.",
-                    data:   ['booking_id' => (string) $booking->id, 'type' => 'escrow_released'],
-                ));
-            }
+
+        if (! $booking) {
+            return;
+        }
+
+        $talent = $booking->talentProfile;
+
+        if (! $talent) {
+            return;
+        }
+
+        // Créditer le solde disponible du talent
+        $talent->increment('available_balance', $escrowHold->cachet_amount);
+
+        // Notifier le talent
+        if ($talent->user_id) {
+            $amount = number_format($escrowHold->cachet_amount, 0, ',', ' ');
+            dispatch(new SendPushNotification(
+                userId: $talent->user_id,
+                title:  'Revenus disponibles',
+                body:   "{$amount} XOF ont été ajoutés à votre solde disponible.",
+                data:   ['booking_id' => (string) $booking->id, 'type' => 'balance_credited'],
+            ));
         }
     }
 }
