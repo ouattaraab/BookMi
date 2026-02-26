@@ -984,8 +984,9 @@ class _TalentLevelCard extends StatelessWidget {
     final nextMin = nextLevel != null ? (_levelMins[nextLevel] ?? 0) : null;
     final color = _levelColors[level] ?? const Color(0xFF94A3B8);
     final label = _levelLabels[level] ?? level;
-    final nextLabel =
-        nextLevel != null ? (_levelLabels[nextLevel] ?? nextLevel) : null;
+    final nextLabel = nextLevel != null
+        ? (_levelLabels[nextLevel] ?? nextLevel)
+        : null;
 
     double progress;
     int remaining;
@@ -1030,8 +1031,10 @@ class _TalentLevelCard extends StatelessWidget {
               ),
               const Spacer(),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),

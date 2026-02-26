@@ -83,11 +83,9 @@ class ProfileRepository {
           final profileRes = await _dio.get<Map<String, dynamic>>(
             ApiEndpoints.meTalentProfile,
           );
-          final pd =
-              profileRes.data?['data'] as Map<String, dynamic>? ?? {};
+          final pd = profileRes.data?['data'] as Map<String, dynamic>? ?? {};
           talentLevel = (pd['talent_level'] as String?) ?? '';
-          totalBookings =
-              (pd['total_bookings'] as int?) ?? nombrePrestations;
+          totalBookings = (pd['total_bookings'] as int?) ?? nombrePrestations;
         } on DioException {
           // talent_level unavailable — keep defaults
         }
