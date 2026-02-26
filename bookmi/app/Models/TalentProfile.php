@@ -52,6 +52,8 @@ class TalentProfile extends Model
         'payout_details',
         'payout_method_verified_at',
         'payout_method_verified_by',
+        'payout_method_status',
+        'payout_method_rejection_reason',
         'available_balance',
         'auto_reply_message',
         'auto_reply_is_active',

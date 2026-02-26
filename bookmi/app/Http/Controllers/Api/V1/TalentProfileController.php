@@ -118,10 +118,12 @@ class TalentProfileController extends BaseController
         }
 
         $profile->update([
-            'payout_method' => $request->validated('payout_method'),
-            'payout_details' => $request->validated('payout_details'),
-            'payout_method_verified_at' => null, // Reset validation on account change
-            'payout_method_verified_by' => null,
+            'payout_method'                  => $request->validated('payout_method'),
+            'payout_details'                 => $request->validated('payout_details'),
+            'payout_method_verified_at'      => null, // Reset validation on account change
+            'payout_method_verified_by'      => null,
+            'payout_method_status'           => 'pending',
+            'payout_method_rejection_reason' => null,
         ]);
 
         $profile->refresh();

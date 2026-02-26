@@ -119,10 +119,12 @@ class PayoutMethodPage extends Page implements HasForms
         }
 
         $this->profile->update([
-            'payout_method' => $method,
-            'payout_details' => $details,
-            'payout_method_verified_at' => null,
-            'payout_method_verified_by' => null,
+            'payout_method'                  => $method,
+            'payout_details'                 => $details,
+            'payout_method_verified_at'      => null,
+            'payout_method_verified_by'      => null,
+            'payout_method_status'           => 'pending',
+            'payout_method_rejection_reason' => null,
         ]);
 
         $this->profile->refresh();

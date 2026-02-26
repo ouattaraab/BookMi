@@ -37,7 +37,11 @@ class PayoutMethodResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $count = TalentProfile::whereNotNull('payout_method')
-            ->whereNull('payout_method_verified_at')
+            ->where(
+                fn (Builder $q) => $q
+                ->whereNull('payout_method_status')
+                ->orWhere('payout_method_status', 'pending')
+            )
             ->count();
 
         return $count > 0 ? (string) $count : null;
@@ -48,12 +52,11 @@ class PayoutMethodResource extends Resource
         return 'warning';
     }
 
-    // Ne lister que les profils avec un compte soumis et non encore validé
+    // Tous les profils ayant soumis un compte — toutes statuts confondus (traçabilité).
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
             ->whereNotNull('payout_method')
-            ->whereNull('payout_method_verified_at')
             ->with('user');
     }
 
@@ -82,12 +85,27 @@ class PayoutMethodResource extends Resource
                         ->label('Méthode')
                         ->formatStateUsing(fn ($state) => $state ?? '—')
                         ->disabled(),
+                    Forms\Components\TextInput::make('payout_method_status')
+                        ->label('Statut')
+                        ->formatStateUsing(fn ($state) => match ($state) {
+                            'verified' => 'Validé',
+                            'rejected' => 'Refusé',
+                            default    => 'En attente',
+                        })
+                        ->disabled(),
                     Forms\Components\KeyValue::make('payout_details')
                         ->label('Coordonnées')
+                        ->disabled(),
+                    Forms\Components\DateTimePicker::make('payout_method_verified_at')
+                        ->label('Validé le')
                         ->disabled(),
                     Forms\Components\DateTimePicker::make('updated_at')
                         ->label('Soumis le')
                         ->disabled(),
+                    Forms\Components\Textarea::make('payout_method_rejection_reason')
+                        ->label('Motif du refus')
+                        ->disabled()
+                        ->visible(fn ($record) => $record?->payout_method_status === 'rejected'),
                 ])->columns(2),
         ]);
     }
@@ -121,12 +139,22 @@ class PayoutMethodResource extends Resource
                             return '—';
                         }
 
-                        // Prefer the phone key for mobile money methods,
-                        // then account_number for bank transfer,
-                        // otherwise join all values (covers any future key).
                         return $state['phone']
                             ?? $state['account_number']
                             ?? implode(' / ', array_filter(array_values($state)));
+                    }),
+
+                Tables\Columns\BadgeColumn::make('payout_method_status')
+                    ->label('Statut')
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'verified' => 'Validé',
+                        'rejected' => 'Refusé',
+                        default    => 'En attente',
+                    })
+                    ->color(fn ($state) => match ($state) {
+                        'verified' => 'success',
+                        'rejected' => 'danger',
+                        default    => 'warning',
                     }),
 
                 Tables\Columns\TextColumn::make('updated_at')
@@ -134,7 +162,16 @@ class PayoutMethodResource extends Resource
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
             ])
-            ->filters([])
+            ->filters([
+                Tables\Filters\SelectFilter::make('payout_method_status')
+                    ->label('Statut')
+                    ->options([
+                        'pending'  => 'En attente',
+                        'verified' => 'Validé',
+                        'rejected' => 'Refusé',
+                    ])
+                    ->placeholder('Tous'),
+            ])
             ->actions([
                 // ── Valider ─────────────────────────────────────────────────
                 Tables\Actions\Action::make('verify')
@@ -144,10 +181,16 @@ class PayoutMethodResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Valider ce compte de paiement')
                     ->modalDescription('Le talent sera notifié par e-mail et pourra désormais effectuer des demandes de reversement.')
+                    ->visible(
+                        fn (TalentProfile $record): bool =>
+                        $record->payout_method_status !== 'verified'
+                    )
                     ->action(function (TalentProfile $record): void {
                         $record->update([
-                            'payout_method_verified_at' => now(),
-                            'payout_method_verified_by' => Auth::id(),
+                            'payout_method_verified_at'       => now(),
+                            'payout_method_verified_by'       => Auth::id(),
+                            'payout_method_status'            => 'verified',
+                            'payout_method_rejection_reason'  => null,
                         ]);
 
                         $record->user?->notify(new PayoutMethodVerifiedNotification($record));
@@ -163,6 +206,10 @@ class PayoutMethodResource extends Resource
                     ->label('Refuser')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
+                    ->visible(
+                        fn (TalentProfile $record): bool =>
+                        $record->payout_method_status !== 'rejected'
+                    )
                     ->form([
                         Forms\Components\Textarea::make('reason')
                             ->label('Motif du refus (visible par le talent)')
@@ -170,16 +217,15 @@ class PayoutMethodResource extends Resource
                             ->required(),
                     ])
                     ->action(function (TalentProfile $record, array $data): void {
-                        // Notifier le talent avant de vider les données
-                        $record->user?->notify(new PayoutMethodRejectedNotification($data['reason']));
-
-                        // Effacer le compte soumis — le talent devra en renseigner un nouveau
+                        // Conserver les données pour la traçabilité — ne pas effacer payout_method/details.
                         $record->update([
-                            'payout_method' => null,
-                            'payout_details' => null,
-                            'payout_method_verified_at' => null,
-                            'payout_method_verified_by' => null,
+                            'payout_method_status'           => 'rejected',
+                            'payout_method_rejection_reason' => $data['reason'],
+                            'payout_method_verified_at'      => null,
+                            'payout_method_verified_by'      => null,
                         ]);
+
+                        $record->user?->notify(new PayoutMethodRejectedNotification($data['reason']));
 
                         Notification::make()
                             ->title('Compte refusé — talent notifié')
@@ -201,7 +247,7 @@ class PayoutMethodResource extends Resource
     {
         return [
             'index' => Pages\ListPayoutMethods::route('/'),
-            'view' => Pages\ViewPayoutMethod::route('/{record}'),
+            'view'  => Pages\ViewPayoutMethod::route('/{record}'),
         ];
     }
 }
