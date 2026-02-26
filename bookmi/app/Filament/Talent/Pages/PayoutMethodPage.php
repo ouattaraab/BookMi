@@ -32,15 +32,24 @@ class PayoutMethodPage extends Page implements HasForms
 
     public ?TalentProfile $profile = null;
 
+    /** Controls whether the form is visible (true) or the summary card (false). */
+    public bool $showingForm = false;
+
     public function mount(): void
     {
         /** @var User $user */
         $user = Auth::user();
         $this->profile = TalentProfile::where('user_id', $user->id)->first();
 
+        // Show form unless the account is currently verified
+        $this->showingForm = ! $this->profile?->payout_method
+            || $this->profile?->payout_method_status !== 'verified';
+
         $this->form->fill([
-            'payout_method' => $this->profile?->payout_method,
-            'payout_details_phone' => data_get($this->profile?->payout_details, 'phone'),
+            'payout_method'          => $this->profile?->payout_method,
+            'payout_details_phone'   => data_get($this->profile?->payout_details, 'phone'),
+            'payout_details_account' => data_get($this->profile?->payout_details, 'account_number'),
+            'payout_details_bank_code' => data_get($this->profile?->payout_details, 'bank_code'),
         ]);
     }
 
@@ -94,6 +103,50 @@ class PayoutMethodPage extends Page implements HasForms
             ->statePath('data');
     }
 
+    public function showForm(): void
+    {
+        // Clear form for fresh account entry
+        $this->form->fill([
+            'payout_method'            => null,
+            'payout_details_phone'     => null,
+            'payout_details_account'   => null,
+            'payout_details_bank_code' => null,
+        ]);
+        $this->showingForm = true;
+    }
+
+    public function hideForm(): void
+    {
+        $this->showingForm = false;
+    }
+
+    public function deletePayoutMethod(): void
+    {
+        if (! $this->profile) {
+            Notification::make()->title('Aucun profil talent trouvé.')->danger()->send();
+
+            return;
+        }
+
+        $this->profile->update([
+            'payout_method'                  => null,
+            'payout_details'                 => null,
+            'payout_method_verified_at'      => null,
+            'payout_method_verified_by'      => null,
+            'payout_method_status'           => null,
+            'payout_method_rejection_reason' => null,
+        ]);
+
+        $this->profile->refresh();
+        $this->showingForm = false;
+        $this->form->fill();
+
+        Notification::make()
+            ->title('Compte de paiement supprimé')
+            ->success()
+            ->send();
+    }
+
     public function save(): void
     {
         if (! $this->profile) {
@@ -128,6 +181,7 @@ class PayoutMethodPage extends Page implements HasForms
         ]);
 
         $this->profile->refresh();
+        $this->showingForm = false;
 
         // Notifier les admins (email + push in-app)
         AdminNotificationService::payoutMethodAdded($this->profile);
@@ -142,11 +196,15 @@ class PayoutMethodPage extends Page implements HasForms
     /** @return array<string, mixed> */
     public function getViewData(): array
     {
+        $this->profile?->refresh();
+
         return [
-            'profile' => $this->profile,
-            'isVerified' => $this->profile?->payout_method_verified_at !== null,
-            'availableBalance' => $this->profile?->available_balance ?? 0,
-            'verifiedAt' => $this->profile?->payout_method_verified_at,
+            'profile'            => $this->profile,
+            'isVerified'         => $this->profile?->payout_method_status === 'verified',
+            'availableBalance'   => $this->profile?->available_balance ?? 0,
+            'verifiedAt'         => $this->profile?->payout_method_verified_at,
+            'payoutMethodStatus' => $this->profile?->payout_method_status,
+            'rejectionReason'    => $this->profile?->payout_method_rejection_reason,
         ];
     }
 }

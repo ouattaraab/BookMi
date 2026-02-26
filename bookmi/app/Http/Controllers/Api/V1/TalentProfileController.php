@@ -90,10 +90,12 @@ class TalentProfileController extends BaseController
         }
 
         return $this->successResponse([
-            'payout_method' => $profile->payout_method,
-            'payout_details' => $profile->payout_details,
-            'payout_method_verified_at' => $profile->payout_method_verified_at?->toISOString(),
-            'available_balance' => $profile->available_balance,
+            'payout_method'                  => $profile->payout_method,
+            'payout_details'                 => $profile->payout_details,
+            'payout_method_verified_at'      => $profile->payout_method_verified_at?->toISOString(),
+            'payout_method_status'           => $profile->payout_method_status,
+            'payout_method_rejection_reason' => $profile->payout_method_rejection_reason,
+            'available_balance'              => $profile->available_balance,
         ]);
     }
 
@@ -203,6 +205,37 @@ class TalentProfileController extends BaseController
             'auto_reply_message' => $profile->fresh()->auto_reply_message,
             'auto_reply_is_active' => $profile->fresh()->auto_reply_is_active,
         ]);
+    }
+
+    /**
+     * DELETE /v1/talent_profiles/me/payout_method
+     *
+     * Talent removes their payout account.
+     */
+    public function deletePayoutMethod(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $profile = $this->service->getByUserId($user->id);
+
+        if (! $profile) {
+            return $this->errorResponse(
+                'TALENT_PROFILE_NOT_FOUND',
+                'Aucun profil talent trouvé pour cet utilisateur.',
+                404,
+            );
+        }
+
+        $profile->update([
+            'payout_method'                  => null,
+            'payout_details'                 => null,
+            'payout_method_verified_at'      => null,
+            'payout_method_verified_by'      => null,
+            'payout_method_status'           => null,
+            'payout_method_rejection_reason' => null,
+        ]);
+
+        return response()->json(null, 204);
     }
 
     public function destroy(Request $request, TalentProfile $talentProfile): JsonResponse

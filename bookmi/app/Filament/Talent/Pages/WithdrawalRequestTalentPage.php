@@ -46,7 +46,7 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
         $this->history = collect();
 
         if ($this->profile) {
-            $this->canRequest = $this->profile->payout_method_verified_at !== null
+            $this->canRequest = $this->profile->payout_method_status === 'verified'
                 && $this->profile->available_balance > 0
                 && ! WithdrawalRequest::where('talent_profile_id', $this->profile->id)
                     ->whereIn('status', [
@@ -61,6 +61,28 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
         }
 
         $this->form->fill();
+    }
+
+    /** Called by wire:poll to refresh history and canRequest without a full page reload. */
+    public function refreshHistory(): void
+    {
+        if (! $this->profile) {
+            return;
+        }
+
+        $this->profile->refresh();
+
+        $this->history = WithdrawalRequest::where('talent_profile_id', $this->profile->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $this->canRequest = $this->profile->payout_method_status === 'verified'
+            && $this->profile->available_balance > 0
+            && ! $this->history->whereIn('status', [
+                WithdrawalStatus::Pending->value,
+                WithdrawalStatus::Approved->value,
+                WithdrawalStatus::Processing->value,
+            ])->count();
     }
 
     public function form(Form $form): Form
@@ -139,11 +161,12 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
     public function getViewData(): array
     {
         return [
-            'profile' => $this->profile,
-            'isVerified' => $this->profile?->payout_method_verified_at !== null,
-            'availableBalance' => $this->profile?->available_balance ?? 0,
-            'canRequest' => $this->canRequest,
-            'history' => $this->history,
+            'profile'            => $this->profile,
+            'isVerified'         => $this->profile?->payout_method_status === 'verified',
+            'payoutMethodStatus' => $this->profile?->payout_method_status,
+            'availableBalance'   => $this->profile?->available_balance ?? 0,
+            'canRequest'         => $this->canRequest,
+            'history'            => $this->history,
         ];
     }
 }

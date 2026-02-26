@@ -31,44 +31,15 @@
         </div>
     </div>
 
-    {{-- ── Formulaire de demande ─────────────────────────────────────────── --}}
-    @if($canRequest)
-        <div class="mb-8">
-            <x-filament-panels::form wire:submit="request">
-                {{ $this->form }}
-                <x-filament-panels::form.actions
-                    :actions="[
-                        \Filament\Actions\Action::make('request')
-                            ->label('Soumettre la demande')
-                            ->submit('request')
-                            ->color('success')
-                    ]"
-                />
-            </x-filament-panels::form>
-        </div>
-    @elseif(!$isVerified)
-        <div class="mb-8 rounded-lg bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-            Rendez-vous dans <strong>Mon compte de paiement</strong> pour enregistrer et faire valider votre compte.
-        </div>
-    @elseif($availableBalance <= 0)
-        <div class="mb-8 rounded-lg bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-4 text-center text-sm text-gray-500 dark:text-gray-400">
-            Votre solde disponible est de 0 XOF. Vos revenus seront disponibles après la confirmation d'une prestation par votre client.
-        </div>
-    @else
-        <div class="mb-8 rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 p-4 text-center text-sm text-blue-700 dark:text-blue-300">
-            Vous avez déjà une demande de reversement en cours. Attendez son traitement avant d'en soumettre une nouvelle.
-        </div>
-    @endif
+    {{-- ── Historique (affiché EN PREMIER quand il existe) ─────────────── --}}
+    @if($history->isNotEmpty())
+        @php
+            $hasActiveRequest = $history->whereIn('status', ['pending', 'approved', 'processing'])->isNotEmpty();
+        @endphp
 
-    {{-- ── Historique ───────────────────────────────────────────────────── --}}
-    <div>
-        <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Historique des demandes</h3>
-
-        @if($history->isEmpty())
-            <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center text-sm text-gray-400">
-                Aucune demande effectuée pour l'instant.
-            </div>
-        @else
+        <div class="mb-8"
+            @if($hasActiveRequest) wire:poll.15s="refreshHistory" @endif>
+            <h3 class="text-base font-semibold text-gray-900 dark:text-white mb-3">Historique des demandes</h3>
             <div class="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                 <table class="w-full text-sm">
                     <thead class="bg-gray-50 dark:bg-gray-800 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
@@ -111,7 +82,34 @@
                     </tbody>
                 </table>
             </div>
-        @endif
-    </div>
+        </div>
+    @endif
+
+    {{-- ── Formulaire de demande (affiché seulement si eligible) ───────── --}}
+    @if($canRequest)
+        <x-filament-panels::form wire:submit="request">
+            {{ $this->form }}
+            <x-filament-panels::form.actions
+                :actions="[
+                    \Filament\Actions\Action::make('request')
+                        ->label('Soumettre la demande')
+                        ->submit('request')
+                        ->color('success')
+                ]"
+            />
+        </x-filament-panels::form>
+    @elseif(!$isVerified)
+        <div class="rounded-lg bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+            Rendez-vous dans <strong>Mon compte de paiement</strong> pour enregistrer et faire valider votre compte.
+        </div>
+    @elseif($availableBalance <= 0)
+        <div class="rounded-lg bg-gray-50 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+            Votre solde disponible est de 0 XOF. Vos revenus seront disponibles après la confirmation d'une prestation par votre client.
+        </div>
+    @else
+        <div class="rounded-lg bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 p-4 text-center text-sm text-blue-700 dark:text-blue-300">
+            Vous avez déjà une demande de reversement en cours. Attendez son traitement avant d'en soumettre une nouvelle.
+        </div>
+    @endif
 
 </x-filament-panels::page>

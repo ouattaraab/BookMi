@@ -384,6 +384,16 @@ GoRouter buildAppRouter(
       router.push('/bookings/booking/$bookingId');
     } else if (type == 'new_message' || type == 'admin_broadcast') {
       router.go(RoutePaths.messages);
+    } else if (type == 'payout_method_verified' ||
+        type == 'payout_method_rejected') {
+      // Route to "Mon compte" tab (index 0) of payment methods page
+      router.goNamed(RouteNames.profilePaymentMethods);
+    } else if (type == 'withdrawal_approved' ||
+        type == 'withdrawal_processing' ||
+        type == 'withdrawal_completed' ||
+        type == 'withdrawal_rejected') {
+      // Route to "Reversements" tab — the page will reload and show updated status
+      router.goNamed(RouteNames.profilePaymentMethods);
     } else {
       router.push(RoutePaths.notifications);
     }

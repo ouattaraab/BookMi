@@ -64,6 +64,16 @@ class PayoutMethodRepository {
     }
   }
 
+  /// DELETE /api/v1/talent_profiles/me/payout_method
+  Future<ApiResult<bool>> deletePayoutMethod() async {
+    try {
+      await _dio.delete<void>(ApiEndpoints.mePayoutMethod);
+      return const ApiSuccess(true);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// POST /api/v1/me/withdrawal_requests
   Future<ApiResult<WithdrawalRequestModel>> createWithdrawalRequest({
     required int amount,

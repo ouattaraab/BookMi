@@ -39,6 +39,14 @@ final class PaymentMethodSaved extends PaymentMethodState {
   final PayoutMethodModel payoutMethod;
 }
 
+final class PaymentMethodDeleting extends PaymentMethodState {
+  const PaymentMethodDeleting();
+}
+
+final class PaymentMethodDeleted extends PaymentMethodState {
+  const PaymentMethodDeleted();
+}
+
 final class PaymentMethodWithdrawalCreating extends PaymentMethodState {
   const PaymentMethodWithdrawalCreating();
 }
@@ -111,6 +119,19 @@ class PaymentMethodCubit extends Cubit<PaymentMethodState> {
     switch (result) {
       case ApiSuccess(:final data):
         emit(PaymentMethodSaved(payoutMethod: data));
+      case ApiFailure(:final code, :final message):
+        emit(PaymentMethodError(code: code, message: message));
+    }
+  }
+
+  Future<void> deletePayoutMethod() async {
+    emit(const PaymentMethodDeleting());
+
+    final result = await _repository.deletePayoutMethod();
+
+    switch (result) {
+      case ApiSuccess():
+        emit(const PaymentMethodDeleted());
       case ApiFailure(:final code, :final message):
         emit(PaymentMethodError(code: code, message: message));
     }

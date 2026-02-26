@@ -73,6 +73,18 @@ class _PaymentMethodsViewState extends State<_PaymentMethodsView>
               ),
             );
             context.read<PaymentMethodCubit>().load();
+          case PaymentMethodDeleted():
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Compte de paiement supprimé.',
+                  style: GoogleFonts.manrope(color: Colors.white),
+                ),
+                backgroundColor: _success,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            context.read<PaymentMethodCubit>().load();
           case PaymentMethodWithdrawalCreated():
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -133,6 +145,7 @@ class _PaymentMethodsViewState extends State<_PaymentMethodsView>
           builder: (context, state) {
             if (state is PaymentMethodLoading ||
                 state is PaymentMethodSaving ||
+                state is PaymentMethodDeleting ||
                 state is PaymentMethodWithdrawalCreating) {
               return const Center(
                 child: CircularProgressIndicator(color: _primary),
@@ -225,6 +238,9 @@ class _AccountTabState extends State<_AccountTab> {
   final _bankCodeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
+  /// True when the user clicked "Ajouter un nouveau compte" from verified state.
+  bool _showingAddForm = false;
+
   static const _mobileMethods = [
     'orange_money',
     'wave',
@@ -245,13 +261,30 @@ class _AccountTabState extends State<_AccountTab> {
   void didUpdateWidget(_AccountTab oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.payoutMethod != widget.payoutMethod) {
-      _init();
+      final pm = widget.payoutMethod;
+      if (pm == null || !pm.hasAccount) {
+        // Account was deleted — clear form state
+        setState(() {
+          _selectedMethod = null;
+          _phoneController.clear();
+          _accountController.clear();
+          _bankCodeController.clear();
+          _showingAddForm = false;
+        });
+      } else {
+        _init();
+        // If account is no longer verified (e.g. after saving new account),
+        // dismiss the "add form" overlay automatically.
+        if (!pm.isVerified) {
+          setState(() => _showingAddForm = false);
+        }
+      }
     }
   }
 
   void _init() {
     final pm = widget.payoutMethod;
-    if (pm == null) return;
+    if (pm == null || !pm.hasAccount) return;
     setState(() {
       _selectedMethod = pm.payoutMethod;
       if (_mobileMethods.contains(pm.payoutMethod)) {
@@ -270,6 +303,17 @@ class _AccountTabState extends State<_AccountTab> {
     _accountController.dispose();
     _bankCodeController.dispose();
     super.dispose();
+  }
+
+  void _showAddForm() {
+    setState(() {
+      _showingAddForm = true;
+      // Clear form for fresh account entry
+      _selectedMethod = null;
+      _phoneController.clear();
+      _accountController.clear();
+      _bankCodeController.clear();
+    });
   }
 
   void _save() {
@@ -300,29 +344,185 @@ class _AccountTabState extends State<_AccountTab> {
     );
   }
 
+  void _confirmDelete() {
+    showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Supprimer le compte de paiement',
+          style: GoogleFonts.plusJakartaSans(
+            color: _textPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        content: Text(
+          'Êtes-vous sûr de vouloir supprimer ce compte ? '
+          'Vous devrez en enregistrer un nouveau pour effectuer des demandes de reversement.',
+          style: GoogleFonts.manrope(
+            color: _textMuted,
+            fontSize: 13,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Annuler',
+              style: GoogleFonts.manrope(color: _textMuted),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Supprimer',
+              style: GoogleFonts.manrope(
+                color: _danger,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed == true) {
+        context.read<PaymentMethodCubit>().deletePayoutMethod();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final pm = widget.payoutMethod;
     final isVerified = pm?.isVerified ?? false;
+
+    // Verified state — show summary card instead of the form
+    if (isVerified && !_showingAddForm) {
+      return _buildVerifiedView(pm!);
+    }
+
+    // All other states — show form with appropriate context banner
+    return _buildFormView(pm);
+  }
+
+  Widget _buildVerifiedView(PayoutMethodModel pm) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _BalanceCard(balance: pm.availableBalance),
+          const SizedBox(height: 20),
+
+          _StatusBanner(
+            icon: Icons.verified_outlined,
+            color: _success,
+            text:
+                'Compte validé — vous pouvez effectuer des demandes de reversement.',
+          ),
+          const SizedBox(height: 20),
+
+          _AccountSummaryCard(pm: pm),
+          const SizedBox(height: 24),
+
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _showAddForm,
+              icon: const Icon(Icons.add, size: 18),
+              label: Text(
+                'Ajouter un nouveau compte',
+                style: GoogleFonts.manrope(fontWeight: FontWeight.w600),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _primary,
+                side: const BorderSide(color: _primary),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          SizedBox(
+            width: double.infinity,
+            child: TextButton.icon(
+              onPressed: _confirmDelete,
+              icon: Icon(Icons.delete_outline, color: _danger, size: 18),
+              label: Text(
+                'Supprimer ce compte',
+                style: GoogleFonts.manrope(
+                  color: _danger,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormView(PayoutMethodModel? pm) {
+    final isPending = pm?.isPending ?? false;
+    final isRejected = pm?.isRejected ?? false;
+    final isAddingNew = (pm?.isVerified ?? false) && _showingAddForm;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Statut de vérification ──────────────────────────────────────
-          if (pm?.payoutMethod != null) ...[
-            _VerificationBanner(isVerified: isVerified),
+          // Balance card (if profile loaded)
+          if (pm != null) ...[
+            _BalanceCard(balance: pm.availableBalance),
             const SizedBox(height: 20),
           ],
 
-          // ── Solde disponible ────────────────────────────────────────────
-          if (pm != null) ...[
-            _BalanceCard(balance: pm.availableBalance),
-            const SizedBox(height: 24),
+          // Cancel button when adding new account from verified state
+          if (isAddingNew) ...[
+            TextButton.icon(
+              onPressed: () => setState(() => _showingAddForm = false),
+              icon: const Icon(Icons.arrow_back, size: 16),
+              label: Text(
+                'Annuler',
+                style: GoogleFonts.manrope(fontWeight: FontWeight.w500),
+              ),
+              style: TextButton.styleFrom(
+                foregroundColor: _textMuted,
+                padding: EdgeInsets.zero,
+              ),
+            ),
+            const SizedBox(height: 12),
           ],
 
-          // ── Formulaire ──────────────────────────────────────────────────
+          // Context banner
+          if (isPending) ...[
+            _StatusBanner(
+              icon: Icons.access_time_rounded,
+              color: _warning,
+              text:
+                  'En attente de validation par l\'administration. Vous recevrez une notification dès que votre compte sera validé.',
+            ),
+            const SizedBox(height: 20),
+          ] else if (isRejected) ...[
+            _StatusBanner(
+              icon: Icons.cancel_outlined,
+              color: _danger,
+              text: pm?.rejectionReason != null
+                  ? 'Compte refusé — Motif : ${pm!.rejectionReason}. Corrigez les informations ci-dessous et enregistrez à nouveau.'
+                  : 'Compte refusé. Corrigez les informations ci-dessous et enregistrez à nouveau.',
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          // Form title
           Text(
             'Choisir un mode de réception',
             style: GoogleFonts.plusJakartaSans(
@@ -482,12 +682,14 @@ class _AccountTabState extends State<_AccountTab> {
               ),
             ),
 
-            const SizedBox(height: 16),
-            _InfoNote(
-              text:
-                  'Votre compte sera soumis à une vérification par l\'administration avant de pouvoir effectuer des demandes de reversement. '
-                  'Toute modification réinitialise la validation.',
-            ),
+            if (!isPending && !isRejected && !isAddingNew) ...[
+              const SizedBox(height: 16),
+              _InfoNote(
+                text:
+                    'Votre compte sera soumis à une vérification par l\'administration avant de pouvoir effectuer des demandes de reversement. '
+                    'Toute modification réinitialise la validation.',
+              ),
+            ],
           ],
         ],
       ),
@@ -607,17 +809,35 @@ class _WithdrawalsTabState extends State<_WithdrawalsTab> {
     final pm = widget.payoutMethod;
     final balance = pm?.availableBalance ?? 0;
     final isVerified = pm?.isVerified ?? false;
+    final hasRequests = widget.requests.isNotEmpty;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Solde disponible ──────────────────────────────────────────
+          // ── Balance ────────────────────────────────────────────────────
           _BalanceCard(balance: balance),
-          const SizedBox(height: 20),
 
-          // ── Formulaire de demande ──────────────────────────────────────
+          // ── History (shown first, only when requests exist) ─────────────
+          if (hasRequests) ...[
+            const SizedBox(height: 20),
+            Text(
+              'Historique des reversements',
+              style: GoogleFonts.plusJakartaSans(
+                color: _textPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...widget.requests.map(
+              (r) => _WithdrawalRequestTile(request: r),
+            ),
+          ],
+
+          // ── New request section ─────────────────────────────────────────
+          const SizedBox(height: 20),
           if (!isVerified) ...[
             _InfoNote(
               icon: Icons.lock_outline,
@@ -625,7 +845,6 @@ class _WithdrawalsTabState extends State<_WithdrawalsTab> {
                   'Votre compte de paiement n\'a pas encore été validé par l\'administration. '
                   'Enregistrez votre compte dans l\'onglet "Mon compte".',
             ),
-            const SizedBox(height: 20),
           ] else if (widget.hasActiveRequest) ...[
             _InfoNote(
               icon: Icons.hourglass_top_rounded,
@@ -633,16 +852,13 @@ class _WithdrawalsTabState extends State<_WithdrawalsTab> {
               text:
                   'Vous avez déjà une demande en cours. Attendez son traitement avant d\'en soumettre une nouvelle.',
             ),
-            const SizedBox(height: 20),
           ] else if (balance <= 0) ...[
             _InfoNote(
               icon: Icons.account_balance_wallet_outlined,
               text:
                   'Votre solde disponible est de 0 XOF. Il sera alimenté après confirmation de vos prestations par vos clients.',
             ),
-            const SizedBox(height: 20),
           ] else ...[
-            // ── Formulaire ──────────────────────────────────────────────
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -654,7 +870,9 @@ class _WithdrawalsTabState extends State<_WithdrawalsTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Nouvelle demande de reversement',
+                    hasRequests
+                        ? 'Nouvelle demande de reversement'
+                        : 'Demander un reversement',
                     style: GoogleFonts.plusJakartaSans(
                       color: _textPrimary,
                       fontWeight: FontWeight.w700,
@@ -718,47 +936,7 @@ class _WithdrawalsTabState extends State<_WithdrawalsTab> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
           ],
-
-          // ── Historique ──────────────────────────────────────────────
-          Text(
-            'Historique des reversements',
-            style: GoogleFonts.plusJakartaSans(
-              color: _textPrimary,
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          if (widget.requests.isEmpty)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 32),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.receipt_long_outlined,
-                      color: _textMuted,
-                      size: 48,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Aucun reversement pour l\'instant',
-                      style: GoogleFonts.manrope(
-                        color: _textMuted,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          else
-            ...widget.requests.map(
-              (r) => _WithdrawalRequestTile(request: r),
-            ),
         ],
       ),
     );
@@ -767,47 +945,146 @@ class _WithdrawalsTabState extends State<_WithdrawalsTab> {
 
 // ─── Widgets réutilisables ───────────────────────────────────────────────────
 
-class _VerificationBanner extends StatelessWidget {
-  const _VerificationBanner({required this.isVerified});
-  final bool isVerified;
+class _StatusBanner extends StatelessWidget {
+  const _StatusBanner({
+    required this.icon,
+    required this.color,
+    required this.text,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isVerified
-            ? _success.withValues(alpha: 0.12)
-            : _warning.withValues(alpha: 0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isVerified
-              ? _success.withValues(alpha: 0.4)
-              : _warning.withValues(alpha: 0.4),
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            isVerified ? Icons.verified_outlined : Icons.access_time_rounded,
-            color: isVerified ? _success : _warning,
-            size: 20,
-          ),
+          Icon(icon, color: color, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              isVerified
-                  ? 'Compte validé — vous pouvez demander un reversement'
-                  : 'En attente de validation par l\'administration',
+              text,
               style: GoogleFonts.manrope(
-                color: isVerified ? _success : _warning,
+                color: color,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
+                height: 1.5,
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AccountSummaryCard extends StatelessWidget {
+  const _AccountSummaryCard({required this.pm});
+
+  final PayoutMethodModel pm;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMobile = pm.payoutMethod != 'bank_transfer';
+    final accountInfo = isMobile ? pm.phone : pm.accountNumber;
+    final bankCode = pm.payoutDetails?['bank_code'] as String?;
+    final verifiedAt = pm.payoutMethodVerifiedAt;
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: _surfaceLight,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _success.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: _methodColor(pm.payoutMethod).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  pm.payoutMethod == 'bank_transfer'
+                      ? Icons.account_balance_outlined
+                      : Icons.phone_android_outlined,
+                  color: _methodColor(pm.payoutMethod),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                _methodLabel(pm.payoutMethod),
+                style: GoogleFonts.plusJakartaSans(
+                  color: _textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(color: _border, height: 1),
+          const SizedBox(height: 14),
+          _SummaryRow(
+            label: isMobile ? 'Numéro' : 'N° de compte',
+            value: accountInfo.isNotEmpty ? accountInfo : '—',
+          ),
+          if (!isMobile && bankCode != null && bankCode.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            _SummaryRow(label: 'Code banque', value: bankCode),
+          ],
+          if (verifiedAt != null) ...[
+            const SizedBox(height: 8),
+            _SummaryRow(
+              label: 'Validé le',
+              value: _formatDateStr(verifiedAt),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  const _SummaryRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.manrope(color: _textMuted, fontSize: 13),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.manrope(
+            color: _textPrimary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1069,6 +1346,35 @@ class _InfoNote extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ─── Helper functions ────────────────────────────────────────────────────────
+
+String _methodLabel(String? method) => switch (method) {
+  'orange_money' => 'Orange Money',
+  'wave' => 'Wave',
+  'mtn_momo' => 'MTN MoMo',
+  'moov_money' => 'Moov Money',
+  'bank_transfer' => 'Virement bancaire',
+  _ => method ?? '—',
+};
+
+Color _methodColor(String? method) => switch (method) {
+  'orange_money' => const Color(0xFFFF6B00),
+  'wave' => const Color(0xFF0075FF),
+  'mtn_momo' => const Color(0xFFFFCC00),
+  'moov_money' => const Color(0xFF00A859),
+  _ => _primary,
+};
+
+String _formatDateStr(String? iso) {
+  if (iso == null) return '—';
+  try {
+    final dt = DateTime.parse(iso).toLocal();
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+  } catch (_) {
+    return iso;
   }
 }
 

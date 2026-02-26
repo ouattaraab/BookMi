@@ -116,6 +116,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/talent_profiles/me', [TalentProfileController::class, 'showOwn'])->name('talent_profiles.me');
         Route::get('/talent_profiles/me/payout_method', [TalentProfileController::class, 'getPayoutMethod'])->name('talent_profiles.payout_method.get');
         Route::patch('/talent_profiles/me/payout_method', [TalentProfileController::class, 'updatePayoutMethod'])->name('talent_profiles.payout_method');
+        Route::delete('/talent_profiles/me/payout_method', [TalentProfileController::class, 'deletePayoutMethod'])->name('talent_profiles.payout_method.delete');
         Route::patch('/talent_profiles/me/info', [TalentProfileController::class, 'updateInfo'])->name('talent_profiles.info.update');
         Route::put('/talent_profiles/me/auto_reply', [TalentProfileController::class, 'updateAutoReply'])->name('talent_profiles.auto_reply');
 
