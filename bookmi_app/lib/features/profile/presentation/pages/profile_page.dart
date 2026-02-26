@@ -733,19 +733,29 @@ class _GeneralSection extends StatelessWidget {
               RouteNames.profilePersonalInfo,
             ),
           ),
-          _Divider(),
-          _MenuItem(
-            icon: Icons.favorite_border,
-            label: 'Mes talents favoris',
-            onTap: () => context.pushNamed(RouteNames.profileFavorites),
-          ),
           if (isTalent) ...[
             _Divider(),
             _MenuItem(
-              icon: Icons.payment_outlined,
-              label: 'Moyens de paiement',
+              icon: Icons.edit_note_outlined,
+              label: 'Description & Réseaux sociaux',
               onTap: () => context.pushNamed(
-                RouteNames.profilePaymentMethods,
+                RouteNames.profileTalentInfo,
+              ),
+            ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.photo_library_outlined,
+              label: 'Gestion portfolio',
+              onTap: () => context.pushNamed(
+                RouteNames.profilePortfolioManager,
+              ),
+            ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.inventory_2_outlined,
+              label: 'Gestion packages',
+              onTap: () => context.pushNamed(
+                RouteNames.profilePackageManager,
               ),
             ),
           ],
@@ -777,27 +787,19 @@ class _GeneralSection extends StatelessWidget {
             ),
             _Divider(),
             _MenuItem(
-              icon: Icons.photo_library_outlined,
-              label: 'Gestion portfolio',
+              icon: Icons.payment_outlined,
+              label: 'Moyens de paiement',
               onTap: () => context.pushNamed(
-                RouteNames.profilePortfolioManager,
+                RouteNames.profilePaymentMethods,
               ),
             ),
+          ],
+          if (!isTalent) ...[
             _Divider(),
             _MenuItem(
-              icon: Icons.inventory_2_outlined,
-              label: 'Gestion packages',
-              onTap: () => context.pushNamed(
-                RouteNames.profilePackageManager,
-              ),
-            ),
-            _Divider(),
-            _MenuItem(
-              icon: Icons.edit_note_outlined,
-              label: 'Description & Réseaux sociaux',
-              onTap: () => context.pushNamed(
-                RouteNames.profileTalentInfo,
-              ),
+              icon: Icons.favorite_border,
+              label: 'Mes talents favoris',
+              onTap: () => context.pushNamed(RouteNames.profileFavorites),
             ),
           ],
           _Divider(),
