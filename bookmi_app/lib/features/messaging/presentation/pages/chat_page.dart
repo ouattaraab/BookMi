@@ -169,8 +169,7 @@ class _ChatPageState extends State<ChatPage> {
               onTap: () => Navigator.pop(context, 'photo_gallery'),
             ),
             ListTile(
-              leading:
-                  const Icon(Icons.camera_alt_outlined, color: _mutedFg),
+              leading: const Icon(Icons.camera_alt_outlined, color: _mutedFg),
               title: Text(
                 'Prendre une photo',
                 style: GoogleFonts.manrope(color: Colors.white),
@@ -640,9 +639,7 @@ class _ChatBubble extends StatelessWidget {
                   bottomLeft: Radius.circular(isMine ? 16 : 0),
                   bottomRight: Radius.circular(isMine ? 0 : 16),
                 ),
-                border: isMine
-                    ? null
-                    : Border.all(color: _border),
+                border: isMine ? null : Border.all(color: _border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
