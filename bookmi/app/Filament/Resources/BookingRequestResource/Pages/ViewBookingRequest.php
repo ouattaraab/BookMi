@@ -14,6 +14,31 @@ class ViewBookingRequest extends ViewRecord
 {
     protected static string $resource = BookingRequestResource::class;
 
+    /**
+     * Inject the client and talentProfile relationships so that client.email
+     * and talentProfile.stage_name form fields are populated.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        /** @var BookingRequest $booking */
+        $booking = $this->record;
+
+        $client = $booking->client;
+        if ($client) {
+            $data['client'] = $client->toArray();
+        }
+
+        $talentProfile = $booking->talentProfile;
+        if ($talentProfile) {
+            $data['talentProfile'] = $talentProfile->toArray();
+        }
+
+        return $data;
+    }
+
     protected function getHeaderActions(): array
     {
         return [
