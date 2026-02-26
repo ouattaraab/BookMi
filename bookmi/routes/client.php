@@ -4,6 +4,8 @@ use App\Http\Controllers\Web\Client\BookingController;
 use App\Http\Controllers\Web\Client\DashboardController;
 use App\Http\Controllers\Web\Client\FavoriteController;
 use App\Http\Controllers\Web\Client\MessageController;
+use App\Http\Controllers\Web\Client\NotificationController;
+use App\Http\Controllers\Web\Client\ReviewController;
 use App\Http\Controllers\Web\Client\SettingsController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,9 @@ Route::get('/bookings/{id}/pay', [BookingController::class, 'pay'])->name('booki
 Route::post('/bookings/{id}/pay', [BookingController::class, 'processPayment'])->name('bookings.pay.process');
 Route::post('/bookings/{id}/pay/otp', [BookingController::class, 'submitOtp'])->name('bookings.pay.otp');
 Route::get('/bookings/payment/callback', [BookingController::class, 'paymentCallback'])->name('bookings.payment.callback');
+Route::get('/bookings/{id}/receipt', [BookingController::class, 'receipt'])->name('bookings.receipt');
+Route::get('/bookings/{id}/contract', [BookingController::class, 'contract'])->name('bookings.contract');
+Route::post('/bookings/{id}/review', [ReviewController::class, 'store'])->name('bookings.review.store');
 
 // Favoris
 Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites');
@@ -31,6 +36,11 @@ Route::get('/messages', [MessageController::class, 'index'])->name('messages');
 Route::post('/messages/booking/{bookingId}', [MessageController::class, 'startFromBooking'])->name('messages.start');
 Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
 Route::post('/messages/{id}', [MessageController::class, 'send'])->name('messages.send');
+
+// Notifications
+Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
+Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
 // Paramètres (2FA)
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings');

@@ -261,6 +261,124 @@ main.page-content { background: #F2EFE9 !important; }
 
     </div>
 
+    {{-- Téléchargements (reçu + contrat) --}}
+    @if(in_array($sk, ['paid', 'confirmed', 'completed']))
+    <div class="dash-fade" style="animation-delay:160ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;">
+        <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#FF6B35;flex-shrink:0;"></div>
+            <h3 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0;">Documents</h3>
+        </div>
+        <div style="padding:16px 24px;display:flex;gap:12px;flex-wrap:wrap;">
+            <a href="{{ route('client.bookings.receipt', $booking->id) }}"
+               style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:14px;font-size:0.85rem;font-weight:800;color:white;background:linear-gradient(135deg,#FF6B35,#C85A20);text-decoration:none;box-shadow:0 4px 14px rgba(255,107,53,0.28);transition:transform 0.2s,box-shadow 0.2s;font-family:'Nunito',sans-serif;"
+               onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(255,107,53,0.38)'"
+               onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(255,107,53,0.28)'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                Télécharger le reçu
+            </a>
+            @if($booking->contract_path)
+            <a href="{{ route('client.bookings.contract', $booking->id) }}"
+               style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:14px;font-size:0.85rem;font-weight:800;color:#1A2744;background:#FFFFFF;border:1.5px solid #E5E1DA;text-decoration:none;box-shadow:0 2px 8px rgba(26,39,68,0.06);transition:transform 0.2s,border-color 0.2s;font-family:'Nunito',sans-serif;"
+               onmouseover="this.style.transform='translateY(-2px)';this.style.borderColor='#FF6B35';this.style.color='#FF6B35'"
+               onmouseout="this.style.transform='';this.style.borderColor='#E5E1DA';this.style.color='#1A2744'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Télécharger le contrat
+            </a>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- Timeline suivi jour-J (lecture seule) --}}
+    @if(in_array($sk, ['paid', 'confirmed', 'completed']) && $booking->trackingEvents->isNotEmpty())
+    <div class="dash-fade" style="animation-delay:180ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;">
+        <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#FF6B35;flex-shrink:0;"></div>
+            <h3 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0;">Suivi de la prestation</h3>
+        </div>
+        <div style="padding:20px 24px;">
+            @foreach($booking->trackingEvents as $index => $event)
+            @php
+                $isLast = $loop->last;
+                $dotColor = $isLast ? '#15803D' : '#FF6B35';
+            @endphp
+            <div style="display:flex;gap:14px;{{ $isLast ? '' : 'margin-bottom:4px;' }}">
+                <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:{{ $dotColor }};border:2px solid white;box-shadow:0 0 0 2px {{ $dotColor }};flex-shrink:0;"></div>
+                    @if(!$isLast)
+                    <div style="width:2px;flex:1;background:#EAE7E0;margin:4px 0;min-height:28px;"></div>
+                    @endif
+                </div>
+                <div style="padding-bottom:{{ $isLast ? '0' : '20px' }};">
+                    <p style="font-size:0.875rem;font-weight:800;color:#1A2744;margin:0 0 2px;">
+                        {{ $event->status instanceof \App\Enums\TrackingStatus ? $event->status->label() : (string) $event->status }}
+                    </p>
+                    <p style="font-size:0.75rem;color:#8A8278;font-weight:500;margin:0;">
+                        {{ $event->occurred_at->format('d/m H:i') }}
+                    </p>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
+    {{-- Formulaire avis (status completed seulement, pas encore évalué) --}}
+    @if($sk === 'completed' && !$hasReview)
+    <div class="dash-fade" style="animation-delay:190ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;"
+         x-data="{ rating: 0, hovered: 0 }">
+        <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#FF6B35;flex-shrink:0;"></div>
+            <h3 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0;">Laisser un avis</h3>
+        </div>
+        <div style="padding:20px 24px;">
+            <form action="{{ route('client.bookings.review.store', $booking->id) }}" method="POST">
+                @csrf
+                {{-- Étoiles --}}
+                <div style="margin-bottom:18px;">
+                    <p style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#8A8278;margin:0 0 10px;">Note *</p>
+                    <div style="display:flex;gap:6px;">
+                        @for($i = 1; $i <= 5; $i++)
+                        <label style="cursor:pointer;position:relative;">
+                            <input type="radio" name="rating" value="{{ $i }}" required
+                                   x-on:change="rating = {{ $i }}"
+                                   style="position:absolute;opacity:0;width:0;height:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                 x-on:mouseenter="hovered = {{ $i }}"
+                                 x-on:mouseleave="hovered = 0"
+                                 :fill="(hovered >= {{ $i }} || (hovered === 0 && rating >= {{ $i }})) ? '#FF6B35' : '#E5E1DA'"
+                                 style="transition:fill 0.15s;">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                        </label>
+                        @endfor
+                    </div>
+                </div>
+                {{-- Commentaire --}}
+                <div style="margin-bottom:18px;">
+                    <label style="display:block;font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#8A8278;margin-bottom:8px;">Commentaire (optionnel)</label>
+                    <textarea name="comment" rows="3" maxlength="1000"
+                              placeholder="Partagez votre expérience avec ce talent..."
+                              style="width:100%;border:1.5px solid #E5E1DA;border-radius:12px;padding:12px 16px;font-size:0.875rem;font-family:'Nunito',sans-serif;color:#1A2744;resize:none;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                              onfocus="this.style.borderColor='#FF6B35'"
+                              onblur="this.style.borderColor='#E5E1DA'">{{ old('comment') }}</textarea>
+                </div>
+                <button type="submit"
+                        style="padding:12px 28px;border-radius:14px;font-size:0.875rem;font-weight:800;color:white;background:linear-gradient(135deg,#FF6B35,#C85A20);border:none;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 14px rgba(255,107,53,0.28);transition:transform 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform=''">
+                    Publier mon avis
+                </button>
+            </form>
+        </div>
+    </div>
+    @elseif($sk === 'completed' && $hasReview)
+    <div class="dash-fade" style="animation-delay:190ms;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:14px;background:#F0FDF4;border:1px solid #86EFAC;margin-bottom:16px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#15803D" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span style="font-size:0.875rem;font-weight:700;color:#15803D;">Vous avez déjà évalué cette prestation. Merci !</span>
+    </div>
+    @endif
+
     {{-- Meta --}}
     <p class="dash-fade" style="animation-delay:200ms;text-align:center;font-size:0.75rem;color:#B0A89E;font-weight:500;">
         Réservation créée le {{ $booking->created_at->format('d/m/Y à H:i') }}

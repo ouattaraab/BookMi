@@ -6,8 +6,10 @@ use App\Enums\BookingStatus;
 use App\Filament\Resources\BookingRequestResource\Pages;
 use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
+use App\Services\RefundService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -150,6 +152,17 @@ class BookingRequestResource extends Resource
                         default => 'gray',
                     }),
 
+                Tables\Columns\TextColumn::make('dispute_age')
+                    ->label('Âge litige')
+                    ->state(fn (BookingRequest $record): string => $record->status === BookingStatus::Disputed || $record->status === 'disputed'
+                        ? $record->updated_at->diffForHumans()
+                        : '—')
+                    ->color(fn (BookingRequest $record): string => ($record->status === BookingStatus::Disputed || $record->status === 'disputed')
+                        && $record->updated_at->diffInHours() > 48
+                        ? 'danger'
+                        : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Total')
                     ->formatStateUsing(fn ($state): string => number_format((int) $state, 0, ',', ' ') . ' FCFA')
@@ -227,6 +240,36 @@ class BookingRequestResource extends Resource
                         GenerateContractPdf::dispatchSync($record);
                     })
                     ->successNotificationTitle('Contrat régénéré avec succès'),
+
+                Tables\Actions\Action::make('refund')
+                    ->label('Rembourser')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('danger')
+                    ->visible(fn (BookingRequest $record): bool =>
+                        $record->status === BookingStatus::Disputed || $record->status === 'disputed')
+                    ->requiresConfirmation()
+                    ->modalHeading('Confirmer le remboursement')
+                    ->modalDescription('Le client sera remboursé du montant total de la réservation. Cette action est irréversible.')
+                    ->form([
+                        Forms\Components\Textarea::make('reason')
+                            ->label('Motif du remboursement')
+                            ->required()
+                            ->minLength(10)
+                            ->maxLength(500)
+                            ->placeholder('Ex : Litige résolu en faveur du client — prestation non effectuée.'),
+                    ])
+                    ->action(function (BookingRequest $record, array $data): void {
+                        try {
+                            app(RefundService::class)->processRefund(
+                                $record,
+                                $record->total_amount,
+                                $data['reason'],
+                            );
+                            Notification::make()->title('Remboursement effectué.')->success()->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()->title('Erreur : ' . $e->getMessage())->danger()->send();
+                        }
+                    }),
 
                 Tables\Actions\DeleteAction::make()
                     ->label('Supprimer'),

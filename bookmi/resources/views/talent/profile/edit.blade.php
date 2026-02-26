@@ -163,6 +163,36 @@
                 </div>
             </div>
 
+            {{-- Auto-réponse --}}
+            <div x-data="{ active: {{ old('auto_reply_is_active', $profile->auto_reply_is_active ?? false) ? 'true' : 'false' }} }">
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Auto-réponse aux demandes</label>
+                <div class="p-4 rounded-xl space-y-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                    {{-- Toggle --}}
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative flex-shrink-0">
+                            <input type="hidden" name="auto_reply_is_active" value="0">
+                            <input type="checkbox" name="auto_reply_is_active" value="1"
+                                   x-model="active"
+                                   {{ old('auto_reply_is_active', $profile->auto_reply_is_active ?? false) ? 'checked' : '' }}
+                                   class="sr-only">
+                            <div class="w-11 h-6 rounded-full transition-colors duration-200"
+                                 :style="active ? 'background:#FF6B35' : 'background:#d1d5db'"></div>
+                            <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"
+                                 :style="active ? 'transform:translateX(20px)' : ''"></div>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700" x-text="active ? 'Activée' : 'Désactivée'"></span>
+                    </label>
+                    {{-- Message --}}
+                    <div x-show="active" x-cloak>
+                        <label class="block text-xs text-gray-500 mb-1.5">Message envoyé automatiquement</label>
+                        <textarea name="auto_reply_message" rows="3" maxlength="500"
+                                  placeholder="Ex : Merci pour votre demande ! Je vous réponds dans les plus brefs délais…"
+                                  class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none">{{ old('auto_reply_message', $profile->auto_reply_message ?? '') }}</textarea>
+                        <p class="text-xs text-gray-400 mt-1">500 caractères max.</p>
+                    </div>
+                </div>
+            </div>
+
             {{-- Email (readonly) --}}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1.5">Email</label>

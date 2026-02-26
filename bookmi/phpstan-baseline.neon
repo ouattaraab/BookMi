@@ -85,6 +85,18 @@ parameters:
 			path: app/Filament/Pages/MessageCenter.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Filament/Pages/ReportsPage.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Filament/Pages/ReportsPage.php
+
+		-
 			message: '#^Access to an undefined property App\\Filament\\Pages\\TwoFactorChallengePage\:\:\$form\.$#'
 			identifier: property.notFound
 			count: 2

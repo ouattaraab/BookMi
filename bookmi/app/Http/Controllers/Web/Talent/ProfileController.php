@@ -35,6 +35,8 @@ class ProfileController extends Controller
             'social_links.youtube'    => 'nullable|url|max:300',
             'social_links.tiktok'     => 'nullable|url|max:300',
             'social_links.twitter'    => 'nullable|url|max:300',
+            'auto_reply_is_active'    => 'nullable|boolean',
+            'auto_reply_message'      => 'nullable|string|max:500',
         ]);
 
         // Ensure cachet_amount always has a value (NOT NULL in DB)
@@ -50,6 +52,9 @@ class ProfileController extends Controller
             $data['social_links.tiktok'],
             $data['social_links.twitter'],
         );
+
+        // Normalize auto-reply checkbox (unchecked = not sent = false)
+        $data['auto_reply_is_active'] = $request->boolean('auto_reply_is_active');
 
         if ($profile) {
             $profile->update($data);

@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\Talent\PackageController;
 use App\Http\Controllers\Web\Talent\PaiementController;
 use App\Http\Controllers\Web\Talent\PortfolioController;
 use App\Http\Controllers\Web\Talent\ProfileController;
+use App\Http\Controllers\Web\Talent\RevenueCertificateController;
 use App\Http\Controllers\Web\Talent\SettingsController;
 use App\Http\Controllers\Web\Talent\StatisticsController;
 use App\Http\Controllers\Web\Talent\VerificationController;
@@ -55,6 +56,10 @@ Route::post('/paiement/withdrawal', [PaiementController::class, 'storeWithdrawal
 
 // Attestation (PDF)
 Route::get('/certificate/{bookingId}', [CertificateController::class, 'download'])->name('certificate');
+
+// Attestation de revenus annuelle
+Route::get('/revenue-certificate', [RevenueCertificateController::class, 'index'])->name('revenue-certificate');
+Route::get('/revenue-certificate/download', [RevenueCertificateController::class, 'download'])->name('revenue-certificate.download');
 
 // Portfolio
 Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio');

@@ -40,7 +40,7 @@ class BookingController extends Controller
     {
         $profile = $this->profile();
         $booking = BookingRequest::where('talent_profile_id', $profile?->id)
-            ->with(['client', 'servicePackage'])
+            ->with(['client', 'servicePackage', 'trackingEvents'])
             ->findOrFail($id);
         return view('talent.bookings.show', compact('booking'));
     }

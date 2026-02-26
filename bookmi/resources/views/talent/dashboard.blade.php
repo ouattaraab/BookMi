@@ -184,6 +184,53 @@ main.page-content { background: #F2EFE9 !important; }
 
     </div>
 
+    {{-- ── Niveau talent ── --}}
+    @if($profile && $levelData)
+    @php
+        $lv = $levelData['level'] instanceof \App\Enums\TalentLevel ? $levelData['level'] : \App\Enums\TalentLevel::from((string) $levelData['level']);
+        $lvColors = [
+            'nouveau'   => ['bg'=>'#F3F4F6','text'=>'#374151','bar'=>'#9CA3AF','badge_bg'=>'#E5E7EB','badge_text'=>'#374151'],
+            'confirme'  => ['bg'=>'#EFF6FF','text'=>'#1D4ED8','bar'=>'#2563EB','badge_bg'=>'#DBEAFE','badge_text'=>'#1D4ED8'],
+            'populaire' => ['bg'=>'#F5F3FF','text'=>'#5B21B6','bar'=>'#7C3AED','badge_bg'=>'#EDE9FE','badge_text'=>'#5B21B6'],
+            'elite'     => ['bg'=>'#FFFBEB','text'=>'#92400E','bar'=>'#D97706','badge_bg'=>'#FEF3C7','badge_text'=>'#92400E'],
+        ];
+        $lc = $lvColors[$lv->value] ?? $lvColors['nouveau'];
+    @endphp
+    <div class="dash-fade stat-card" style="animation-delay:160ms;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:#FF6B35;flex-shrink:0;"></div>
+                <h2 style="font-size:0.95rem;font-weight:900;color:#1A2744;margin:0;">Votre niveau</h2>
+            </div>
+            <span style="font-size:0.72rem;font-weight:800;padding:4px 14px;border-radius:9999px;background:{{ $lc['badge_bg'] }};color:{{ $lc['badge_text'] }};letter-spacing:0.03em;">
+                {{ $lv->label() }}
+            </span>
+        </div>
+        <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <span style="font-size:0.75rem;font-weight:700;color:#8A8278;">
+                    {{ $levelData['totalBookings'] }} réservation{{ $levelData['totalBookings'] > 1 ? 's' : '' }} terminée{{ $levelData['totalBookings'] > 1 ? 's' : '' }}
+                </span>
+                @if($levelData['nextLevel'])
+                <span style="font-size:0.72rem;color:#B0A89E;font-weight:600;">
+                    {{ $levelData['nextMin'] - $levelData['totalBookings'] }} pour {{ $levelData['nextLevel']->label() }}
+                </span>
+                @else
+                <span style="font-size:0.72rem;color:#D97706;font-weight:700;">Niveau maximum !</span>
+                @endif
+            </div>
+            <div style="height:7px;border-radius:9999px;background:#F3F4F6;overflow:hidden;">
+                <div style="height:100%;border-radius:9999px;background:{{ $lc['bar'] }};width:{{ $levelData['progress'] }}%;transition:width 0.8s ease;"></div>
+            </div>
+        </div>
+        @if($levelData['nextLevel'])
+        <p style="font-size:0.75rem;color:#8A8278;font-weight:500;margin:0;">
+            Atteignez <strong style="color:#1A2744;">{{ $levelData['nextMin'] }} réservations</strong> pour devenir <strong style="color:{{ $lc['bar'] }};">{{ $levelData['nextLevel']->label() }}</strong>
+        </p>
+        @endif
+    </div>
+    @endif
+
     {{-- ── Dernières réservations ── --}}
     <div class="dash-fade" style="animation-delay:220ms;background:#FFFFFF;border-radius:20px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);overflow:hidden;">
 

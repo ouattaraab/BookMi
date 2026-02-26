@@ -43,9 +43,18 @@
 <div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:1100px;">
 
     {{-- Header --}}
-    <div class="earn-fade" style="animation-delay:0ms;margin-bottom:28px;">
-        <h1 style="font-size:1.85rem;font-weight:900;color:#1A2744;letter-spacing:-0.03em;margin:0 0 5px;line-height:1.15;">Mes Revenus</h1>
-        <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Aperçu financier et historique de vos prestations</p>
+    <div class="earn-fade" style="animation-delay:0ms;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+        <div>
+            <h1 style="font-size:1.85rem;font-weight:900;color:#1A2744;letter-spacing:-0.03em;margin:0 0 5px;line-height:1.15;">Mes Revenus</h1>
+            <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Aperçu financier et historique de vos prestations</p>
+        </div>
+        <a href="{{ route('talent.revenue-certificate') }}"
+           style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:14px;font-size:0.82rem;font-weight:800;color:#1A2744;background:#FFFFFF;border:1.5px solid #E5E1DA;text-decoration:none;box-shadow:0 2px 8px rgba(26,39,68,0.06);transition:border-color 0.2s,color 0.2s;white-space:nowrap;flex-shrink:0;"
+           onmouseover="this.style.borderColor='#FF6B35';this.style.color='#FF6B35'"
+           onmouseout="this.style.borderColor='#E5E1DA';this.style.color='#1A2744'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Attestation de revenus
+        </a>
     </div>
 
     {{-- ── Solde disponible (carte mise en avant) ── --}}

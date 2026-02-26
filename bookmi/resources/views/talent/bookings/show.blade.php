@@ -125,6 +125,32 @@
         </div>
         @endif
 
+        {{-- Timeline suivi jour-J (lecture seule) --}}
+        @if(in_array($sk, ['paid', 'confirmed', 'completed']) && $booking->trackingEvents->isNotEmpty())
+        <div class="px-6 pb-4">
+            <div style="background:#f9fafb;border-radius:14px;padding:16px 20px;">
+                <p class="text-xs text-gray-400 uppercase tracking-wider mb-4">Suivi de la prestation</p>
+                @foreach($booking->trackingEvents as $event)
+                @php $isLast = $loop->last; @endphp
+                <div style="display:flex;gap:12px;{{ $isLast ? '' : 'margin-bottom:4px;' }}">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                        <div style="width:10px;height:10px;border-radius:50%;background:{{ $isLast ? '#15803D' : '#FF6B35' }};flex-shrink:0;"></div>
+                        @if(!$isLast)
+                        <div style="width:2px;flex:1;background:#e5e7eb;margin:3px 0;min-height:24px;"></div>
+                        @endif
+                    </div>
+                    <div style="padding-bottom:{{ $isLast ? '0' : '16px' }};">
+                        <p class="text-sm font-semibold text-gray-900" style="margin:0 0 2px;">
+                            {{ $event->status instanceof \App\Enums\TrackingStatus ? $event->status->label() : (string) $event->status }}
+                        </p>
+                        <p class="text-xs text-gray-400" style="margin:0;">{{ $event->occurred_at->format('d/m H:i') }}</p>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         {{-- Actions --}}
         @if(in_array($sk, ['pending', 'accepted', 'confirmed']))
         <div class="px-6 py-4 border-t border-gray-100">

@@ -122,13 +122,15 @@
         {{-- Nav --}}
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             @php
+            $notifUnread = \App\Models\PushNotification::where('user_id', auth()->id())->whereNull('read_at')->count();
             $navItems = [
-                ['route' => 'client.dashboard',  'label' => 'Tableau de bord', 'icon' => 'squares-2x2'],
-                ['href'  => '/talents',           'label' => 'Découvrir',       'icon' => 'magnifying-glass'],
-                ['route' => 'client.bookings',    'label' => 'Mes réservations','icon' => 'book-open'],
-                ['route' => 'client.favorites',   'label' => 'Favoris',         'icon' => 'heart'],
-                ['route' => 'client.messages',    'label' => 'Messages',        'icon' => 'chat-bubble-left'],
-                ['route' => 'client.settings',    'label' => 'Paramètres',      'icon' => 'cog'],
+                ['route' => 'client.dashboard',      'label' => 'Tableau de bord',  'icon' => 'squares-2x2'],
+                ['href'  => '/talents',              'label' => 'Découvrir',         'icon' => 'magnifying-glass'],
+                ['route' => 'client.bookings',       'label' => 'Mes réservations', 'icon' => 'book-open'],
+                ['route' => 'client.favorites',      'label' => 'Favoris',          'icon' => 'heart'],
+                ['route' => 'client.messages',       'label' => 'Messages',         'icon' => 'chat-bubble-left'],
+                ['route' => 'client.notifications',  'label' => 'Notifications',    'icon' => 'bell', 'badge' => $notifUnread > 0 ? $notifUnread : null],
+                ['route' => 'client.settings',       'label' => 'Paramètres',       'icon' => 'cog'],
             ];
             @endphp
 
@@ -152,7 +154,10 @@
                     @endif
                 >
                     @include('partials.icons.nav', ['icon' => $item['icon'], 'active' => $isActive, 'color' => '#64B5F6'])
-                    {{ $item['label'] }}
+                    <span class="flex-1">{{ $item['label'] }}</span>
+                    @if(!empty($item['badge']))
+                    <span style="min-width:18px;height:18px;border-radius:9999px;background:#FF6B35;color:white;font-size:0.65rem;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0;">{{ $item['badge'] > 99 ? '99+' : $item['badge'] }}</span>
+                    @endif
                 </a>
             @endforeach
         </nav>

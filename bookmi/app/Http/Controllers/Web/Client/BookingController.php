@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Web\Client;
 
+use App\Enums\BookingStatus;
 use App\Enums\PaymentMethod;
 use App\Events\BookingCreated;
 use App\Exceptions\PaymentException;
@@ -13,6 +14,9 @@ use App\Services\CalendarService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -107,9 +111,56 @@ class BookingController extends Controller
     public function show(int $id): View
     {
         $booking = BookingRequest::where('client_id', auth()->id())
-            ->with(['talentProfile.user', 'talentProfile.category', 'servicePackage'])
+            ->with(['talentProfile.user', 'talentProfile.category', 'servicePackage', 'trackingEvents'])
             ->findOrFail($id);
-        return view('client.bookings.show', compact('booking'));
+
+        $hasReview = \App\Models\Review::where('booking_request_id', $id)
+            ->where('reviewer_id', auth()->id())
+            ->exists();
+
+        return view('client.bookings.show', compact('booking', 'hasReview'));
+    }
+
+    public function receipt(int $id): RedirectResponse
+    {
+        $booking = BookingRequest::where('client_id', auth()->id())
+            ->whereIn('status', [
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+                BookingStatus::Completed->value,
+            ])
+            ->findOrFail($id);
+
+        $token = Str::uuid()->toString();
+        Cache::put("pdf_download:{$token}", [
+            'type'       => 'receipt',
+            'booking_id' => $booking->id,
+        ], now()->addMinutes(10));
+
+        return redirect()->away(url("/api/v1/dl/{$token}"));
+    }
+
+    public function contract(int $id): RedirectResponse
+    {
+        $booking = BookingRequest::where('client_id', auth()->id())
+            ->whereIn('status', [
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+                BookingStatus::Completed->value,
+            ])
+            ->findOrFail($id);
+
+        if (! $booking->contract_path || ! Storage::disk('local')->exists($booking->contract_path)) {
+            return back()->with('error', 'Le contrat n\'est pas encore disponible. Veuillez réessayer dans quelques minutes.');
+        }
+
+        $token = Str::uuid()->toString();
+        Cache::put("pdf_download:{$token}", [
+            'type'       => 'contract',
+            'booking_id' => $booking->id,
+        ], now()->addMinutes(10));
+
+        return redirect()->away(url("/api/v1/dl/{$token}"));
     }
 
     public function cancel(int $id): RedirectResponse
