@@ -14,7 +14,7 @@ import 'package:image_picker/image_picker.dart';
 
 // ── Design tokens ─────────────────────────────────────────────────
 const _primary = Color(0xFF3B9DF2);
-const _secondary = Color(0xFFE8F0FF);
+const _card = Color(0xFF0F1C3A);
 const _muted = Color(0xFF112044);
 const _mutedFg = Color(0xFF8FA3C0);
 const _border = Color(0x1AFFFFFF);
@@ -59,6 +59,7 @@ class _ChatPageState extends State<ChatPage> {
   void _showDeleteMessageSheet(BuildContext context, MessageModel msg) {
     showModalBottomSheet<void>(
       context: context,
+      backgroundColor: _card,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -96,8 +97,11 @@ class _ChatPageState extends State<ChatPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.close, color: Colors.grey),
-              title: Text('Annuler', style: GoogleFonts.manrope()),
+              leading: const Icon(Icons.close, color: _mutedFg),
+              title: Text(
+                'Annuler',
+                style: GoogleFonts.manrope(color: Colors.white70),
+              ),
               onTap: () => Navigator.of(context).pop(),
             ),
             const SizedBox(height: 8),
@@ -136,31 +140,52 @@ class _ChatPageState extends State<ChatPage> {
     final picker = ImagePicker();
     final choice = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: _card,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
+              decoration: BoxDecoration(
+                color: _border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
+              leading: const Icon(
+                Icons.photo_library_outlined,
+                color: _mutedFg,
+              ),
               title: Text(
                 'Photo depuis la galerie',
-                style: GoogleFonts.manrope(),
+                style: GoogleFonts.manrope(color: Colors.white),
               ),
               onTap: () => Navigator.pop(context, 'photo_gallery'),
             ),
             ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: Text('Prendre une photo', style: GoogleFonts.manrope()),
+              leading:
+                  const Icon(Icons.camera_alt_outlined, color: _mutedFg),
+              title: Text(
+                'Prendre une photo',
+                style: GoogleFonts.manrope(color: Colors.white),
+              ),
               onTap: () => Navigator.pop(context, 'photo_camera'),
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined),
+              leading: const Icon(Icons.videocam_outlined, color: _mutedFg),
               title: Text(
                 'Vidéo depuis la galerie',
-                style: GoogleFonts.manrope(),
+                style: GoogleFonts.manrope(color: Colors.white),
               ),
               onTap: () => Navigator.pop(context, 'video_gallery'),
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -359,7 +384,10 @@ class _ChatHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: _secondary,
+      decoration: const BoxDecoration(
+        color: _card,
+        border: Border(bottom: BorderSide(color: _border)),
+      ),
       padding: EdgeInsets.only(
         top: MediaQuery.of(context).padding.top + 8,
         left: 8,
@@ -371,7 +399,7 @@ class _ChatHeader extends StatelessWidget {
           IconButton(
             icon: const Icon(
               Icons.arrow_back_ios_new,
-              color: const Color(0xFF0D1B38),
+              color: Colors.white,
               size: 18,
             ),
             onPressed: () => Navigator.of(context).pop(),
@@ -404,7 +432,7 @@ class _ChatHeader extends StatelessWidget {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF0D1B38),
+                    color: Colors.white,
                   ),
                 ),
                 if (_subtitle.isNotEmpty)
@@ -412,7 +440,7 @@ class _ChatHeader extends StatelessWidget {
                     _subtitle,
                     style: GoogleFonts.manrope(
                       fontSize: 11,
-                      color: Colors.white.withValues(alpha: 0.6),
+                      color: _mutedFg,
                     ),
                   ),
               ],
@@ -422,12 +450,12 @@ class _ChatHeader extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: _border,
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
               Icons.info_outline,
-              color: const Color(0xFF0D1B38),
+              color: Colors.white70,
               size: 18,
             ),
           ),
@@ -453,7 +481,7 @@ class _HeaderInitials extends StatelessWidget {
           style: GoogleFonts.manrope(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: const Color(0xFF0D1B38),
+            color: Colors.white,
           ),
         ),
       ),
@@ -466,7 +494,10 @@ class _SafetyBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF0F7FF),
+      decoration: const BoxDecoration(
+        color: _muted,
+        border: Border(bottom: BorderSide(color: _border)),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
@@ -485,7 +516,7 @@ class _SafetyBanner extends StatelessWidget {
               'BookMi protège votre paiement jusqu\'à la prestation',
               style: GoogleFonts.manrope(
                 fontSize: 12,
-                color: _primary,
+                color: _mutedFg,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -500,7 +531,10 @@ class _ClosedBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF1F5F9),
+      decoration: const BoxDecoration(
+        color: _muted,
+        border: Border(bottom: BorderSide(color: _border)),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
@@ -599,20 +633,16 @@ class _ChatBubble extends StatelessWidget {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: isMine ? _primary : Colors.white,
+                color: isMine ? _primary : _card,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(16),
                   topRight: const Radius.circular(16),
                   bottomLeft: Radius.circular(isMine ? 16 : 0),
                   bottomRight: Radius.circular(isMine ? 0 : 16),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                border: isMine
+                    ? null
+                    : Border.all(color: _border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,7 +674,7 @@ class _ChatBubble extends StatelessWidget {
                     message.content,
                     style: GoogleFonts.manrope(
                       fontSize: 14,
-                      color: isMine ? Colors.white : _secondary,
+                      color: Colors.white,
                       height: 1.4,
                     ),
                   ),
@@ -747,15 +777,16 @@ class _VideoMessage extends StatelessWidget {
           width: 220,
           height: 140,
           decoration: BoxDecoration(
-            color: _secondary,
+            color: _card,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _border),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
               const Icon(
                 Icons.play_circle_filled_rounded,
-                color: const Color(0xFF0D1B38),
+                color: Colors.white,
                 size: 48,
               ),
               Positioned(
@@ -783,7 +814,7 @@ class _VideoMessage extends StatelessWidget {
                         'Vidéo',
                         style: GoogleFonts.manrope(
                           fontSize: 10,
-                          color: const Color(0xFF0D1B38),
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -915,7 +946,7 @@ class _InputBar extends StatelessWidget {
                       controller: controller,
                       style: GoogleFonts.manrope(
                         fontSize: 14,
-                        color: _secondary,
+                        color: Colors.white,
                       ),
                       maxLines: 4,
                       minLines: 1,

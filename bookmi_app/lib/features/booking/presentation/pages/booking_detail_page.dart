@@ -1,17 +1,21 @@
+import 'dart:io';
+
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/booking/data/models/booking_model.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/chat_page.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 
 class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({
@@ -707,21 +711,27 @@ class _ContractButtonState extends State<_ContractButton> {
     final repo = context.read<BookingRepository>();
     final result = await repo.getContractUrl(widget.bookingId);
 
-    if (!mounted) return;
-    setState(() => _loading = false);
+    if (!mounted) {
+      setState(() => _loading = false);
+      return;
+    }
 
     switch (result) {
       case ApiSuccess(:final data):
-        final uri = Uri.parse(data);
-        if (await canLaunchUrl(uri)) {
-          // ignore: use_build_context_synchronously
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
+        try {
+          // Download bytes directly — the token URL is never shown to the user.
+          final response = await Dio().get<List<int>>(
+            data,
+            options: Options(responseType: ResponseType.bytes),
+          );
+          final dir = await getTemporaryDirectory();
+          final file = File('${dir.path}/contrat-bookmi.pdf');
+          await file.writeAsBytes(response.data!);
+          await OpenFilex.open(file.path);
+        } on Exception catch (_) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Impossible d\'ouvrir le contrat'),
-            ),
+            const SnackBar(content: Text('Erreur lors du téléchargement')),
           );
         }
       case ApiFailure(:final message):
@@ -730,6 +740,8 @@ class _ContractButtonState extends State<_ContractButton> {
           SnackBar(content: Text(message)),
         );
     }
+
+    if (mounted) setState(() => _loading = false);
   }
 
   @override
@@ -832,7 +844,6 @@ class _MessageButtonState extends State<_MessageButton> {
         final conversationId = conversationData?['id'] as int?;
         if (conversationId == null) return;
         if (!mounted) return;
-        // ignore: use_build_context_synchronously
         await Navigator.of(context).push(
           MaterialPageRoute<void>(
             builder: (_) => BlocProvider<MessagingCubit>(
@@ -934,21 +945,27 @@ class _ReceiptButtonState extends State<_ReceiptButton> {
     final repo = context.read<BookingRepository>();
     final result = await repo.getReceiptUrl(widget.bookingId);
 
-    if (!mounted) return;
-    setState(() => _loading = false);
+    if (!mounted) {
+      setState(() => _loading = false);
+      return;
+    }
 
     switch (result) {
       case ApiSuccess(:final data):
-        final uri = Uri.parse(data);
-        if (await canLaunchUrl(uri)) {
-          // ignore: use_build_context_synchronously
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
+        try {
+          // Download bytes directly — the token URL is never shown to the user.
+          final response = await Dio().get<List<int>>(
+            data,
+            options: Options(responseType: ResponseType.bytes),
+          );
+          final dir = await getTemporaryDirectory();
+          final file = File('${dir.path}/recu-bookmi.pdf');
+          await file.writeAsBytes(response.data!);
+          await OpenFilex.open(file.path);
+        } on Exception catch (_) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Impossible d\'ouvrir le reçu'),
-            ),
+            const SnackBar(content: Text('Erreur lors du téléchargement')),
           );
         }
       case ApiFailure(:final message):
@@ -957,6 +974,8 @@ class _ReceiptButtonState extends State<_ReceiptButton> {
           SnackBar(content: Text(message)),
         );
     }
+
+    if (mounted) setState(() => _loading = false);
   }
 
   @override
