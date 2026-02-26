@@ -43,7 +43,7 @@ class PayoutMethodPage extends Page implements HasForms
 
         // Show form unless the account is currently verified
         $this->showingForm = ! $this->profile?->payout_method
-            || $this->profile?->payout_method_status !== 'verified';
+            || $this->profile->payout_method_status !== 'verified';
 
         $this->form->fill([
             'payout_method'          => $this->profile?->payout_method,
