@@ -50,6 +50,7 @@ Route::get('/earnings', [EarningsController::class, 'index'])->name('earnings');
 // Moyens de paiement
 Route::get('/paiement', [PaiementController::class, 'index'])->name('paiement');
 Route::post('/paiement/account', [PaiementController::class, 'updatePayoutMethod'])->name('paiement.account.update');
+Route::delete('/paiement/account', [PaiementController::class, 'deletePayoutMethod'])->name('paiement.account.delete');
 Route::post('/paiement/withdrawal', [PaiementController::class, 'storeWithdrawal'])->name('paiement.withdrawal.store');
 
 // Attestation (PDF)
