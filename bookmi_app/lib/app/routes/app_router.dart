@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bookmi_app/app/routes/guards/auth_guard.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/app/view/shell_page.dart';
+import 'package:bookmi_app/core/services/analytics_route_observer.dart';
 import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
@@ -77,6 +78,7 @@ GoRouter buildAppRouter(
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: RoutePaths.splash,
+    observers: [AnalyticsRouteObserver()],
     refreshListenable: _GoRouterRefreshStream(authBloc.stream),
     redirect: (context, state) {
       final location = state.matchedLocation;

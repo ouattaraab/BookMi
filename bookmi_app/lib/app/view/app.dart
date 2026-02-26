@@ -14,6 +14,7 @@ import 'package:bookmi_app/features/favorites/bloc/favorites_bloc.dart';
 import 'package:bookmi_app/features/favorites/data/local/favorites_local_source.dart';
 import 'package:bookmi_app/features/favorites/data/repositories/favorites_repository.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
+import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
@@ -21,10 +22,13 @@ import 'package:bookmi_app/features/profile/data/repositories/profile_repository
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
 import 'package:bookmi_app/l10n/l10n.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_ce/hive.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -150,6 +154,15 @@ class _AppDependencies {
     final bookingRepo = BookingRepository(
       apiClient: apiClient,
       localStorage: bookingLocalStorage,
+    );
+
+    // Analytics d'usage
+    final packageInfo = await PackageInfo.fromPlatform();
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    AnalyticsService.instance.init(
+      apiClient.dio,
+      platform,
+      packageInfo.version,
     );
 
     final trackingRepo = TrackingRepository(apiClient: apiClient);

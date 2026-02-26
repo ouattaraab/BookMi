@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/components/service_package_card.dart';
 import 'package:bookmi_app/core/design_system/components/talent_card.dart';
@@ -492,15 +493,18 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                 color: Colors.transparent,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(BookmiRadius.button),
-                  onTap: () => BookingFlowSheet.show(
-                    context,
-                    repository: context.read<BookingRepository>(),
-                    talentProfileId: talentId,
-                    talentStageName: stageName,
-                    servicePackages: servicePackages,
-                    enableExpress:
-                        profile['enable_express_booking'] as bool? ?? false,
-                  ),
+                  onTap: () {
+                    AnalyticsService.instance.trackTap('btn_reserver');
+                    BookingFlowSheet.show(
+                      context,
+                      repository: context.read<BookingRepository>(),
+                      talentProfileId: talentId,
+                      talentStageName: stageName,
+                      servicePackages: servicePackages,
+                      enableExpress:
+                          profile['enable_express_booking'] as bool? ?? false,
+                    );
+                  },
                   child: Center(
                     child: Text(
                       'Réserver · ${TalentCard.formatCachet(cachetAmount)}',

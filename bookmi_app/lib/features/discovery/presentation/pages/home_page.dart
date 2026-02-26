@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_bloc.dart';
@@ -73,6 +74,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onCategoryTap(String key) {
+    AnalyticsService.instance.trackTap(
+      key.isEmpty ? 'btn_filter_all' : 'btn_filter_$key',
+    );
     setState(() => _selectedCategory = key);
     final bloc = context.read<DiscoveryBloc>();
     final currentState = bloc.state;

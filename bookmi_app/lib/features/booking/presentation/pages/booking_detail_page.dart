@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
+import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
@@ -707,6 +708,7 @@ class _ContractButtonState extends State<_ContractButton> {
 
   Future<void> _download() async {
     if (_loading) return;
+    AnalyticsService.instance.trackTap('btn_download_contract');
     setState(() => _loading = true);
 
     final repo = context.read<BookingRepository>();
@@ -830,6 +832,7 @@ class _MessageButtonState extends State<_MessageButton> {
 
   Future<void> _openChat() async {
     if (_loading) return;
+    AnalyticsService.instance.trackTap('btn_open_chat');
     setState(() => _loading = true);
 
     final repo = context.read<MessagingRepository>();

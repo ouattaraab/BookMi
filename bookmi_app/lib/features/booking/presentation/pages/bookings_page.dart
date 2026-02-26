@@ -1,4 +1,5 @@
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
+import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
@@ -301,16 +302,25 @@ class _BookingsTab extends StatelessWidget {
                   final isAccepted = booking.status == 'accepted';
                   return BookingCard(
                     booking: booking,
-                    onTap: () => context.pushNamed(
-                      RouteNames.bookingDetail,
-                      pathParameters: {'id': '${booking.id}'},
-                      extra: booking,
-                    ),
+                    onTap: () {
+                      AnalyticsService.instance.trackTap('btn_booking_detail');
+                      context.pushNamed(
+                        RouteNames.bookingDetail,
+                        pathParameters: {'id': '${booking.id}'},
+                        extra: booking,
+                      );
+                    },
                     onAccept: isTalent && isPending
-                        ? () => _handleAccept(context, booking.id)
+                        ? () {
+                            AnalyticsService.instance.trackTap('btn_accept');
+                            _handleAccept(context, booking.id);
+                          }
                         : null,
                     onReject: isTalent && isPending
-                        ? () => _handleReject(context, booking.id)
+                        ? () {
+                            AnalyticsService.instance.trackTap('btn_reject');
+                            _handleReject(context, booking.id);
+                          }
                         : null,
                     onPay: !isTalent && isAccepted
                         ? () => _handlePay(context, booking.id)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\AppEventController;
 use App\Http\Controllers\Api\V1\DownloadController;
 use App\Http\Controllers\Api\V1\AdminDisputeController;
 use App\Http\Controllers\Api\V1\AdminReviewModerationController;
@@ -234,6 +235,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // Story 7.8 — Analytics talent
         Route::get('/me/analytics', [AnalyticsController::class, 'dashboard'])->name('me.analytics');
+
+        // Analytics d'usage app mobile
+        Route::post('analytics/events', [AppEventController::class, 'store'])->name('analytics.events');
 
         // Story 7.9 — Revenue certificate
         Route::get('/me/revenue_certificate', [RevenueCertificateController::class, 'download'])->name('me.revenue_certificate');
