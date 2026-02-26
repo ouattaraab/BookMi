@@ -12,7 +12,6 @@ const _bg = Color(0xFF112044);
 const _surface = Color(0xFF1A2E5A);
 const _surfaceLight = Color(0xFF1E3566);
 const _primary = Color(0xFF3B9DF2);
-const _primaryDark = Color(0xFF2180D9);
 const _textPrimary = Color(0xFFE8F0FF);
 const _textMuted = Color(0xFF8FA3C0);
 const _border = Color(0x1AFFFFFF);
