@@ -117,7 +117,14 @@ class WithdrawalRequestResource extends Resource
 
                 Tables\Columns\TextColumn::make('payout_details')
                     ->label('Compte')
-                    ->formatStateUsing(fn ($state) => is_array($state) ? ($state['phone'] ?? $state['account_number'] ?? '—') : '—'),
+                    ->state(function (WithdrawalRequest $record): string {
+                        $details = $record->payout_details;
+                        if (! is_array($details) || empty($details)) {
+                            return '—';
+                        }
+
+                        return $details['phone'] ?? $details['account_number'] ?? '—';
+                    }),
 
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Statut')

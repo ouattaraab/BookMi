@@ -135,14 +135,15 @@ class PayoutMethodResource extends Resource
 
                 Tables\Columns\TextColumn::make('payout_details')
                     ->label('Coordonnées')
-                    ->formatStateUsing(function ($state): string {
-                        if (! is_array($state) || empty($state)) {
+                    ->state(function (TalentProfile $record): string {
+                        $details = $record->payout_details;
+                        if (! is_array($details) || empty($details)) {
                             return '—';
                         }
 
-                        return $state['phone']
-                            ?? $state['account_number']
-                            ?? implode(' / ', array_filter(array_values($state)));
+                        return $details['phone']
+                            ?? $details['account_number']
+                            ?? implode(' / ', array_filter(array_values($details)));
                     }),
 
                 Tables\Columns\BadgeColumn::make('payout_method_status')
