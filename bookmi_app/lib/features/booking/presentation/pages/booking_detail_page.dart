@@ -297,6 +297,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               bookingId: booking.id,
               talentProfileId: booking.talentProfileId!,
               talentName: booking.talentStageName,
+              talentAvatarUrl: booking.talentAvatarUrl,
             ),
           ],
 
@@ -812,11 +813,13 @@ class _MessageButton extends StatefulWidget {
     required this.bookingId,
     required this.talentProfileId,
     required this.talentName,
+    this.talentAvatarUrl,
   });
 
   final int bookingId;
   final int talentProfileId;
   final String talentName;
+  final String? talentAvatarUrl;
 
   @override
   State<_MessageButton> createState() => _MessageButtonState();
@@ -851,6 +854,7 @@ class _MessageButtonState extends State<_MessageButton> {
               child: ChatPage(
                 conversationId: conversationId,
                 otherPartyName: widget.talentName,
+                talentAvatarUrl: widget.talentAvatarUrl,
               ),
             ),
           ),

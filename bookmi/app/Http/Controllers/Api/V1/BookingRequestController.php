@@ -250,7 +250,8 @@ class BookingRequestController extends BaseController
     {
         return [
             'client:id,first_name,last_name',
-            'talentProfile:id,stage_name,slug',
+            'talentProfile:id,user_id,stage_name,slug',
+            'talentProfile.user:id,avatar',
             'servicePackage:id,name,type,description,inclusions,duration_minutes',
         ];
     }

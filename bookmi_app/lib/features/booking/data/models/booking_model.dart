@@ -47,6 +47,7 @@ class BookingModel {
     required this.totalAmount,
     required this.isExpress,
     required this.contractAvailable,
+    this.talentAvatarUrl,
     this.startTime,
     this.message,
     this.rejectReason,
@@ -63,6 +64,7 @@ class BookingModel {
 
   /// Null if the backend didn't return a talent_profile object.
   final int? talentProfileId;
+  final String? talentAvatarUrl;
   final String packageName;
   final String packageType;
   final String eventDate;
@@ -93,6 +95,7 @@ class BookingModel {
       clientName: client?['name'] as String? ?? 'Client',
       talentStageName: talent?['stage_name'] as String? ?? 'Talent',
       talentProfileId: talent?['id'] as int?,
+      talentAvatarUrl: talent?['avatar_url'] as String?,
       packageName: pkg?['name'] as String? ?? 'Forfait',
       packageType: pkg?['type'] as String? ?? 'standard',
       eventDate: json['event_date'] as String,

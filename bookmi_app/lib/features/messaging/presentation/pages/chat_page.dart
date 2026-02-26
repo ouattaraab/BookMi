@@ -944,6 +944,7 @@ class _InputBar extends StatelessWidget {
                   Expanded(
                     child: TextField(
                       controller: controller,
+                      cursorColor: Colors.white,
                       style: GoogleFonts.manrope(
                         fontSize: 14,
                         color: Colors.white,
@@ -957,7 +958,12 @@ class _InputBar extends StatelessWidget {
                           fontSize: 14,
                           color: _mutedFg,
                         ),
+                        // Override theme's filled:true to prevent light fillColor
+                        filled: true,
+                        fillColor: Colors.transparent,
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
                         isDense: true,
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 10,

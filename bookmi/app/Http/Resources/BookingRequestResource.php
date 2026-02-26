@@ -23,6 +23,7 @@ class BookingRequestResource extends JsonResource
                 'id'         => $this->talentProfile->id,
                 'stage_name' => $this->talentProfile->stage_name,
                 'slug'       => $this->talentProfile->slug,
+                'avatar_url' => $this->talentProfile->user?->avatar_url,
             ] : null,
             'created_at'      => $this->created_at?->toIso8601String(),
             'service_package' => $this->package_snapshot
