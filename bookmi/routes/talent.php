@@ -5,11 +5,14 @@ use App\Http\Controllers\Web\Talent\BookingController;
 use App\Http\Controllers\Web\Talent\CalendarController;
 use App\Http\Controllers\Web\Talent\CertificateController;
 use App\Http\Controllers\Web\Talent\DashboardController;
+use App\Http\Controllers\Web\Talent\EarningsController;
 use App\Http\Controllers\Web\Talent\MessageController;
 use App\Http\Controllers\Web\Talent\PackageController;
+use App\Http\Controllers\Web\Talent\PaiementController;
 use App\Http\Controllers\Web\Talent\PortfolioController;
 use App\Http\Controllers\Web\Talent\ProfileController;
 use App\Http\Controllers\Web\Talent\SettingsController;
+use App\Http\Controllers\Web\Talent\StatisticsController;
 use App\Http\Controllers\Web\Talent\VerificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +44,17 @@ Route::post('/messages/{id}', [MessageController::class, 'send'])->name('message
 
 // Analytiques
 Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+
+// Statistiques
+Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
+
+// Mes Revenus
+Route::get('/earnings', [EarningsController::class, 'index'])->name('earnings');
+
+// Moyens de paiement
+Route::get('/paiement', [PaiementController::class, 'index'])->name('paiement');
+Route::post('/paiement/account', [PaiementController::class, 'updatePayoutMethod'])->name('paiement.account.update');
+Route::post('/paiement/withdrawal', [PaiementController::class, 'storeWithdrawal'])->name('paiement.withdrawal.store');
 
 // Attestation (PDF)
 Route::get('/certificate/{bookingId}', [CertificateController::class, 'download'])->name('certificate');

@@ -1,0 +1,91 @@
+<?php
+
+namespace App\Http\Controllers\Web\Talent;
+
+use App\Enums\BookingStatus;
+use App\Enums\PayoutStatus;
+use App\Http\Controllers\Controller;
+use App\Models\BookingRequest;
+use App\Models\Payout;
+use App\Models\ProfileView;
+use Illuminate\View\View;
+
+class StatisticsController extends Controller
+{
+    public function index(): View
+    {
+        $profile = auth()->user()->talentProfile;
+
+        if (! $profile) {
+            return view('talent.coming-soon', [
+                'title'       => 'Statistiques',
+                'description' => 'Configurez votre profil talent pour accéder aux statistiques.',
+            ]);
+        }
+
+        // ── Profile views ──────────────────────────────────────────────────
+        $profileViews = [
+            'today' => ProfileView::where('talent_profile_id', $profile->id)->whereDate('viewed_at', today())->count(),
+            'week'  => ProfileView::where('talent_profile_id', $profile->id)->where('viewed_at', '>=', now()->startOfWeek())->count(),
+            'month' => ProfileView::where('talent_profile_id', $profile->id)->where('viewed_at', '>=', now()->startOfMonth())->count(),
+            'total' => ProfileView::where('talent_profile_id', $profile->id)->count(),
+        ];
+
+        // ── Financial data (succeeded payouts only) ────────────────────────
+        $now              = now();
+        $startOfMonth     = $now->copy()->startOfMonth();
+        $startOfPrevMonth = $now->copy()->subMonth()->startOfMonth();
+        $endOfPrevMonth   = $now->copy()->subMonth()->endOfMonth();
+
+        $base = Payout::where('talent_profile_id', $profile->id)
+            ->where('status', PayoutStatus::Succeeded->value);
+
+        $revenusTotal         = (int) (clone $base)->sum('amount');
+        $revenusMoisCourant   = (int) (clone $base)->where('processed_at', '>=', $startOfMonth)->sum('amount');
+        $revenusMoisPrecedent = (int) (clone $base)->whereBetween('processed_at', [$startOfPrevMonth, $endOfPrevMonth])->sum('amount');
+        $nombrePrestations    = (clone $base)->count();
+        $cachetMoyen          = $nombrePrestations > 0 ? (int) round($revenusTotal / $nombrePrestations) : 0;
+
+        $comparaison = 0.0;
+        if ($revenusMoisPrecedent > 0) {
+            $comparaison = round(($revenusMoisCourant - $revenusMoisPrecedent) / $revenusMoisPrecedent * 100, 1);
+        } elseif ($revenusMoisCourant > 0) {
+            $comparaison = 100.0;
+        }
+
+        // ── Last 6 months chart data ───────────────────────────────────────
+        $sixMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
+        $rawPayouts   = (clone $base)->where('processed_at', '>=', $sixMonthsAgo)->select(['amount', 'processed_at'])->get();
+
+        $monthlyMap = [];
+        foreach ($rawPayouts as $p) {
+            $key             = \Carbon\Carbon::parse($p->processed_at)->format('Y-m');
+            $monthlyMap[$key] = ($monthlyMap[$key] ?? 0) + $p->amount;
+        }
+
+        $mensuels = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $key        = $now->copy()->subMonths($i)->format('Y-m');
+            $mensuels[] = ['mois' => $key, 'revenus' => (int) ($monthlyMap[$key] ?? 0)];
+        }
+
+        // ── Booking stats ──────────────────────────────────────────────────
+        $bookingStats = [
+            'total'     => BookingRequest::where('talent_profile_id', $profile->id)->count(),
+            'completed' => BookingRequest::where('talent_profile_id', $profile->id)->where('status', BookingStatus::Completed->value)->count(),
+            'pending'   => BookingRequest::where('talent_profile_id', $profile->id)->where('status', BookingStatus::Pending->value)->count(),
+        ];
+
+        $financial = compact(
+            'revenusTotal',
+            'revenusMoisCourant',
+            'revenusMoisPrecedent',
+            'comparaison',
+            'nombrePrestations',
+            'cachetMoyen',
+            'mensuels'
+        );
+
+        return view('talent.statistics.index', compact('profileViews', 'financial', 'bookingStats'));
+    }
+}

@@ -65,16 +65,19 @@
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             @php
             $navItems = [
-                ['route' => 'talent.dashboard',    'label' => 'Dashboard',     'icon' => 'squares-2x2'],
-                ['route' => 'talent.calendar',     'label' => 'Calendrier',    'icon' => 'calendar'],
-                ['route' => 'talent.bookings',     'label' => 'Réservations',  'icon' => 'book-open'],
-                ['route' => 'talent.packages',     'label' => 'Packages',      'icon' => 'cube'],
-                ['route' => 'talent.messages',     'label' => 'Messages',      'icon' => 'chat-bubble-left'],
-                ['route' => 'talent.analytics',    'label' => 'Analytiques',   'icon' => 'chart-bar'],
-                ['route' => 'talent.portfolio',    'label' => 'Portfolio',     'icon' => 'photo'],
-                ['route' => 'talent.profile',      'label' => 'Mon profil',    'icon' => 'user'],
-                ['route' => 'talent.verification', 'label' => 'Vérification',  'icon' => 'shield-check'],
-                ['route' => 'talent.settings',     'label' => 'Paramètres',    'icon' => 'cog'],
+                ['route' => 'talent.dashboard',    'label' => 'Dashboard',          'icon' => 'squares-2x2'],
+                ['route' => 'talent.calendar',     'label' => 'Calendrier',         'icon' => 'calendar'],
+                ['route' => 'talent.bookings',     'label' => 'Réservations',       'icon' => 'book-open'],
+                ['route' => 'talent.packages',     'label' => 'Packages',           'icon' => 'cube'],
+                ['route' => 'talent.messages',     'label' => 'Messages',           'icon' => 'chat-bubble-left'],
+                ['route' => 'talent.analytics',    'label' => 'Analytiques',        'icon' => 'chart-bar'],
+                ['route' => 'talent.statistics',   'label' => 'Statistiques',       'icon' => 'chart-pie'],
+                ['route' => 'talent.earnings',     'label' => 'Mes Revenus',        'icon' => 'banknotes'],
+                ['route' => 'talent.paiement',     'label' => 'Moyens de paiement', 'icon' => 'credit-card'],
+                ['route' => 'talent.portfolio',    'label' => 'Portfolio',          'icon' => 'photo'],
+                ['route' => 'talent.profile',      'label' => 'Mon profil',         'icon' => 'user'],
+                ['route' => 'talent.verification', 'label' => 'Vérification',       'icon' => 'shield-check'],
+                ['route' => 'talent.settings',     'label' => 'Paramètres',         'icon' => 'cog'],
             ];
             @endphp
 
