@@ -48,7 +48,7 @@ class UsageAnalyticsPage extends Page
             ->orderByDesc('count')
             ->limit($limit)
             ->get()
-            ->map(fn ($row) => ['name' => $row->event_name, 'count' => (int) $row->count])
+            ->map(fn ($row) => ['name' => $row->event_name, 'count' => (int) $row->getAttribute('count')])
             ->all();
     }
 
@@ -67,7 +67,7 @@ class UsageAnalyticsPage extends Page
         // Build page → [day => count] map
         $pages = [];
         foreach ($rows as $row) {
-            $pages[$row->event_name][$row->day] = (int) $row->count;
+            $pages[$row->event_name][(string) $row->getAttribute('day')] = (int) $row->getAttribute('count');
         }
 
         // Sort pages by total descending, keep top 15
