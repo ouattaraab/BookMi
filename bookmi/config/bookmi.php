@@ -57,6 +57,13 @@ return [
         'days_before' => [7, 2],
     ],
 
+    'deeplink' => [
+        // Android App Links — SHA-256 of release keystore (keytool -list -v -keystore keystore.jks)
+        'android_sha256' => env('ANDROID_SHA256_FINGERPRINT', ''),
+        // iOS Universal Links — format: TEAMID.com.bookmi.app
+        'ios_app_id'     => env('IOS_APP_ID', 'TEAMID.click.bookmi.app'),
+    ],
+
     'admin' => [
         'pending_action_reminder_hours' => 48,
         'escalation_hours' => 96,

@@ -108,6 +108,17 @@ class _ProfilePageState extends State<ProfilePage> {
                             : null,
                       ),
                     ),
+                    if (isTalent &&
+                        stats != null &&
+                        stats.talentLevel.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: _TalentLevelCard(
+                          talentLevel: stats.talentLevel,
+                          totalBookings: stats.totalBookings > 0
+                              ? stats.totalBookings
+                              : stats.nombrePrestations,
+                        ),
+                      ),
                     SliverToBoxAdapter(
                       child: _GeneralSection(
                         isTalent: isTalent,
@@ -925,6 +936,151 @@ class _UnverifiedBadge extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: Colors.orange,
         ),
+      ),
+    );
+  }
+}
+
+// ── Talent level card ─────────────────────────────────────────────
+class _TalentLevelCard extends StatelessWidget {
+  const _TalentLevelCard({
+    required this.talentLevel,
+    required this.totalBookings,
+  });
+
+  final String talentLevel;
+  final int totalBookings;
+
+  static const _levels = ['nouveau', 'confirme', 'populaire', 'elite'];
+
+  static const _levelLabels = {
+    'nouveau': 'Nouveau',
+    'confirme': 'Confirmé',
+    'populaire': 'Populaire',
+    'elite': 'Élite',
+  };
+
+  static const _levelMins = {
+    'nouveau': 0,
+    'confirme': 6,
+    'populaire': 21,
+    'elite': 51,
+  };
+
+  static const _levelColors = {
+    'nouveau': Color(0xFF94A3B8),
+    'confirme': Color(0xFF2196F3),
+    'populaire': Color(0xFF9C27B0),
+    'elite': Color(0xFFFFB300),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final level = talentLevel.isNotEmpty ? talentLevel : 'nouveau';
+    final currentIdx = _levels.indexOf(level).clamp(0, 3);
+    final nextIdx = currentIdx < 3 ? currentIdx + 1 : -1;
+    final nextLevel = nextIdx >= 0 ? _levels[nextIdx] : null;
+    final currentMin = _levelMins[level] ?? 0;
+    final nextMin = nextLevel != null ? (_levelMins[nextLevel] ?? 0) : null;
+    final color = _levelColors[level] ?? const Color(0xFF94A3B8);
+    final label = _levelLabels[level] ?? level;
+    final nextLabel =
+        nextLevel != null ? (_levelLabels[nextLevel] ?? nextLevel) : null;
+
+    double progress;
+    int remaining;
+    if (nextMin != null) {
+      final range = nextMin - currentMin;
+      progress = range > 0
+          ? ((totalBookings - currentMin) / range).clamp(0.0, 1.0)
+          : 1.0;
+      remaining = (nextMin - totalBookings).clamp(0, nextMin);
+    } else {
+      progress = 1.0;
+      remaining = 0;
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.workspace_premium_outlined,
+                size: 18,
+                color: color,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Niveau talent',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: _mutedFg,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: color.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.star, size: 12, color: color),
+                    const SizedBox(width: 4),
+                    Text(
+                      label,
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+              minHeight: 6,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (nextLabel != null)
+            Text(
+              '$totalBookings réservations · encore $remaining pour atteindre $nextLabel',
+              style: GoogleFonts.manrope(fontSize: 12, color: _mutedFg),
+            )
+          else
+            Text(
+              '$totalBookings réservations · Niveau maximum atteint',
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+        ],
       ),
     );
   }

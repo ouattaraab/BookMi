@@ -12,6 +12,40 @@ use App\Http\Controllers\Web\TalentNotificationController;
 use App\Http\Controllers\Web\TalentPageController;
 use Illuminate\Support\Facades\Route;
 
+// ── Mobile deep linking verification ─────────────────────────────────────────
+// Android App Links: autoVerify requires this file to associate bookmi.click with com.bookmi.app
+// SHA-256 fingerprint: set ANDROID_SHA256_FINGERPRINT in .env (from keystore)
+Route::get('/.well-known/assetlinks.json', function () {
+    /** @var string $sha256 */
+    $sha256 = config('bookmi.deeplink.android_sha256', '');
+
+    return response()->json([[
+        'relation' => ['delegate_permission/common.handle_all_urls'],
+        'target'   => [
+            'namespace'                => 'android_app',
+            'package_name'             => 'com.bookmi.app',
+            'sha256_cert_fingerprints' => $sha256 !== '' ? [$sha256] : [],
+        ],
+    ]])->header('Content-Type', 'application/json');
+})->name('well-known.assetlinks');
+
+// iOS Universal Links: associate bookmi.click with the iOS app
+// Set IOS_APP_ID in .env (format: TEAMID.com.bookmi.app)
+Route::get('/.well-known/apple-app-site-association', function () {
+    /** @var string $appId */
+    $appId = config('bookmi.deeplink.ios_app_id', 'TEAMID.click.bookmi.app');
+
+    return response()->json([
+        'applinks' => [
+            'apps'    => [],
+            'details' => [[
+                'appID' => $appId,
+                'paths' => ['/talent/*'],
+            ]],
+        ],
+    ])->header('Content-Type', 'application/json');
+})->name('well-known.aasa');
+
 // ── Firebase Service Worker (config injecté depuis .env, sans clé hardcodée) ─
 Route::get('/firebase-messaging-sw.js', function () {
     return response()

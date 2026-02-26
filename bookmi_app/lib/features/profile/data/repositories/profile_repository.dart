@@ -19,6 +19,8 @@ class ProfileStats {
     this.profileViewsWeek = 0,
     this.profileViewsMonth = 0,
     this.profileViewsTotal = 0,
+    this.talentLevel = '',
+    this.totalBookings = 0,
   });
 
   final int bookingCount;
@@ -33,6 +35,8 @@ class ProfileStats {
   final int profileViewsWeek;
   final int profileViewsMonth;
   final int profileViewsTotal;
+  final String talentLevel;
+  final int totalBookings;
 }
 
 class ProfileRepository {
@@ -62,6 +66,8 @@ class ProfileRepository {
       var revenusMoisCourant = 0;
       var nombrePrestations = 0;
       var mensuels = <Map<String, dynamic>>[];
+      var talentLevel = '';
+      var totalBookings = 0;
 
       if (isTalent) {
         final finRes = await _dio.get<Map<String, dynamic>>(
@@ -72,6 +78,19 @@ class ProfileRepository {
         nombrePrestations = (d['nombre_prestations'] as int?) ?? 0;
         mensuels =
             ((d['mensuels'] as List?)?.cast<Map<String, dynamic>>()) ?? [];
+
+        try {
+          final profileRes = await _dio.get<Map<String, dynamic>>(
+            ApiEndpoints.meTalentProfile,
+          );
+          final pd =
+              profileRes.data?['data'] as Map<String, dynamic>? ?? {};
+          talentLevel = (pd['talent_level'] as String?) ?? '';
+          totalBookings =
+              (pd['total_bookings'] as int?) ?? nombrePrestations;
+        } on DioException {
+          // talent_level unavailable — keep defaults
+        }
       }
 
       return ApiSuccess(
@@ -88,6 +107,8 @@ class ProfileRepository {
           profileViewsWeek: profileViewsWeek,
           profileViewsMonth: profileViewsMonth,
           profileViewsTotal: profileViewsTotal,
+          talentLevel: talentLevel,
+          totalBookings: totalBookings,
         ),
       );
     } on DioException catch (e) {

@@ -27,6 +27,7 @@ abstract final class RouteNames {
   static const profilePackageManager = 'profilePackageManager';
   static const profileTalentInfo = 'profileTalentInfo';
   static const notifications = 'notifications';
+  static const talentDeepLink = 'talentDeepLink';
 }
 
 abstract final class RoutePaths {

@@ -88,6 +88,27 @@ GoRouter buildAppRouter(
       return authGuard(context, location);
     },
     routes: [
+      // ── Deep link: /talent/:slug (bookmi.click/talent/slug or bookmi://talent/slug) ──
+      GoRoute(
+        path: '/talent/:slug',
+        name: RouteNames.talentDeepLink,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final slug = state.pathParameters['slug'] ?? '';
+          return MultiRepositoryProvider(
+            providers: [
+              RepositoryProvider.value(value: bookingRepo),
+            ],
+            child: BlocProvider(
+              create: (_) => TalentProfileBloc(
+                repository: talentProfileRepo,
+              ),
+              child: TalentProfilePage(slug: slug),
+            ),
+          );
+        },
+      ),
+
       // ── Notifications (pushed above shell, accessible from any screen) ───
       GoRoute(
         path: RoutePaths.notifications,
