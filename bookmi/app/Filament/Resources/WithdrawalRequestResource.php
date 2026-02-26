@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\WithdrawalStatus;
 use App\Filament\Resources\WithdrawalRequestResource\Pages;
+use App\Jobs\SendPushNotification;
 use App\Models\WithdrawalRequest;
 use App\Notifications\WithdrawalStatusNotification;
 use Filament\Forms;
@@ -158,10 +159,23 @@ class WithdrawalRequestResource extends Resource
                             'processed_by' => Auth::id(),
                         ]);
 
-                        // Notifier le talent
                         $user = $record->talentProfile?->user;
                         if ($user) {
+                            // E-mail
                             $user->notify(new WithdrawalStatusNotification($record));
+
+                            // Push in-app + FCM
+                            $amount = number_format($record->amount, 0, ',', ' ');
+                            SendPushNotification::dispatch(
+                                $user->id,
+                                'Demande de reversement approuvée ✓',
+                                "Votre demande de {$amount} XOF a été approuvée. Le virement sera effectué prochainement.",
+                                [
+                                    'type'           => 'withdrawal_approved',
+                                    'withdrawal_id'  => $record->id,
+                                    'url'            => '/talent-portal/withdrawal-request',
+                                ],
+                            );
                         }
 
                         Notification::make()
@@ -183,7 +197,21 @@ class WithdrawalRequestResource extends Resource
 
                         $user = $record->talentProfile?->user;
                         if ($user) {
+                            // E-mail
                             $user->notify(new WithdrawalStatusNotification($record));
+
+                            // Push in-app + FCM
+                            $amount = number_format($record->amount, 0, ',', ' ');
+                            SendPushNotification::dispatch(
+                                $user->id,
+                                'Reversement en cours de traitement',
+                                "Votre reversement de {$amount} XOF est en cours de traitement.",
+                                [
+                                    'type'          => 'withdrawal_processing',
+                                    'withdrawal_id' => $record->id,
+                                    'url'           => '/talent-portal/withdrawal-request',
+                                ],
+                            );
                         }
 
                         Notification::make()
@@ -210,7 +238,21 @@ class WithdrawalRequestResource extends Resource
 
                         $user = $record->talentProfile?->user;
                         if ($user) {
+                            // E-mail
                             $user->notify(new WithdrawalStatusNotification($record));
+
+                            // Push in-app + FCM
+                            $amount = number_format($record->amount, 0, ',', ' ');
+                            SendPushNotification::dispatch(
+                                $user->id,
+                                'Reversement effectué 🎉',
+                                "Votre reversement de {$amount} XOF a été effectué. Vérifiez votre compte de réception.",
+                                [
+                                    'type'          => 'withdrawal_completed',
+                                    'withdrawal_id' => $record->id,
+                                    'url'           => '/talent-portal/withdrawal-request',
+                                ],
+                            );
                         }
 
                         Notification::make()
@@ -248,7 +290,21 @@ class WithdrawalRequestResource extends Resource
 
                         $user = $record->talentProfile?->user;
                         if ($user) {
+                            // E-mail
                             $user->notify(new WithdrawalStatusNotification($record));
+
+                            // Push in-app + FCM
+                            $amount = number_format($record->amount, 0, ',', ' ');
+                            SendPushNotification::dispatch(
+                                $user->id,
+                                'Demande de reversement refusée',
+                                "Votre demande de {$amount} XOF a été refusée. Le montant a été recrédité sur votre solde.",
+                                [
+                                    'type'          => 'withdrawal_rejected',
+                                    'withdrawal_id' => $record->id,
+                                    'url'           => '/talent-portal/withdrawal-request',
+                                ],
+                            );
                         }
 
                         Notification::make()

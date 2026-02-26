@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PayoutMethodResource\Pages;
+use App\Jobs\SendPushNotification;
 use App\Models\TalentProfile;
 use App\Notifications\PayoutMethodRejectedNotification;
 use App\Notifications\PayoutMethodVerifiedNotification;
@@ -187,13 +188,29 @@ class PayoutMethodResource extends Resource
                     )
                     ->action(function (TalentProfile $record): void {
                         $record->update([
-                            'payout_method_verified_at'       => now(),
-                            'payout_method_verified_by'       => Auth::id(),
-                            'payout_method_status'            => 'verified',
-                            'payout_method_rejection_reason'  => null,
+                            'payout_method_verified_at'      => now(),
+                            'payout_method_verified_by'      => Auth::id(),
+                            'payout_method_status'           => 'verified',
+                            'payout_method_rejection_reason' => null,
                         ]);
 
-                        $record->user?->notify(new PayoutMethodVerifiedNotification($record));
+                        $user = $record->user;
+                        if ($user) {
+                            // E-mail
+                            $user->notify(new PayoutMethodVerifiedNotification($record));
+
+                            // Push in-app + FCM
+                            $method = $record->payout_method ?? 'votre compte';
+                            SendPushNotification::dispatch(
+                                $user->id,
+                                'Compte de paiement validé ✓',
+                                "Votre compte {$method} a été validé. Vous pouvez maintenant effectuer des demandes de reversement.",
+                                [
+                                    'type' => 'payout_method_verified',
+                                    'url'  => '/talent-portal/withdrawal-request',
+                                ],
+                            );
+                        }
 
                         Notification::make()
                             ->title('Compte validé — talent notifié')
@@ -225,7 +242,22 @@ class PayoutMethodResource extends Resource
                             'payout_method_verified_by'      => null,
                         ]);
 
-                        $record->user?->notify(new PayoutMethodRejectedNotification($data['reason']));
+                        $user = $record->user;
+                        if ($user) {
+                            // E-mail
+                            $user->notify(new PayoutMethodRejectedNotification($data['reason']));
+
+                            // Push in-app + FCM
+                            SendPushNotification::dispatch(
+                                $user->id,
+                                'Compte de paiement refusé',
+                                "Votre compte de paiement a été refusé. Motif : {$data['reason']}",
+                                [
+                                    'type' => 'payout_method_rejected',
+                                    'url'  => '/talent-portal/payout-method',
+                                ],
+                            );
+                        }
 
                         Notification::make()
                             ->title('Compte refusé — talent notifié')
