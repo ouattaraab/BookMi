@@ -237,7 +237,9 @@ class ProfileRepository {
 
   Future<ApiResult<Map<String, dynamic>>> getTalentProfile() async {
     try {
-      final res = await _dio.get<Map<String, dynamic>>(ApiEndpoints.meTalentProfile);
+      final res = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.meTalentProfile,
+      );
       return ApiSuccess(res.data?['data'] as Map<String, dynamic>? ?? {});
     } on DioException catch (e) {
       final errorData = e.response?.data as Map<String, dynamic>?;

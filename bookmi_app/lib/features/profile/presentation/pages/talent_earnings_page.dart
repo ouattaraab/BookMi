@@ -445,8 +445,18 @@ class _EarningCard extends StatelessWidget {
     try {
       final dt = DateTime.parse(raw);
       const months = [
-        'jan', 'fév', 'mar', 'avr', 'mai', 'jun',
-        'jul', 'aoû', 'sep', 'oct', 'nov', 'déc',
+        'jan',
+        'fév',
+        'mar',
+        'avr',
+        'mai',
+        'jun',
+        'jul',
+        'aoû',
+        'sep',
+        'oct',
+        'nov',
+        'déc',
       ];
       return '${dt.day} ${months[dt.month - 1]}. ${dt.year}';
     } on FormatException catch (_) {

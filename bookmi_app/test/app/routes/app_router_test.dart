@@ -9,6 +9,7 @@ import 'package:bookmi_app/features/evaluation/data/repositories/review_reposito
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
+import 'package:bookmi_app/features/profile/data/repositories/payout_method_repository.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
@@ -27,6 +28,9 @@ class MockSecureStorage extends Mock implements SecureStorage {}
 
 class MockNotificationRepository extends Mock
     implements NotificationRepository {}
+
+class MockPayoutMethodRepository extends Mock
+    implements PayoutMethodRepository {}
 
 void main() {
   late GoRouter router;
@@ -58,6 +62,7 @@ void main() {
     final profileRepo = ProfileRepository.forTesting(dio: mockDio);
 
     final notificationRepo = MockNotificationRepository();
+    final payoutMethodRepo = MockPayoutMethodRepository();
 
     router = buildAppRouter(
       repo,
@@ -69,6 +74,7 @@ void main() {
       messagingRepo,
       profileRepo,
       notificationRepo,
+      payoutMethodRepo,
     );
   });
 

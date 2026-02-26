@@ -461,7 +461,11 @@ class _SocialField extends StatelessWidget {
             hintStyle: GoogleFonts.manrope(fontSize: 12, color: _muted),
             filled: true,
             fillColor: _inputBg,
-            prefixIcon: Icon(icon, size: 16, color: color.withValues(alpha: 0.6)),
+            prefixIcon: Icon(
+              icon,
+              size: 16,
+              color: color.withValues(alpha: 0.6),
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: _border),
