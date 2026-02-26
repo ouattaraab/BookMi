@@ -37,6 +37,7 @@ import 'package:bookmi_app/features/profile/presentation/pages/profile_page.dart
 import 'package:bookmi_app/features/profile/presentation/pages/support_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/talent_statistics_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/talent_earnings_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/talent_profile_info_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/portfolio_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/package_manager_page.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
@@ -355,6 +356,13 @@ GoRouter buildAppRouter(
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) =>
                         PackageManagerPage(repository: profileRepo),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profileTalentInfo,
+                    name: RouteNames.profileTalentInfo,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) =>
+                        TalentProfileInfoPage(repository: profileRepo),
                   ),
                 ],
               ),

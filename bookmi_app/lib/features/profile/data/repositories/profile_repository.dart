@@ -235,6 +235,43 @@ class ProfileRepository {
     }
   }
 
+  Future<ApiResult<Map<String, dynamic>>> getTalentProfile() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(ApiEndpoints.meTalentProfile);
+      return ApiSuccess(res.data?['data'] as Map<String, dynamic>? ?? {});
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
+
+  Future<ApiResult<Map<String, dynamic>>> updateTalentProfileInfo({
+    String? bio,
+    Map<String, String?>? socialLinks,
+  }) async {
+    try {
+      final data = <String, dynamic>{};
+      if (bio != null) data['bio'] = bio;
+      if (socialLinks != null) data['social_links'] = socialLinks;
+      final res = await _dio.patch<Map<String, dynamic>>(
+        ApiEndpoints.meTalentProfileInfo,
+        data: data,
+      );
+      return ApiSuccess(res.data?['data'] as Map<String, dynamic>? ?? {});
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
+
   Future<ApiResult<void>> deleteAvatar() async {
     try {
       await _dio.delete<Map<String, dynamic>>(ApiEndpoints.meAvatar);

@@ -25,6 +25,7 @@ abstract final class RouteNames {
   static const profileTalentEarnings = 'profileTalentEarnings';
   static const profilePortfolioManager = 'profilePortfolioManager';
   static const profilePackageManager = 'profilePackageManager';
+  static const profileTalentInfo = 'profileTalentInfo';
   static const notifications = 'notifications';
 }
 
@@ -55,5 +56,6 @@ abstract final class RoutePaths {
   static const profileTalentEarnings = 'earnings';
   static const profilePortfolioManager = 'portfolio-manager';
   static const profilePackageManager = 'package-manager';
+  static const profileTalentInfo = 'talent-info';
   static const notifications = '/notifications';
 }

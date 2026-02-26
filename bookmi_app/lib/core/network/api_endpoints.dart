@@ -86,6 +86,10 @@ abstract final class ApiEndpoints {
   static String talentNotifyAvailability(int talentId) =>
       '/talents/$talentId/notify-availability';
 
+  // Talent profile (own)
+  static const meTalentProfile = '/talent_profiles/me';
+  static const meTalentProfileInfo = '/talent_profiles/me/info';
+
   // Payout method (talent)
   static const mePayoutMethod = '/talent_profiles/me/payout_method';
 

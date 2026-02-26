@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\BookingStatus;
 use App\Enums\PayoutStatus;
+use App\Models\BookingRequest;
 use App\Models\Payout;
 use App\Models\TalentProfile;
 use Illuminate\Http\JsonResponse;
@@ -132,39 +134,57 @@ class FinancialDashboardController extends BaseController
             ->orderByDesc('event_date')
             ->paginate($perPage);
 
-        $totalCachet     = (int) \App\Models\BookingRequest::where('talent_profile_id', $talentProfile->id)
-            ->where('status', \App\Enums\BookingStatus::Completed->value)
+        // Revenus libérés = cachets des réservations terminées (escrow libéré)
+        $revenusLiberes = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->where('status', BookingStatus::Completed->value)
             ->sum('cachet_amount');
-        $totalCommission = (int) \App\Models\BookingRequest::where('talent_profile_id', $talentProfile->id)
-            ->where('status', \App\Enums\BookingStatus::Completed->value)
+
+        // Total cachets actifs = paid + confirmed + completed (y compris à venir)
+        $totalCachetsActifs = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->whereIn('status', [
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+                BookingStatus::Completed->value,
+            ])
+            ->sum('cachet_amount');
+
+        // Revenus globaux = toutes les réservations non annulées/rejetées
+        $revenusGlobaux = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->whereNotIn('status', [
+                BookingStatus::Cancelled->value,
+                BookingStatus::Rejected->value,
+                BookingStatus::Pending->value,
+            ])
+            ->sum('cachet_amount');
+
+        $totalCommission = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->where('status', BookingStatus::Completed->value)
             ->sum('commission_amount');
 
         $items = collect($bookings->items())->map(fn ($b) => [
-            'booking_id'        => $b->id,
-            'event_date'        => $b->event_date instanceof \Carbon\Carbon
+            'booking_id'    => $b->id,
+            'event_date'    => $b->event_date instanceof \Carbon\Carbon
                 ? $b->event_date->toDateString()
                 : (string) $b->event_date,
-            'client_name'       => trim(($b->client?->first_name ?? '') . ' ' . ($b->client?->last_name ?? '')),
-            'package_name'      => isset($b->package_snapshot['name'])
+            'client_name'   => trim(($b->client?->first_name ?? '') . ' ' . ($b->client?->last_name ?? '')),
+            'package_name'  => isset($b->package_snapshot['name'])
                 ? $b->package_snapshot['name']
                 : 'Prestation libre',
-            'cachet_amount'     => $b->cachet_amount,
-            'commission_amount' => $b->commission_amount,
-            'total_amount'      => $b->total_amount,
-            'commission_rate'   => (int) config('bookmi.commission_rate', 15),
+            'cachet_amount' => $b->cachet_amount,
         ]);
 
         return response()->json([
             'data' => $items,
             'meta' => [
-                'current_page'     => $bookings->currentPage(),
-                'last_page'        => $bookings->lastPage(),
-                'per_page'         => $bookings->perPage(),
-                'total'            => $bookings->total(),
-                'total_cachet'     => $totalCachet,
-                'total_commission' => $totalCommission,
-                'commission_rate'  => (int) config('bookmi.commission_rate', 15),
-                'devise'           => 'XOF',
+                'current_page'        => $bookings->currentPage(),
+                'last_page'           => $bookings->lastPage(),
+                'per_page'            => $bookings->perPage(),
+                'total'               => $bookings->total(),
+                'revenus_liberes'     => $revenusLiberes,
+                'total_cachets_actifs' => $totalCachetsActifs,
+                'revenus_globaux'     => $revenusGlobaux,
+                'solde_compte'        => $talentProfile->available_balance ?? 0,
+                'devise'              => 'XOF',
             ],
         ]);
     }

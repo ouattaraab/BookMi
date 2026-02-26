@@ -791,6 +791,14 @@ class _GeneralSection extends StatelessWidget {
                 RouteNames.profilePackageManager,
               ),
             ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.edit_note_outlined,
+              label: 'Description & Réseaux sociaux',
+              onTap: () => context.pushNamed(
+                RouteNames.profileTalentInfo,
+              ),
+            ),
           ],
           _Divider(),
           _MenuItem(

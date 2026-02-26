@@ -142,6 +142,42 @@ class TalentProfileController extends BaseController
     }
 
     /**
+     * PATCH /v1/talent_profiles/me/info
+     *
+     * Talent updates their public profile info (bio + social links).
+     */
+    public function updateInfo(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user    = $request->user();
+        $profile = $this->service->getByUserId($user->id);
+
+        if (! $profile) {
+            return $this->errorResponse(
+                'TALENT_PROFILE_NOT_FOUND',
+                'Aucun profil talent trouvé pour cet utilisateur.',
+                404,
+            );
+        }
+
+        $validated = $request->validate([
+            'bio'                    => ['nullable', 'string', 'max:1000'],
+            'social_links'           => ['nullable', 'array'],
+            'social_links.instagram' => ['nullable', 'url'],
+            'social_links.facebook'  => ['nullable', 'url'],
+            'social_links.youtube'   => ['nullable', 'url'],
+            'social_links.tiktok'    => ['nullable', 'url'],
+            'social_links.twitter'   => ['nullable', 'url'],
+        ]);
+
+        $profile->update($validated);
+
+        return $this->successResponse(
+            new TalentProfileResource($profile->fresh()->load('category', 'subcategory')),
+        );
+    }
+
+    /**
      * PUT /v1/talent_profiles/me/auto_reply
      *
      * Talent configures their automatic reply message.

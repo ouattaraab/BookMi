@@ -57,7 +57,7 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
     final updated = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFF0D1B38),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -73,6 +73,8 @@ class _PackageManagerPageState extends State<PackageManagerPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0D1B38),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Supprimer "$name" ?',
           style: GoogleFonts.plusJakartaSans(
@@ -707,6 +709,8 @@ class _Field extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.manrope(fontSize: 13, color: _mutedFg),
+            filled: true,
+            fillColor: const Color(0xFF0A1628),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: const BorderSide(color: _border),
