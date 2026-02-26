@@ -90,19 +90,18 @@ class ProcessPayoutJobTest extends TestCase
         ]);
     }
 
-    // ── AC1: payout dispatched on EscrowReleased ──────────────────────────────
+    // ── AC1: EscrowReleased credits talent available_balance ─────────────────
 
-    public function test_escrow_released_event_dispatches_process_payout_job_with_delay(): void
+    public function test_escrow_released_event_credits_talent_available_balance(): void
     {
-        \Illuminate\Support\Facades\Queue::fake();
-
         [$profile, $booking, $hold] = $this->createEscrowHoldWithTalent();
+
+        $initialBalance = (int) $profile->available_balance;
 
         EscrowReleased::dispatch($hold);
 
-        \Illuminate\Support\Facades\Queue::assertPushed(ProcessPayout::class, function (ProcessPayout $job) use ($hold) {
-            return $job->escrowHoldId === $hold->id;
-        });
+        $profile->refresh();
+        $this->assertEquals($initialBalance + $hold->cachet_amount, $profile->available_balance);
     }
 
     // ── AC2: payout processing ────────────────────────────────────────────────

@@ -128,9 +128,13 @@ class TalentProfileController extends BaseController
         $profile->refresh();
 
         // Notifier les admins qu'un compte est à valider
-        $admins = User::role('admin')->get();
-        foreach ($admins as $admin) {
-            $admin->notify(new PayoutMethodAddedNotification($profile));
+        try {
+            $admins = User::role('admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new PayoutMethodAddedNotification($profile));
+            }
+        } catch (\Spatie\Permission\Exceptions\RoleDoesNotExist) {
+            // Role not yet seeded — skip admin notifications gracefully
         }
 
         return $this->successResponse([

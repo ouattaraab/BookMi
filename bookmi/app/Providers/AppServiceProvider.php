@@ -3,25 +3,9 @@
 namespace App\Providers;
 
 use App\Contracts\PaymentGatewayInterface;
-use App\Events\BookingAccepted;
-use App\Events\BookingCancelled;
-use App\Events\BookingCompleted;
-use App\Events\BookingCreated;
-use App\Events\BookingDisputed;
-use App\Events\BookingRejected;
-use App\Events\EscrowReleased;
-use App\Events\PaymentReceived;
 use App\Gateways\FedaPayGateway;
 use App\Gateways\PaymentGatewayResolver;
 use App\Gateways\PaystackGateway;
-use App\Listeners\HandleEscrowReleased;
-use App\Listeners\NotifyAdminOfBookingDisputed;
-use App\Listeners\NotifyClientOfBookingAccepted;
-use App\Listeners\NotifyClientOfBookingRejected;
-use App\Listeners\NotifyPartyOfBookingCancelled;
-use App\Listeners\NotifyPartiesOfBookingCompleted;
-use App\Listeners\NotifyTalentOfNewBooking;
-use App\Listeners\NotifyTalentOfPaymentReceived;
 use App\Models\BookingRequest;
 use App\Models\PortfolioItem;
 use App\Models\TalentProfile;
@@ -38,7 +22,6 @@ use App\Repositories\Eloquent\TalentRepository;
 use App\Repositories\Eloquent\VerificationRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -64,14 +47,6 @@ class AppServiceProvider extends ServiceProvider
         BookingRequest::observe(BookingRequestObserver::class);
         PortfolioItem::observe(PortfolioItemObserver::class);
         $this->configureRateLimiting();
-        Event::listen(EscrowReleased::class, HandleEscrowReleased::class);
-        Event::listen(BookingCreated::class, NotifyTalentOfNewBooking::class);
-        Event::listen(BookingAccepted::class, NotifyClientOfBookingAccepted::class);
-        Event::listen(BookingCancelled::class, NotifyPartyOfBookingCancelled::class);
-        Event::listen(PaymentReceived::class, NotifyTalentOfPaymentReceived::class);
-        Event::listen(BookingRejected::class, NotifyClientOfBookingRejected::class);
-        Event::listen(BookingCompleted::class, NotifyPartiesOfBookingCompleted::class);
-        Event::listen(BookingDisputed::class, NotifyAdminOfBookingDisputed::class);
     }
 
     protected function configureRateLimiting(): void
