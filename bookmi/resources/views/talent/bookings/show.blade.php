@@ -224,5 +224,72 @@
         @endif
     </div>
 
+    {{-- ── Avis client sur cette réservation ── --}}
+    @if(in_array($sk, ['confirmed', 'completed']))
+    @php $clientReview = $booking->reviews->firstWhere('type', \App\Enums\ReviewType::ClientToTalent); @endphp
+    @if($clientReview)
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" stroke="#FF9800" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h2 class="text-base font-bold text-gray-900">Avis du client</h2>
+        </div>
+        <div class="p-6 space-y-4">
+            {{-- Note étoiles --}}
+            <div style="display:flex; gap:3px;">
+                @for($i = 1; $i <= 5; $i++)
+                    <span style="font-size:1.15rem; color:{{ $i <= $clientReview->rating ? '#FF9800' : '#D1D5DB' }};">★</span>
+                @endfor
+                <span class="text-sm text-gray-500 ml-2 mt-0.5">{{ $clientReview->rating }}/5</span>
+            </div>
+
+            {{-- Commentaire --}}
+            @if($clientReview->comment)
+            <p class="text-gray-700 text-sm leading-relaxed">{{ $clientReview->comment }}</p>
+            @else
+            <p class="text-gray-400 text-sm italic">Aucun commentaire laissé.</p>
+            @endif
+
+            <p class="text-xs text-gray-400">Publié le {{ $clientReview->created_at->format('d/m/Y') }}</p>
+
+            {{-- Réponse existante --}}
+            @if($clientReview->reply)
+            <div class="rounded-xl p-4" style="background:#fff3e0; border:1px solid #FFD0B0;">
+                <div class="flex items-center gap-1.5 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" stroke="#C85A20" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                    <p class="text-xs font-bold uppercase tracking-wider" style="color:#C85A20;">Votre réponse</p>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed">{{ $clientReview->reply }}</p>
+                @if($clientReview->reply_at)
+                <p class="text-xs text-gray-400 mt-1">{{ $clientReview->reply_at->format('d/m/Y') }}</p>
+                @endif
+            </div>
+
+            @else
+            {{-- Formulaire réponse --}}
+            <form method="POST" action="{{ route('talent.bookings.review.reply', ['id' => $booking->id, 'reviewId' => $clientReview->id]) }}" class="space-y-3 pt-2 border-t border-gray-100">
+                @csrf
+                <label class="block text-sm font-semibold text-gray-700">Répondre à cet avis</label>
+                <textarea name="reply"
+                          rows="3"
+                          required
+                          maxlength="1000"
+                          placeholder="Rédigez votre réponse publique à cet avis…"
+                          class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 resize-none"
+                          style="--tw-ring-color:#FF6B35"></textarea>
+                @error('reply')
+                    <p class="text-xs" style="color:#f44336">{{ $message }}</p>
+                @enderror
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                        style="background:#FF6B35">
+                    Publier la réponse
+                </button>
+            </form>
+            @endif
+        </div>
+    </div>
+    @endif
+    @endif
+
 </div>
 @endsection

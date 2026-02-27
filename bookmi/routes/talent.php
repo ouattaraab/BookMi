@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\Talent\BookingController;
 use App\Http\Controllers\Web\Talent\CalendarController;
+use App\Http\Controllers\Web\Talent\ReviewController;
 use App\Http\Controllers\Web\Talent\CertificateController;
 use App\Http\Controllers\Web\Talent\DashboardController;
 use App\Http\Controllers\Web\Talent\EarningsController;
@@ -31,6 +32,7 @@ Route::post('/bookings/{id}/accept', [BookingController::class, 'accept'])->name
 Route::post('/bookings/{id}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
 Route::post('/bookings/{id}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
 Route::post('/bookings/{id}/talent-confirm', [BookingController::class, 'talentConfirm'])->name('bookings.talent_confirm');
+Route::post('/bookings/{id}/reviews/{reviewId}/reply', [ReviewController::class, 'reply'])->name('bookings.review.reply');
 
 // Packages / Offres
 Route::get('/packages', [PackageController::class, 'index'])->name('packages');

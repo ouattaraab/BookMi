@@ -274,6 +274,9 @@
             @if($profile->portfolioItems->isNotEmpty())
                 <a href="#portfolio" class="tp-tab">Portfolio</a>
             @endif
+            @if($profile->receivedReviews->isNotEmpty())
+                <a href="#avis" class="tp-tab">Avis ({{ $profile->receivedReviews->count() }})</a>
+            @endif
         </div>
     </div>
 </section>
@@ -512,6 +515,60 @@
                         </div>
                     </template>
                 </div>
+            @endif
+
+            {{-- Avis clients --}}
+            @if($profile->receivedReviews->isNotEmpty())
+            <div class="tp-section" id="avis">
+                <h2 class="tp-section-title">Avis clients</h2>
+                <div style="display:flex; flex-direction:column; gap:1rem;">
+                    @foreach($profile->receivedReviews as $review)
+                    @php
+                        $rInit = strtoupper(substr($review->reviewer->first_name ?? 'C', 0, 1));
+                        $rName = ($review->reviewer->first_name ?? 'Client')
+                            . ($review->reviewer->last_name ? ' ' . strtoupper(substr($review->reviewer->last_name, 0, 1)) . '.' : '');
+                    @endphp
+                    <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:1.25rem;">
+
+                        {{-- En-tête : avatar + nom + date + étoiles --}}
+                        <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:0.875rem;">
+                            <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#1A2744,#2D4A8A); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.88rem; color:white; flex-shrink:0;">
+                                {{ $rInit }}
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px;">
+                                    <p style="font-weight:700; color:white; font-size:0.88rem; margin:0;">{{ $rName }}</p>
+                                    <p style="color:rgba(255,255,255,0.3); font-size:0.75rem; margin:0;">{{ $review->created_at->format('d/m/Y') }}</p>
+                                </div>
+                                <div style="display:flex; gap:2px; margin-top:4px;">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <span style="color:{{ $i <= $review->rating ? '#FF9800' : 'rgba(255,255,255,0.15)' }}; font-size:0.9rem;">★</span>
+                                    @endfor
+                                    <span style="color:rgba(255,255,255,0.35); font-size:0.78rem; margin-left:4px; align-self:center;">{{ $review->rating }}/5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Commentaire --}}
+                        @if($review->comment)
+                        <p style="color:rgba(255,255,255,0.6); font-size:0.875rem; line-height:1.7; margin:0 0 0.75rem;">{{ $review->comment }}</p>
+                        @endif
+
+                        {{-- Réponse du talent --}}
+                        @if($review->reply)
+                        <div style="background:rgba(255,107,53,0.07); border:1px solid rgba(255,107,53,0.2); border-radius:10px; padding:0.875rem;">
+                            <div style="display:flex; align-items:center; gap:6px; margin-bottom:0.4rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                                <span style="color:#FF6B35; font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Réponse du talent</span>
+                            </div>
+                            <p style="color:rgba(255,255,255,0.55); font-size:0.85rem; line-height:1.65; margin:0;">{{ $review->reply }}</p>
+                        </div>
+                        @endif
+
+                    </div>
+                    @endforeach
+                </div>
+            </div>
             @endif
 
             {{-- Liens sociaux --}}

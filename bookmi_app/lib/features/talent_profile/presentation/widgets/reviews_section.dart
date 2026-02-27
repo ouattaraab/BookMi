@@ -156,7 +156,7 @@ class ReviewsSection extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             const Text(
-                              "Réponse de l'artiste",
+                              "Réponse du talent",
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
