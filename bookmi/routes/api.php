@@ -148,6 +148,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/booking_requests/{booking}/reschedule', [RescheduleController::class, 'store'])->name('reschedule_requests.store');
 
         Route::post('/booking_requests/{booking}/confirm_delivery', [EscrowController::class, 'confirmDelivery'])->name('booking_requests.confirm_delivery');
+        Route::post('/booking_requests/{booking}/talent_confirm', [EscrowController::class, 'talentConfirm'])->name('booking_requests.talent_confirm');
 
         // Report de réservation
         Route::post('/reschedule_requests/{reschedule}/accept', [RescheduleController::class, 'accept'])->name('reschedule_requests.accept');
@@ -229,6 +230,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Évaluations (Stories 6.4 & 6.5)
         Route::get('/booking_requests/{booking}/reviews', [ReviewController::class, 'index'])->name('reviews.index');
         Route::post('/booking_requests/{booking}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+
+        // Réponse à un avis (talent only)
+        Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply'])->name('reviews.reply');
 
         // Story 8.9 — Report a review (any authenticated user)
         Route::post('/reviews/{review}/report', [AdminReviewModerationController::class, 'report'])->name('reviews.report');

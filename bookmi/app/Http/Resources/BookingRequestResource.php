@@ -54,8 +54,10 @@ class BookingRequestResource extends JsonResource
                     BookingStatus::Confirmed,
                     BookingStatus::Completed,
                 ], true),
-            'has_client_review'  => $this->reviews()->where('type', ReviewType::ClientToTalent->value)->exists(),
-            'has_talent_review'  => $this->reviews()->where('type', ReviewType::TalentToClient->value)->exists(),
+            'has_client_review'    => $this->reviews()->where('type', ReviewType::ClientToTalent->value)->exists(),
+            'has_talent_review'    => $this->reviews()->where('type', ReviewType::TalentToClient->value)->exists(),
+            'client_review_id'     => $this->reviews()->where('type', ReviewType::ClientToTalent->value)->value('id'),
+            'client_review_reply'  => $this->reviews()->where('type', ReviewType::ClientToTalent->value)->value('reply'),
             'devis'           => [
                 'cachet_amount'     => $this->cachet_amount,
                 'commission_amount' => $this->commission_amount,

@@ -74,6 +74,18 @@ class ReviewResource extends Resource
                         ->columnSpanFull(),
                 ])->columns(2),
 
+            Forms\Components\Section::make('Réponse du talent')
+                ->schema([
+                    Forms\Components\Textarea::make('reply')
+                        ->label('Réponse')
+                        ->maxLength(1000)
+                        ->placeholder('Aucune réponse pour le moment')
+                        ->columnSpanFull(),
+                    Forms\Components\DateTimePicker::make('reply_at')
+                        ->label('Répondu le')
+                        ->disabled(),
+                ])->columns(2),
+
             Forms\Components\Section::make('Signalement')
                 ->schema([
                     Forms\Components\Toggle::make('is_reported')
@@ -134,6 +146,18 @@ class ReviewResource extends Resource
                     InfolistTextEntry::make('comment')
                         ->label('Commentaire')
                         ->columnSpanFull(),
+                ])->columns(2),
+
+            InfolistSection::make('Réponse du talent')
+                ->schema([
+                    InfolistTextEntry::make('reply')
+                        ->label('Réponse')
+                        ->placeholder('Aucune réponse')
+                        ->columnSpanFull(),
+                    InfolistTextEntry::make('reply_at')
+                        ->label('Répondu le')
+                        ->dateTime('d/m/Y H:i')
+                        ->placeholder('—'),
                 ])->columns(2),
 
             InfolistSection::make('Signalement')
@@ -198,6 +222,12 @@ class ReviewResource extends Resource
                     ->label('Commentaire')
                     ->limit(60)
                     ->tooltip(fn ($state) => $state),
+
+                Tables\Columns\TextColumn::make('reply')
+                    ->label('Réponse')
+                    ->limit(40)
+                    ->tooltip(fn ($state) => $state)
+                    ->placeholder('—'),
 
                 Tables\Columns\IconColumn::make('is_reported')
                     ->label('Signalé')

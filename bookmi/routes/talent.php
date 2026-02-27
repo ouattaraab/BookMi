@@ -30,6 +30,7 @@ Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings
 Route::post('/bookings/{id}/accept', [BookingController::class, 'accept'])->name('bookings.accept');
 Route::post('/bookings/{id}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
 Route::post('/bookings/{id}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
+Route::post('/bookings/{id}/talent-confirm', [BookingController::class, 'talentConfirm'])->name('bookings.talent_confirm');
 
 // Packages / Offres
 Route::get('/packages', [PackageController::class, 'index'])->name('packages');

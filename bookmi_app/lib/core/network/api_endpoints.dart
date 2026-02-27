@@ -63,12 +63,18 @@ abstract final class ApiEndpoints {
   static const mePortfolio = '/talent_profiles/me/portfolio';
   static String mePortfolioItem(int itemId) =>
       '/talent_profiles/me/portfolio/$itemId';
+  // Review reply (talent)
+  static String reviewReply(int reviewId) => '/reviews/$reviewId/reply';
+
   // Booking actions (talent)
   static String bookingAccept(int id) => '/booking_requests/$id/accept';
   static String bookingReject(int id) => '/booking_requests/$id/reject';
   // Booking actions (client)
   static String bookingConfirmDelivery(int id) =>
       '/booking_requests/$id/confirm_delivery';
+
+  static String bookingTalentConfirm(int id) =>
+      '/booking_requests/$id/talent_confirm';
 
   // Service packages (talent own)
   static const servicePackages = '/service_packages';

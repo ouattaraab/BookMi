@@ -8,6 +8,7 @@ use App\Events\EscrowReleased;
 use App\Exceptions\EscrowException;
 use App\Models\BookingRequest;
 use App\Models\EscrowHold;
+use App\Models\TalentProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -69,6 +70,46 @@ class EscrowService
 
         if ($booking->status !== BookingStatus::Paid) {
             throw EscrowException::bookingNotConfirmable($booking->status->value);
+        }
+
+        $hold = EscrowHold::where('booking_request_id', $booking->id)
+            ->where('status', EscrowStatus::Held->value)
+            ->first();
+
+        if (! $hold) {
+            throw EscrowException::escrowNotHeld('not_found');
+        }
+
+        $this->releaseEscrow($hold);
+    }
+
+    /**
+     * Talent confirms delivery as fallback — only allowed 24 h after event_date
+     * when the client has not yet confirmed.
+     *
+     * Validates:
+     * - $talent owns the TalentProfile linked to this booking
+     * - booking is in Paid status
+     * - now() >= event_date + 24 h
+     * - a held escrow exists for this booking
+     */
+    public function talentConfirmDelivery(BookingRequest $booking, User $talent): void
+    {
+        $isTalent = TalentProfile::where('id', $booking->talent_profile_id)
+            ->where('user_id', $talent->id)
+            ->exists();
+
+        if (! $isTalent) {
+            throw EscrowException::forbidden();
+        }
+
+        if ($booking->status !== BookingStatus::Paid) {
+            $currentStatus = $booking->status instanceof BookingStatus ? $booking->status->value : '';
+            throw EscrowException::bookingNotConfirmable($currentStatus);
+        }
+
+        if (now()->lt(\Carbon\Carbon::parse($booking->event_date)->addDay())) {
+            throw EscrowException::tooEarlyForTalentConfirm();
         }
 
         $hold = EscrowHold::where('booking_request_id', $booking->id)

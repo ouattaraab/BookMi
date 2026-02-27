@@ -216,6 +216,41 @@ class BookingRepository {
     }
   }
 
+  /// Talent fallback confirm delivery (after 24 h without client confirmation).
+  ///
+  /// Calls POST /booking_requests/{id}/talent_confirm which transitions the
+  /// booking from `paid` → `confirmed` and releases the escrow hold.
+  /// Only allowed ≥ 24 h after event_date.
+  Future<ApiResult<void>> talentConfirmDelivery(int bookingId) async {
+    try {
+      await _dio.post<void>(
+        ApiEndpoints.bookingTalentConfirm(bookingId),
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Reply to a client review (talent action).
+  ///
+  /// Calls POST /api/v1/reviews/{reviewId}/reply with the reply text.
+  /// Only the talent who received the review can call this, and only once.
+  Future<ApiResult<void>> replyToReview({
+    required int reviewId,
+    required String reply,
+  }) async {
+    try {
+      await _dio.post<void>(
+        ApiEndpoints.reviewReply(reviewId),
+        data: {'reply': reply},
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Reject a pending booking (talent action).
   Future<ApiResult<BookingModel>> rejectBooking(
     int id, {

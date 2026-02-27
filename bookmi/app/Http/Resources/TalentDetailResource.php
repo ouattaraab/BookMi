@@ -43,11 +43,14 @@ class TalentDetailResource extends JsonResource
                 ])->values()->all(), []),
                 'service_packages' => ServicePackageResource::collection($this->whenLoaded('servicePackages')),
                 'recent_reviews' => $this->whenLoaded('receivedReviews', fn () => $this->receivedReviews->map(fn (Review $review) => [
+                    'id'            => $review->id,
                     'reviewer_name' => $review->reviewer !== null
                         ? trim($review->reviewer->first_name . ' ' . $review->reviewer->last_name)
                         : 'Anonyme',
                     'rating'        => $review->rating,
                     'comment'       => $review->comment,
+                    'reply'         => $review->reply,
+                    'reply_at'      => $review->reply_at instanceof \Carbon\Carbon ? $review->reply_at->format('d/m/Y') : null,
                     'created_at'    => $review->created_at?->format('d/m/Y'),
                 ])->values()->all(), []),
                 'created_at' => $this->created_at?->toIso8601String(),

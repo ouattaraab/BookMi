@@ -19,6 +19,8 @@ class Review extends Model
         'type',
         'rating',
         'comment',
+        'reply',
+        'reply_at',
         'is_reported',
         'report_reason',
         'reported_at',
@@ -32,6 +34,7 @@ class Review extends Model
         return [
             'type'        => ReviewType::class,
             'rating'      => 'integer',
+            'reply_at'    => 'datetime',
             'is_reported' => 'boolean',
             'reported_at' => 'datetime',
         ];

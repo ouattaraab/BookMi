@@ -89,6 +89,8 @@ class ReviewsSection extends StatelessWidget {
         final rating = (review['rating'] as num?)?.toDouble() ?? 0;
         final comment = review['comment'] as String? ?? '';
         final date = review['created_at'] as String? ?? '';
+        final reply = review['reply'] as String?;
+        final replyAt = review['reply_at'] as String?;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: BookmiSpacing.spaceSm),
@@ -128,6 +130,60 @@ class ReviewsSection extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
+                if (reply != null && reply.isNotEmpty) ...[
+                  const SizedBox(height: BookmiSpacing.spaceSm),
+                  Container(
+                    padding: const EdgeInsets.all(BookmiSpacing.spaceSm),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B35).withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFFFF6B35).withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.reply_rounded,
+                              size: 12,
+                              color: Color(0xFFFF6B35),
+                            ),
+                            const SizedBox(width: 4),
+                            const Text(
+                              "Réponse de l'artiste",
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFFF6B35),
+                              ),
+                            ),
+                            if (replyAt != null) ...[
+                              const Spacer(),
+                              Text(
+                                replyAt,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reply,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -29,4 +29,22 @@ class EscrowController extends BaseController
             'booking_status' => $booking->fresh()->status->value,
         ]);
     }
+
+    /**
+     * POST /v1/booking_requests/{booking}/talent_confirm
+     *
+     * Talent confirms delivery as a fallback when the client has not confirmed
+     * within 24 hours of the event date.
+     */
+    public function talentConfirm(Request $request, BookingRequest $booking): JsonResponse
+    {
+        $this->escrowService->talentConfirmDelivery($booking, $request->user());
+
+        $fresh = $booking->fresh();
+
+        return response()->json([
+            'message'        => 'Prestation marquée comme terminée. Le séquestre a été libéré.',
+            'booking_status' => $fresh?->status instanceof \App\Enums\BookingStatus ? $fresh->status->value : '',
+        ]);
+    }
 }

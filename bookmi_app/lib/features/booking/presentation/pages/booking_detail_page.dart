@@ -55,6 +55,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     }
   }
 
+  /// Returns true when the event ended more than 24 hours ago.
+  static bool _isEventPast24h(String eventDate) {
+    final deadline = DateTime.parse(eventDate).add(const Duration(hours: 24));
+    return DateTime.now().isAfter(deadline);
+  }
+
   Future<void> _fetch() async {
     // Capture repository reference before the async gap to avoid accessing
     // context after the widget may have been disposed.
@@ -323,10 +329,29 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
 
           // ── Action buttons ──────────────────────────────────────────────
 
-          // Talent: track the service (only when status = paid)
-          if (isTalent && booking.status == 'paid') ...[
+          // Talent: track the service (during event — before 24h deadline)
+          if (isTalent &&
+              booking.status == 'paid' &&
+              !_isEventPast24h(booking.eventDate)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _TrackingButton(bookingId: booking.id),
+          ],
+
+          // Talent: fallback confirm delivery (≥ 24h after event, client hasn't confirmed)
+          if (isTalent &&
+              booking.status == 'paid' &&
+              _isEventPast24h(booking.eventDate)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _TalentConfirmDeliveryButton(
+              bookingId: booking.id,
+              onConfirmed: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _fetch();
+              },
+            ),
           ],
 
           // Client: confirm end of service (only when status = paid)
@@ -354,6 +379,7 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               reviewType: 'client_to_talent',
               label: 'Laisser un avis',
               icon: Icons.star_rounded,
+              onReturn: _fetch,
             ),
           ],
 
@@ -367,6 +393,25 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               reviewType: 'talent_to_client',
               label: 'Évaluer le client',
               icon: Icons.star_border_rounded,
+              onReturn: _fetch,
+            ),
+          ],
+
+          // Talent reply to client review
+          if (isTalent &&
+              booking.hasClientReview &&
+              booking.clientReviewId != null &&
+              booking.clientReviewReply == null) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _ReplyToReviewButton(
+              reviewId: booking.clientReviewId!,
+              onReplied: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _fetch();
+              },
             ),
           ],
 
@@ -1153,6 +1198,320 @@ class _ConfirmDeliveryButtonState extends State<_ConfirmDeliveryButton> {
   }
 }
 
+// ── Talent fallback confirm delivery button ───────────────────────────────────
+
+class _TalentConfirmDeliveryButton extends StatefulWidget {
+  const _TalentConfirmDeliveryButton({
+    required this.bookingId,
+    required this.onConfirmed,
+  });
+
+  final int bookingId;
+  final VoidCallback onConfirmed;
+
+  @override
+  State<_TalentConfirmDeliveryButton> createState() =>
+      _TalentConfirmDeliveryButtonState();
+}
+
+class _TalentConfirmDeliveryButtonState
+    extends State<_TalentConfirmDeliveryButton> {
+  bool _loading = false;
+
+  Future<void> _confirm() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.talentConfirmDelivery(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess():
+        widget.onConfirmed();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: _confirm,
+      borderColor: const Color(0xFFFF6B35).withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.15),
+            ),
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFFFF6B35),
+                    ),
+                  )
+                : const Icon(
+                    Icons.flag_rounded,
+                    color: Color(0xFFFF6B35),
+                    size: 20,
+                  ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Marquer l\'événement comme terminé',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Le client n\'a pas confirmé — libérer le paiement',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFFF6B35),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Reply to client review (talent action) ────────────────────────────────────
+
+class _ReplyToReviewButton extends StatefulWidget {
+  const _ReplyToReviewButton({
+    required this.reviewId,
+    required this.onReplied,
+  });
+
+  final int reviewId;
+  final VoidCallback onReplied;
+
+  @override
+  State<_ReplyToReviewButton> createState() => _ReplyToReviewButtonState();
+}
+
+class _ReplyToReviewButtonState extends State<_ReplyToReviewButton> {
+  bool _loading = false;
+
+  Future<void> _openReplySheet() async {
+    // Capture repo and messenger before the async gap (bottom sheet creates a
+    // new route context that may not inherit the provider tree).
+    final repo = context.read<BookingRepository>();
+    final messenger = ScaffoldMessenger.of(context);
+    final controller = TextEditingController();
+
+    final submitted = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E2A3A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Répondre à l'avis",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Votre réponse sera visible par tous les clients.',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                maxLines: 4,
+                maxLength: 1000,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: 'Merci pour votre retour…',
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                  ),
+                  filled: true,
+                  fillColor: Colors.white.withValues(alpha: 0.05),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFFF6B35)),
+                  ),
+                  counterStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: StatefulBuilder(
+                  builder: (ctx2, setInner) {
+                    return ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF6B35),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _loading
+                          ? null
+                          : () async {
+                              final text = controller.text.trim();
+                              if (text.isEmpty) return;
+                              setInner(() => _loading = true);
+                              final result = await repo.replyToReview(
+                                reviewId: widget.reviewId,
+                                reply: text,
+                              );
+                              setInner(() => _loading = false);
+                              if (!ctx2.mounted) return;
+                              switch (result) {
+                                case ApiSuccess():
+                                  Navigator.of(ctx2).pop(true);
+                                case ApiFailure(:final message):
+                                  messenger.showSnackBar(
+                                    SnackBar(content: Text(message)),
+                                  );
+                              }
+                            },
+                      child: _loading
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Publier la réponse',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (submitted == true && mounted) {
+      widget.onReplied();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: _openReplySheet,
+      borderColor: Colors.white.withValues(alpha: 0.2),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
+            child: const Icon(
+              Icons.reply_rounded,
+              color: Colors.white70,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Répondre à l'avis client",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Répondez publiquement à cet avis',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Evaluation button (review / évaluer client) ───────────────────────────────
 
 class _EvaluationButton extends StatelessWidget {
@@ -1161,21 +1520,27 @@ class _EvaluationButton extends StatelessWidget {
     required this.reviewType,
     required this.label,
     required this.icon,
+    this.onReturn,
   });
 
   final int bookingId;
   final String reviewType;
   final String label;
   final IconData icon;
+  final VoidCallback? onReturn;
 
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      onTap: () => context.pushNamed(
-        RouteNames.evaluation,
-        pathParameters: {'id': bookingId.toString()},
-        queryParameters: {'type': reviewType},
-      ),
+      onTap: () {
+        context
+            .pushNamed(
+              RouteNames.evaluation,
+              pathParameters: {'id': bookingId.toString()},
+              queryParameters: {'type': reviewType},
+            )
+            .then((_) => onReturn?.call());
+      },
       borderColor: const Color(0xFFFFD700).withValues(alpha: 0.35),
       child: Row(
         children: [

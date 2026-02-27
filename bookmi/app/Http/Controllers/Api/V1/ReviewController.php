@@ -82,11 +82,70 @@ class ReviewController extends Controller
                 'type'        => $r->type->value,
                 'rating'      => $r->rating,
                 'comment'     => $r->comment,
+                'reply'       => $r->reply,
+                'reply_at'    => $r->reply_at instanceof \Carbon\Carbon ? $r->reply_at->toISOString() : null,
                 'reviewer_id' => $r->reviewer_id,
                 'reviewee_id' => $r->reviewee_id,
                 'created_at'  => $r->created_at?->toISOString(),
             ]);
 
         return response()->json(['data' => $reviews]);
+    }
+
+    /**
+     * POST /reviews/{review}/reply
+     *
+     * Talent replies to a client_to_talent review. Only the reviewee (talent) may
+     * reply, and only once.
+     */
+    public function reply(Request $request, Review $review): JsonResponse
+    {
+        $request->validate([
+            'reply' => ['required', 'string', 'max:1000'],
+        ], [
+            'reply.required' => 'La réponse ne peut pas être vide.',
+            'reply.max'      => 'La réponse ne doit pas dépasser 1000 caractères.',
+        ]);
+
+        $user = $request->user();
+
+        if ($review->reviewee_id !== $user->id) {
+            return response()->json([
+                'error' => [
+                    'code'    => 'FORBIDDEN',
+                    'message' => 'Seul le destinataire de l\'avis peut y répondre.',
+                ],
+            ], 403);
+        }
+
+        if ($review->type !== ReviewType::ClientToTalent) {
+            return response()->json([
+                'error' => [
+                    'code'    => 'INVALID_REVIEW_TYPE',
+                    'message' => 'Seuls les avis clients peuvent recevoir une réponse.',
+                ],
+            ], 422);
+        }
+
+        if ($review->reply !== null) {
+            return response()->json([
+                'error' => [
+                    'code'    => 'ALREADY_REPLIED',
+                    'message' => 'Une réponse a déjà été publiée pour cet avis.',
+                ],
+            ], 422);
+        }
+
+        $review->update([
+            'reply'    => $request->string('reply')->trim()->value(),
+            'reply_at' => now(),
+        ]);
+
+        return response()->json([
+            'data' => [
+                'reply'    => $review->reply,
+                'reply_at' => $review->reply_at instanceof \Carbon\Carbon ? $review->reply_at->toISOString() : null,
+            ],
+        ]);
     }
 }

@@ -49,6 +49,8 @@ class BookingModel {
     required this.contractAvailable,
     required this.hasClientReview,
     required this.hasTalentReview,
+    this.clientReviewId,
+    this.clientReviewReply,
     this.talentAvatarUrl,
     this.startTime,
     this.message,
@@ -79,6 +81,10 @@ class BookingModel {
   final bool contractAvailable;
   final bool hasClientReview;
   final bool hasTalentReview;
+  /// ID of the client_to_talent review, null if not yet submitted.
+  final int? clientReviewId;
+  /// Text of the talent's reply to the client review, null if not yet replied.
+  final String? clientReviewReply;
   final String? message;
   final String? rejectReason;
   final int? refundAmount;
@@ -112,6 +118,8 @@ class BookingModel {
       contractAvailable: (json['contract_available'] as bool?) ?? false,
       hasClientReview: (json['has_client_review'] as bool?) ?? false,
       hasTalentReview: (json['has_talent_review'] as bool?) ?? false,
+      clientReviewId: json['client_review_id'] as int?,
+      clientReviewReply: json['client_review_reply'] as String?,
       message: json['message'] as String?,
       rejectReason: json['reject_reason'] as String?,
       refundAmount: json['refund_amount'] as int?,

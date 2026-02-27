@@ -28,4 +28,12 @@ class EscrowException extends BookmiException
             403,
         );
     }
+
+    public static function tooEarlyForTalentConfirm(): self
+    {
+        return new self(
+            'ESCROW_TOO_EARLY',
+            "Le délai de 24 heures après l'événement n'est pas encore écoulé. Attendez que le client confirme ou réessayez après 24 heures.",
+        );
+    }
 }

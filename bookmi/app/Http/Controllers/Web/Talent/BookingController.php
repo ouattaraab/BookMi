@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Events\BookingAccepted;
+use App\Exceptions\EscrowException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Services\ActivityLogger;
+use App\Services\EscrowService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
+    public function __construct(private readonly EscrowService $escrowService)
+    {
+    }
     private function profile()
     {
         return auth()->user()->talentProfile;
@@ -91,5 +96,24 @@ class BookingController extends Controller
         $booking->update(['status' => 'completed']);
         ActivityLogger::log('booking.completed', $booking);
         return back()->with('success', 'Réservation marquée comme terminée.');
+    }
+
+    /**
+     * Talent fallback: confirm delivery ≥ 24 h after event when client hasn't.
+     */
+    public function talentConfirm(int $id): RedirectResponse
+    {
+        $booking = BookingRequest::where('talent_profile_id', $this->profile()?->id)
+            ->findOrFail($id);
+
+        try {
+            $this->escrowService->talentConfirmDelivery($booking, auth()->user());
+        } catch (EscrowException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        ActivityLogger::log('booking.talent_confirmed', $booking);
+
+        return back()->with('success', 'Événement marqué comme terminé. Le paiement va être libéré.');
     }
 }

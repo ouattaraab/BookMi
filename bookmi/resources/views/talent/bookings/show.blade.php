@@ -152,7 +152,7 @@
         @endif
 
         {{-- Actions --}}
-        @if(in_array($sk, ['pending', 'accepted', 'confirmed']))
+        @if(in_array($sk, ['pending', 'accepted', 'paid']))
         <div class="px-6 py-4 border-t border-gray-100">
             @if($sk === 'pending')
                 {{-- Formulaire acceptation avec commentaire obligatoire --}}
@@ -208,14 +208,15 @@
                         Annuler
                     </button>
                 </form>
-            @elseif($sk === 'confirmed')
-                <form method="POST" action="{{ route('talent.bookings.complete', $booking->id) }}">
+            @elseif($sk === 'paid' && $booking->event_date->addDay()->lte(now()))
+                {{-- Fallback talent : le client n'a pas confirmé dans les 24h suivant l'événement --}}
+                <form method="POST" action="{{ route('talent.bookings.talent_confirm', $booking->id) }}">
                     @csrf
                     <button type="submit"
                             class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                            style="background:#9C27B0"
-                            onclick="return confirm('Marquer comme terminée ?')">
-                        Marquer comme terminée
+                            style="background:#FF6B35"
+                            onclick="return confirm('Marquer l\'événement comme terminé et libérer le paiement ?')">
+                        Marquer l'événement comme terminé
                     </button>
                 </form>
             @endif
