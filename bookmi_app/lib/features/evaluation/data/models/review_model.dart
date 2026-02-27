@@ -14,12 +14,12 @@ class ReviewModel {
 
   factory ReviewModel.fromJson(Map<String, dynamic> json) {
     return ReviewModel(
-      id: json['id'] as int,
-      bookingRequestId: json['booking_request_id'] as int,
-      reviewerId: json['reviewer_id'] as int,
-      revieweeId: json['reviewee_id'] as int,
+      id: (json['id'] as num).toInt(),
+      bookingRequestId: (json['booking_request_id'] as num?)?.toInt() ?? 0,
+      reviewerId: (json['reviewer_id'] as num?)?.toInt() ?? 0,
+      revieweeId: (json['reviewee_id'] as num?)?.toInt() ?? 0,
       type: json['type'] as String,
-      rating: json['rating'] as int,
+      rating: (json['rating'] as num?)?.toInt() ?? 0,
       comment: json['comment'] as String?,
       reply: json['reply'] as String?,
       replyAt: json['reply_at'] as String?,
