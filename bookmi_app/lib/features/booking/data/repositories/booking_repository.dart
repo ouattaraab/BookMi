@@ -201,6 +201,21 @@ class BookingRepository {
     }
   }
 
+  /// Confirm delivery of a completed service (client action).
+  ///
+  /// Calls POST /booking_requests/{id}/confirm_delivery which transitions the
+  /// booking from `paid` → `confirmed` and releases the escrow hold.
+  Future<ApiResult<void>> confirmDelivery(int bookingId) async {
+    try {
+      await _dio.post<void>(
+        ApiEndpoints.bookingConfirmDelivery(bookingId),
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Reject a pending booking (talent action).
   Future<ApiResult<BookingModel>> rejectBooking(
     int id, {

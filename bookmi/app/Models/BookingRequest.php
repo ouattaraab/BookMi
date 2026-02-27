@@ -130,6 +130,16 @@ class BookingRequest extends Model
     }
 
     /**
+     * Reviews submitted for this booking.
+     *
+     * @return HasMany<Review, $this>
+     */
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    /**
      * Returns true if the user is the client or the talent owner of this booking.
      */
     public function isOwnedByUser(User $user): bool

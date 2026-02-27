@@ -47,6 +47,8 @@ class BookingModel {
     required this.totalAmount,
     required this.isExpress,
     required this.contractAvailable,
+    required this.hasClientReview,
+    required this.hasTalentReview,
     this.talentAvatarUrl,
     this.startTime,
     this.message,
@@ -75,6 +77,8 @@ class BookingModel {
   final int totalAmount;
   final bool isExpress;
   final bool contractAvailable;
+  final bool hasClientReview;
+  final bool hasTalentReview;
   final String? message;
   final String? rejectReason;
   final int? refundAmount;
@@ -106,6 +110,8 @@ class BookingModel {
       totalAmount: (devis?['total_amount'] as int?) ?? 0,
       isExpress: (json['is_express'] as bool?) ?? false,
       contractAvailable: (json['contract_available'] as bool?) ?? false,
+      hasClientReview: (json['has_client_review'] as bool?) ?? false,
+      hasTalentReview: (json['has_talent_review'] as bool?) ?? false,
       message: json['message'] as String?,
       rejectReason: json['reject_reason'] as String?,
       refundAmount: json['refund_amount'] as int?,

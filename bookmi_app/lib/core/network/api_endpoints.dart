@@ -66,6 +66,9 @@ abstract final class ApiEndpoints {
   // Booking actions (talent)
   static String bookingAccept(int id) => '/booking_requests/$id/accept';
   static String bookingReject(int id) => '/booking_requests/$id/reject';
+  // Booking actions (client)
+  static String bookingConfirmDelivery(int id) =>
+      '/booking_requests/$id/confirm_delivery';
 
   // Service packages (talent own)
   static const servicePackages = '/service_packages';

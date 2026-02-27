@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/data/models/booking_model.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
@@ -14,6 +17,7 @@ import 'package:bookmi_app/features/messaging/presentation/pages/chat_page.dart'
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
@@ -142,6 +146,9 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   Widget _buildContent() {
     final booking = _booking;
     if (booking == null) return const SizedBox.shrink();
+    final authState = context.read<AuthBloc>().state;
+    final isTalent = authState is AuthAuthenticated &&
+        authState.roles.contains('talent');
     return RefreshIndicator(
       color: BookmiColors.brandBlue,
       onRefresh: () async {
@@ -312,6 +319,55 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
           if (['paid', 'confirmed', 'completed'].contains(booking.status)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _ReceiptButton(bookingId: booking.id),
+          ],
+
+          // ── Action buttons ──────────────────────────────────────────────
+
+          // Talent: track the service (only when status = paid)
+          if (isTalent && booking.status == 'paid') ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _TrackingButton(bookingId: booking.id),
+          ],
+
+          // Client: confirm end of service (only when status = paid)
+          if (!isTalent && booking.status == 'paid') ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _ConfirmDeliveryButton(
+              bookingId: booking.id,
+              onConfirmed: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _fetch();
+              },
+            ),
+          ],
+
+          // Client: leave a review (confirmed or completed, not yet reviewed)
+          if (!isTalent &&
+              ['confirmed', 'completed'].contains(booking.status) &&
+              !booking.hasClientReview) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _EvaluationButton(
+              bookingId: booking.id,
+              reviewType: 'client_to_talent',
+              label: 'Laisser un avis',
+              icon: Icons.star_rounded,
+            ),
+          ],
+
+          // Talent: evaluate the client (confirmed or completed, not yet reviewed)
+          if (isTalent &&
+              ['confirmed', 'completed'].contains(booking.status) &&
+              !booking.hasTalentReview) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _EvaluationButton(
+              bookingId: booking.id,
+              reviewType: 'talent_to_client',
+              label: 'Évaluer le client',
+              icon: Icons.star_border_rounded,
+            ),
           ],
 
           // Status history timeline
@@ -921,6 +977,226 @@ class _MessageButtonState extends State<_MessageButton> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Tracking button (talent only, status=paid) ───────────────────────────────
+
+class _TrackingButton extends StatelessWidget {
+  const _TrackingButton({required this.bookingId});
+  final int bookingId;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: () => context.pushNamed(
+        RouteNames.tracking,
+        pathParameters: {'id': bookingId.toString()},
+      ),
+      borderColor: const Color(0xFFFF6B35).withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.15),
+            ),
+            child: const Icon(
+              Icons.location_on_rounded,
+              color: Color(0xFFFF6B35),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Suivre la prestation',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Mettez à jour le suivi jour-J',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFFF6B35),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Confirm delivery button (client only, status=paid) ───────────────────────
+
+class _ConfirmDeliveryButton extends StatefulWidget {
+  const _ConfirmDeliveryButton({
+    required this.bookingId,
+    required this.onConfirmed,
+  });
+
+  final int bookingId;
+  final VoidCallback onConfirmed;
+
+  @override
+  State<_ConfirmDeliveryButton> createState() => _ConfirmDeliveryButtonState();
+}
+
+class _ConfirmDeliveryButtonState extends State<_ConfirmDeliveryButton> {
+  bool _loading = false;
+
+  Future<void> _confirm() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.confirmDelivery(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess():
+        widget.onConfirmed();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: _confirm,
+      borderColor: BookmiColors.success.withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: BookmiColors.success.withValues(alpha: 0.15),
+            ),
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: BookmiColors.success,
+                    ),
+                  )
+                : const Icon(
+                    Icons.check_circle_rounded,
+                    color: BookmiColors.success,
+                    size: 20,
+                  ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Confirmer la fin de prestation',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Le paiement sera libéré au talent',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: BookmiColors.success,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Evaluation button (review / évaluer client) ───────────────────────────────
+
+class _EvaluationButton extends StatelessWidget {
+  const _EvaluationButton({
+    required this.bookingId,
+    required this.reviewType,
+    required this.label,
+    required this.icon,
+  });
+
+  final int bookingId;
+  final String reviewType;
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: () => context.pushNamed(
+        RouteNames.evaluation,
+        pathParameters: {'id': bookingId.toString()},
+        queryParameters: {'type': reviewType},
+      ),
+      borderColor: const Color(0xFFFFD700).withValues(alpha: 0.35),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+            ),
+            child: Icon(icon, color: const Color(0xFFFFD700), size: 20),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
           ),
           const Icon(

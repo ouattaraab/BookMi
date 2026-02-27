@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\BookingStatus;
+use App\Enums\ReviewType;
 use App\Models\BookingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -53,6 +54,8 @@ class BookingRequestResource extends JsonResource
                     BookingStatus::Confirmed,
                     BookingStatus::Completed,
                 ], true),
+            'has_client_review'  => $this->reviews()->where('type', ReviewType::ClientToTalent->value)->exists(),
+            'has_talent_review'  => $this->reviews()->where('type', ReviewType::TalentToClient->value)->exists(),
             'devis'           => [
                 'cachet_amount'     => $this->cachet_amount,
                 'commission_amount' => $this->commission_amount,

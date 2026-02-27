@@ -29,7 +29,7 @@ class SendReminderNotifications extends Command
         foreach ($windows as $label => $targetDate) {
             $count = 0;
 
-            BookingRequest::with(['client', 'talentProfile'])
+            BookingRequest::with(['client', 'talentProfile.user'])
                 ->whereIn('status', [
                     BookingStatus::Paid->value,
                     BookingStatus::Confirmed->value,
@@ -37,24 +37,43 @@ class SendReminderNotifications extends Command
                 ->whereDate('event_date', $targetDate)
                 ->chunkById(100, function ($bookings) use ($label, $isDryRun, &$count) {
                     foreach ($bookings as $booking) {
-                        $clientName = $booking->client?->first_name ?? 'Client';
-                        $talentName = $booking->talentProfile?->stage_name ?? 'talent';
-                        $eventDate  = $booking->event_date->format('d/m/Y');
+                        $clientName  = $booking->client?->first_name ?? 'Client';
+                        $talentName  = $booking->talentProfile?->stage_name ?? 'talent';
+                        $eventDate   = $booking->event_date->format('d/m/Y');
+                        $location    = $booking->event_location;
+                        $data        = ['booking_id' => (string) $booking->id];
 
-                        $title = "Rappel {$label} — Prestation à venir";
-                        $body  = "Votre prestation avec {$talentName} est prévue le {$eventDate}.";
-                        $data  = ['booking_id' => (string) $booking->id];
+                        // — Notify client —
+                        $clientTitle = "Rappel {$label} — Prestation à venir";
+                        $clientBody  = "Votre prestation avec {$talentName} est prévue le {$eventDate}.";
 
                         if (! $isDryRun && $booking->client_id) {
                             SendPushNotification::dispatch(
                                 userId: $booking->client_id,
-                                title: $title,
-                                body: $body,
+                                title: $clientTitle,
+                                body: $clientBody,
                                 data: $data,
                             );
                         }
 
-                        $this->line("[{$label}] Booking #{$booking->id} → user #{$booking->client_id} ({$eventDate})"
+                        $this->line("[{$label}] Booking #{$booking->id} → client #{$booking->client_id} ({$eventDate})"
+                            . ($isDryRun ? ' [DRY-RUN]' : ''));
+
+                        // — Notify talent —
+                        $talentUserId = $booking->talentProfile?->user?->id;
+                        $talentTitle  = "Rappel prestation {$label}";
+                        $talentBody   = "Vous avez une prestation le {$eventDate} à {$location}.";
+
+                        if (! $isDryRun && $talentUserId) {
+                            SendPushNotification::dispatch(
+                                userId: $talentUserId,
+                                title: $talentTitle,
+                                body: $talentBody,
+                                data: $data,
+                            );
+                        }
+
+                        $this->line("[{$label}] Booking #{$booking->id} → talent #{$talentUserId} ({$eventDate})"
                             . ($isDryRun ? ' [DRY-RUN]' : ''));
 
                         $count++;
