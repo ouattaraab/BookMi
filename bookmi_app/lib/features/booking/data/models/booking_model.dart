@@ -81,8 +81,10 @@ class BookingModel {
   final bool contractAvailable;
   final bool hasClientReview;
   final bool hasTalentReview;
+
   /// ID of the client_to_talent review, null if not yet submitted.
   final int? clientReviewId;
+
   /// Text of the talent's reply to the client review, null if not yet replied.
   final String? clientReviewReply;
   final String? message;
