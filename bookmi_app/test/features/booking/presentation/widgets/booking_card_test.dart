@@ -21,6 +21,8 @@ BookingModel _makeBooking({
   totalAmount: 115000,
   isExpress: isExpress,
   contractAvailable: false,
+  hasClientReview: false,
+  hasTalentReview: false,
 );
 
 Widget _wrap(Widget child) => MaterialApp(

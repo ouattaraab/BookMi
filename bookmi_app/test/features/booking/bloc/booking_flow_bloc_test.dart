@@ -36,6 +36,8 @@ void main() {
     totalAmount: 115000,
     isExpress: false,
     contractAvailable: false,
+    hasClientReview: false,
+    hasTalentReview: false,
   );
 
   setUpAll(() {

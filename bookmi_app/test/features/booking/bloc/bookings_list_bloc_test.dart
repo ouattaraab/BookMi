@@ -25,6 +25,8 @@ BookingModel _makeBooking(int id) => BookingModel(
   totalAmount: 57500,
   isExpress: false,
   contractAvailable: false,
+  hasClientReview: false,
+  hasTalentReview: false,
 );
 
 void main() {
