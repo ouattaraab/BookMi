@@ -147,8 +147,8 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     final booking = _booking;
     if (booking == null) return const SizedBox.shrink();
     final authState = context.read<AuthBloc>().state;
-    final isTalent = authState is AuthAuthenticated &&
-        authState.roles.contains('talent');
+    final isTalent =
+        authState is AuthAuthenticated && authState.roles.contains('talent');
     return RefreshIndicator(
       color: BookmiColors.brandBlue,
       onRefresh: () async {
