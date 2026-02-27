@@ -28,30 +28,35 @@ class EvaluationCubit extends Cubit<EvaluationState> {
   }) async {
     emit(const EvaluationSubmitting());
 
-    final submitResult = await _repository.submitReview(
-      bookingId,
-      type: type,
-      rating: rating,
-      comment: comment,
-    );
+    try {
+      final submitResult = await _repository.submitReview(
+        bookingId,
+        type: type,
+        rating: rating,
+        comment: comment,
+      );
 
-    switch (submitResult) {
-      case ApiFailure(:final message):
-        emit(EvaluationError(message));
-      case ApiSuccess(:final data):
-        // Best-effort reload to include the new review in the full list.
-        final reloadResult = await _repository.getReviews(bookingId);
-        final allReviews = switch (reloadResult) {
-          ApiSuccess(:final data) => data,
-          ApiFailure() => [data],
-        };
-        emit(
-          EvaluationSubmitted(
-            review: data,
-            reviews: allReviews,
-            bookingId: bookingId,
-          ),
-        );
+      switch (submitResult) {
+        case ApiFailure(:final message):
+          emit(EvaluationError(message));
+        case ApiSuccess(:final data):
+          // Best-effort reload to include the new review in the full list.
+          final reloadResult = await _repository.getReviews(bookingId);
+          final allReviews = switch (reloadResult) {
+            ApiSuccess(:final data) => data,
+            ApiFailure() => [data],
+          };
+          emit(
+            EvaluationSubmitted(
+              review: data,
+              reviews: allReviews,
+              bookingId: bookingId,
+            ),
+          );
+      }
+    } catch (e) {
+      // Safety net: any uncaught exception must unblock the spinner.
+      emit(EvaluationError(e.toString()));
     }
   }
 }

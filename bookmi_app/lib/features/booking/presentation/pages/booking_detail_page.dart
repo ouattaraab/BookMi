@@ -383,35 +383,16 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
-          // Talent: evaluate the client (confirmed or completed, not yet reviewed)
-          if (isTalent &&
-              ['confirmed', 'completed'].contains(booking.status) &&
-              !booking.hasTalentReview) ...[
-            const SizedBox(height: BookmiSpacing.spaceMd),
-            _EvaluationButton(
-              bookingId: booking.id,
-              reviewType: 'talent_to_client',
-              label: 'Évaluer le client',
-              icon: Icons.star_border_rounded,
-              onReturn: _fetch,
-            ),
-          ],
-
-          // Talent reply to client review
+          // Talent: see client reviews and reply (confirmed or completed)
           if (isTalent &&
               booking.hasClientReview &&
-              booking.clientReviewId != null &&
-              booking.clientReviewReply == null) ...[
+              ['confirmed', 'completed'].contains(booking.status)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
-            _ReplyToReviewButton(
-              reviewId: booking.clientReviewId!,
-              onReplied: () {
-                setState(() {
-                  _loading = true;
-                  _error = null;
-                });
-                _fetch();
-              },
+            _ClientReviewsButton(
+              bookingId: booking.id,
+              clientName: booking.clientName,
+              talentStageName: booking.talentStageName,
+              onReturn: _fetch,
             ),
           ],
 
@@ -1300,169 +1281,37 @@ class _TalentConfirmDeliveryButtonState
   }
 }
 
-// ── Reply to client review (talent action) ────────────────────────────────────
+// ── Client reviews button (talent: see reviews + reply) ──────────────────────
 
-class _ReplyToReviewButton extends StatefulWidget {
-  const _ReplyToReviewButton({
-    required this.reviewId,
-    required this.onReplied,
+class _ClientReviewsButton extends StatelessWidget {
+  const _ClientReviewsButton({
+    required this.bookingId,
+    required this.clientName,
+    required this.talentStageName,
+    this.onReturn,
   });
 
-  final int reviewId;
-  final VoidCallback onReplied;
-
-  @override
-  State<_ReplyToReviewButton> createState() => _ReplyToReviewButtonState();
-}
-
-class _ReplyToReviewButtonState extends State<_ReplyToReviewButton> {
-  bool _loading = false;
-
-  Future<void> _openReplySheet() async {
-    // Capture repo and messenger before the async gap (bottom sheet creates a
-    // new route context that may not inherit the provider tree).
-    final repo = context.read<BookingRepository>();
-    final messenger = ScaffoldMessenger.of(context);
-    final controller = TextEditingController();
-
-    final submitted = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E2A3A),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            top: 24,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Répondre à l'avis",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Votre réponse sera visible par tous les clients.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.6),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: controller,
-                maxLines: 4,
-                maxLength: 1000,
-                autofocus: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Merci pour votre retour…',
-                  hintStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white.withValues(alpha: 0.05),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.15),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.15),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFFF6B35)),
-                  ),
-                  counterStyle: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.4),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: StatefulBuilder(
-                  builder: (ctx2, setInner) {
-                    return ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF6B35),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: _loading
-                          ? null
-                          : () async {
-                              final text = controller.text.trim();
-                              if (text.isEmpty) return;
-                              setInner(() => _loading = true);
-                              final result = await repo.replyToReview(
-                                reviewId: widget.reviewId,
-                                reply: text,
-                              );
-                              setInner(() => _loading = false);
-                              if (!ctx2.mounted) return;
-                              switch (result) {
-                                case ApiSuccess():
-                                  Navigator.of(ctx2).pop(true);
-                                case ApiFailure(:final message):
-                                  messenger.showSnackBar(
-                                    SnackBar(content: Text(message)),
-                                  );
-                              }
-                            },
-                      child: _loading
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Publier la réponse',
-                              style: TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
-    if (submitted == true && mounted) {
-      widget.onReplied();
-    }
-  }
+  final int bookingId;
+  final String clientName;
+  final String talentStageName;
+  final VoidCallback? onReturn;
 
   @override
   Widget build(BuildContext context) {
     return GlassCard(
-      onTap: _openReplySheet,
-      borderColor: Colors.white.withValues(alpha: 0.2),
+      onTap: () {
+        context
+            .pushNamed(
+              RouteNames.clientReviews,
+              pathParameters: {'id': bookingId.toString()},
+              queryParameters: {
+                'clientName': clientName,
+                'talentStageName': talentStageName,
+              },
+            )
+            .then((_) => onReturn?.call());
+      },
+      borderColor: const Color(0xFFFF6B35).withValues(alpha: 0.35),
       child: Row(
         children: [
           Container(
@@ -1470,11 +1319,11 @@ class _ReplyToReviewButtonState extends State<_ReplyToReviewButton> {
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.08),
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.12),
             ),
             child: const Icon(
-              Icons.reply_rounded,
-              color: Colors.white70,
+              Icons.rate_review_rounded,
+              color: Color(0xFFFF6B35),
               size: 20,
             ),
           ),
@@ -1484,7 +1333,7 @@ class _ReplyToReviewButtonState extends State<_ReplyToReviewButton> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Répondre à l'avis client",
+                  'Voir et répondre aux avis',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -1492,11 +1341,8 @@ class _ReplyToReviewButtonState extends State<_ReplyToReviewButton> {
                   ),
                 ),
                 Text(
-                  'Répondez publiquement à cet avis',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white54,
-                  ),
+                  'Consultez les avis clients et répondez-y',
+                  style: TextStyle(fontSize: 12, color: Colors.white54),
                 ),
               ],
             ),

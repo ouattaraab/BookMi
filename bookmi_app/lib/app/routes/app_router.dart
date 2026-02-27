@@ -9,6 +9,7 @@ import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
+import 'package:bookmi_app/features/booking/presentation/pages/talent_review_replies_page.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
 import 'package:bookmi_app/features/evaluation/presentation/pages/evaluation_page.dart';
 import 'package:bookmi_app/features/onboarding/data/repositories/onboarding_repository.dart';
@@ -277,6 +278,31 @@ GoRouter buildAppRouter(
                             bookingId: id,
                             type: type,
                             repository: reviewRepo,
+                          );
+                        },
+                      ),
+                      GoRoute(
+                        path: RoutePaths.clientReviews,
+                        name: RouteNames.clientReviews,
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) {
+                          final id =
+                              int.tryParse(
+                                state.pathParameters['id'] ?? '',
+                              ) ??
+                              0;
+                          final clientName =
+                              state.uri.queryParameters['clientName'] ??
+                              'Client';
+                          final talentStageName =
+                              state.uri.queryParameters['talentStageName'] ??
+                              'Le talent';
+                          return TalentReviewRepliesPage(
+                            bookingId: id,
+                            clientName: clientName,
+                            talentStageName: talentStageName,
+                            reviewRepository: reviewRepo,
+                            bookingRepository: bookingRepo,
                           );
                         },
                       ),

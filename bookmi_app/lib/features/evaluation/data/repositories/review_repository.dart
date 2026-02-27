@@ -52,8 +52,12 @@ class ReviewRepository {
   }
 
   ApiFailure<T> _mapError<T>(DioException e) {
-    final errorData = e.response?.data as Map<String, dynamic>?;
-    final error = errorData?['error'] as Map<String, dynamic>?;
+    // Safe cast: server may return plain text (e.g. 429 "Too Many Requests").
+    final raw = e.response?.data;
+    final errorData = raw is Map ? Map<String, dynamic>.from(raw) : null;
+    final error = errorData?['error'] is Map
+        ? Map<String, dynamic>.from(errorData!['error'] as Map)
+        : null;
     return ApiFailure(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
       message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
