@@ -396,6 +396,20 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
+          // Talent: evaluate the client (confirmed or completed, not yet reviewed)
+          if (isTalent &&
+              ['confirmed', 'completed'].contains(booking.status) &&
+              !booking.hasTalentReview) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _EvaluationButton(
+              bookingId: booking.id,
+              reviewType: 'talent_to_client',
+              label: 'Évaluer le client',
+              icon: Icons.star_border_rounded,
+              onReturn: _fetch,
+            ),
+          ],
+
           // Status history timeline
           if (booking.statusLogs != null && booking.statusLogs!.isNotEmpty) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
