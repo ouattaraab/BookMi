@@ -4,6 +4,7 @@ import 'package:bookmi_app/features/profile/presentation/pages/guest_profile_pag
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
+import 'package:bookmi_app/features/auth/data/models/auth_user.dart';
 import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:cached_network_image/cached_network_image.dart';
