@@ -53,10 +53,9 @@ class _ProfilePageState extends State<ProfilePage> {
         if (authState is! AuthAuthenticated) {
           return const GuestProfilePage();
         }
-        final user = authState is AuthAuthenticated ? authState.user : null;
-        final roles = authState is AuthAuthenticated
-            ? authState.roles
-            : <String>[];
+        // Explicitly typed as nullable to preserve existing null-safe usages below.
+        final AuthUser? user = authState.user;
+        final roles = authState.roles;
         final firstName = user?.firstName ?? 'Utilisateur';
         final lastName = user?.lastName ?? '';
         final email = user?.email ?? '';
