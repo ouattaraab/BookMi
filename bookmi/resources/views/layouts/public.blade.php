@@ -27,7 +27,7 @@
 
             {{-- Logo --}}
             <a href="{{ route('home') }}" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
-                <span style="font-weight:900; font-size:1.75rem; letter-spacing:-0.04em; line-height:1; font-family:'Nunito',sans-serif;">
+                <span style="font-weight:900; font-size:1.9rem; letter-spacing:-0.04em; line-height:1; font-family:'Nunito',sans-serif;">
                     <span style="color:white;">Book</span><span style="background:linear-gradient(135deg,#1AB3FF,#0090E8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Mi</span>
                 </span>
             </a>

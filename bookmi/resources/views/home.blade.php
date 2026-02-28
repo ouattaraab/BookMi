@@ -12,26 +12,67 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    background: #0D1117;
+    background: #060E1C;
 }
-.hero-bg {
-    position: absolute;
-    inset: 0;
+
+/* Aurora atmosphere layers */
+.aurora-1 {
+    position: absolute; inset: 0; pointer-events: none;
     background:
-        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(26,179,255,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 40% at 20% 20%,  rgba(26,39,68,0.9) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 50% at 80% 30%,  rgba(30,58,138,0.08) 0%, transparent 60%),
-        linear-gradient(170deg, #0D1117 0%, #111827 40%, #0D1117 100%);
+        radial-gradient(ellipse 100% 80% at 50% 120%, rgba(26,179,255,0.38) 0%, transparent 60%),
+        radial-gradient(ellipse 60%  50% at 20%  90%, rgba(0,144,232,0.20)  0%, transparent 55%),
+        radial-gradient(ellipse 50%  40% at 80%  95%, rgba(26,100,255,0.15) 0%, transparent 50%);
 }
-/* subtle grid texture */
-.hero-bg::after {
-    content:'';
-    position:absolute;
-    inset:0;
+.aurora-2 {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+        radial-gradient(ellipse 55% 45% at  5% 15%, rgba(0,188,212,0.12)  0%, transparent 60%),
+        radial-gradient(ellipse 45% 35% at 95% 10%, rgba(33,150,243,0.15) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 30% at 50%  5%, rgba(99,102,241,0.08) 0%, transparent 55%);
+}
+.hero-grain {
+    position: absolute; inset: 0; pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+}
+.hero-grid {
+    position: absolute; inset: 0; pointer-events: none;
     background-image:
-        linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
-    background-size: 60px 60px;
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+/* Stars */
+.stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--d) ease-in-out infinite;
+    animation-delay: var(--dl);
+}
+
+/* Orbs */
+.orb-1 {
+    position: absolute;
+    width: 520px; height: 520px;
+    bottom: -130px; left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,179,255,0.14) 0%, transparent 70%);
+    animation: orbFloat 9s ease-in-out infinite;
+    pointer-events: none;
+}
+.orb-2 {
+    position: absolute;
+    width: 380px; height: 380px;
+    top: -80px; right: -80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(30,58,138,0.10) 0%, transparent 70%);
+    animation: orbFloat2 12s ease-in-out 2s infinite;
+    pointer-events: none;
 }
 
 /* ─── SEARCH WRAPPER (conteneur glossy) ─── */
@@ -296,12 +337,42 @@
     from { opacity: 0; transform: scale(0.95) translateY(22px); }
     to   { opacity: 1; transform: scale(1)    translateY(0); }
 }
+@keyframes shimmer {
+    from { background-position: 0% center; }
+    to   { background-position: 200% center; }
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(1); }
+    50%       { opacity: 0.8; transform: scale(1.4); }
+}
+@keyframes orbFloat {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(-30px); }
+}
+@keyframes orbFloat2 {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-20px); }
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.85); }
+}
 
-.hero-title-1 { animation: heroSlideUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.10s both; }
-.hero-title-2 { animation: heroSlideUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.28s both; }
-.hero-sub     { animation: heroSlideUp 0.85s cubic-bezier(0.16,1,0.3,1) 0.48s both; }
-.hero-search  { animation: heroScale   0.90s cubic-bezier(0.16,1,0.3,1) 0.65s both; }
-.hero-tags    { animation: heroSlideUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.82s both; }
+.hero-badge   { animation: heroSlideUp 0.75s cubic-bezier(0.16,1,0.3,1) 0s    both; }
+.hero-title-1 { animation: heroSlideUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+.hero-title-2 {
+    background: linear-gradient(100deg, #6DD5FF 0%, #1AB3FF 40%, #0090E8 70%, #1AB3FF 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 16px rgba(26,179,255,0.3));
+    animation: heroSlideUp 0.95s cubic-bezier(0.16,1,0.3,1) 0.30s both,
+               shimmer 4s linear 1.5s infinite;
+}
+.hero-sub     { animation: heroSlideUp 0.85s cubic-bezier(0.16,1,0.3,1) 0.50s both; }
+.hero-search  { animation: heroScale   0.90s cubic-bezier(0.16,1,0.3,1) 0.68s both; }
+.hero-tags    { animation: heroSlideUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.85s both; }
 
 /* Scroll reveal — états initiaux */
 .reveal, .reveal-left, .reveal-right {
@@ -356,19 +427,31 @@
      1. HERO
 ════════════════════════════════════════════════ --}}
 <section class="hero-section">
-    <div class="hero-bg"></div>
-
-    {{-- Orbe lumineux décoratif --}}
-    <div style="position:absolute; top:-10%; right:-5%; width:500px; height:500px; border-radius:50%; background:radial-gradient(circle, rgba(255,107,53,0.06) 0%, transparent 70%); pointer-events:none;"></div>
-    <div style="position:absolute; bottom:-15%; left:10%; width:400px; height:400px; border-radius:50%; background:radial-gradient(circle, rgba(30,58,138,0.08) 0%, transparent 70%); pointer-events:none;"></div>
+    {{-- Couches atmosphériques --}}
+    <div style="position:absolute;inset:0;background:#060E1C;"></div>
+    <div class="aurora-1"></div>
+    <div class="aurora-2"></div>
+    <div class="hero-grain"></div>
+    <div class="hero-grid"></div>
+    <div class="stars" id="stars"></div>
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
 
     <div style="max-width:960px; margin:0 auto; padding:5rem 1.5rem; text-align:center; position:relative; z-index:10; width:100%;">
+
+        {{-- Badge hero --}}
+        <div class="hero-badge" style="margin-bottom:1.5rem;">
+            <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(26,179,255,0.10); border:1px solid rgba(26,179,255,0.25); border-radius:100px; padding:6px 16px;">
+                <span style="width:6px; height:6px; border-radius:50%; background:#1AB3FF; display:inline-block; animation:pulse 2s ease-in-out infinite;"></span>
+                <span style="font-size:0.7rem; font-weight:800; color:#1AB3FF; text-transform:uppercase; letter-spacing:0.1em;">Talents vérifiés · Réservation sécurisée</span>
+            </span>
+        </div>
 
         {{-- Titre --}}
         <h1 class="hero-title-1" style="font-weight:900; color:white; line-height:1.08; margin:0 0 0.1em; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
             Connectez-vous aux
         </h1>
-        <h1 class="hero-title-2" style="font-weight:900; background:linear-gradient(100deg,#6DD5FF 0%,#1AB3FF 40%,#0090E8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; line-height:1.08; margin:0 0 1.4rem; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
+        <h1 class="hero-title-2" style="font-weight:900; line-height:1.08; margin:0 0 1.4rem; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
             Talents Ivoiriens
         </h1>
 
@@ -633,6 +716,25 @@
 @section('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+    /* ── Star field generation ── */
+    var starsContainer = document.getElementById('stars');
+    if (starsContainer) {
+        for (var i = 0; i < 80; i++) {
+            var s = document.createElement('div');
+            s.className = 'star';
+            var size = Math.random() * 2 + 0.5;
+            s.style.cssText =
+                'width:' + size + 'px;' +
+                'height:' + size + 'px;' +
+                'top:' + (Math.random() * 100) + '%;' +
+                'left:' + (Math.random() * 100) + '%;' +
+                '--d:' + (Math.random() * 3 + 2) + 's;' +
+                '--dl:' + (Math.random() * 4) + 's;' +
+                'opacity:' + (Math.random() * 0.5 + 0.1) + ';';
+            starsContainer.appendChild(s);
+        }
+    }
 
     /* ── Scroll reveal (fade-up / slide-left / slide-right) ── */
     var revealObs = new IntersectionObserver(function (entries) {
