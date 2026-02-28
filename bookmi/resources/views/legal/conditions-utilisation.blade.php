@@ -13,9 +13,9 @@
 }
 .legal-hero .badge {
     display: inline-block;
-    background: rgba(255,107,53,0.12);
-    border: 1px solid rgba(255,107,53,0.25);
-    color: #FF6B35;
+    background: rgba(26,179,255,0.12);
+    border: 1px solid rgba(26,179,255,0.25);
+    color: #1AB3FF;
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;

@@ -27,8 +27,8 @@
 
             {{-- Logo --}}
             <a href="{{ route('home') }}" style="display:flex; align-items:center; text-decoration:none; flex-shrink:0;">
-                <span style="font-weight:900; font-size:1.4rem; letter-spacing:-0.03em; line-height:1; font-family:'Nunito',sans-serif;">
-                    <span style="color:white;">Book</span><span style="color:#2196F3;">Mi</span>
+                <span style="font-weight:900; font-size:1.75rem; letter-spacing:-0.04em; line-height:1; font-family:'Nunito',sans-serif;">
+                    <span style="color:white;">Book</span><span style="background:linear-gradient(135deg,#1AB3FF,#0090E8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Mi</span>
                 </span>
             </a>
 
@@ -49,7 +49,7 @@
                     @elseif($u->hasRole('manager'))
                         <a href="{{ route('manager.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
                     @elseif($u->is_admin)
-                        <a href="/admin" style="color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,107,53,0.5);">Admin ↗</a>
+                        <a href="/admin" style="color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(26,179,255,0.5);">Admin ↗</a>
                     @endif
                 @else
                     <a href="{{ route('login') }}"
@@ -59,9 +59,9 @@
                         Connexion
                     </a>
                     <a href="{{ route('register') }}"
-                       style="color:#0D1117; background:white; text-decoration:none; font-size:0.875rem; font-weight:800; padding:8px 20px; border-radius:100px; transition:transform 0.15s, box-shadow 0.15s;"
-                       onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 4px 16px rgba(255,255,255,0.2)'"
-                       onmouseout="this.style.transform=''; this.style.boxShadow=''">
+                       style="color:white; background:linear-gradient(135deg,#1AB3FF 0%,#0090E8 100%); text-decoration:none; font-size:0.875rem; font-weight:800; padding:8px 20px; border-radius:100px; transition:transform 0.15s, box-shadow 0.15s; box-shadow:0 4px 16px rgba(26,179,255,0.4);"
+                       onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 6px 22px rgba(26,179,255,0.6)'"
+                       onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 16px rgba(26,179,255,0.4)'">
                         Inscription
                     </a>
                 @endauth
@@ -96,13 +96,13 @@
                     @elseif($mu->hasRole('manager'))
                         <a href="{{ route('manager.dashboard') }}" style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Mon espace</a>
                     @elseif($mu->is_admin)
-                        <a href="/admin" style="color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,107,53,0.5);">Admin ↗</a>
+                        <a href="/admin" style="color:rgba(255,255,255,0.85); text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(26,179,255,0.5);">Admin ↗</a>
                     @endif
                 </div>
             @else
                 <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
                     <a href="{{ route('login') }}"    style="color:white; text-decoration:none; font-size:0.875rem; font-weight:700; padding:8px 18px; border-radius:100px; border:1.5px solid rgba(255,255,255,0.25);">Connexion</a>
-                    <a href="{{ route('register') }}" style="color:#0D1117; background:white; text-decoration:none; font-size:0.875rem; font-weight:800; padding:8px 20px; border-radius:100px;">Inscription</a>
+                    <a href="{{ route('register') }}" style="color:white; background:linear-gradient(135deg,#1AB3FF 0%,#0090E8 100%); text-decoration:none; font-size:0.875rem; font-weight:800; padding:8px 20px; border-radius:100px; box-shadow:0 4px 16px rgba(26,179,255,0.4);">Inscription</a>
                 </div>
             @endauth
         </div>
@@ -122,8 +122,8 @@
                 {{-- Col 1 : logo + desc + réseaux --}}
                 <div>
                     <a href="{{ route('home') }}" style="display:inline-flex; align-items:center; text-decoration:none; margin-bottom:1rem;">
-                        <span style="font-weight:900; font-size:1.3rem; letter-spacing:-0.03em; font-family:'Nunito',sans-serif;">
-                            <span style="color:white;">Book</span><span style="color:#2196F3;">Mi</span>
+                        <span style="font-weight:900; font-size:1.5rem; letter-spacing:-0.04em; font-family:'Nunito',sans-serif;">
+                            <span style="color:white;">Book</span><span style="background:linear-gradient(135deg,#1AB3FF,#0090E8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Mi</span>
                         </span>
                     </a>
                     <p style="color:rgba(255,255,255,0.4); font-size:0.85rem; line-height:1.65; margin-bottom:1.5rem; max-width:220px;">
@@ -170,8 +170,8 @@
                     <p style="font-weight:800; font-size:0.8rem; color:white; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1.2rem;">Contactez-nous</p>
                     <div style="display:flex; flex-direction:column; gap:0.9rem;">
                         <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.05); border-radius:10px; padding:10px 14px;">
-                            <div style="width:30px; height:30px; border-radius:8px; background:rgba(255,107,53,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                            <div style="width:30px; height:30px; border-radius:8px; background:rgba(26,179,255,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="#1AB3FF" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                             </div>
                             <div>
                                 <p style="color:rgba(255,255,255,0.35); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 2px;">Email</p>
@@ -179,8 +179,8 @@
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.05); border-radius:10px; padding:10px 14px;">
-                            <div style="width:30px; height:30px; border-radius:8px; background:rgba(255,107,53,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.05 6.05l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
+                            <div style="width:30px; height:30px; border-radius:8px; background:rgba(26,179,255,0.12); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="#1AB3FF" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.05 6.05l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 17z"/></svg>
                             </div>
                             <div>
                                 <p style="color:rgba(255,255,255,0.35); font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 2px;">Téléphone</p>
@@ -222,7 +222,7 @@
                     transparent 48px
                 ),
                 /* Bloom orange chaud montant du bas — lumières de scène */
-                radial-gradient(ellipse 90% 40% at 50% 110%, rgba(255,107,53,0.18) 0%, rgba(200,70,20,0.08) 45%, transparent 70%),
+                radial-gradient(ellipse 90% 40% at 50% 110%, rgba(26,179,255,0.12) 0%, rgba(0,100,180,0.06) 45%, transparent 70%),
                 /* Vignette navy en haut — ciel nocturne profond */
                 radial-gradient(ellipse 140% 55% at 50% -5%, rgba(26,39,68,0.80) 0%, transparent 55%),
                 /* Accent bleu — coin supérieur droit, profondeur */
@@ -238,11 +238,11 @@
             height: 1px;
             background: linear-gradient(90deg,
                 transparent 0%,
-                rgba(255,107,53,0.35) 8%,
-                rgba(255,130,60,0.85) 30%,
-                rgba(255,107,53,1)    48%,
-                rgba(80,170,255,0.75) 68%,
-                rgba(33,150,243,0.3)  85%,
+                rgba(26,179,255,0.3)  8%,
+                rgba(26,179,255,0.8)  30%,
+                rgba(26,179,255,1)    48%,
+                rgba(0,144,232,0.75)  68%,
+                rgba(0,100,200,0.3)   85%,
                 transparent 100%
             );
             pointer-events: none;

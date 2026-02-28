@@ -18,7 +18,7 @@
     position: absolute;
     inset: 0;
     background:
-        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(255,107,53,0.12) 0%, transparent 70%),
+        radial-gradient(ellipse 70% 60% at 50% 100%, rgba(26,179,255,0.12) 0%, transparent 70%),
         radial-gradient(ellipse 50% 40% at 20% 20%,  rgba(26,39,68,0.9) 0%, transparent 60%),
         radial-gradient(ellipse 60% 50% at 80% 30%,  rgba(30,58,138,0.08) 0%, transparent 60%),
         linear-gradient(170deg, #0D1117 0%, #111827 40%, #0D1117 100%);
@@ -49,7 +49,7 @@
         inset 0 -1px 0 rgba(255,255,255,0.05),
         0 28px 70px rgba(0,0,0,0.6),
         0 0 0 1px rgba(255,255,255,0.07),
-        0 0 40px rgba(255,107,53,0.07);
+        0 0 40px rgba(26,179,255,0.07);
 }
 .search-bar {
     display: flex;
@@ -102,7 +102,7 @@
 /* Bouton Rechercher iOS-glossy */
 .search-btn {
     flex-shrink: 0;
-    background: linear-gradient(160deg, #FF7A45 0%, #FF6B35 40%, #E55A2B 100%);
+    background: linear-gradient(160deg, #3DC5FF 0%, #1AB3FF 40%, #0090CC 100%);
     color: white;
     border: none;
     border-radius: 14px;
@@ -115,7 +115,7 @@
     gap: 9px;
     font-family: 'Nunito', sans-serif;
     transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 4px 18px rgba(255,107,53,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+    box-shadow: 0 4px 18px rgba(26,179,255,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
     position: relative;
     overflow: hidden;
     min-height: 62px;
@@ -130,7 +130,7 @@
     border-radius: 14px 14px 50% 50%;
     pointer-events: none;
 }
-.search-btn:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(255,107,53,0.6), inset 0 1px 0 rgba(255,255,255,0.18); }
+.search-btn:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(26,179,255,0.6), inset 0 1px 0 rgba(255,255,255,0.18); }
 
 /* ─── CATEGORY CARDS ─── */
 .cat-grid {
@@ -197,7 +197,7 @@
 }
 .stat-icon {
     width: 52px; height: 52px;
-    background: rgba(255,107,53,0.12);
+    background: rgba(26,179,255,0.12);
     border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
     margin: 0 auto 1rem;
@@ -224,7 +224,7 @@
     gap: 5px;
     font-size: 0.75rem;
     font-weight: 700;
-    color: #FF6B35;
+    color: #1AB3FF;
     margin-top: 1.25rem;
 }
 
@@ -253,9 +253,9 @@
     border: 1px solid rgba(255,255,255,0.1);
 }
 .path-card-orange {
-    background: linear-gradient(135deg, #FF6B35 0%, #E55A2B 100%);
+    background: linear-gradient(135deg, #1AB3FF 0%, #0090E8 100%);
     border: none;
-    box-shadow: 0 8px 30px rgba(255,107,53,0.35);
+    box-shadow: 0 8px 30px rgba(26,179,255,0.35);
 }
 .path-label {
     font-size: 0.68rem;
@@ -368,7 +368,7 @@
         <h1 class="hero-title-1" style="font-weight:900; color:white; line-height:1.08; margin:0 0 0.1em; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
             Connectez-vous aux
         </h1>
-        <h1 class="hero-title-2" style="font-weight:900; color:#FF6B35; line-height:1.08; margin:0 0 1.4rem; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
+        <h1 class="hero-title-2" style="font-weight:900; background:linear-gradient(100deg,#6DD5FF 0%,#1AB3FF 40%,#0090E8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text; line-height:1.08; margin:0 0 1.4rem; font-size:clamp(2.4rem,6vw,4.2rem); letter-spacing:-0.02em;">
             Talents Ivoiriens
         </h1>
 
@@ -384,7 +384,7 @@
                 {{-- Champ talent --}}
                 <div class="search-field">
                     <div class="search-field-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
                     </div>
                     <div class="search-field-text">
                         <label>Quel talent ?</label>
@@ -395,7 +395,7 @@
                 {{-- Champ date --}}
                 <div class="search-field">
                     <div class="search-field-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     </div>
                     <div class="search-field-text">
                         <label>Pour Quand ?</label>
@@ -415,9 +415,9 @@
             <span style="color:rgba(255,255,255,0.35); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; font-size:0.7rem;">Populaire&nbsp;:</span>
             @foreach(['Orchestres Zouglou'=>'Musicien', 'DJ Mariage'=>'DJ', 'Maître de Cérémonie'=>'Animateur'] as $label => $cat)
             <a href="{{ route('talents.index', ['category'=>$cat]) }}"
-               style="color:#FF6B35; font-weight:600; text-decoration:underline; text-underline-offset:3px; text-decoration-color:rgba(255,107,53,0.35); transition:color 0.15s, text-decoration-color 0.15s;"
+               style="color:#1AB3FF; font-weight:600; text-decoration:underline; text-underline-offset:3px; text-decoration-color:rgba(26,179,255,0.35); transition:color 0.15s, text-decoration-color 0.15s;"
                onmouseover="this.style.color='white'; this.style.textDecorationColor='rgba(255,255,255,0.35)'"
-               onmouseout="this.style.color='#FF6B35'; this.style.textDecorationColor='rgba(255,107,53,0.35)'">{{ $label }}</a>
+               onmouseout="this.style.color='#1AB3FF'; this.style.textDecorationColor='rgba(26,179,255,0.35)'">{{ $label }}</a>
             @if(!$loop->last)<span style="color:rgba(255,255,255,0.18); font-size:0.75rem;">·</span>@endif
             @endforeach
         </div>
@@ -432,7 +432,7 @@
     <div class="reveal" style="text-align:center; margin-bottom:3rem;">
         <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#111; margin:0 0 0.5rem;">Catégories de Talents</h2>
         <p style="color:#6b7280; font-size:0.95rem; font-weight:500; margin:0 0 0.75rem;">Explorez la richesse artistique ivoirienne.</p>
-        <div style="width:36px; height:3px; background:#FF6B35; border-radius:2px; margin:0 auto;"></div>
+        <div style="width:36px; height:3px; background:#1AB3FF; border-radius:2px; margin:0 auto;"></div>
     </div>
 
     <div class="cat-grid">
@@ -496,7 +496,7 @@
         ] as $stat)
         <div class="reveal" style="transition-delay: {{ $loop->index * 0.14 }}s;">
             <div class="stat-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                     {!! $stat['svg'] !!}
                 </svg>
             </div>
@@ -519,7 +519,7 @@
 <section style="background:white; padding:5rem 1.5rem;">
     <div class="reveal" style="text-align:center; margin-bottom:3rem;">
         <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#111; margin:0 0 0.5rem;">Pourquoi choisir BookMi&nbsp;?</h2>
-        <div style="width:36px; height:3px; background:#FF6B35; border-radius:2px; margin:0 auto 0.75rem;"></div>
+        <div style="width:36px; height:3px; background:#1AB3FF; border-radius:2px; margin:0 auto 0.75rem;"></div>
         <p style="color:#6b7280; font-size:0.95rem; font-weight:500; margin:0; max-width:480px; margin-left:auto; margin-right:auto;">
             Une plateforme sécurisée et intuitive, conçue pour Babi.
         </p>
@@ -531,8 +531,8 @@
                 'title'  => 'Paiement Sécurisé',
                 'desc'   => "Système d'escrow avec Mobile Money (MTN, Orange, Wave). L'argent est bloqué jusqu'à la fin de la prestation.",
                 'icon'   => '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
-                'icon_bg'=> 'rgba(255,107,53,0.1)',
-                'icon_color'=> '#FF6B35',
+                'icon_bg'=> 'rgba(26,179,255,0.1)',
+                'icon_color'=> '#1AB3FF',
             ],
             [
                 'title'  => 'Recherche Avancée',
@@ -558,7 +558,7 @@
             <h3 style="font-size:1.05rem; font-weight:800; color:#111; margin:0 0 0.6rem;">{{ $why['title'] }}</h3>
             <p style="color:#6b7280; font-size:0.875rem; line-height:1.65; font-weight:500; margin:0;">{{ $why['desc'] }}</p>
             <div class="why-tag">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#1AB3FF" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 Expérience premium BookMi
             </div>
         </div>
@@ -575,9 +575,9 @@
 
         {{-- Gauche --}}
         <div class="reveal-left">
-            <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,107,53,0.12); border:1px solid rgba(255,107,53,0.25); border-radius:100px; padding:5px 14px; margin-bottom:1.5rem;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#FF6B35" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
-                <span style="font-size:0.7rem; font-weight:800; color:#FF6B35; text-transform:uppercase; letter-spacing:0.1em;">Réservation Sécurisée · Mobile Money</span>
+            <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(26,179,255,0.12); border:1px solid rgba(26,179,255,0.25); border-radius:100px; padding:5px 14px; margin-bottom:1.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#1AB3FF" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                <span style="font-size:0.7rem; font-weight:800; color:#1AB3FF; text-transform:uppercase; letter-spacing:0.1em;">Réservation Sécurisée · Mobile Money</span>
             </div>
 
             <h2 style="font-size:clamp(2rem,4vw,2.8rem); font-weight:900; color:white; line-height:1.1; margin:0 0 1rem; letter-spacing:-0.02em;">
@@ -590,7 +590,7 @@
             <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0.8rem;">
                 @foreach(['Paiement escrow Mobile Money', 'Profils vérifiés et accompagnés', 'Dispo et confirmations rapides'] as $bullet)
                 <li style="display:flex; align-items:center; gap:10px; color:rgba(255,255,255,0.75); font-size:0.875rem; font-weight:600;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#FF6B35" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#1AB3FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
                     {{ $bullet }}
                 </li>
                 @endforeach
@@ -603,7 +603,7 @@
             <div class="path-card path-card-dark" style="position:relative;">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
                     <span class="path-label" style="color:rgba(255,255,255,0.45);">Parcours Client</span>
-                    <span style="background:rgba(255,107,53,0.15); color:#FF6B35; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; padding:3px 10px; border-radius:100px; border:1px solid rgba(255,107,53,0.25);">Recommandé</span>
+                    <span style="background:rgba(26,179,255,0.15); color:#1AB3FF; font-size:0.68rem; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; padding:3px 10px; border-radius:100px; border:1px solid rgba(26,179,255,0.25);">Recommandé</span>
                 </div>
                 <h3 style="font-size:1.15rem; font-weight:900; color:white; margin:0 0 0.4rem;">Je cherche un Talent</h3>
                 <p style="color:rgba(255,255,255,0.45); font-size:0.85rem; font-weight:500; margin:0; line-height:1.5;">Pour mariage, anniversaire ou événement corporate.</p>

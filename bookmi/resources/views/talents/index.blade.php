@@ -6,9 +6,9 @@
 <style>
 /* ─── RESET & VARIABLES ─────────────────────────────────────────────────── */
 :root {
-    --orange:       #FF6B35;
-    --orange-glow:  rgba(255,107,53,0.35);
-    --orange-dim:   rgba(255,107,53,0.12);
+    --orange:       #1AB3FF;
+    --orange-glow:  rgba(26,179,255,0.35);
+    --orange-dim:   rgba(26,179,255,0.12);
     --navy:         #1A2744;
     --navy-dim:     rgba(26,39,68,0.6);
     --bg:           #0D1117;
@@ -52,7 +52,7 @@
     bottom: -80px; left: 50%;
     transform: translateX(-50%);
     width: 700px; height: 300px;
-    background: radial-gradient(ellipse, rgba(255,107,53,0.18) 0%, transparent 70%);
+    background: radial-gradient(ellipse, rgba(26,179,255,0.18) 0%, transparent 70%);
     pointer-events: none;
 }
 
@@ -61,7 +61,7 @@
     align-items: center;
     gap: 6px;
     background: var(--orange-dim);
-    border: 1px solid rgba(255,107,53,0.25);
+    border: 1px solid rgba(26,179,255,0.25);
     border-radius: 100px;
     padding: 4px 14px;
     font-size: 0.72rem;
@@ -113,7 +113,7 @@
 }
 .disc-search::placeholder { color: rgba(255,255,255,0.35); font-weight: 600; }
 .disc-search:focus {
-    border-color: rgba(255,107,53,0.5);
+    border-color: rgba(26,179,255,0.5);
     background: rgba(255,255,255,0.10);
     box-shadow: 0 0 0 3px var(--orange-dim), 0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.12);
 }
@@ -206,7 +206,7 @@
     transition: all 0.2s;
 }
 .disc-select:focus, .disc-select:hover {
-    border-color: rgba(255,107,53,0.4);
+    border-color: rgba(26,179,255,0.4);
     background-color: rgba(255,255,255,0.09);
     color: #fff;
 }
@@ -294,11 +294,11 @@
 }
 .tc:hover {
     transform: translateY(-10px) scale(1.015);
-    border-color: rgba(255,107,53,0.35);
+    border-color: rgba(26,179,255,0.35);
     box-shadow:
         0 24px 60px rgba(0,0,0,0.5),
-        0 0 0 1px rgba(255,107,53,0.2),
-        0 8px 32px rgba(255,107,53,0.22),
+        0 0 0 1px rgba(26,179,255,0.2),
+        0 8px 32px rgba(26,179,255,0.22),
         inset 0 1px 0 rgba(255,255,255,0.12);
 }
 
@@ -362,8 +362,8 @@
 .tc-photo-monogram {
     width: 64px; height: 64px;
     border-radius: 50%;
-    background: rgba(255,107,53,0.12);
-    border: 1.5px solid rgba(255,107,53,0.25);
+    background: rgba(26,179,255,0.12);
+    border: 1.5px solid rgba(26,179,255,0.25);
     display: flex; align-items: center; justify-content: center;
     font-size: 1.5rem;
     font-weight: 900;
@@ -487,12 +487,12 @@
     transition: all 0.25s var(--spring);
     text-decoration: none;
     white-space: nowrap;
-    box-shadow: 0 3px 14px rgba(255,107,53,0.38);
+    box-shadow: 0 3px 14px rgba(26,179,255,0.38);
     letter-spacing: 0.01em;
 }
 .tc:hover .tc-btn {
     transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(255,107,53,0.5);
+    box-shadow: 0 6px 20px rgba(26,179,255,0.5);
 }
 
 /* ─── CATEGORY BADGE COLORS ─────────────────────────────────────────────── */
@@ -502,7 +502,7 @@
 .cat-chanteur  { background: rgba(110,231,183,0.18); border-color: rgba(110,231,183,0.35); color: #6ee7b7; }
 .cat-animateur { background: rgba(253,186,116,0.18); border-color: rgba(253,186,116,0.35); color: #fbbf24; }
 .cat-comedien  { background: rgba(248,113,113,0.18); border-color: rgba(248,113,113,0.35); color: #fca5a5; }
-.cat-default   { background: rgba(255,107,53,0.15);  border-color: rgba(255,107,53,0.30);  color: #ff9a6c; }
+.cat-default   { background: rgba(26,179,255,0.15);  border-color: rgba(26,179,255,0.30);  color: #1AB3FF; }
 
 /* ─── SKELETON LOADER ───────────────────────────────────────────────────── */
 @keyframes shimmerSkeleton {
@@ -542,11 +542,11 @@
 .disc-empty-orb {
     width: 96px; height: 96px;
     border-radius: 50%;
-    background: rgba(255,107,53,0.08);
-    border: 1px solid rgba(255,107,53,0.15);
+    background: rgba(26,179,255,0.08);
+    border: 1px solid rgba(26,179,255,0.15);
     display: flex; align-items: center; justify-content: center;
     margin-bottom: 1.5rem;
-    box-shadow: 0 0 40px rgba(255,107,53,0.08);
+    box-shadow: 0 0 40px rgba(26,179,255,0.08);
 }
 .disc-empty h3 {
     font-size: 1.3rem;
@@ -581,7 +581,7 @@
     width: 100%;
     max-width: 440px;
     background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,107,53,0.25);
+    border: 1px solid rgba(26,179,255,0.25);
     border-radius: 16px;
     padding: 1.25rem 1.5rem 1rem;
     margin-top: 1.25rem;
@@ -611,9 +611,9 @@
 }
 .notif-toggle button:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
 .notif-toggle-active {
-    background: rgba(255,107,53,0.18) !important;
-    border-color: rgba(255,107,53,0.6) !important;
-    color: #FF6B35 !important;
+    background: rgba(26,179,255,0.18) !important;
+    border-color: rgba(26,179,255,0.6) !important;
+    color: #1AB3FF !important;
 }
 .notif-input-row {
     display: flex;
@@ -634,7 +634,7 @@
     min-width: 0;
 }
 .notif-input::placeholder { color: rgba(255,255,255,0.35); }
-.notif-input:focus { border-color: rgba(255,107,53,0.6); }
+.notif-input:focus { border-color: rgba(26,179,255,0.6); }
 .notif-btn {
     padding: 0.65rem 1.2rem;
     border-radius: 10px;
@@ -759,7 +759,7 @@ nav[aria-label="Pagination"] svg { display: none; }
 .disc-orb-1 {
     width: 500px; height: 500px;
     top: -150px; right: -100px;
-    background: radial-gradient(circle, rgba(255,107,53,0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(26,179,255,0.12) 0%, transparent 70%);
 }
 .disc-orb-2 {
     width: 600px; height: 400px;
@@ -781,7 +781,7 @@ nav[aria-label="Pagination"] svg { display: none; }
     ════════════════════════════════════════════════ --}}
     <section class="disc-hero">
         <p class="disc-eyebrow ha-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#FF6B35" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#1AB3FF" viewBox="0 0 24 24">
                 <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
             </svg>
             Talents Certifiés · Côte d'Ivoire
@@ -913,7 +913,7 @@ nav[aria-label="Pagination"] svg { display: none; }
                 {{-- Icône et titre --}}
                 <div class="disc-empty-orb">
                     <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"
-                         fill="none" stroke="#FF6B35" stroke-width="1.5" viewBox="0 0 24 24">
+                         fill="none" stroke="#1AB3FF" stroke-width="1.5" viewBox="0 0 24 24">
                         <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
                     </svg>
                 </div>
