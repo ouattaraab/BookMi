@@ -21,7 +21,7 @@
             padding: 2rem 1rem;
             background-color: #070B14;
             background-image:
-                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(255,107,53,0.26) 0%, rgba(200,60,20,0.10) 45%, transparent 68%),
+                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(26,179,255,0.26) 0%, rgba(0,144,232,0.10) 45%, transparent 68%),
                 radial-gradient(ellipse 110% 55% at 50% -8%, rgba(20,35,70,0.98) 0%, transparent 62%),
                 radial-gradient(ellipse 55% 38% at 96% 2%, rgba(33,150,243,0.07) 0%, transparent 55%);
             overflow-x: hidden;
@@ -59,8 +59,8 @@
             width: 64px; height: 64px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             margin: 0 auto 1.25rem;
-            background: linear-gradient(135deg, #FFF4EF, #FFE8D6);
-            box-shadow: 0 0 0 8px rgba(255,107,53,0.08);
+            background: linear-gradient(135deg, #EFF8FF, #E0F2FF);
+            box-shadow: 0 0 0 8px rgba(26,179,255,0.08);
         }
         .auth-card h2 { font-size: 1.2rem; font-weight: 900; color: #111827; margin-bottom: 0.5rem; }
         .auth-card .desc { font-size: 0.8125rem; color: #9CA3AF; font-weight: 600; line-height: 1.55; margin-bottom: 1.75rem; }
@@ -85,9 +85,9 @@
             -webkit-appearance: none;
         }
         .otp-input:focus {
-            border-color: #FF6B35;
+            border-color: #1AB3FF;
             background: #fff;
-            box-shadow: 0 0 0 4px rgba(255,107,53,0.12);
+            box-shadow: 0 0 0 4px rgba(26,179,255,0.12);
         }
 
         .auth-btn {
@@ -104,7 +104,7 @@
             transition: opacity 0.15s, transform 0.15s;
             position: relative;
             overflow: hidden;
-            background: linear-gradient(135deg, #FF6B35 0%, #C85A20 100%);
+            background: linear-gradient(135deg, #1AB3FF 0%, #0090E8 100%);
             letter-spacing: 0.01em;
         }
         .auth-btn::before {
@@ -150,7 +150,7 @@
 
         <div class="auth-card">
             <div class="icon-ring">
-                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.45A2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.27 6.27l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.45A2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.27 6.27l1.06-1.06a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             </div>
             <h2>Vérifiez votre téléphone</h2>
             <p class="desc">

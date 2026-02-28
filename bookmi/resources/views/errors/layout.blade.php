@@ -33,7 +33,7 @@
         .logo { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 2rem; text-decoration: none; }
         .logo-icon {
             width: 36px; height: 36px; border-radius: 10px;
-            background: linear-gradient(135deg, #FF6B35, #E55A2B);
+            background: linear-gradient(135deg, #1AB3FF, #0090E8);
             display: flex; align-items: center; justify-content: center;
             font-weight: 900; font-size: 14px; color: white;
         }
@@ -60,9 +60,9 @@
         }
         .btn:hover { transform: scale(1.04); }
         .btn-primary {
-            background: linear-gradient(135deg, #FF6B35, #E55A2B);
+            background: linear-gradient(135deg, #1AB3FF, #0090E8);
             color: white;
-            box-shadow: 0 6px 20px rgba(255,107,53,0.4);
+            box-shadow: 0 6px 20px rgba(26,179,255,0.4);
         }
         .btn-secondary {
             background: rgba(255,255,255,0.1);
@@ -73,7 +73,7 @@
         .btn-secondary:hover { background: rgba(255,255,255,0.18); }
         .decoration {
             position: fixed; border-radius: 50%; pointer-events: none;
-            background: rgba(255,107,53,0.08);
+            background: rgba(26,179,255,0.08);
         }
         .deco1 { width: 400px; height: 400px; top: -100px; right: -100px; }
         .deco2 { width: 300px; height: 300px; bottom: -80px; left: -80px; background: rgba(33,150,243,0.08); }
@@ -89,7 +89,7 @@
             <div class="logo-text">Book<span>Mi</span></div>
         </a>
 
-        <div class="code" style="color:@yield('code-color', '#FF6B35')">@yield('code')</div>
+        <div class="code" style="color:@yield('code-color', '#1AB3FF')">@yield('code')</div>
         <div class="title">@yield('title')</div>
         <div class="desc">@yield('description')</div>
 

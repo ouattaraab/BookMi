@@ -21,7 +21,7 @@
             padding: 2rem 1rem;
             background-color: #070B14;
             background-image:
-                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(255,107,53,0.26) 0%, rgba(200,60,20,0.10) 45%, transparent 68%),
+                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(26,179,255,0.26) 0%, rgba(0,144,232,0.10) 45%, transparent 68%),
                 radial-gradient(ellipse 110% 55% at 50% -8%, rgba(20,35,70,0.98) 0%, transparent 62%),
                 radial-gradient(ellipse 55% 38% at 96% 2%, rgba(33,150,243,0.07) 0%, transparent 55%);
             overflow-x: hidden;

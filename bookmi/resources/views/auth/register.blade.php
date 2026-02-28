@@ -21,7 +21,7 @@
             padding: 2rem 1rem;
             background-color: #070B14;
             background-image:
-                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(255,107,53,0.26) 0%, rgba(200,60,20,0.10) 45%, transparent 68%),
+                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(26,179,255,0.26) 0%, rgba(0,144,232,0.10) 45%, transparent 68%),
                 radial-gradient(ellipse 110% 55% at 50% -8%, rgba(20,35,70,0.98) 0%, transparent 62%),
                 radial-gradient(ellipse 55% 38% at 96% 2%, rgba(33,150,243,0.07) 0%, transparent 55%);
             overflow-x: hidden;
@@ -67,7 +67,7 @@
         }
         .role-btn:hover { border-color: #D1D5DB; background: #F3F4F6; }
         .role-btn.active-client { border-color: #2196F3; background: #EFF8FF; }
-        .role-btn.active-talent { border-color: #FF6B35; background: #FFF4EF; }
+        .role-btn.active-talent { border-color: #1AB3FF; background: #EFF8FF; }
         .role-btn .role-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
         .role-btn .role-name  { font-size: 0.875rem; font-weight: 800; color: #111827; }
         .role-btn .role-desc  { font-size: 0.75rem; font-weight: 600; color: #9CA3AF; }
@@ -96,8 +96,8 @@
             box-shadow: 0 0 0 3.5px rgba(33,150,243,0.13);
         }
         .auth-input.focus-orange:focus {
-            border-color: #FF6B35;
-            box-shadow: 0 0 0 3.5px rgba(255,107,53,0.13);
+            border-color: #1AB3FF;
+            box-shadow: 0 0 0 3.5px rgba(26,179,255,0.13);
         }
         .input-wrap { position: relative; }
         .input-wrap .auth-input { padding-right: 3rem; }
@@ -139,7 +139,7 @@
         .auth-alert.error ul { margin: 0; padding-left: 1rem; }
 
         .auth-footer { text-align: center; font-size: 0.875rem; color: #9CA3AF; margin-top: 1.25rem; font-weight: 600; }
-        .auth-footer a { font-weight: 800; color: #FF6B35; text-decoration: none; }
+        .auth-footer a { font-weight: 800; color: #1AB3FF; text-decoration: none; }
         .auth-footer a:hover { text-decoration: underline; }
 
         .terms-row { display: flex; align-items: flex-start; gap: 0.6rem; margin-bottom: 1rem; }
@@ -191,8 +191,8 @@
                     @click="role = 'talent'"
                     :class="role === 'talent' ? 'role-btn active-talent' : 'role-btn'"
                 >
-                    <div class="role-icon" :style="role === 'talent' ? 'background:#FFF4EF' : 'background:#F3F4F6'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <div class="role-icon" :style="role === 'talent' ? 'background:#EFF8FF' : 'background:#F3F4F6'">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     </div>
                     <span class="role-name">Je suis talent</span>
                     <span class="role-desc">Je propose mes services</span>
@@ -252,7 +252,7 @@
                 <button
                     type="submit"
                     class="auth-btn"
-                    :style="role === 'talent' ? 'background:linear-gradient(135deg,#FF6B35 0%,#C85A20 100%)' : 'background:linear-gradient(135deg,#1A2744 0%,#2563EB 100%)'"
+                    :style="role === 'talent' ? 'background:linear-gradient(135deg,#1AB3FF 0%,#0090E8 100%)' : 'background:linear-gradient(135deg,#1A2744 0%,#2563EB 100%)'"
                 >
                     Créer mon compte
                 </button>
