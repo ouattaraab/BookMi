@@ -165,6 +165,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           ),
                         ),
                       ),
+                    TextButton.icon(
+                      onPressed: () => context.go(RoutePaths.home),
+                      icon: Icon(
+                        Icons.home_outlined,
+                        size: 16,
+                        color: Colors.white.withValues(alpha: 0.45),
+                      ),
+                      label: Text(
+                        "Retour à l'accueil",
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.45),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
