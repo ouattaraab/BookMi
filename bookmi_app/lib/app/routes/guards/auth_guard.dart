@@ -14,6 +14,13 @@ const publicRoutes = <String>{
   RoutePaths.forgotPassword,
 };
 
+/// Routes accessibles en mode invité (non connecté).
+const guestRoutes = <String>{
+  RoutePaths.home,
+  RoutePaths.search,
+  RoutePaths.profile,
+};
+
 /// Auth guard for GoRouter redirect.
 ///
 /// Returns the path to redirect to, or `null` to allow the current route.
@@ -40,8 +47,14 @@ String? authGuard(BuildContext context, String location) {
       return null;
     case AuthUnauthenticated():
       // Unauthenticated user trying to access protected pages
-      // → redirect to login
-      if (!isPublicRoute) return RoutePaths.login;
+      // → redirect to login, except for guest-accessible routes
+      if (!isPublicRoute) {
+        final isGuestRoute =
+            guestRoutes.any((r) => location.startsWith(r)) ||
+            location.startsWith('/talent/'); // deep links talent
+        if (isGuestRoute) return null;
+        return RoutePaths.login;
+      }
       return null;
     case AuthInitial():
     case AuthLoading():

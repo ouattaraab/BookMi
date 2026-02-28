@@ -186,13 +186,7 @@ class _SplashPageState extends State<SplashPage>
           case AuthAuthenticated():
             context.go(RoutePaths.home);
           case AuthUnauthenticated():
-            final settingsBox = Hive.box<dynamic>('settings');
-            final hasSeen = settingsBox.get('has_seen_onboarding') as bool?;
-            if (hasSeen == true) {
-              context.go(RoutePaths.login);
-            } else {
-              context.go(RoutePaths.onboarding);
-            }
+            context.go(RoutePaths.home);
           case AuthInitial():
           case AuthLoading():
           case AuthRegistrationSuccess():

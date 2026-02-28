@@ -8,6 +8,8 @@ import 'package:bookmi_app/core/design_system/components/talent_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/booking.dart';
 import 'package:bookmi_app/features/favorites/widgets/favorite_button.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
@@ -21,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TalentProfilePage extends StatefulWidget {
@@ -494,6 +497,16 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                 child: InkWell(
                   borderRadius: BorderRadius.circular(BookmiRadius.button),
                   onTap: () {
+                    final authState = context.read<AuthBloc>().state;
+                    if (authState is! AuthAuthenticated) {
+                      showModalBottomSheet<void>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (_) => const _AuthRequiredReservationSheet(),
+                      );
+                      return;
+                    }
                     AnalyticsService.instance.trackTap('btn_reserver');
                     BookingFlowSheet.show(
                       context,
@@ -711,5 +724,138 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
       'décembre',
     ];
     return 'Membre depuis ${months[date.month]} ${date.year}';
+  }
+}
+
+// ── Auth required reservation sheet ──────────────────────────────────────────
+
+class _AuthRequiredReservationSheet extends StatelessWidget {
+  const _AuthRequiredReservationSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A2744).withValues(alpha: 0.97),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 36,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 28),
+
+          // Icône
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF6B35).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFFFF6B35).withValues(alpha: 0.3),
+              ),
+            ),
+            child: const Icon(
+              Icons.lock_outline_rounded,
+              color: Color(0xFFFF6B35),
+              size: 26,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Titre
+          Text(
+            'Connexion requise',
+            style: GoogleFonts.nunito(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Sous-titre
+          Text(
+            'Connectez-vous pour réserver ce talent.',
+            style: GoogleFonts.manrope(
+              fontSize: 14,
+              color: Colors.white.withValues(alpha: 0.65),
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 28),
+
+          // Bouton Se connecter
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF6B35),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(RoutePaths.login);
+              },
+              child: Text(
+                'Se connecter',
+                style: GoogleFonts.nunito(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Bouton Créer un compte
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white,
+                side: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                context.go(RoutePaths.register);
+              },
+              child: Text(
+                'Créer un compte',
+                style: GoogleFonts.manrope(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

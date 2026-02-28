@@ -1,5 +1,6 @@
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/guest_profile_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
@@ -49,6 +50,9 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
+        if (authState is! AuthAuthenticated) {
+          return const GuestProfilePage();
+        }
         final user = authState is AuthAuthenticated ? authState.user : null;
         final roles = authState is AuthAuthenticated
             ? authState.roles

@@ -199,34 +199,70 @@ void main() {
     });
 
     // ---------------------------------------------------------------
-    // 4. Unauthenticated user on a protected route → redirects to /login
+    // 4. Unauthenticated user on guest-accessible routes → returns null
     // ---------------------------------------------------------------
-    group('unauthenticated user on protected route', () {
-      testWidgets('redirects to /login from /home', (tester) async {
+    group('unauthenticated user on guest route', () {
+      testWidgets('returns null on /home (browse-first)', (tester) async {
         final result = await pumpAndGuard(
           tester,
           state: const AuthUnauthenticated(),
           location: RoutePaths.home,
         );
 
-        expect(result, RoutePaths.login);
+        expect(result, isNull);
       });
 
-      testWidgets('redirects to /login from /search', (tester) async {
+      testWidgets('returns null on /search (browse-first)', (tester) async {
         final result = await pumpAndGuard(
           tester,
           state: const AuthUnauthenticated(),
           location: RoutePaths.search,
         );
 
-        expect(result, RoutePaths.login);
+        expect(result, isNull);
       });
 
-      testWidgets('redirects to /login from /profile', (tester) async {
+      testWidgets('returns null on /profile (GuestProfilePage)',
+          (tester) async {
         final result = await pumpAndGuard(
           tester,
           state: const AuthUnauthenticated(),
           location: RoutePaths.profile,
+        );
+
+        expect(result, isNull);
+      });
+
+      testWidgets('returns null on /talent/ deep link', (tester) async {
+        final result = await pumpAndGuard(
+          tester,
+          state: const AuthUnauthenticated(),
+          location: '/talent/my-talent-slug',
+        );
+
+        expect(result, isNull);
+      });
+    });
+
+    // ---------------------------------------------------------------
+    // 4b. Unauthenticated user on truly protected routes → /login
+    // ---------------------------------------------------------------
+    group('unauthenticated user on protected route', () {
+      testWidgets('redirects to /login from /bookings', (tester) async {
+        final result = await pumpAndGuard(
+          tester,
+          state: const AuthUnauthenticated(),
+          location: RoutePaths.bookings,
+        );
+
+        expect(result, RoutePaths.login);
+      });
+
+      testWidgets('redirects to /login from /messages', (tester) async {
+        final result = await pumpAndGuard(
+          tester,
+          state: const AuthUnauthenticated(),
+          location: RoutePaths.messages,
         );
 
         expect(result, RoutePaths.login);
