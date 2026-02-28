@@ -33,7 +33,7 @@ void main() {
     String categoryName = 'DJ',
     Color categoryColor = Colors.purple,
     String city = 'Abidjan',
-    int cachetAmount = 15000000,
+    int cachetAmount = 150000,
     double averageRating = 4.5,
     bool isVerified = true,
     String photoUrl = '',
@@ -128,23 +128,23 @@ void main() {
   });
 
   group('TalentCard.formatCachet', () {
-    test('formats 15000000 centimes to "150 000 FCFA"', () {
+    test('formats 150000 FCFA to "150 000 FCFA"', () {
       expect(
-        TalentCard.formatCachet(15000000),
+        TalentCard.formatCachet(150000),
         '150 000 FCFA',
       );
     });
 
-    test('formats 0 centimes to "0 FCFA"', () {
+    test('formats 0 FCFA to "0 FCFA"', () {
       expect(TalentCard.formatCachet(0), '0 FCFA');
     });
 
-    test('formats 100 centimes to "1 FCFA"', () {
-      expect(TalentCard.formatCachet(100), '1 FCFA');
+    test('formats 1 FCFA to "1 FCFA"', () {
+      expect(TalentCard.formatCachet(1), '1 FCFA');
     });
 
-    test('formats 500000 centimes to "5 000 FCFA"', () {
-      expect(TalentCard.formatCachet(500000), '5 000 FCFA');
+    test('formats 5000 FCFA to "5 000 FCFA"', () {
+      expect(TalentCard.formatCachet(5000), '5 000 FCFA');
     });
   });
 }

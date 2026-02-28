@@ -7,7 +7,7 @@ void main() {
     Widget buildCard({
       String name = 'Pack Essentiel',
       String? description,
-      int cachetAmount = 30000000,
+      int cachetAmount = 300000,
       int? durationMinutes,
       List<String>? inclusions,
       String type = 'essentiel',
