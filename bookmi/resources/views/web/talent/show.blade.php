@@ -22,7 +22,7 @@
 .tp-hero {
     background: #070B14;
     background-image:
-        radial-gradient(ellipse 120% 50% at 50% 120%, rgba(255,107,53,0.18) 0%, transparent 65%),
+        radial-gradient(ellipse 120% 50% at 50% 120%, rgba(26,179,255,0.18) 0%, transparent 65%),
         radial-gradient(ellipse 100% 50% at 50% -10%, rgba(20,35,70,0.95) 0%, transparent 60%),
         radial-gradient(ellipse 60% 40% at 95% 5%,   rgba(33,150,243,0.07) 0%, transparent 55%);
     padding: 3.5rem 1.5rem 0;
@@ -30,10 +30,10 @@
 .tp-avatar {
     width: 96px; height: 96px;
     border-radius: 24px;
-    background: linear-gradient(135deg, #FF6B35, #E8520A);
+    background: linear-gradient(135deg, #1AB3FF, #0090E8);
     display: flex; align-items: center; justify-content: center;
     font-size: 2.5rem; font-weight: 900; color: white;
-    box-shadow: 0 8px 32px rgba(255,107,53,0.40);
+    box-shadow: 0 8px 32px rgba(26,179,255,0.40);
     flex-shrink: 0;
 }
 .tp-verified {
@@ -60,7 +60,7 @@
     transition: color 0.15s, border-color 0.15s;
 }
 .tp-tab.active, .tp-tab:hover { color: white; }
-.tp-tab.active { border-bottom-color: #FF6B35; }
+.tp-tab.active { border-bottom-color: #1AB3FF; }
 
 /* ── Body layout ── */
 .tp-body {
@@ -90,7 +90,7 @@
 .tp-section-title::before {
     content: ''; display: block;
     width: 3px; height: 18px; border-radius: 2px;
-    background: #FF6B35;
+    background: #1AB3FF;
 }
 
 /* ── Package cards ── */
@@ -103,12 +103,12 @@
     cursor: pointer;
 }
 .pkg-card:hover {
-    border-color: rgba(255,107,53,0.4);
-    background: rgba(255,107,53,0.04);
+    border-color: rgba(26,179,255,0.4);
+    background: rgba(26,179,255,0.04);
 }
 .pkg-card.selected {
-    border-color: #FF6B35;
-    background: rgba(255,107,53,0.07);
+    border-color: #1AB3FF;
+    background: rgba(26,179,255,0.07);
 }
 
 /* ── Sidebar ── */
@@ -122,7 +122,7 @@
 .tp-cta-btn {
     display: block; width: 100%;
     padding: 14px 20px;
-    background: linear-gradient(135deg, #FF6B35, #E8520A);
+    background: linear-gradient(135deg, #1AB3FF, #0090E8);
     color: white; font-weight: 900; font-size: 0.95rem;
     border: none; border-radius: 12px; cursor: pointer;
     text-align: center; text-decoration: none;
@@ -135,7 +135,7 @@
     background: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0));
     border-radius: 12px 12px 0 0;
 }
-.tp-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(255,107,53,0.45); }
+.tp-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(26,179,255,0.45); }
 .tp-login-btn {
     display: block; width: 100%;
     padding: 12px 20px; margin-top: 0.75rem;
@@ -158,8 +158,8 @@
     transition: border-color 0.15s, background 0.15s;
 }
 .similar-card:hover {
-    border-color: rgba(255,107,53,0.35);
-    background: rgba(255,107,53,0.05);
+    border-color: rgba(26,179,255,0.35);
+    background: rgba(26,179,255,0.05);
 }
 
 /* ── Lightbox ── */
@@ -221,7 +221,7 @@
                 <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
                     {{-- Catégorie --}}
                     <span style="display:inline-flex; align-items:center; gap:5px; color:rgba(255,255,255,0.55); font-size:0.875rem; font-weight:600;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="#1AB3FF" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
                         {{ $profile->category->name ?? '—' }}
                     </span>
                     {{-- Ville --}}
@@ -242,7 +242,7 @@
                     </span>
                     {{-- Prix min --}}
                     @if($minPrice)
-                        <span style="color:#FF6B35; font-size:0.875rem; font-weight:800;">
+                        <span style="color:#1AB3FF; font-size:0.875rem; font-weight:800;">
                             Dès {{ number_format($minPrice, 0, ',', ' ') }} FCFA
                         </span>
                     @endif
@@ -303,7 +303,7 @@
                     <div style="display:flex; flex-wrap:wrap; gap:0.75rem; margin-top:1.5rem;">
                         @if($profile->city)
                             <div style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); border-radius:10px; padding:8px 14px;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="#1AB3FF" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                                 <span style="color:rgba(255,255,255,0.6); font-size:0.82rem; font-weight:600;">{{ $profile->city }}</span>
                             </div>
                         @endif
@@ -344,7 +344,7 @@
                                     @endif
                                 </div>
                                 <div style="text-align:right; flex-shrink:0;">
-                                    <p style="font-size:1.3rem; font-weight:900; color:#FF6B35; margin:0; line-height:1;">
+                                    <p style="font-size:1.3rem; font-weight:900; color:#1AB3FF; margin:0; line-height:1;">
                                         {{ number_format($pkg->cachet_amount, 0, ',', ' ') }}
                                     </p>
                                     <p style="color:rgba(255,255,255,0.3); font-size:0.72rem; font-weight:600; margin:2px 0 0;">FCFA</p>
@@ -366,7 +366,7 @@
                                 {{-- Image cliquable → lightbox --}}
                                 <div @click="openImage('{{ $item->publicUrl() }}', '{{ addslashes($item->caption ?? 'Portfolio') }}')"
                                      style="border-radius:14px; overflow:hidden; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); aspect-ratio:4/3; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
-                                     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(255,107,53,0.3)'"
+                                     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(26,179,255,0.3)'"
                                      onmouseout="this.style.transform='';this.style.boxShadow=''">
                                     <img src="{{ $item->publicUrl() }}"
                                          alt="{{ $item->caption ?? 'Portfolio' }}"
@@ -387,14 +387,14 @@
                                 {{-- Vidéo native cliquable → lightbox --}}
                                 <div @click="openVideo('{{ $item->publicUrl() }}', '{{ addslashes($item->caption ?? 'Vidéo') }}')"
                                      style="border-radius:14px; overflow:hidden; background:#000; border:1px solid rgba(255,255,255,0.07); aspect-ratio:16/9; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
-                                     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(255,107,53,0.3)'"
+                                     onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(26,179,255,0.3)'"
                                      onmouseout="this.style.transform='';this.style.boxShadow=''">
                                     <video src="{{ $item->publicUrl() }}"
                                            preload="metadata"
                                            style="width:100%; height:100%; object-fit:cover; display:block; pointer-events:none;">
                                     </video>
                                     <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);">
-                                        <div style="width:52px;height:52px;background:rgba(255,107,53,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                        <div style="width:52px;height:52px;background:rgba(26,179,255,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="white" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                                         </div>
                                     </div>
@@ -412,8 +412,8 @@
                                 @if($embedUrl && $videoId)
                                     {{-- YouTube : miniature cliquable → lightbox --}}
                                     <div @click="openYoutube('{{ $embedUrl }}')"
-                                         style="border-radius:14px; overflow:hidden; border:1px solid rgba(255,107,53,0.2); aspect-ratio:16/9; background:#000; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
-                                         onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(255,107,53,0.35)'"
+                                         style="border-radius:14px; overflow:hidden; border:1px solid rgba(26,179,255,0.2); aspect-ratio:16/9; background:#000; cursor:pointer; position:relative; transition:transform 0.2s, box-shadow 0.2s;"
+                                         onmouseover="this.style.transform='scale(1.02)';this.style.boxShadow='0 8px 32px rgba(26,179,255,0.35)'"
                                          onmouseout="this.style.transform='';this.style.boxShadow=''">
                                         <img src="https://img.youtube.com/vi/{{ $videoId }}/hqdefault.jpg"
                                              alt="{{ $item->caption ?? 'Vidéo YouTube' }}"
@@ -429,9 +429,9 @@
                                     {{-- Autre lien --}}
                                     <a href="{{ $item->link_url }}" target="_blank" rel="noopener"
                                        style="border-radius:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); aspect-ratio:4/3; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-decoration:none; transition:border-color 0.15s;"
-                                       onmouseover="this.style.borderColor='rgba(255,107,53,0.4)'"
+                                       onmouseover="this.style.borderColor='rgba(26,179,255,0.4)'"
                                        onmouseout="this.style.borderColor='rgba(255,255,255,0.07)'">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#1AB3FF" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                         <span style="color:rgba(255,255,255,0.5); font-size:0.75rem; font-weight:600; text-align:center; padding:0 8px;">
                                             {{ $item->caption ?? Str::limit($item->link_url, 30) }}
                                         </span>
@@ -472,7 +472,7 @@
                                                border:2px solid rgba(255,255,255,0.3);
                                                color:#fff;font-size:1.4rem;font-weight:700;line-height:1;
                                                cursor:pointer;display:flex;align-items:center;justify-content:center;"
-                                        onmouseover="this.style.background='rgba(255,107,53,0.85)';this.style.borderColor='#FF6B35'"
+                                        onmouseover="this.style.background='rgba(26,179,255,0.85)';this.style.borderColor='#1AB3FF'"
                                         onmouseout="this.style.background='rgba(255,255,255,0.15)';this.style.borderColor='rgba(255,255,255,0.3)'">
                                     ✕
                                 </button>
@@ -556,10 +556,10 @@
 
                         {{-- Réponse du talent --}}
                         @if($review->reply)
-                        <div style="background:rgba(255,107,53,0.07); border:1px solid rgba(255,107,53,0.2); border-radius:10px; padding:0.875rem;">
+                        <div style="background:rgba(26,179,255,0.07); border:1px solid rgba(26,179,255,0.2); border-radius:10px; padding:0.875rem;">
                             <div style="display:flex; align-items:center; gap:6px; margin-bottom:0.4rem;">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-                                <span style="color:#FF6B35; font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Réponse du talent</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                                <span style="color:#1AB3FF; font-size:0.72rem; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Réponse du talent</span>
                             </div>
                             <p style="color:rgba(255,255,255,0.55); font-size:0.85rem; line-height:1.65; margin:0;">{{ $review->reply }}</p>
                         </div>
@@ -611,11 +611,11 @@
                 </p>
 
                 @if($minPrice)
-                    <div style="background:rgba(255,107,53,0.08); border:1px solid rgba(255,107,53,0.2); border-radius:12px; padding:12px 16px; margin-bottom:1.25rem;">
+                    <div style="background:rgba(26,179,255,0.08); border:1px solid rgba(26,179,255,0.2); border-radius:12px; padding:12px 16px; margin-bottom:1.25rem;">
                         <p style="color:rgba(255,255,255,0.4); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 2px;">À partir de</p>
-                        <p style="font-size:1.7rem; font-weight:900; color:#FF6B35; margin:0; line-height:1.1;">
+                        <p style="font-size:1.7rem; font-weight:900; color:#1AB3FF; margin:0; line-height:1.1;">
                             {{ number_format($minPrice, 0, ',', ' ') }}
-                            <span style="font-size:0.85rem; font-weight:700; color:rgba(255,107,53,0.7);">FCFA</span>
+                            <span style="font-size:0.85rem; font-weight:700; color:rgba(26,179,255,0.7);">FCFA</span>
                         </p>
                     </div>
                 @endif
@@ -664,14 +664,14 @@
     @if($similarTalents->isNotEmpty())
         <div style="max-width:1200px; margin:0 auto; padding:0 1.5rem 3rem;">
             <h2 style="font-size:1.1rem; font-weight:900; color:white; margin:0 0 1.25rem; display:flex; align-items:center; gap:8px;">
-                <span style="display:block; width:3px; height:18px; border-radius:2px; background:#FF6B35;"></span>
+                <span style="display:block; width:3px; height:18px; border-radius:2px; background:#1AB3FF;"></span>
                 Talents similaires
             </h2>
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:0.75rem;">
                 @foreach($similarTalents as $similar)
                     @php $sInit = strtoupper(substr($similar->stage_name, 0, 1)); @endphp
                     <a href="{{ route('talent.show', $similar->slug) }}" class="similar-card">
-                        <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#FF6B35,#E8520A); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.1rem; color:white; flex-shrink:0;">
+                        <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,#1AB3FF,#0090E8); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.1rem; color:white; flex-shrink:0;">
                             {{ $sInit }}
                         </div>
                         <div style="flex:1; min-width:0;">
