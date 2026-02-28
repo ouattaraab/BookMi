@@ -9,6 +9,7 @@ class AuthUser {
     required this.email,
     required this.phone,
     required this.isActive,
+    required this.isClientVerified,
     this.phoneVerifiedAt,
     this.avatarUrl,
   });
@@ -22,6 +23,7 @@ class AuthUser {
       phone: json['phone'] as String,
       phoneVerifiedAt: json['phone_verified_at'] as String?,
       isActive: json['is_active'] as bool,
+      isClientVerified: (json['is_client_verified'] as bool?) ?? false,
       avatarUrl: json['avatar_url'] as String?,
     );
   }
@@ -33,6 +35,7 @@ class AuthUser {
   final String phone;
   final String? phoneVerifiedAt;
   final bool isActive;
+  final bool isClientVerified;
   final String? avatarUrl;
 
   Map<String, dynamic> toJson() {
@@ -44,6 +47,7 @@ class AuthUser {
       'phone': phone,
       'phone_verified_at': phoneVerifiedAt,
       'is_active': isActive,
+      'is_client_verified': isClientVerified,
       'avatar_url': avatarUrl,
     };
   }
@@ -56,6 +60,7 @@ class AuthUser {
     String? phone,
     String? phoneVerifiedAt,
     bool? isActive,
+    bool? isClientVerified,
     String? avatarUrl,
   }) {
     return AuthUser(
@@ -66,6 +71,7 @@ class AuthUser {
       phone: phone ?? this.phone,
       phoneVerifiedAt: phoneVerifiedAt ?? this.phoneVerifiedAt,
       isActive: isActive ?? this.isActive,
+      isClientVerified: isClientVerified ?? this.isClientVerified,
       avatarUrl: avatarUrl ?? this.avatarUrl,
     );
   }
@@ -81,6 +87,7 @@ class AuthUser {
           phone == other.phone &&
           phoneVerifiedAt == other.phoneVerifiedAt &&
           isActive == other.isActive &&
+          isClientVerified == other.isClientVerified &&
           avatarUrl == other.avatarUrl;
 
   @override
@@ -92,6 +99,7 @@ class AuthUser {
     phone,
     phoneVerifiedAt,
     isActive,
+    isClientVerified,
     avatarUrl,
   );
 }

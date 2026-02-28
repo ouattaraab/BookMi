@@ -36,6 +36,7 @@ const _fakeUser = AuthUser(
   email: _testEmail,
   phone: '+2250700000000',
   isActive: true,
+  isClientVerified: false,
 );
 
 Widget _buildSubject(AuthBloc bloc, {GoRouter? router}) {

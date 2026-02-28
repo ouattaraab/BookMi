@@ -25,6 +25,7 @@ void main() {
     email: 'test@example.com',
     phone: '+22890000000',
     isActive: true,
+    isClientVerified: false,
   );
 
   const authenticatedState = AuthAuthenticated(

@@ -59,6 +59,8 @@ class TalentProfile extends Model
         'auto_reply_is_active',
         'overload_threshold',
         'overload_notified_at',
+        'visibility_score',
+        'calendar_empty_notified_at',
     ];
 
     /**
@@ -83,6 +85,8 @@ class TalentProfile extends Model
             'auto_reply_is_active'       => 'boolean',
             'overload_threshold' => 'integer',
             'overload_notified_at' => 'datetime',
+            'visibility_score' => 'float',
+            'calendar_empty_notified_at' => 'datetime',
         ];
     }
 

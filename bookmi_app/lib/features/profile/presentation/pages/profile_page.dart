@@ -95,6 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         isTalent: isTalent,
                         nombrePrestations: stats?.nombrePrestations ?? 0,
                         avatarUrl: avatarUrl,
+                        isClientVerified: user?.isClientVerified ?? false,
                       ),
                     ),
                     SliverToBoxAdapter(
@@ -178,6 +179,7 @@ class _ProfileHeader extends StatelessWidget {
     required this.memberSince,
     required this.isTalent,
     required this.nombrePrestations,
+    required this.isClientVerified,
     this.avatarUrl,
   });
 
@@ -188,6 +190,7 @@ class _ProfileHeader extends StatelessWidget {
   final String memberSince;
   final bool isTalent;
   final int nombrePrestations;
+  final bool isClientVerified;
   final String? avatarUrl;
 
   String get _badgeLabel {
@@ -311,6 +314,38 @@ class _ProfileHeader extends StatelessWidget {
               ],
             ),
           ),
+          if (!isTalent && isClientVerified) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.verified_user_outlined,
+                    size: 13,
+                    color: Color(0xFF4CAF50),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Client vérifié',
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      color: const Color(0xFF4CAF50),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

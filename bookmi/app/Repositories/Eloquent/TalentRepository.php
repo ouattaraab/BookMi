@@ -69,12 +69,14 @@ class TalentRepository implements TalentRepositoryInterface
 
             return $query
                 ->orderBy($sortBy, $sortDirection)
+                ->orderByDesc('visibility_score')
                 ->orderBy('id', 'asc')
                 ->paginate($perPage);
         }
 
         return $query
             ->orderBy($sortBy, $sortDirection)
+            ->orderByDesc('visibility_score')
             ->orderBy('id', 'asc')
             ->cursorPaginate($perPage);
     }

@@ -245,6 +245,7 @@ class AuthService
                 'phone_verified_at' => $phoneVerifiedAt->toIso8601String(),
                 'is_active' => $user->is_active,
                 'is_admin' => (bool) $user->is_admin,
+                'is_client_verified' => (bool) $user->is_client_verified,
                 'avatar_url' => $user->avatar_url,
                 'talentProfile' => $tp ? [
                     'id' => $tp->id,
@@ -359,6 +360,7 @@ class AuthService
                 'phone' => $user->phone,
                 'phone_verified_at' => $phoneVerifiedAt?->toIso8601String(),
                 'is_active' => $user->is_active,
+                'is_client_verified' => (bool) $user->is_client_verified,
                 'avatar_url' => $user->avatar_url,
             ],
             'roles' => $user->getRoleNames()->toArray(),

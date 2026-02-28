@@ -7,6 +7,12 @@ parameters:
 			path: app/Console/Commands/DetectTalentOverload.php
 
 		-
+			message: '#^Cannot call method greaterThan\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/DetectEmptyCalendar.php
+
+		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
 			count: 1

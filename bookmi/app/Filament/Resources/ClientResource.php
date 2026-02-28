@@ -163,6 +163,40 @@ class ClientResource extends Resource
                                 ->send();
                         }
                     }),
+
+                Tables\Actions\Action::make('verify_client')
+                    ->label('Vérifier client')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record): bool => ! $record->is_client_verified)
+                    ->action(function (User $record): void {
+                        $record->update([
+                            'is_client_verified' => true,
+                            'client_verified_at' => now(),
+                        ]);
+                        dispatch(new \App\Jobs\SendPushNotification(
+                            userId: $record->id,
+                            title: 'Identité vérifiée ✓',
+                            body: 'Votre badge "Client vérifié" est maintenant actif.',
+                            data: ['type' => 'client_verified'],
+                        ));
+                        Notification::make()->title('Client vérifié')->success()->send();
+                    }),
+
+                Tables\Actions\Action::make('unverify_client')
+                    ->label('Révoquer vérification')
+                    ->icon('heroicon-o-shield-exclamation')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record): bool => $record->is_client_verified)
+                    ->action(function (User $record): void {
+                        $record->update([
+                            'is_client_verified' => false,
+                            'client_verified_at' => null,
+                        ]);
+                        Notification::make()->title('Vérification révoquée')->warning()->send();
+                    }),
             ])
             ->defaultSort('created_at', 'desc');
     }

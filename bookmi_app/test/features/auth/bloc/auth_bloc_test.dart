@@ -25,6 +25,7 @@ void main() {
     email: 'john@test.com',
     phone: '+2250701020304',
     isActive: true,
+    isClientVerified: false,
   );
 
   const testAuthResponse = AuthResponse(

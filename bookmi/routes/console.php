@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\DetectEmptyCalendar;
 use App\Console\Commands\DetectSuspiciousActivity;
 use App\Console\Commands\DetectTalentOverload;
 use App\Console\Commands\FlagLowRatingTalents;
@@ -9,6 +10,7 @@ use App\Console\Commands\ReleaseExpiredEscrows;
 use App\Console\Commands\SendAdminReminders;
 use App\Console\Commands\SendMissingCheckinAlerts;
 use App\Console\Commands\SendReminderNotifications;
+use App\Console\Commands\UpdateVisibilityScores;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -44,3 +46,9 @@ Schedule::command(SendAdminReminders::class)->dailyAt('07:00');
 // Generate annual revenue certificates for all active talents (Story 7.9 — auto)
 // Runs every January 1st at 06:00 and generates certificates for the previous year
 Schedule::command(GenerateAnnualCertificates::class)->yearlyOn(1, 1, '06:00');
+
+// Recalculate visibility scores for all talent profiles (G2 — boost automatique)
+Schedule::command(UpdateVisibilityScores::class)->dailyAt('02:00');
+
+// Detect talents with empty calendar in next 30 days and notify them (G3 — alertes calendrier)
+Schedule::command(DetectEmptyCalendar::class)->weeklyOn(1, '09:00');
