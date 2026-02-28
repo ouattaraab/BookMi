@@ -222,8 +222,9 @@ void main() {
         expect(result, isNull);
       });
 
-      testWidgets('returns null on /profile (GuestProfilePage)',
-          (tester) async {
+      testWidgets('returns null on /profile (GuestProfilePage)', (
+        tester,
+      ) async {
         final result = await pumpAndGuard(
           tester,
           state: const AuthUnauthenticated(),

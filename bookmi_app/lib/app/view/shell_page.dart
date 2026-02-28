@@ -311,8 +311,7 @@ class _ShellPageState extends State<ShellPage> {
                 }
                 widget.navigationShell.goBranch(
                   index,
-                  initialLocation:
-                      index == widget.navigationShell.currentIndex,
+                  initialLocation: index == widget.navigationShell.currentIndex,
                 );
               },
             ),
