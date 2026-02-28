@@ -20,12 +20,58 @@
 <style>
 /* ── Hero ── */
 .tp-hero {
-    background: #070B14;
+    background: #0B1728;
     background-image:
-        radial-gradient(ellipse 120% 50% at 50% 120%, rgba(26,179,255,0.18) 0%, transparent 65%),
-        radial-gradient(ellipse 100% 50% at 50% -10%, rgba(20,35,70,0.95) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 95% 5%,   rgba(33,150,243,0.07) 0%, transparent 55%);
+        radial-gradient(ellipse 110% 65% at 50% 115%, rgba(26,179,255,0.30) 0%, transparent 65%),
+        radial-gradient(ellipse 70%  45% at 15%   0%, rgba(26,179,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 55%  35% at 92%   5%, rgba(99,102,241,0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 80%  40% at 50%  -5%, rgba(15,28,60,0.90)  0%, transparent 60%);
     padding: 3.5rem 1.5rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Hero atmosphere layers ── */
+.tp-hero-grain {
+    position: absolute; inset: 0; pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+}
+.tp-hero-grid {
+    position: absolute; inset: 0; pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+}
+.tp-stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.tp-star {
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+    animation: tpTwinkle var(--d) ease-in-out infinite;
+    animation-delay: var(--dl);
+}
+@keyframes tpTwinkle {
+    0%, 100% { opacity: 0.15; transform: scale(1); }
+    50%       { opacity: 0.55; transform: scale(1.3); }
+}
+.tp-glow-left {
+    position: absolute;
+    width: 500px; height: 320px;
+    top: -60px; left: -120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,179,255,0.07) 0%, transparent 70%);
+    pointer-events: none;
+}
+.tp-glow-right {
+    position: absolute;
+    width: 420px; height: 280px;
+    top: -40px; right: -100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,0.06) 0%, transparent 70%);
+    pointer-events: none;
 }
 .tp-avatar {
     width: 96px; height: 96px;
@@ -191,7 +237,14 @@
 
 {{-- ══════════════════════ HERO ══════════════════════ --}}
 <section class="tp-hero">
-    <div style="max-width:1200px; margin:0 auto;">
+    {{-- Couches atmosphériques --}}
+    <div class="tp-hero-grain"></div>
+    <div class="tp-hero-grid"></div>
+    <div class="tp-stars" id="tp-stars"></div>
+    <div class="tp-glow-left"></div>
+    <div class="tp-glow-right"></div>
+
+    <div style="max-width:1200px; margin:0 auto; position:relative; z-index:2;">
         <div class="tp-hero-inner" style="display:flex; align-items:flex-end; gap:1.5rem; padding-bottom:2rem; flex-wrap:wrap;">
 
             {{-- Avatar / Photo de profil --}}
@@ -268,7 +321,7 @@
         </div>
 
         {{-- Tabs --}}
-        <div class="tp-tab-bar">
+        <div class="tp-tab-bar" style="position:relative; z-index:2;">
             <a href="#bio"      class="tp-tab active">À propos</a>
             <a href="#packages" class="tp-tab">Tarifs</a>
             @if($profile->portfolioItems->isNotEmpty())
@@ -689,6 +742,23 @@
 
 @section('scripts')
 <script>
+/* ── Star field (hero talent profile) ── */
+(function () {
+    var c = document.getElementById('tp-stars');
+    if (!c) return;
+    for (var i = 0; i < 45; i++) {
+        var s = document.createElement('div');
+        s.className = 'tp-star';
+        var sz = Math.random() * 1.5 + 0.4;
+        s.style.cssText =
+            'width:' + sz + 'px;height:' + sz + 'px;' +
+            'top:' + (Math.random() * 100) + '%;left:' + (Math.random() * 100) + '%;' +
+            '--d:' + (Math.random() * 3 + 2) + 's;--dl:' + (Math.random() * 5) + 's;' +
+            'opacity:' + (Math.random() * 0.25 + 0.05) + ';';
+        c.appendChild(s);
+    }
+}());
+
 function portfolioLightbox() {
     return {
         open: false,
