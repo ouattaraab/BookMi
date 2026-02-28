@@ -19,21 +19,52 @@
             align-items: center;
             justify-content: center;
             padding: 2rem 1rem;
-            background-color: #070B14;
-            background-image:
-                radial-gradient(ellipse 140% 55% at 50% 115%, rgba(26,179,255,0.26) 0%, rgba(0,144,232,0.10) 45%, transparent 68%),
-                radial-gradient(ellipse 110% 55% at 50% -8%, rgba(20,35,70,0.98) 0%, transparent 62%),
-                radial-gradient(ellipse 55% 38% at 96% 2%, rgba(33,150,243,0.07) 0%, transparent 55%);
+            background-color: #0B1728;
             overflow-x: hidden;
         }
-        body::after {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.032'/%3E%3C/svg%3E");
-            background-size: 200px;
-            pointer-events: none;
-            z-index: 0;
+        /* === Effets atmosphériques === */
+        @keyframes authTwinkle {
+            0%, 100% { opacity: var(--op, 0.2); }
+            50%       { opacity: calc(var(--op, 0.2) * 0.18); }
+        }
+        @keyframes authOrbFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33%       { transform: translate(22px, -28px); }
+            66%       { transform: translate(-15px, 18px); }
+        }
+        .auth-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .auth-bg-aurora {
+            background:
+                radial-gradient(ellipse 130% 60% at 50% 115%, rgba(26,179,255,0.32) 0%, rgba(0,144,232,0.14) 42%, transparent 65%),
+                radial-gradient(ellipse 52% 44% at 100% 0%, rgba(26,179,255,0.10) 0%, transparent 58%),
+                radial-gradient(ellipse 46% 38% at 0% 100%, rgba(0,144,232,0.08) 0%, transparent 54%);
+        }
+        .auth-bg-grain {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.038'/%3E%3C/svg%3E");
+            background-size: 180px;
+        }
+        .auth-bg-grid {
+            background-image:
+                linear-gradient(rgba(26,179,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(26,179,255,0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        .auth-bg-stars { overflow: hidden; }
+        .auth-bg-star {
+            position: absolute; border-radius: 50%; background: rgba(255,255,255,0.9);
+            animation: authTwinkle var(--d,3s) ease-in-out var(--dl,0s) infinite;
+        }
+        .auth-bg-orb-1 {
+            position: fixed; width: 460px; height: 460px; border-radius: 50%; pointer-events: none; z-index: 0;
+            background: radial-gradient(circle, rgba(26,179,255,0.12) 0%, transparent 68%);
+            top: -160px; right: -140px;
+            animation: authOrbFloat 11s ease-in-out infinite;
+        }
+        .auth-bg-orb-2 {
+            position: fixed; width: 350px; height: 350px; border-radius: 50%; pointer-events: none; z-index: 0;
+            background: radial-gradient(circle, rgba(0,144,232,0.09) 0%, transparent 68%);
+            bottom: -120px; left: -100px;
+            animation: authOrbFloat 14s ease-in-out 2.5s infinite reverse;
         }
         .auth-wrapper { position: relative; z-index: 1; width: 100%; max-width: 460px; }
 
@@ -150,6 +181,12 @@
     </style>
 </head>
 <body>
+    <div class="auth-bg auth-bg-aurora"></div>
+    <div class="auth-bg auth-bg-grain"></div>
+    <div class="auth-bg auth-bg-grid"></div>
+    <div class="auth-bg auth-bg-stars" id="authStars"></div>
+    <div class="auth-bg-orb-1"></div>
+    <div class="auth-bg-orb-2"></div>
 
     <div class="auth-wrapper" x-data="{ role: '{{ old('role', 'client') }}', showPass: false }">
         <div class="auth-logo">
@@ -263,6 +300,21 @@
             </p>
         </div>
     </div>
+
+    <script>
+    (function(){
+        var c = document.getElementById('authStars');
+        if (!c) return;
+        for (var i = 0; i < 55; i++) {
+            var s = document.createElement('div');
+            s.className = 'auth-bg-star';
+            var sz = Math.random() * 1.8 + 0.4;
+            var op = Math.random() * 0.38 + 0.08;
+            s.style.cssText = 'width:'+sz+'px;height:'+sz+'px;top:'+(Math.random()*100)+'%;left:'+(Math.random()*100)+'%;--d:'+(Math.random()*3+2)+'s;--dl:'+(Math.random()*5)+'s;--op:'+op+';opacity:'+op+';';
+            c.appendChild(s);
+        }
+    })();
+    </script>
 
 </body>
 </html>
