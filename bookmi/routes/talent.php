@@ -32,7 +32,9 @@ Route::post('/bookings/{id}/accept', [BookingController::class, 'accept'])->name
 Route::post('/bookings/{id}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
 Route::post('/bookings/{id}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
 Route::post('/bookings/{id}/talent-confirm', [BookingController::class, 'talentConfirm'])->name('bookings.talent_confirm');
+Route::post('/bookings/{id}/checkin', [BookingController::class, 'checkin'])->name('bookings.checkin');
 Route::post('/bookings/{id}/reviews/{reviewId}/reply', [ReviewController::class, 'reply'])->name('bookings.review.reply');
+Route::post('/bookings/{id}/review', [ReviewController::class, 'reviewClient'])->name('bookings.review.client');
 
 // Packages / Offres
 Route::get('/packages', [PackageController::class, 'index'])->name('packages');

@@ -2,21 +2,26 @@
 
 namespace App\Http\Controllers\Web\Talent;
 
+use App\Enums\TrackingStatus;
 use App\Events\BookingAccepted;
 use App\Exceptions\EscrowException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Services\ActivityLogger;
 use App\Services\EscrowService;
+use App\Services\TrackingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    public function __construct(private readonly EscrowService $escrowService)
-    {
+    public function __construct(
+        private readonly EscrowService $escrowService,
+        private readonly TrackingService $trackingService,
+    ) {
     }
+
     private function profile()
     {
         return auth()->user()->talentProfile;
@@ -115,5 +120,42 @@ class BookingController extends Controller
         ActivityLogger::log('booking.talent_confirmed', $booking);
 
         return back()->with('success', 'Événement marqué comme terminé. Le paiement va être libéré.');
+    }
+
+    /**
+     * POST /bookings/{id}/checkin
+     *
+     * Talent updates their tracking status (preparing → en_route → arrived) for the web.
+     */
+    public function checkin(int $id, Request $request): RedirectResponse
+    {
+        $request->validate([
+            'status' => ['required', 'string', 'in:preparing,en_route,arrived'],
+        ]);
+
+        $profile = auth()->user()->talentProfile;
+
+        $booking = BookingRequest::where('talent_profile_id', $profile?->id)
+            ->whereIn('status', ['paid', 'confirmed'])
+            ->findOrFail($id);
+
+        try {
+            $this->trackingService->sendUpdate(
+                booking: $booking,
+                talent: auth()->user(),
+                status: TrackingStatus::from($request->string('status')->value()),
+            );
+
+            $label = match ($request->input('status')) {
+                'preparing' => 'Je me prépare',
+                'en_route'  => 'En route',
+                'arrived'   => 'Arrivé sur place',
+                default     => 'Statut mis à jour',
+            };
+
+            return back()->with('success', "Statut mis à jour : {$label}.");
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()->with('error', collect($e->errors())->flatten()->first());
+        }
     }
 }

@@ -152,7 +152,7 @@
         @endif
 
         {{-- Actions --}}
-        @if(in_array($sk, ['pending', 'accepted', 'paid']))
+        @if(in_array($sk, ['pending', 'accepted', 'paid', 'confirmed']))
         <div class="px-6 py-4 border-t border-gray-100">
             @if($sk === 'pending')
                 {{-- Formulaire acceptation avec commentaire obligatoire --}}
@@ -219,6 +219,51 @@
                         Marquer l'événement comme terminé
                     </button>
                 </form>
+            @elseif($sk === 'confirmed')
+            {{-- Check-in jour J --}}
+            @php
+                $lastTracking = $booking->trackingEvents->sortByDesc('occurred_at')->first();
+                $lastStatus   = $lastTracking?->status instanceof \App\Enums\TrackingStatus
+                    ? $lastTracking->status->value
+                    : ($lastTracking?->status ?? null);
+            @endphp
+            <div class="space-y-3">
+                <p class="text-sm font-semibold text-gray-700">Suivi jour-J : indiquez votre avancement</p>
+                @if(!$lastStatus)
+                <form method="POST" action="{{ route('talent.bookings.checkin', $booking->id) }}">
+                    @csrf <input type="hidden" name="status" value="preparing">
+                    <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90" style="background:#6366F1">
+                        <span style="font-size:1.1rem;">🎒</span> Je me prépare
+                    </button>
+                </form>
+                @elseif($lastStatus === 'preparing')
+                <div class="flex items-center gap-2 text-sm text-indigo-600 font-medium mb-2">
+                    <span>🎒</span> <span>En préparation</span>
+                </div>
+                <form method="POST" action="{{ route('talent.bookings.checkin', $booking->id) }}">
+                    @csrf <input type="hidden" name="status" value="en_route">
+                    <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90" style="background:#0EA5E9">
+                        <span style="font-size:1.1rem;">🚗</span> Je suis en route
+                    </button>
+                </form>
+                @elseif($lastStatus === 'en_route')
+                <div class="flex items-center gap-2 text-sm font-medium mb-2" style="color:#0EA5E9">
+                    <span>🚗</span> <span>En route</span>
+                </div>
+                <form method="POST" action="{{ route('talent.bookings.checkin', $booking->id) }}">
+                    @csrf <input type="hidden" name="status" value="arrived">
+                    <button type="submit" class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90" style="background:#16A34A">
+                        <span style="font-size:1.1rem;">✅</span> Je suis arrivé
+                    </button>
+                </form>
+                @else
+                {{-- arrived --}}
+                <div class="flex items-center gap-3 p-4 rounded-xl" style="background:#f0fdf4; border:1px solid #bbf7d0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="#16A34A"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p class="text-sm font-semibold" style="color:#15803D">Arrivée confirmée ✓ Le client a été notifié.</p>
+                </div>
+                @endif
+            </div>
             @endif
         </div>
         @endif
@@ -289,6 +334,68 @@
         </div>
     </div>
     @endif
+    @endif
+
+    {{-- ── Évaluation talent → client ── --}}
+    @if(in_array($sk, ['confirmed', 'completed']))
+    @php $talentReview = $booking->reviews->firstWhere('type', \App\Enums\ReviewType::TalentToClient); @endphp
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <h2 class="text-base font-bold text-gray-900">Évaluer ce client</h2>
+        </div>
+
+        @if($talentReview)
+        {{-- Already reviewed --}}
+        <div class="p-6">
+            <div class="flex items-center gap-2 mb-3">
+                @for($i = 1; $i <= 5; $i++)
+                    <span style="font-size:1.15rem; color:{{ $i <= $talentReview->rating ? '#2563EB' : '#D1D5DB' }};">★</span>
+                @endfor
+                <span class="text-sm text-gray-500 ml-1">{{ $talentReview->rating }}/5</span>
+            </div>
+            @if($talentReview->comment)
+            <p class="text-sm text-gray-700 leading-relaxed">{{ $talentReview->comment }}</p>
+            @endif
+            <p class="text-xs text-gray-400 mt-2">Publié le {{ $talentReview->created_at->format('d/m/Y') }}</p>
+        </div>
+        @else
+        {{-- Review form --}}
+        <form method="POST" action="{{ route('talent.bookings.review.client', $booking->id) }}" class="p-6 space-y-4">
+            @csrf
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Note globale</label>
+                <div class="flex gap-2" x-data="{ rating: {{ old('rating', 0) }} }">
+                    @for($i = 1; $i <= 5; $i++)
+                    <button type="button"
+                            @click="rating = {{ $i }}"
+                            :style="rating >= {{ $i }} ? 'color:#2563EB;font-size:1.6rem;' : 'color:#D1D5DB;font-size:1.6rem;'"
+                            style="background:none;border:none;cursor:pointer;padding:0 2px;line-height:1;transition:color 0.1s;">★</button>
+                    @endfor
+                    <input type="hidden" name="rating" :value="rating">
+                </div>
+                @error('rating')<p class="text-xs mt-1" style="color:#f44336">{{ $message }}</p>@enderror
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Commentaire <span class="text-gray-400 font-normal">(optionnel)</span></label>
+                <textarea name="comment"
+                          rows="3"
+                          maxlength="1000"
+                          placeholder="Ce client était ponctuel, bien organisé…"
+                          class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 focus:outline-none focus:ring-2 resize-none"
+                          style="--tw-ring-color:#2563EB">{{ old('comment') }}</textarea>
+                @error('comment')<p class="text-xs mt-1" style="color:#f44336">{{ $message }}</p>@enderror
+            </div>
+
+            <button type="submit"
+                    class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                    style="background:#2563EB">
+                Publier mon évaluation
+            </button>
+        </form>
+        @endif
+    </div>
     @endif
 
 </div>
