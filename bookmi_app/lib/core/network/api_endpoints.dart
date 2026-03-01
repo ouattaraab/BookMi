@@ -72,9 +72,14 @@ abstract final class ApiEndpoints {
   static String talentPortfolio(int profileId) =>
       '/talent_profiles/$profileId/portfolio';
   static const mePortfolio = '/talent_profiles/me/portfolio';
+  static const mePortfolioPending = '/talent_profiles/me/portfolio/pending';
   static const meNotificationPreferences = '/me/notification_preferences';
   static String mePortfolioItem(int itemId) =>
       '/talent_profiles/me/portfolio/$itemId';
+  static String mePortfolioItemApprove(int itemId) =>
+      '/talent_profiles/me/portfolio/$itemId/approve';
+  static String mePortfolioItemReject(int itemId) =>
+      '/talent_profiles/me/portfolio/$itemId/reject';
   // Review reply (talent)
   static String reviewReply(int reviewId) => '/reviews/$reviewId/reply';
 

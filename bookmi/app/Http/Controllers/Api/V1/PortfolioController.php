@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\CompressPortfolioImage;
+use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
 use App\Models\PortfolioItem;
 use App\Models\TalentProfile;
@@ -160,6 +161,17 @@ class PortfolioController extends Controller
 
         if ($mediaType === 'image') {
             CompressPortfolioImage::dispatch($item);
+        }
+
+        // Notify talent of the pending client submission
+        $talentProfile = TalentProfile::find($booking->talent_profile_id);
+        if ($talentProfile) {
+            SendPushNotification::dispatch(
+                $talentProfile->user_id,
+                'Nouveau média à valider 📸',
+                'Un client a soumis un média pour votre portfolio. Approuvez ou refusez-le.',
+                ['type' => 'portfolio_client_submission', 'booking_id' => $booking->id],
+            );
         }
 
         return response()->json([

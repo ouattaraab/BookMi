@@ -474,6 +474,44 @@ class ProfileRepository {
     }
   }
 
+  /// Get client-submitted portfolio items awaiting talent approval.
+  Future<ApiResult<List<Map<String, dynamic>>>> getPendingPortfolioSubmissions() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.mePortfolioPending,
+      );
+      final items =
+          (res.data?['data'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      return ApiSuccess(items);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Approve a client-submitted portfolio item.
+  Future<ApiResult<void>> approvePortfolioItem(int itemId) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.mePortfolioItemApprove(itemId),
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Reject (delete) a client-submitted portfolio item.
+  Future<ApiResult<void>> rejectPortfolioItem(int itemId) async {
+    try {
+      await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.mePortfolioItemReject(itemId),
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   // ─── Service packages ─────────────────────────────────────────────────────
 
   Future<ApiResult<List<Map<String, dynamic>>>> getServicePackages() async {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_bloc.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_event.dart';
 import 'package:bookmi_app/features/discovery/bloc/discovery_state.dart';
@@ -923,6 +924,13 @@ class _FilterSheetState extends State<_FilterSheet> {
   late TextEditingController _maxBudgetCtrl;
   double? _minRating;
 
+  // Geo-radius filter state
+  bool _useLocation = false;
+  double? _lat;
+  double? _lng;
+  int _radius = 25;
+  bool _fetchingLocation = false;
+
   @override
   void initState() {
     super.initState();
@@ -936,9 +944,19 @@ class _FilterSheetState extends State<_FilterSheet> {
     );
     _minRating = (f['min_rating'] as num?)?.toDouble();
 
+    // Restore geo state from initial filters
+    if (f['lat'] != null && f['lng'] != null) {
+      _useLocation = true;
+      _lat = (f['lat'] as num).toDouble();
+      _lng = (f['lng'] as num).toDouble();
+      _radius = (f['radius'] as num?)?.toInt() ?? 25;
+    }
+
     final sortBy = f['sort_by'] as String?;
     final sortDir = f['sort_direction'] as String?;
-    if (sortBy == 'rating') {
+    if (sortBy == 'distance') {
+      _sort = _SortOption.popularity; // distance overrides sort when geo active
+    } else if (sortBy == 'rating') {
       _sort = _SortOption.rating;
     } else if (sortBy == 'cachet_amount' && sortDir == 'asc') {
       _sort = _SortOption.priceAsc;
@@ -957,17 +975,75 @@ class _FilterSheetState extends State<_FilterSheet> {
     super.dispose();
   }
 
+  Future<void> _fetchLocation() async {
+    setState(() => _fetchingLocation = true);
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.deniedForever ||
+          permission == LocationPermission.denied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permission de localisation refusée.'),
+            ),
+          );
+        }
+        setState(() {
+          _useLocation = false;
+          _fetchingLocation = false;
+        });
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+        ),
+      );
+      if (mounted) {
+        setState(() {
+          _lat = pos.latitude;
+          _lng = pos.longitude;
+          _fetchingLocation = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _useLocation = false;
+          _fetchingLocation = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Impossible d\'obtenir votre position.'),
+          ),
+        );
+      }
+    }
+  }
+
   Map<String, dynamic> _buildFilters() {
     final filters = <String, dynamic>{};
-    if (_sort == _SortOption.rating) {
-      filters['sort_by'] = 'rating';
-      filters['sort_direction'] = 'desc';
-    } else if (_sort == _SortOption.priceAsc) {
-      filters['sort_by'] = 'cachet_amount';
+    // Geo overrides sort to distance when active
+    if (_useLocation && _lat != null && _lng != null) {
+      filters['lat'] = _lat;
+      filters['lng'] = _lng;
+      filters['radius'] = _radius;
+      filters['sort_by'] = 'distance';
       filters['sort_direction'] = 'asc';
-    } else if (_sort == _SortOption.priceDesc) {
-      filters['sort_by'] = 'cachet_amount';
-      filters['sort_direction'] = 'desc';
+    } else {
+      if (_sort == _SortOption.rating) {
+        filters['sort_by'] = 'rating';
+        filters['sort_direction'] = 'desc';
+      } else if (_sort == _SortOption.priceAsc) {
+        filters['sort_by'] = 'cachet_amount';
+        filters['sort_direction'] = 'asc';
+      } else if (_sort == _SortOption.priceDesc) {
+        filters['sort_by'] = 'cachet_amount';
+        filters['sort_direction'] = 'desc';
+      }
     }
     if (_cityCtrl.text.trim().isNotEmpty) {
       filters['city'] = _cityCtrl.text.trim();
@@ -1031,6 +1107,10 @@ class _FilterSheetState extends State<_FilterSheet> {
                     _minBudgetCtrl.clear();
                     _maxBudgetCtrl.clear();
                     _minRating = null;
+                    _useLocation = false;
+                    _lat = null;
+                    _lng = null;
+                    _radius = 25;
                   }),
                   child: Text(
                     'Réinitialiser',
@@ -1152,6 +1232,96 @@ class _FilterSheetState extends State<_FilterSheet> {
                 ),
               ],
             ),
+            const SizedBox(height: 22),
+
+            // ── Près de moi ──────────────────────────────────────────
+            _SectionLabel(label: 'PRÈS DE MOI'),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _useLocation && _lat != null
+                        ? 'Position obtenue ✓'
+                        : 'Filtrer par distance',
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      color: _useLocation && _lat != null
+                          ? const Color(0xFF4CAF50)
+                          : Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                if (_fetchingLocation)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: _primary,
+                    ),
+                  )
+                else
+                  Switch(
+                    value: _useLocation,
+                    activeColor: _primary,
+                    onChanged: (val) {
+                      if (val && _lat == null) {
+                        setState(() => _useLocation = true);
+                        _fetchLocation();
+                      } else {
+                        setState(() {
+                          _useLocation = val;
+                          if (!val) {
+                            _lat = null;
+                            _lng = null;
+                          }
+                        });
+                      }
+                    },
+                  ),
+              ],
+            ),
+            if (_useLocation) ...[
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                children: [10, 25, 50, 100].map((km) {
+                  final isActive = _radius == km;
+                  return GestureDetector(
+                    onTap: () => setState(() => _radius = km),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? _primary
+                            : Colors.white.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isActive
+                              ? _primary
+                              : Colors.white.withValues(alpha: 0.12),
+                        ),
+                      ),
+                      child: Text(
+                        '$km km',
+                        style: GoogleFonts.nunito(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isActive
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
             const SizedBox(height: 30),
 
             // ── Apply button ─────────────────────────────────────────

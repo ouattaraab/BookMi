@@ -29,10 +29,14 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
   String? _error;
   bool _uploading = false;
 
+  List<Map<String, dynamic>> _pendingItems = [];
+  bool _loadingPending = false;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadPending();
   }
 
   Future<void> _load() async {
@@ -53,6 +57,99 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
           _error = message;
           _loading = false;
         });
+    }
+  }
+
+  Future<void> _loadPending() async {
+    setState(() => _loadingPending = true);
+    final result = await widget.repository.getPendingPortfolioSubmissions();
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess(:final data):
+        setState(() {
+          _pendingItems = data;
+          _loadingPending = false;
+        });
+      case ApiFailure():
+        setState(() => _loadingPending = false);
+    }
+  }
+
+  Future<void> _approvePending(int itemId) async {
+    final result = await widget.repository.approvePortfolioItem(itemId);
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess():
+        setState(
+          () => _pendingItems.removeWhere((i) => (i['id'] as int?) == itemId),
+        );
+        await _load();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Média approuvé et ajouté au portfolio')),
+          );
+        }
+      case ApiFailure(:final message):
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message), backgroundColor: _destructive),
+          );
+        }
+    }
+  }
+
+  Future<void> _rejectPending(int itemId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Refuser ce média ?',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w700,
+            color: _secondary,
+          ),
+        ),
+        content: Text(
+          'Le média sera supprimé définitivement.',
+          style: GoogleFonts.manrope(color: _mutedFg),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Annuler'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(
+              'Refuser',
+              style: GoogleFonts.manrope(
+                color: _destructive,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final result = await widget.repository.rejectPortfolioItem(itemId);
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess():
+        setState(
+          () => _pendingItems.removeWhere((i) => (i['id'] as int?) == itemId),
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Média refusé et supprimé')),
+          );
+        }
+      case ApiFailure(:final message):
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message), backgroundColor: _destructive),
+          );
+        }
     }
   }
 
@@ -341,7 +438,10 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, size: 20),
-            onPressed: _load,
+            onPressed: () {
+              _load();
+              _loadPending();
+            },
           ),
         ],
       ),
@@ -366,52 +466,81 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
           ),
         ),
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? _buildError()
-          : _items.isEmpty
-          ? _buildEmpty()
-          : RefreshIndicator(
-              onRefresh: _load,
-              child: GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Pending client submissions ────────────────────────────
+          if (_loadingPending)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Center(
+                child: SizedBox(
+                  height: 18,
+                  width: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
-                itemCount: _items.length,
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  final id = item['id'] as int? ?? 0;
-                  final attrs =
-                      item['attributes'] as Map<String, dynamic>? ?? item;
-                  final mediaUrl =
-                      attrs['media_url'] as String? ??
-                      attrs['url'] as String? ??
-                      '';
-                  final caption = attrs['caption'] as String? ?? '';
-                  final isApproved = attrs['is_approved'] as bool? ?? true;
-                  final status = isApproved ? 'approved' : 'pending';
-                  final mediaType = attrs['media_type'] as String? ?? 'image';
-
-                  return _PortfolioItem(
-                    mediaUrl: mediaUrl,
-                    caption: caption,
-                    status: status,
-                    mediaType: mediaType,
-                    onDelete: () => _delete(id),
-                    onTap: () => _openItem(
-                      mediaUrl: mediaUrl,
-                      mediaType: mediaType,
-                      caption: caption,
-                    ),
-                  );
-                },
               ),
+            )
+          else if (_pendingItems.isNotEmpty)
+            _PendingSubmissionsSection(
+              items: _pendingItems,
+              onApprove: _approvePending,
+              onReject: _rejectPending,
             ),
+          // ── Own portfolio grid ────────────────────────────────────
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                ? _buildError()
+                : _items.isEmpty
+                ? _buildEmpty()
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      await Future.wait([_load(), _loadPending()]);
+                    },
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(16),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: _items.length,
+                      itemBuilder: (context, index) {
+                        final item = _items[index];
+                        final id = item['id'] as int? ?? 0;
+                        final attrs =
+                            item['attributes'] as Map<String, dynamic>? ?? item;
+                        final mediaUrl =
+                            attrs['media_url'] as String? ??
+                            attrs['url'] as String? ??
+                            '';
+                        final caption = attrs['caption'] as String? ?? '';
+                        final isApproved = attrs['is_approved'] as bool? ?? true;
+                        final status = isApproved ? 'approved' : 'pending';
+                        final mediaType = attrs['media_type'] as String? ?? 'image';
+
+                        return _PortfolioItem(
+                          mediaUrl: mediaUrl,
+                          caption: caption,
+                          status: status,
+                          mediaType: mediaType,
+                          onDelete: () => _delete(id),
+                          onTap: () => _openItem(
+                            mediaUrl: mediaUrl,
+                            mediaType: mediaType,
+                            caption: caption,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -473,6 +602,199 @@ enum _MediaSource {
   imageCamera,
   videoGallery,
   videoCamera,
+}
+
+// ─── Pending client submissions section ───────────────────────────────────
+
+class _PendingSubmissionsSection extends StatelessWidget {
+  const _PendingSubmissionsSection({
+    required this.items,
+    required this.onApprove,
+    required this.onReject,
+  });
+
+  final List<Map<String, dynamic>> items;
+  final ValueChanged<int> onApprove;
+  final ValueChanged<int> onReject;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.pending_actions_outlined,
+                      size: 13,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Soumissions clients (${items.length})',
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          height: 130,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: items.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (_, index) {
+              final item = items[index];
+              final id = item['id'] as int? ?? 0;
+              final mediaUrl =
+                  item['media_url'] as String? ?? item['url'] as String? ?? '';
+              final caption = item['caption'] as String? ?? '';
+
+              return Container(
+                width: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: mediaUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: mediaUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) =>
+                                  Container(color: _border),
+                              errorWidget: (_, __, ___) => Container(
+                                color: _border,
+                                child: const Icon(
+                                  Icons.image_not_supported,
+                                  color: _mutedFg,
+                                ),
+                              ),
+                            )
+                          : Container(
+                              color: _border,
+                              child: const Icon(
+                                Icons.image,
+                                color: _mutedFg,
+                                size: 32,
+                              ),
+                            ),
+                    ),
+                    // Caption overlay
+                    if (caption.isNotEmpty)
+                      Positioned(
+                        bottom: 28,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          child: Text(
+                            caption,
+                            style: GoogleFonts.manrope(
+                              fontSize: 9,
+                              color: Colors.white,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    // Approve / Reject buttons
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => onReject(id),
+                              child: Container(
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: _destructive.withValues(alpha: 0.85),
+                                  borderRadius: const BorderRadius.only(
+                                    bottomLeft: Radius.circular(12),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.close,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () => onApprove(id),
+                              child: Container(
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4CAF50)
+                                      .withValues(alpha: 0.85),
+                                  borderRadius: const BorderRadius.only(
+                                    bottomRight: Radius.circular(12),
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 6),
+        Divider(
+          height: 1,
+          color: Colors.white.withValues(alpha: 0.08),
+        ),
+      ],
+    );
+  }
 }
 
 class _PortfolioItem extends StatelessWidget {
