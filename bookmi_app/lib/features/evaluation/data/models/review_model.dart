@@ -6,6 +6,10 @@ class ReviewModel {
     required this.revieweeId,
     required this.type,
     required this.rating,
+    this.punctualityScore,
+    this.qualityScore,
+    this.professionalismScore,
+    this.contractRespectScore,
     this.comment,
     this.reply,
     this.replyAt,
@@ -20,6 +24,10 @@ class ReviewModel {
       revieweeId: (json['reviewee_id'] as num?)?.toInt() ?? 0,
       type: json['type'] as String,
       rating: (json['rating'] as num?)?.toInt() ?? 0,
+      punctualityScore: (json['punctuality_score'] as num?)?.toInt(),
+      qualityScore: (json['quality_score'] as num?)?.toInt(),
+      professionalismScore: (json['professionalism_score'] as num?)?.toInt(),
+      contractRespectScore: (json['contract_respect_score'] as num?)?.toInt(),
       comment: json['comment'] as String?,
       reply: json['reply'] as String?,
       replyAt: json['reply_at'] as String?,
@@ -37,6 +45,13 @@ class ReviewModel {
   /// `client_to_talent` or `talent_to_client`
   final String type;
   final int rating;
+
+  /// Detailed criteria scores (1–5, nullable — only for client_to_talent).
+  final int? punctualityScore;
+  final int? qualityScore;
+  final int? professionalismScore;
+  final int? contractRespectScore;
+
   final String? comment;
 
   /// Talent's reply to a client_to_talent review.

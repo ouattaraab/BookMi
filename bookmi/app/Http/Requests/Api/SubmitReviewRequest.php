@@ -19,9 +19,13 @@ class SubmitReviewRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type'    => ['required', 'string', Rule::enum(ReviewType::class)],
-            'rating'  => ['required', 'integer', 'between:1,5'],
-            'comment' => ['nullable', 'string', 'max:1000'],
+            'type'                   => ['required', 'string', Rule::enum(ReviewType::class)],
+            'rating'                 => ['required', 'integer', 'between:1,5'],
+            'punctuality_score'      => ['nullable', 'integer', 'between:1,5'],
+            'quality_score'          => ['nullable', 'integer', 'between:1,5'],
+            'professionalism_score'  => ['nullable', 'integer', 'between:1,5'],
+            'contract_respect_score' => ['nullable', 'integer', 'between:1,5'],
+            'comment'                => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

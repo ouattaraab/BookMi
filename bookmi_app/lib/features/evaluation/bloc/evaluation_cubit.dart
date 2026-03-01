@@ -24,6 +24,10 @@ class EvaluationCubit extends Cubit<EvaluationState> {
     int bookingId, {
     required String type,
     required int rating,
+    int? punctualityScore,
+    int? qualityScore,
+    int? professionalismScore,
+    int? contractRespectScore,
     String? comment,
   }) async {
     emit(const EvaluationSubmitting());
@@ -33,6 +37,10 @@ class EvaluationCubit extends Cubit<EvaluationState> {
         bookingId,
         type: type,
         rating: rating,
+        punctualityScore: punctualityScore,
+        qualityScore: qualityScore,
+        professionalismScore: professionalismScore,
+        contractRespectScore: contractRespectScore,
         comment: comment,
       );
 

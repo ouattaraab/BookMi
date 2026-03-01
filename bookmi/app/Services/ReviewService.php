@@ -30,6 +30,10 @@ class ReviewService
         ReviewType $type,
         int $rating,
         ?string $comment = null,
+        ?int $punctualityScore = null,
+        ?int $qualityScore = null,
+        ?int $professionalismScore = null,
+        ?int $contractRespectScore = null,
     ): Review {
         $this->assertBookingCompleted($booking);
         $this->assertReviewerIsAuthorized($booking, $reviewer, $type);
@@ -37,14 +41,29 @@ class ReviewService
 
         $reviewee = $this->resolveReviewee($booking, $type);
 
-        return DB::transaction(function () use ($booking, $reviewer, $reviewee, $type, $rating, $comment) {
+        return DB::transaction(function () use (
+            $booking,
+            $reviewer,
+            $reviewee,
+            $type,
+            $rating,
+            $comment,
+            $punctualityScore,
+            $qualityScore,
+            $professionalismScore,
+            $contractRespectScore,
+        ) {
             $review = Review::create([
-                'booking_request_id' => $booking->id,
-                'reviewer_id'        => $reviewer->id,
-                'reviewee_id'        => $reviewee->id,
-                'type'               => $type,
-                'rating'             => $rating,
-                'comment'            => $comment,
+                'booking_request_id'     => $booking->id,
+                'reviewer_id'            => $reviewer->id,
+                'reviewee_id'            => $reviewee->id,
+                'type'                   => $type,
+                'rating'                 => $rating,
+                'punctuality_score'      => $punctualityScore,
+                'quality_score'          => $qualityScore,
+                'professionalism_score'  => $professionalismScore,
+                'contract_respect_score' => $contractRespectScore,
+                'comment'                => $comment,
             ]);
 
             if ($type === ReviewType::ClientToTalent) {

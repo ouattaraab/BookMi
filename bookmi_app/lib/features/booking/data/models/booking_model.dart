@@ -43,6 +43,7 @@ class BookingModel {
     required this.eventDate,
     required this.eventLocation,
     required this.cachetAmount,
+    required this.travelCost,
     required this.commissionAmount,
     required this.totalAmount,
     required this.isExpress,
@@ -75,6 +76,7 @@ class BookingModel {
   final String? startTime;
   final String eventLocation;
   final int cachetAmount;
+  final int travelCost;
   final int commissionAmount;
   final int totalAmount;
   final bool isExpress;
@@ -114,6 +116,7 @@ class BookingModel {
       startTime: json['start_time'] as String?,
       eventLocation: json['event_location'] as String,
       cachetAmount: (devis?['cachet_amount'] as int?) ?? 0,
+      travelCost: (devis?['travel_cost'] as int?) ?? 0,
       commissionAmount: (devis?['commission_amount'] as int?) ?? 0,
       totalAmount: (devis?['total_amount'] as int?) ?? 0,
       isExpress: (json['is_express'] as bool?) ?? false,

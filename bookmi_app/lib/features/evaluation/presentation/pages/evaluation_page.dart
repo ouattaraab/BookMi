@@ -99,7 +99,13 @@ class _EvaluationForm extends StatefulWidget {
 
 class _EvaluationFormState extends State<_EvaluationForm> {
   int _rating = 0;
+  int _punctualityScore = 0;
+  int _qualityScore = 0;
+  int _professionalismScore = 0;
+  int _contractRespectScore = 0;
   final _commentController = TextEditingController();
+
+  bool get _isClientToTalent => widget.type == 'client_to_talent';
 
   @override
   void dispose() {
@@ -118,6 +124,18 @@ class _EvaluationFormState extends State<_EvaluationForm> {
       widget.bookingId,
       type: widget.type,
       rating: _rating,
+      punctualityScore: _isClientToTalent && _punctualityScore > 0
+          ? _punctualityScore
+          : null,
+      qualityScore: _isClientToTalent && _qualityScore > 0
+          ? _qualityScore
+          : null,
+      professionalismScore: _isClientToTalent && _professionalismScore > 0
+          ? _professionalismScore
+          : null,
+      contractRespectScore: _isClientToTalent && _contractRespectScore > 0
+          ? _contractRespectScore
+          : null,
       comment: _commentController.text.trim().isEmpty
           ? null
           : _commentController.text.trim(),
@@ -137,7 +155,7 @@ class _EvaluationFormState extends State<_EvaluationForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Votre note',
+                    'Note globale',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -166,6 +184,55 @@ class _EvaluationFormState extends State<_EvaluationForm> {
                 ],
               ),
             ),
+            if (_isClientToTalent) ...[
+              const SizedBox(height: BookmiSpacing.spaceMd),
+              GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Critères détaillés (optionnel)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: BookmiSpacing.spaceMd),
+                    _CriteriaRow(
+                      label: 'Ponctualité',
+                      value: _punctualityScore,
+                      enabled: !isSubmitting,
+                      onChanged: (v) =>
+                          setState(() => _punctualityScore = v),
+                    ),
+                    const SizedBox(height: BookmiSpacing.spaceSm),
+                    _CriteriaRow(
+                      label: 'Qualité',
+                      value: _qualityScore,
+                      enabled: !isSubmitting,
+                      onChanged: (v) => setState(() => _qualityScore = v),
+                    ),
+                    const SizedBox(height: BookmiSpacing.spaceSm),
+                    _CriteriaRow(
+                      label: 'Professionnalisme',
+                      value: _professionalismScore,
+                      enabled: !isSubmitting,
+                      onChanged: (v) =>
+                          setState(() => _professionalismScore = v),
+                    ),
+                    const SizedBox(height: BookmiSpacing.spaceSm),
+                    _CriteriaRow(
+                      label: 'Respect du contrat',
+                      value: _contractRespectScore,
+                      enabled: !isSubmitting,
+                      onChanged: (v) =>
+                          setState(() => _contractRespectScore = v),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: BookmiSpacing.spaceMd),
             GlassCard(
               child: Column(
@@ -264,6 +331,61 @@ class _EvaluationFormState extends State<_EvaluationForm> {
     5 => 'Excellent !',
     _ => 'Sélectionnez une note',
   };
+}
+
+// ── Criteria Row ──────────────────────────────────────────────────────────────
+
+class _CriteriaRow extends StatelessWidget {
+  const _CriteriaRow({
+    required this.label,
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final String label;
+  final int value;
+  final bool enabled;
+  final void Function(int) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 140,
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: Colors.white70),
+          ),
+        ),
+        Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: List.generate(5, (i) {
+              final starIndex = i + 1;
+              final isFilled = starIndex <= value;
+              return GestureDetector(
+                onTap: enabled ? () => onChanged(starIndex) : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Icon(
+                    isFilled
+                        ? Icons.star_rounded
+                        : Icons.star_outline_rounded,
+                    size: 24,
+                    color: isFilled
+                        ? BookmiColors.brandBlueLight
+                        : Colors.white24,
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 // ── Star Rating Widget ────────────────────────────────────────────────────────

@@ -21,6 +21,7 @@ BookingModel _makeBooking(int id) => BookingModel(
   eventDate: '2026-06-01',
   eventLocation: 'Abidjan',
   cachetAmount: 50000,
+  travelCost: 0,
   commissionAmount: 7500,
   totalAmount: 57500,
   isExpress: false,

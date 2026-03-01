@@ -55,9 +55,10 @@ class BookingService
         }
 
         $cachetAmount     = $package->cachet_amount;
+        $travelCost       = (int) ($data['travel_cost'] ?? 0);
         $commissionRate   = (int) config('bookmi.commission_rate', 15);
         $commissionAmount = (int) round(($cachetAmount * $commissionRate) / 100);
-        $totalAmount      = $cachetAmount + $commissionAmount;
+        $totalAmount      = $cachetAmount + $travelCost + $commissionAmount;
 
         $packageSnapshot = [
             'id'               => $package->id,
@@ -81,6 +82,7 @@ class BookingService
             'is_express'         => $isExpress,
             'status'             => BookingStatus::Pending,
             'cachet_amount'      => $cachetAmount,
+            'travel_cost'        => $travelCost,
             'commission_amount'  => $commissionAmount,
             'total_amount'       => $totalAmount,
         ]);

@@ -29,11 +29,14 @@ class BookingRequest extends Model
         'contract_path',
         'status',
         'cachet_amount',
+        'travel_cost',
         'commission_amount',
         'total_amount',
         'refund_amount',
         'cancellation_policy_applied',
         'accept_comment',
+        'mediator_id',
+        'mediation_notes',
     ];
 
     /**
@@ -47,6 +50,7 @@ class BookingRequest extends Model
             'status'            => BookingStatus::class,
             'reject_reason'     => 'string',
             'cachet_amount'     => 'integer',
+            'travel_cost'       => 'integer',
             'commission_amount' => 'integer',
             'total_amount'      => 'integer',
             'refund_amount'     => 'integer',
@@ -60,6 +64,14 @@ class BookingRequest extends Model
     public function client(): BelongsTo
     {
         return $this->belongsTo(User::class, 'client_id');
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function mediator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'mediator_id');
     }
 
     /**

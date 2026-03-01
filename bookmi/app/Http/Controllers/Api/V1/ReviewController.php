@@ -43,18 +43,30 @@ class ReviewController extends Controller
             type: $type,
             rating: $rating,
             comment: $request->validated('comment'),
+            punctualityScore: $request->validated('punctuality_score') !== null
+                ? (int) $request->validated('punctuality_score') : null,
+            qualityScore: $request->validated('quality_score') !== null
+                ? (int) $request->validated('quality_score') : null,
+            professionalismScore: $request->validated('professionalism_score') !== null
+                ? (int) $request->validated('professionalism_score') : null,
+            contractRespectScore: $request->validated('contract_respect_score') !== null
+                ? (int) $request->validated('contract_respect_score') : null,
         );
 
         return response()->json([
             'data' => [
-                'id'                 => $review->id,
-                'booking_request_id' => $review->booking_request_id,
-                'reviewer_id'        => $review->reviewer_id,
-                'reviewee_id'        => $review->reviewee_id,
-                'type'               => $review->type->value,
-                'rating'             => $review->rating,
-                'comment'            => $review->comment,
-                'created_at'         => $review->created_at?->toISOString(),
+                'id'                     => $review->id,
+                'booking_request_id'     => $review->booking_request_id,
+                'reviewer_id'            => $review->reviewer_id,
+                'reviewee_id'            => $review->reviewee_id,
+                'type'                   => $review->type->value,
+                'rating'                 => $review->rating,
+                'punctuality_score'      => $review->punctuality_score,
+                'quality_score'          => $review->quality_score,
+                'professionalism_score'  => $review->professionalism_score,
+                'contract_respect_score' => $review->contract_respect_score,
+                'comment'                => $review->comment,
+                'created_at'             => $review->created_at?->toISOString(),
             ],
         ], 201);
     }
@@ -78,13 +90,17 @@ class ReviewController extends Controller
         $reviews = Review::where('booking_request_id', $booking->id)
             ->get()
             ->map(fn ($r) => [
-                'id'          => $r->id,
-                'type'        => $r->type->value,
-                'rating'      => $r->rating,
-                'comment'     => $r->comment,
-                'reply'       => $r->reply,
-                'reply_at'    => $r->reply_at instanceof \Carbon\Carbon ? $r->reply_at->toISOString() : null,
-                'reviewer_id' => $r->reviewer_id,
+                'id'                     => $r->id,
+                'type'                   => $r->type->value,
+                'rating'                 => $r->rating,
+                'punctuality_score'      => $r->punctuality_score,
+                'quality_score'          => $r->quality_score,
+                'professionalism_score'  => $r->professionalism_score,
+                'contract_respect_score' => $r->contract_respect_score,
+                'comment'                => $r->comment,
+                'reply'                  => $r->reply,
+                'reply_at'               => $r->reply_at instanceof \Carbon\Carbon ? $r->reply_at->toISOString() : null,
+                'reviewer_id'            => $r->reviewer_id,
                 'reviewee_id' => $r->reviewee_id,
                 'created_at'  => $r->created_at?->toISOString(),
             ]);

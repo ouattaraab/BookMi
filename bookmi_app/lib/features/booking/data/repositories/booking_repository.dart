@@ -84,6 +84,7 @@ class BookingRepository {
     required String eventLocation,
     String? message,
     bool isExpress = false,
+    int? travelCost,
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
@@ -96,6 +97,7 @@ class BookingRepository {
           'event_location': eventLocation,
           if (message != null && message.isNotEmpty) 'message': message,
           'is_express': isExpress,
+          if (travelCost != null && travelCost > 0) 'travel_cost': travelCost,
         },
       );
 

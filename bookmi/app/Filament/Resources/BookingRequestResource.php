@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Filament\Resources\BookingRequestResource\Pages;
 use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
+use App\Models\User;
 use App\Services\RefundService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -73,13 +74,32 @@ class BookingRequestResource extends Resource
                     Forms\Components\TextInput::make('cachet_amount')
                         ->label('Cachet (FCFA)')
                         ->disabled(),
+                    Forms\Components\TextInput::make('travel_cost')
+                        ->label('Frais déplacement (FCFA)')
+                        ->disabled(),
                     Forms\Components\TextInput::make('commission_amount')
                         ->label('Commission (FCFA)')
                         ->disabled(),
                     Forms\Components\TextInput::make('total_amount')
                         ->label('Total (FCFA)')
                         ->disabled(),
-                ])->columns(3),
+                ])->columns(4),
+
+            Forms\Components\Section::make('Médiation')
+                ->icon('heroicon-o-scale')
+                ->visible(fn (?BookingRequest $record): bool => $record !== null
+                    && ($record->status === BookingStatus::Disputed || $record->status === 'disputed'))
+                ->schema([
+                    Forms\Components\Select::make('mediator_id')
+                        ->label('Médiateur assigné')
+                        ->options(User::role('admin')->pluck('email', 'id'))
+                        ->searchable()
+                        ->nullable(),
+                    Forms\Components\Textarea::make('mediation_notes')
+                        ->label('Notes de médiation')
+                        ->maxLength(2000)
+                        ->columnSpanFull(),
+                ])->columns(2),
 
             Forms\Components\Section::make('Contrat')
                 ->icon('heroicon-o-document-text')
@@ -161,6 +181,18 @@ class BookingRequestResource extends Resource
                         && $record->updated_at->diffInHours() > 48
                         ? 'danger'
                         : 'gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('travel_cost')
+                    ->label('Déplacement')
+                    ->formatStateUsing(fn ($state): string => $state > 0
+                        ? number_format((int) $state, 0, ',', ' ') . ' FCFA'
+                        : '—')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('mediator.email')
+                    ->label('Médiateur')
+                    ->default('—')
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('total_amount')
@@ -269,6 +301,34 @@ class BookingRequestResource extends Resource
                         } catch (\Throwable $e) {
                             Notification::make()->title('Erreur : ' . $e->getMessage())->danger()->send();
                         }
+                    }),
+
+                Tables\Actions\Action::make('assign_mediator')
+                    ->label('Médiateur')
+                    ->icon('heroicon-o-scale')
+                    ->color('warning')
+                    ->visible(fn (BookingRequest $record): bool =>
+                        $record->status === BookingStatus::Disputed || $record->status === 'disputed')
+                    ->form([
+                        Forms\Components\Select::make('mediator_id')
+                            ->label('Médiateur')
+                            ->options(User::role('admin')->pluck('email', 'id'))
+                            ->searchable()
+                            ->required(),
+                        Forms\Components\Textarea::make('mediation_notes')
+                            ->label('Notes de médiation')
+                            ->maxLength(2000),
+                    ])
+                    ->fillForm(fn (BookingRequest $record): array => [
+                        'mediator_id'     => $record->mediator_id,
+                        'mediation_notes' => $record->mediation_notes,
+                    ])
+                    ->action(function (BookingRequest $record, array $data): void {
+                        $record->update([
+                            'mediator_id'     => $data['mediator_id'],
+                            'mediation_notes' => $data['mediation_notes'] ?? null,
+                        ]);
+                        Notification::make()->title('Médiateur assigné.')->success()->send();
                     }),
 
                 Tables\Actions\DeleteAction::make()

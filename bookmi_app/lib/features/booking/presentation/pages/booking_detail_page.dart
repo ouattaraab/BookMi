@@ -252,6 +252,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                   label: 'Cachet',
                   value: TalentCard.formatCachet(booking.cachetAmount),
                 ),
+                if (booking.travelCost > 0)
+                  _DevisRow(
+                    label: 'Frais de déplacement',
+                    value: TalentCard.formatCachet(booking.travelCost),
+                    small: true,
+                  ),
                 _DevisRow(
                   label: 'Commission (15%)',
                   value: TalentCard.formatCachet(booking.commissionAmount),

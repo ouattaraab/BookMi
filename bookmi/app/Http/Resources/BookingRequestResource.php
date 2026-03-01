@@ -60,6 +60,7 @@ class BookingRequestResource extends JsonResource
             'client_review_reply'  => $this->reviews()->where('type', ReviewType::ClientToTalent->value)->value('reply'),
             'devis'           => [
                 'cachet_amount'     => $this->cachet_amount,
+                'travel_cost'       => $this->travel_cost,
                 'commission_amount' => $this->commission_amount,
                 'total_amount'      => $this->total_amount,
                 'message'           => sprintf(

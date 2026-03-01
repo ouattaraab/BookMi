@@ -37,6 +37,7 @@ class StoreBookingRequestRequest extends FormRequest
             'start_time'     => ['nullable', 'date_format:H:i'],
             'event_location' => ['required', 'string', 'max:255'],
             'message'        => ['nullable', 'string', 'max:1000'],
+            'travel_cost'    => ['nullable', 'integer', 'min:0'],
             'is_express'     => ['nullable', 'boolean'],
         ];
     }

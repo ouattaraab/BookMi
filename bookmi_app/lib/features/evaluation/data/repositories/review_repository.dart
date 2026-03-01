@@ -30,6 +30,10 @@ class ReviewRepository {
     int bookingId, {
     required String type,
     required int rating,
+    int? punctualityScore,
+    int? qualityScore,
+    int? professionalismScore,
+    int? contractRespectScore,
     String? comment,
   }) async {
     try {
@@ -38,6 +42,12 @@ class ReviewRepository {
         data: {
           'type': type,
           'rating': rating,
+          if (punctualityScore != null) 'punctuality_score': punctualityScore,
+          if (qualityScore != null) 'quality_score': qualityScore,
+          if (professionalismScore != null)
+            'professionalism_score': professionalismScore,
+          if (contractRespectScore != null)
+            'contract_respect_score': contractRespectScore,
           if (comment != null && comment.isNotEmpty) 'comment': comment,
         },
       );

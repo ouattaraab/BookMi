@@ -17,6 +17,7 @@ BookingModel _makeBooking({
   eventDate: '2026-06-15',
   eventLocation: 'Abidjan',
   cachetAmount: 100000,
+  travelCost: 0,
   commissionAmount: 15000,
   totalAmount: 115000,
   isExpress: isExpress,

@@ -18,6 +18,10 @@ class Review extends Model
         'reviewee_id',
         'type',
         'rating',
+        'punctuality_score',
+        'quality_score',
+        'professionalism_score',
+        'contract_respect_score',
         'comment',
         'reply',
         'reply_at',
@@ -32,8 +36,12 @@ class Review extends Model
     protected function casts(): array
     {
         return [
-            'type'        => ReviewType::class,
-            'rating'      => 'integer',
+            'type'                   => ReviewType::class,
+            'rating'                 => 'integer',
+            'punctuality_score'      => 'integer',
+            'quality_score'          => 'integer',
+            'professionalism_score'  => 'integer',
+            'contract_respect_score' => 'integer',
             'reply_at'    => 'datetime',
             'is_reported' => 'boolean',
             'reported_at' => 'datetime',
