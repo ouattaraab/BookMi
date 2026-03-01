@@ -43,6 +43,7 @@ import 'package:bookmi_app/features/profile/presentation/pages/talent_profile_in
 import 'package:bookmi_app/features/profile/presentation/pages/portfolio_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/package_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/two_factor_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/auto_reply_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/notification_preferences_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/calendar_management_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/manager_assignment_page.dart';
@@ -436,6 +437,12 @@ GoRouter buildAppRouter(
                     path: RoutePaths.profileNotifications,
                     builder: (context, state) =>
                         const NotificationPreferencesPage(),
+                  ),
+                  GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    name: RouteNames.profileAutoReply,
+                    path: RoutePaths.profileAutoReply,
+                    builder: (context, state) => const AutoReplyPage(),
                   ),
                   GoRoute(
                     path: RoutePaths.profileCalendar,

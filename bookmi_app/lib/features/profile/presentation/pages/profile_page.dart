@@ -873,6 +873,14 @@ class _GeneralSection extends StatelessWidget {
             label: 'Notifications',
             onTap: () => context.pushNamed(RouteNames.profileNotifications),
           ),
+          if (isTalent) ...[
+            _Divider(),
+            _MenuItem(
+              icon: Icons.reply_outlined,
+              label: 'Réponse automatique',
+              onTap: () => context.pushNamed(RouteNames.profileAutoReply),
+            ),
+          ],
           _Divider(),
           _MenuItem(
             icon: Icons.lock_outline,

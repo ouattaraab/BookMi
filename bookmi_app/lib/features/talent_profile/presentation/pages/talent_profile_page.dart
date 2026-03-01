@@ -27,6 +27,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TalentProfilePage extends StatefulWidget {
@@ -242,6 +243,19 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                           : 'Suivre ($_followersCount)',
                       onPressed: () => _toggleFollow(talentId),
                     ),
+                  IconButton(
+                    icon: const Icon(Icons.share_outlined, color: Colors.white),
+                    tooltip: 'Partager le profil',
+                    onPressed: () async {
+                      final url = 'https://bookmi.click/talents/${widget.slug}';
+                      await SharePlus.instance.share(
+                        ShareParams(
+                          text: 'Découvrez $stageName sur BookMi !\n$url',
+                          subject: '$stageName — BookMi',
+                        ),
+                      );
+                    },
+                  ),
                   Padding(
                     padding: const EdgeInsets.only(
                       right: BookmiSpacing.spaceBase,

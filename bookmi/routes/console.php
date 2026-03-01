@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\AutoCompleteBookings;
 use App\Console\Commands\DetectEmptyCalendar;
 use App\Console\Commands\DetectSuspiciousActivity;
 use App\Console\Commands\DetectTalentOverload;
@@ -52,3 +53,6 @@ Schedule::command(UpdateVisibilityScores::class)->dailyAt('02:00');
 
 // Detect talents with empty calendar in next 30 days and notify them (G3 — alertes calendrier)
 Schedule::command(DetectEmptyCalendar::class)->weeklyOn(1, '09:00');
+
+// Auto-complete confirmed bookings where event date passed 7+ days ago
+Schedule::command(AutoCompleteBookings::class)->dailyAt('03:00');
