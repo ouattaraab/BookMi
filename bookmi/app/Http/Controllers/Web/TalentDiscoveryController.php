@@ -32,6 +32,14 @@ class TalentDiscoveryController extends Controller
             $query->where('city', 'like', "%{$city}%");
         }
 
+        if ($minPrice = $request->integer('min_price')) {
+            $query->where('cachet_amount', '>=', $minPrice);
+        }
+
+        if ($maxPrice = $request->integer('max_price')) {
+            $query->where('cachet_amount', '<=', $maxPrice);
+        }
+
         $sort = $request->string('sort')->value() ?: 'recent';
         match ($sort) {
             'price_asc'  => $query->orderByRaw('(SELECT MIN(price) FROM service_packages WHERE talent_profile_id = talent_profiles.id)'),

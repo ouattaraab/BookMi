@@ -172,6 +172,42 @@ class BookingController extends Controller
         return back()->with('success', 'Réservation annulée avec succès.');
     }
 
+    /**
+     * POST /client/bookings/{booking}/dispute
+     *
+     * Ouvre un litige pour la réservation (client seulement, statut paid ou confirmed).
+     */
+    public function dispute(BookingRequest $booking): RedirectResponse
+    {
+        if ($booking->client_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $status = $booking->status instanceof BookingStatus
+            ? $booking->status
+            : BookingStatus::from((string) $booking->status);
+
+        if ($status === BookingStatus::Disputed) {
+            return back()->with('info', 'Un litige est déjà ouvert pour cette réservation.');
+        }
+
+        if (! in_array($status, [BookingStatus::Paid, BookingStatus::Confirmed])) {
+            return back()->with('error', 'Un litige ne peut être ouvert que pour une réservation payée ou confirmée.');
+        }
+
+        $booking->update(['status' => 'disputed']);
+
+        // Notify talent
+        \App\Jobs\SendPushNotification::dispatch(
+            $booking->talentProfile->user_id,
+            'Litige ouvert',
+            'Un client a ouvert un litige sur votre réservation #' . $booking->id . '.',
+            ['type' => 'dispute_opened', 'booking_id' => $booking->id],
+        );
+
+        return back()->with('success', 'Litige ouvert. L\'équipe BookMi va examiner votre demande.');
+    }
+
     public function pay(int $id): View
     {
         $booking = BookingRequest::where('client_id', auth()->id())

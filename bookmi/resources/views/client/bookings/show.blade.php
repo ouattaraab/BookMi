@@ -259,6 +259,23 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
         @endif
 
+        {{-- Bouton litige (réservation payée ou confirmée seulement) --}}
+        @if(in_array($sk, ['paid', 'confirmed']))
+        <div style="padding:0 24px 24px;">
+            <form action="{{ route('client.bookings.dispute', $booking->id) }}" method="POST"
+                  onsubmit="return confirm('Confirmer l\'ouverture d\'un litige ? L\'équipe BookMi sera notifiée.')">
+                @csrf
+                <button type="submit"
+                        style="width:100%;padding:12px 24px;border-radius:14px;font-size:0.85rem;font-weight:800;color:#991B1B;background:#FEF2F2;border:1.5px solid #FCA5A5;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Nunito',sans-serif;transition:background 0.2s,border-color 0.2s;"
+                        onmouseover="this.style.background='#FEE2E2';this.style.borderColor='#F87171'"
+                        onmouseout="this.style.background='#FEF2F2';this.style.borderColor='#FCA5A5'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Ouvrir un litige
+                </button>
+            </form>
+        </div>
+        @endif
+
     </div>
 
     {{-- Téléchargements (reçu + contrat) --}}

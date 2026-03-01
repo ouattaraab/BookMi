@@ -18,6 +18,7 @@ Route::get('/bookings/create', [BookingController::class, 'create'])->name('book
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
 Route::post('/bookings/{id}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
+Route::post('/bookings/{booking}/dispute', [BookingController::class, 'dispute'])->name('bookings.dispute');
 Route::get('/bookings/{id}/pay', [BookingController::class, 'pay'])->name('bookings.pay');
 Route::post('/bookings/{id}/pay', [BookingController::class, 'processPayment'])->name('bookings.pay.process');
 Route::post('/bookings/{id}/pay/otp', [BookingController::class, 'submitOtp'])->name('bookings.pay.otp');

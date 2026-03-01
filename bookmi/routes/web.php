@@ -59,6 +59,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/talents', [TalentDiscoveryController::class, 'index'])->name('talents.index');
 Route::post('/talents/notify', [TalentNotificationController::class, 'store'])->name('talents.notify');
 Route::get('/talents/{slug}', [TalentPageController::class, 'show'])->name('talent.show');
+Route::post('/talents/{profile}/follow', [TalentPageController::class, 'toggleFollow'])
+    ->middleware('auth')
+    ->name('talent.follow');
 
 // ── Pages légales ───────────────────────────────────────────────────────────
 Route::get('/conditions-utilisation', fn () => view('legal.conditions-utilisation'))->name('legal.conditions');

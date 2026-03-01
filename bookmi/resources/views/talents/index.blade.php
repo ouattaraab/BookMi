@@ -851,6 +851,19 @@ nav[aria-label="Pagination"] svg { display: none; }
                     @endforeach
                 </select>
 
+                {{-- Prix min/max --}}
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <input type="number" name="min_price" value="{{ request('min_price') }}"
+                           placeholder="Min FCFA" min="0" step="5000"
+                           class="disc-select" style="width:110px;"
+                           onchange="document.getElementById('filterForm').submit()">
+                    <span style="color:rgba(255,255,255,0.3);font-size:0.8rem;">—</span>
+                    <input type="number" name="max_price" value="{{ request('max_price') }}"
+                           placeholder="Max FCFA" min="0" step="5000"
+                           class="disc-select" style="width:110px;"
+                           onchange="document.getElementById('filterForm').submit()">
+                </div>
+
                 {{-- Tri --}}
                 <select name="sort" class="disc-select" onchange="document.getElementById('filterForm').submit()">
                     <option value="recent"     {{ request('sort','recent') === 'recent'     ? 'selected' : '' }}>🕐 Plus récents</option>

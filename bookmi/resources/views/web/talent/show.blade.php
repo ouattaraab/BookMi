@@ -304,19 +304,36 @@
 
             {{-- CTA desktop --}}
             <div class="hidden md:block" style="flex-shrink:0;">
-                @auth
-                    @if(auth()->user()->hasRole('client'))
-                        <a href="{{ route('client.bookings.create', ['talent' => $profile->slug ?? $profile->id]) }}"
-                           class="tp-cta-btn" style="display:inline-flex; align-items:center; gap:8px; width:auto; padding:12px 28px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    @auth
+                        @if(auth()->user()->hasRole('client'))
+                            <a href="{{ route('client.bookings.create', ['talent' => $profile->slug ?? $profile->id]) }}"
+                               class="tp-cta-btn" style="display:inline-flex; align-items:center; gap:8px; width:auto; padding:12px 28px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                Réserver ce talent
+                            </a>
+                            {{-- Follow button --}}
+                            <form action="{{ route('talent.follow', $profile->id) }}" method="POST" style="margin:0;">
+                                @csrf
+                                <button type="submit"
+                                        style="display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:12px;font-size:0.85rem;font-weight:800;cursor:pointer;border:1.5px solid {{ $isFollowing ? '#1AB3FF' : 'rgba(255,255,255,0.2)' }};color:{{ $isFollowing ? '#1AB3FF' : 'rgba(255,255,255,0.7)' }};background:{{ $isFollowing ? 'rgba(26,179,255,0.12)' : 'rgba(255,255,255,0.05)' }};transition:all 0.2s;font-family:inherit;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="{{ $isFollowing ? '#1AB3FF' : 'none' }}" stroke="{{ $isFollowing ? '#1AB3FF' : 'currentColor' }}" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                    {{ $isFollowing ? 'Abonné' : 'Suivre' }}
+                                </button>
+                            </form>
+                        @endif
+                    @else
+                        <a href="{{ route('login') }}" class="tp-cta-btn" style="display:inline-flex; align-items:center; gap:8px; width:auto; padding:12px 28px;">
                             Réserver ce talent
                         </a>
-                    @endif
-                @else
-                    <a href="{{ route('login') }}" class="tp-cta-btn" style="display:inline-flex; align-items:center; gap:8px; width:auto; padding:12px 28px;">
-                        Réserver ce talent
-                    </a>
-                @endauth
+                    @endauth
+                    {{-- Share button (always visible) --}}
+                    <button onclick="navigator.clipboard.writeText(window.location.href).then(()=>{ this.textContent='✓ Copié !'; setTimeout(()=>{ this.innerHTML='<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'14\' height=\'14\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' viewBox=\'0 0 24 24\'><circle cx=\'18\' cy=\'5\' r=\'3\'/><circle cx=\'6\' cy=\'12\' r=\'3\'/><circle cx=\'18\' cy=\'19\' r=\'3\'/><line x1=\'8.59\' y1=\'13.51\' x2=\'15.42\' y2=\'17.49\'/><line x1=\'15.41\' y1=\'6.51\' x2=\'8.59\' y2=\'10.49\'/></svg> Partager'; }, 2000) })"
+                            style="display:inline-flex;align-items:center;gap:6px;padding:11px 16px;border-radius:12px;font-size:0.85rem;font-weight:700;cursor:pointer;border:1.5px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.05);transition:all 0.2s;font-family:inherit;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        Partager
+                    </button>
+                </div>
             </div>
         </div>
 
