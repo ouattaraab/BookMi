@@ -1191,7 +1191,7 @@ parameters:
 		-
 			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 2
+			count: 3
 			path: app/Services/BookingService.php
 
 		-
@@ -1209,7 +1209,7 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$fromStatus of method App\\Services\\BookingService\:\:logStatusTransition\(\) expects App\\Enums\\BookingStatus\|null, string given\.$#'
 			identifier: argument.type
-			count: 1
+			count: 2
 			path: app/Services/BookingService.php
 
 		-

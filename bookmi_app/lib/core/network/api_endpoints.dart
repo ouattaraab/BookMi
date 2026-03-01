@@ -34,6 +34,7 @@ abstract final class ApiEndpoints {
   static const categories = '/categories';
   static String talentFavorite(int talentId) => '/talents/$talentId/favorite';
   static String talentFollow(int talentId) => '/talents/$talentId/follow';
+  static String bookingDispute(int id) => '/booking_requests/$id/dispute';
 
   // Profile
   static const meStats = '/me/stats';
@@ -105,4 +106,12 @@ abstract final class ApiEndpoints {
 
   // Withdrawal requests (talent)
   static const meWithdrawalRequests = '/me/withdrawal_requests';
+
+  // 2FA
+  static const auth2faStatus = '/auth/2fa/status';
+  static const auth2faSetupTotp = '/auth/2fa/setup/totp';
+  static const auth2faEnableTotp = '/auth/2fa/enable/totp';
+  static const auth2faSetupEmail = '/auth/2fa/setup/email';
+  static const auth2faEnableEmail = '/auth/2fa/enable/email';
+  static const auth2faDisable = '/auth/2fa/disable';
 }

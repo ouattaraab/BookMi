@@ -437,4 +437,65 @@ class BookingRequestTest extends TestCase
             ->assertStatus(200)
             ->assertJsonCount(1, 'data');
     }
+
+    // ─── AC: Ouvrir un litige ─────────────────────────────────────────────────
+
+    #[Test]
+    public function client_can_open_dispute_on_paid_booking(): void
+    {
+        [, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Paid]);
+        $this->actingAs($client, 'sanctum');
+
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', 'disputed');
+        $this->assertDatabaseHas('booking_requests', [
+            'id'     => $booking->id,
+            'status' => 'disputed',
+        ]);
+    }
+
+    #[Test]
+    public function client_can_open_dispute_on_confirmed_booking(): void
+    {
+        [, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Confirmed]);
+        $this->actingAs($client, 'sanctum');
+
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', 'disputed');
+    }
+
+    #[Test]
+    public function talent_cannot_open_dispute(): void
+    {
+        [$talentUser, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Paid]);
+        $this->actingAs($talentUser, 'sanctum');
+
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+
+        $response->assertForbidden();
+    }
+
+    #[Test]
+    public function cannot_open_dispute_on_pending_booking(): void
+    {
+        [, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createBooking($client, $talent, $package);
+        $this->actingAs($client, 'sanctum');
+
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+
+        $response->assertStatus(422);
+        $response->assertJsonPath('error.code', 'BOOKING_INVALID_TRANSITION');
+    }
 }

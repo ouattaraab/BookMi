@@ -213,6 +213,20 @@ class BookingRequestController extends BaseController
         ]);
     }
 
+    /**
+     * POST /api/v1/booking_requests/{booking}/dispute
+     */
+    public function dispute(BookingRequest $booking): JsonResponse
+    {
+        $this->authorize('openDispute', $booking);
+
+        $booking = $this->bookingService->openDispute($booking);
+
+        $booking->load($this->detailRelations());
+
+        return $this->successResponse(new BookingRequestResource($booking));
+    }
+
     // ── Admin contract management ─────────────────────────────────────────
 
     /**

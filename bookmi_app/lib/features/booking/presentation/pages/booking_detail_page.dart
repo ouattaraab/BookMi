@@ -375,6 +375,21 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
+          // Client: open dispute (paid or confirmed)
+          if (!isTalent && ['paid', 'confirmed'].contains(booking.status)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _DisputeButton(
+              bookingId: booking.id,
+              onDisputeOpened: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _fetch();
+              },
+            ),
+          ],
+
           // Client: leave a review (confirmed or completed, not yet reviewed)
           if (!isTalent &&
               ['confirmed', 'completed'].contains(booking.status) &&
@@ -1548,6 +1563,144 @@ class _ReceiptButtonState extends State<_ReceiptButton> {
             size: 20,
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ── Dispute Button ──────────────────────────────────────────────────────────
+
+class _DisputeButton extends StatefulWidget {
+  const _DisputeButton({
+    required this.bookingId,
+    required this.onDisputeOpened,
+  });
+
+  final int bookingId;
+  final VoidCallback onDisputeOpened;
+
+  @override
+  State<_DisputeButton> createState() => _DisputeButtonState();
+}
+
+class _DisputeButtonState extends State<_DisputeButton> {
+  bool _loading = false;
+
+  Future<void> _openDispute() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2233),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: Colors.amber.withValues(alpha: 0.3),
+          ),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.report_problem_outlined,
+              color: Colors.amber,
+              size: 22,
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Ouvrir un litige',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        content: const Text(
+          'En ouvrant un litige, notre équipe sera notifiée et examinera votre dossier. '
+          'Cette action ne peut pas être annulée.',
+          style: TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Annuler',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.amber),
+            child: const Text(
+              'Confirmer le litige',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.openDispute(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess():
+        widget.onDisputeOpened();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: InkWell(
+        onTap: _loading ? null : _openDispute,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_loading)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.amber,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.report_problem_outlined,
+                  size: 18,
+                  color: Colors.amber,
+                ),
+              const SizedBox(width: 8),
+              Text(
+                'Ouvrir un litige',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.amber.shade300,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

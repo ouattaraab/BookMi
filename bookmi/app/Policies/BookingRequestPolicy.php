@@ -28,6 +28,11 @@ class BookingRequestPolicy
         return $booking->client_id === $user->id;
     }
 
+    public function openDispute(User $user, BookingRequest $booking): bool
+    {
+        return $booking->client_id === $user->id;
+    }
+
     public function downloadContract(User $user, BookingRequest $booking): bool
     {
         return $booking->isOwnedByUser($user);

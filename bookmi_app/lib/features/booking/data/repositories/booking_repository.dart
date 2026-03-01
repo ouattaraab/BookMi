@@ -272,6 +272,21 @@ class BookingRepository {
     }
   }
 
+  /// Open a dispute on a booking (client action).
+  Future<ApiResult<BookingModel>> openDispute(int id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingDispute(id),
+      );
+      final booking = BookingModel.fromJson(
+        response.data!['data'] as Map<String, dynamic>,
+      );
+      return ApiSuccess(booking);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   BookingListResponse _parseListResponse(Map<String, dynamic> data) {

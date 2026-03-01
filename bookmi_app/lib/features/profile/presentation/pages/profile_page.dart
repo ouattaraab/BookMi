@@ -854,6 +854,12 @@ class _GeneralSection extends StatelessWidget {
           ],
           _Divider(),
           _MenuItem(
+            icon: Icons.lock_outline,
+            label: 'Double authentification',
+            onTap: () => context.pushNamed(RouteNames.profileTwoFactor),
+          ),
+          _Divider(),
+          _MenuItem(
             icon: Icons.help_outline,
             label: 'Aide et support',
             onTap: () => context.pushNamed(RouteNames.profileSupport),

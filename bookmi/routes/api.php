@@ -143,6 +143,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/booking_requests/{booking}/accept', [BookingRequestController::class, 'accept'])->name('booking_requests.accept');
         Route::post('/booking_requests/{booking}/reject', [BookingRequestController::class, 'reject'])->name('booking_requests.reject');
         Route::post('/booking_requests/{booking}/cancel', [BookingRequestController::class, 'cancel'])->name('booking_requests.cancel');
+        Route::post('/booking_requests/{booking}/dispute', [BookingRequestController::class, 'dispute'])->name('booking_requests.dispute');
         Route::get('/booking_requests/{booking}/contract', [BookingRequestController::class, 'contract'])->name('booking_requests.contract');
         Route::get('/booking_requests/{booking}/contract-url', [BookingRequestController::class, 'contractUrl'])->name('booking_requests.contract_url');
         Route::get('/booking_requests/{booking}/receipt', [BookingRequestController::class, 'receipt'])->name('booking_requests.receipt');

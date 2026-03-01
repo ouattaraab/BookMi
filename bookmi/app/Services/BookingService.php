@@ -9,6 +9,7 @@ use App\Events\BookingCancelled;
 use App\Events\BookingCreated;
 use App\Exceptions\BookingException;
 use App\Jobs\GenerateContractPdf;
+use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
 use App\Models\BookingStatusLog;
 use App\Models\CalendarSlot;
@@ -262,6 +263,38 @@ class BookingService
         $this->logStatusTransition($booking, BookingStatus::Pending, BookingStatus::Rejected, $performerId);
 
         BookingCancelled::dispatch($booking);
+
+        return $booking;
+    }
+
+
+    /**
+     * Open a dispute on a booking (client action).
+     *
+     * Transitions: paid|confirmed → disputed
+     * Side-effects: FCM notification to the talent.
+     */
+    public function openDispute(BookingRequest $booking): BookingRequest
+    {
+        if (! $booking->status->canTransitionTo(BookingStatus::Disputed)) {
+            throw BookingException::invalidStatusTransition();
+        }
+
+        $fromStatus = $booking->status;
+
+        $booking->update(['status' => BookingStatus::Disputed]);
+
+        $this->logStatusTransition($booking, $fromStatus, BookingStatus::Disputed, $booking->client_id);
+
+        $talentUserId = $booking->talentProfile?->user_id;
+        if ($talentUserId) {
+            SendPushNotification::dispatch(
+                $talentUserId,
+                'Litige ouvert',
+                'Un litige a été ouvert pour votre réservation.',
+                ['type' => 'dispute_opened', 'booking_id' => (string) $booking->id],
+            );
+        }
 
         return $booking;
     }

@@ -29,6 +29,7 @@ abstract final class RouteNames {
   static const notifications = 'notifications';
   static const talentDeepLink = 'talentDeepLink';
   static const clientReviews = 'clientReviews';
+  static const profileTwoFactor = 'profileTwoFactor';
 }
 
 abstract final class RoutePaths {
@@ -60,5 +61,6 @@ abstract final class RoutePaths {
   static const profilePortfolioManager = 'portfolio-manager';
   static const profilePackageManager = 'package-manager';
   static const profileTalentInfo = 'talent-info';
+  static const profileTwoFactor = 'two-factor';
   static const notifications = '/notifications';
 }
