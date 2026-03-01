@@ -71,6 +71,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String _location = '';
+  int _travelCost = 0;
 
   // Step 3
   bool _isExpress = false;
@@ -91,7 +92,15 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   }
 
   int get _commissionAmount => (_cachetAmount * 0.15).round();
-  int get _totalAmount => _cachetAmount + _commissionAmount;
+  int get _totalAmount => _cachetAmount + _commissionAmount + _travelCost;
+
+  bool get _isMicroPackage {
+    final attrs =
+        _selectedPackage?['attributes'] as Map<String, dynamic>? ??
+        _selectedPackage ??
+        {};
+    return (attrs['type'] as String?) == 'micro';
+  }
 
   String get _formattedDate {
     if (_selectedDate == null) return '';
@@ -171,6 +180,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         eventLocation: _location.trim(),
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,
+        travelCost: _travelCost > 0 ? _travelCost : null,
         promoCode: _appliedPromoCode,
       ),
     );
@@ -345,9 +355,12 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         selectedDate: _selectedDate,
         selectedTime: _selectedTime,
         location: _location,
+        travelCost: _travelCost,
+        showTravelCost: !_isMicroPackage,
         onDateSelected: (d) => setState(() => _selectedDate = d),
         onTimeSelected: (t) => setState(() => _selectedTime = t),
         onLocationChanged: (v) => setState(() => _location = v),
+        onTravelCostChanged: (v) => setState(() => _travelCost = v),
       ),
       2 => BlocBuilder<BookingFlowBloc, BookingFlowState>(
         builder: (context, state) {
@@ -362,6 +375,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             cachetAmount: _cachetAmount,
             commissionAmount: _commissionAmount,
             totalAmount: _totalAmount,
+            travelCost: _travelCost,
             eventDate: _formattedDate,
             eventLocation: _location,
             enableExpress: widget.enableExpress,

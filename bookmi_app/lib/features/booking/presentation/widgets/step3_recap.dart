@@ -18,6 +18,7 @@ class Step3Recap extends StatefulWidget {
     required this.message,
     required this.onExpressChanged,
     required this.onMessageChanged,
+    this.travelCost = 0,
     this.appliedPromoCode,
     this.discountAmount = 0,
     this.promoLoading = false,
@@ -38,6 +39,9 @@ class Step3Recap extends StatefulWidget {
   final String message;
   final ValueChanged<bool> onExpressChanged;
   final ValueChanged<String> onMessageChanged;
+
+  /// Travel/displacement cost in XOF (0 = none).
+  final int travelCost;
 
   // Promo code
   final String? appliedPromoCode;
@@ -89,6 +93,7 @@ class _Step3RecapState extends State<Step3Recap> {
         : 0;
     final displayTotal =
         widget.totalAmount + expressFee - widget.discountAmount;
+    // widget.totalAmount already includes travelCost from the sheet state.
     final promoApplied = widget.appliedPromoCode != null;
 
     return SingleChildScrollView(
@@ -122,6 +127,16 @@ class _Step3RecapState extends State<Step3Recap> {
                   valueColor: Colors.white.withValues(alpha: 0.6),
                   fontSize: 13,
                 ),
+                if (widget.travelCost > 0) ...[
+                  const SizedBox(height: BookmiSpacing.spaceSm),
+                  _RecapRow(
+                    label: 'Frais de déplacement',
+                    value: TalentCard.formatCachet(widget.travelCost),
+                    labelColor: Colors.white.withValues(alpha: 0.6),
+                    valueColor: Colors.white.withValues(alpha: 0.6),
+                    fontSize: 13,
+                  ),
+                ],
                 if (widget.isExpress) ...[
                   const SizedBox(height: BookmiSpacing.spaceSm),
                   _RecapRow(

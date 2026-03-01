@@ -144,6 +144,51 @@ void main() {
       act: (bloc) => bloc.add(const BookingFlowReset()),
       expect: () => [isA<BookingFlowInitial>()],
     );
+
+    blocTest<BookingFlowBloc, BookingFlowState>(
+      'passes travelCost to repository when provided',
+      build: () {
+        when(
+          () => repository.createBooking(
+            talentProfileId: any(named: 'talentProfileId'),
+            servicePackageId: any(named: 'servicePackageId'),
+            eventDate: any(named: 'eventDate'),
+            startTime: any(named: 'startTime'),
+            eventLocation: any(named: 'eventLocation'),
+            message: any(named: 'message'),
+            isExpress: any(named: 'isExpress'),
+            travelCost: any(named: 'travelCost'),
+          ),
+        ).thenAnswer((_) async => ApiSuccess(_booking));
+        return BookingFlowBloc(repository: repository);
+      },
+      act: (bloc) => bloc.add(
+        const BookingFlowSubmitted(
+          talentProfileId: 1,
+          servicePackageId: 2,
+          eventDate: '2026-06-15',
+          startTime: '18:00',
+          eventLocation: 'Abidjan',
+          travelCost: 15000,
+        ),
+      ),
+      expect: () => [
+        isA<BookingFlowSubmitting>(),
+        isA<BookingFlowSuccess>(),
+      ],
+      verify: (_) {
+        verify(
+          () => repository.createBooking(
+            talentProfileId: 1,
+            servicePackageId: 2,
+            eventDate: '2026-06-15',
+            startTime: '18:00',
+            eventLocation: 'Abidjan',
+            travelCost: 15000,
+          ),
+        ).called(1);
+      },
+    );
   });
 
   // ── BookingFlowPaymentInitiated (Paystack) ────────────────────────────────

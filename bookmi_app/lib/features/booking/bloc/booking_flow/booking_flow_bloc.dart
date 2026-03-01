@@ -34,6 +34,7 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
       eventLocation: event.eventLocation,
       message: event.message,
       isExpress: event.isExpress,
+      travelCost: event.travelCost,
       promoCode: event.promoCode,
     );
 

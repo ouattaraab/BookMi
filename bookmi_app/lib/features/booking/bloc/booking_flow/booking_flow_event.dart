@@ -15,6 +15,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     required this.eventLocation,
     this.message,
     this.isExpress = false,
+    this.travelCost,
     this.promoCode,
   });
 
@@ -30,6 +31,9 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
   final String? message;
   final bool isExpress;
 
+  /// Optional travel/displacement cost in XOF (0 or null = no travel cost).
+  final int? travelCost;
+
   /// Applied promo code (uppercase), or null if none.
   final String? promoCode;
 
@@ -44,6 +48,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
           eventLocation == other.eventLocation &&
           message == other.message &&
           isExpress == other.isExpress &&
+          travelCost == other.travelCost &&
           promoCode == other.promoCode;
 
   @override
@@ -55,6 +60,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     eventLocation,
     message,
     isExpress,
+    travelCost,
     promoCode,
   );
 }

@@ -4,7 +4,8 @@ import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:flutter/material.dart';
 
-/// Step 2 of the booking flow — pick event date, time, and location.
+/// Step 2 of the booking flow — pick event date, time, location, and optional
+/// travel cost.
 class Step2DateLocation extends StatefulWidget {
   const Step2DateLocation({
     required this.selectedDate,
@@ -13,6 +14,9 @@ class Step2DateLocation extends StatefulWidget {
     required this.onDateSelected,
     required this.onTimeSelected,
     required this.onLocationChanged,
+    this.travelCost = 0,
+    this.onTravelCostChanged,
+    this.showTravelCost = true,
     this.blockedDates = const [],
     super.key,
   });
@@ -23,6 +27,16 @@ class Step2DateLocation extends StatefulWidget {
   final ValueChanged<DateTime> onDateSelected;
   final ValueChanged<TimeOfDay> onTimeSelected;
   final ValueChanged<String> onLocationChanged;
+
+  /// Current travel cost in XOF (0 = none).
+  final int travelCost;
+
+  /// Called when the user changes the travel cost field.
+  final ValueChanged<int>? onTravelCostChanged;
+
+  /// Whether to show the travel cost section (hidden for micro packages).
+  final bool showTravelCost;
+
   final List<DateTime> blockedDates;
 
   @override
@@ -31,18 +45,23 @@ class Step2DateLocation extends StatefulWidget {
 
 class _Step2DateLocationState extends State<Step2DateLocation> {
   late final TextEditingController _locationController;
+  late final TextEditingController _travelCostController;
   late DateTime _focusedMonth;
 
   @override
   void initState() {
     super.initState();
     _locationController = TextEditingController(text: widget.location);
+    _travelCostController = TextEditingController(
+      text: widget.travelCost > 0 ? widget.travelCost.toString() : '',
+    );
     _focusedMonth = DateTime.now();
   }
 
   @override
   void dispose() {
     _locationController.dispose();
+    _travelCostController.dispose();
     super.dispose();
   }
 
@@ -229,6 +248,90 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
               ],
             ),
           ),
+          // Travel cost — hidden for micro/digital packages
+          if (widget.showTravelCost) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.directions_car_outlined,
+                        size: 16,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Frais de déplacement (optionnel)',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Ajoutez un montant si le talent doit se déplacer.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: BookmiSpacing.spaceSm),
+                  TextField(
+                    controller: _travelCostController,
+                    keyboardType: TextInputType.number,
+                    onChanged: (v) {
+                      final parsed = int.tryParse(v.replaceAll(' ', '')) ?? 0;
+                      widget.onTravelCostChanged?.call(parsed < 0 ? 0 : parsed);
+                    },
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: '0',
+                      hintStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 14,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.attach_money,
+                        color: Colors.white.withValues(alpha: 0.5),
+                        size: 20,
+                      ),
+                      suffixText: 'XOF',
+                      suffixStyle: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 13,
+                      ),
+                      filled: true,
+                      fillColor: BookmiColors.glassDarkMedium,
+                      border: OutlineInputBorder(
+                        borderRadius: BookmiRadius.inputBorder,
+                        borderSide: BorderSide(color: BookmiColors.glassBorder),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BookmiRadius.inputBorder,
+                        borderSide: BorderSide(color: BookmiColors.glassBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BookmiRadius.inputBorder,
+                        borderSide: const BorderSide(
+                          color: BookmiColors.brandBlue,
+                        ),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: BookmiSpacing.spaceBase,
+                        vertical: BookmiSpacing.spaceSm,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
