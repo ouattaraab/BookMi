@@ -187,6 +187,19 @@ class AuthController extends BaseController
     }
 
     /**
+     * POST /api/v1/me/deactivate
+     * Deactivate the authenticated user's account and revoke all tokens.
+     */
+    public function deactivate(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $user->update(['is_active' => false]);
+        $user->tokens()->delete();
+
+        return $this->successResponse(['message' => 'Votre compte a été désactivé.']);
+    }
+
+    /**
      * DELETE /api/v1/me/avatar
      * Remove the authenticated user's avatar.
      */

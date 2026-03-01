@@ -238,6 +238,28 @@ class BookingRequestResource extends Resource
                         'cancelled' => 'Annulée',
                         'disputed'  => 'Litige',
                     ]),
+
+                Tables\Filters\Filter::make('event_date_range')
+                    ->label('Période prestation')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')->label('Du'),
+                        Forms\Components\DatePicker::make('until')->label('Au'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['from'], fn ($q) => $q->whereDate('event_date', '>=', $data['from']))
+                            ->when($data['until'], fn ($q) => $q->whereDate('event_date', '<=', $data['until']));
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['from']) {
+                            $indicators[] = Tables\Filters\Indicator::make('Du ' . $data['from']);
+                        }
+                        if ($data['until']) {
+                            $indicators[] = Tables\Filters\Indicator::make('Au ' . $data['until']);
+                        }
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()

@@ -109,6 +109,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::patch('/me', [AuthController::class, 'updateProfile'])->name('me.update');
         Route::delete('/me/avatar', [AuthController::class, 'deleteAvatar'])->name('me.avatar.delete');
+        Route::post('/me/deactivate', [AuthController::class, 'deactivate'])->name('me.deactivate');
         Route::get('/me/stats', [AuthController::class, 'stats'])->name('me.stats');
 
         // Identity verification
