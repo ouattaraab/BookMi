@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Jobs\SendPushNotification;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -73,6 +74,16 @@ class UserResource extends Resource
                         ->disabled()
                         ->columnSpanFull(),
                 ])->columns(2),
+
+            Forms\Components\Section::make('Vérification identité')
+                ->schema([
+                    Forms\Components\Toggle::make('is_client_verified')
+                        ->label('Client vérifié')
+                        ->disabled(),
+                    Forms\Components\DateTimePicker::make('client_verified_at')
+                        ->label('Vérifié le')
+                        ->disabled(),
+                ])->columns(2),
         ]);
     }
 
@@ -116,6 +127,14 @@ class UserResource extends Resource
                         default    => 'success',
                     }),
 
+                Tables\Columns\IconColumn::make('is_client_verified')
+                    ->label('Vérifié')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-shield-check')
+                    ->falseIcon('heroicon-o-shield-exclamation')
+                    ->trueColor('success')
+                    ->falseColor('gray'),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Inscrit le')
                     ->dateTime('d/m/Y H:i')
@@ -133,6 +152,12 @@ class UserResource extends Resource
                     ->placeholder('Tous')
                     ->trueLabel('Admins seulement')
                     ->falseLabel('Non-admins seulement'),
+
+                Tables\Filters\TernaryFilter::make('is_client_verified')
+                    ->label('Client vérifié')
+                    ->placeholder('Tous')
+                    ->trueLabel('Vérifiés seulement')
+                    ->falseLabel('Non vérifiés seulement'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
@@ -187,6 +212,53 @@ class UserResource extends Resource
                     ->color('warning')
                     ->url(fn (User $record): string => \App\Filament\Resources\AdminWarningResource::getUrl('index'))
                     ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('verify_client')
+                    ->label('Vérifier')
+                    ->icon('heroicon-o-shield-check')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Vérifier l\'identité de ce client')
+                    ->modalDescription('Le client sera notifié et recevra le badge "Client vérifié".')
+                    ->visible(fn (User $record): bool => ! $record->is_admin && ! $record->is_client_verified)
+                    ->action(function (User $record): void {
+                        $record->update([
+                            'is_client_verified' => true,
+                            'client_verified_at' => now(),
+                        ]);
+
+                        SendPushNotification::dispatch(
+                            $record->id,
+                            'Identité vérifiée ✓',
+                            'Votre identité a été vérifiée. Vous bénéficiez maintenant du badge "Client vérifié".',
+                            ['type' => 'client_verified'],
+                        );
+
+                        Notification::make()
+                            ->title('Client vérifié')
+                            ->success()
+                            ->send();
+                    }),
+
+                Tables\Actions\Action::make('unverify_client')
+                    ->label('Révoquer vérif.')
+                    ->icon('heroicon-o-shield-exclamation')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Révoquer la vérification de ce client')
+                    ->modalDescription('Le badge "Client vérifié" sera retiré.')
+                    ->visible(fn (User $record): bool => $record->is_client_verified === true)
+                    ->action(function (User $record): void {
+                        $record->update([
+                            'is_client_verified' => false,
+                            'client_verified_at' => null,
+                        ]);
+
+                        Notification::make()
+                            ->title('Vérification révoquée')
+                            ->warning()
+                            ->send();
+                    }),
 
                 Tables\Actions\Action::make('toggle_manager_role')
                     ->label(fn (User $record): string => $record->hasRole('manager', 'api') ? 'Retirer Manager' : 'Attribuer Manager')
