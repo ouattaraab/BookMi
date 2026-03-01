@@ -64,9 +64,13 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">Type</label>
-                    <input type="text" name="type" maxlength="50" placeholder="Ex: concert, mariage, corporate"
-                           class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
-                           value="{{ old('type') }}">
+                    <select name="type" class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+                        <option value="">-- Choisir un type --</option>
+                        <option value="essentiel" {{ old('type') === 'essentiel' ? 'selected' : '' }}>Essentiel</option>
+                        <option value="standard" {{ old('type') === 'standard' ? 'selected' : '' }}>Standard</option>
+                        <option value="premium" {{ old('type') === 'premium' ? 'selected' : '' }}>Premium</option>
+                        <option value="micro" {{ old('type') === 'micro' ? 'selected' : '' }}>Micro-prestation</option>
+                    </select>
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
@@ -214,9 +218,14 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5">Type d'événement</label>
-                        <input type="text" name="type" maxlength="150" placeholder="Ex: concert, mariage, corporate"
-                               x-model="editData.type"
-                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+                        <select name="type" x-model="editData.type"
+                                class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+                            <option value="">-- Choisir un type --</option>
+                            <option value="essentiel">Essentiel</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                            <option value="micro">Micro-prestation</option>
+                        </select>
                     </div>
                     <div class="flex items-center gap-3">
                         <input type="checkbox" name="is_active" id="is_active_edit" value="1"

@@ -112,35 +112,9 @@ main.page-content { background: #F2EFE9 !important; }
         {{-- Colonne montants --}}
         <div class="space-y-5">
 
-            {{-- Récapitulatif financier --}}
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-                <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Récapitulatif financier</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Cachet artiste</span>
-                        <span class="font-semibold text-gray-900">
-                            {{ $booking->cachet_amount ? number_format($booking->cachet_amount, 0, ',', ' ') . ' XOF' : '—' }}
-                        </span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm text-gray-600">Commission platform</span>
-                        <span class="font-semibold text-gray-900">
-                            @php
-                                $commission = null;
-                                if ($booking->total_amount && $booking->cachet_amount) {
-                                    $commission = $booking->total_amount - $booking->cachet_amount;
-                                }
-                            @endphp
-                            {{ $commission !== null ? number_format($commission, 0, ',', ' ') . ' XOF' : '—' }}
-                        </span>
-                    </div>
-                    <div class="border-t border-gray-100 pt-3 flex justify-between items-center">
-                        <span class="text-base font-black text-gray-900">Total</span>
-                        <span class="text-lg font-extrabold" style="color:#1A2744">
-                            {{ $booking->total_amount ? number_format($booking->total_amount, 0, ',', ' ') . ' XOF' : '—' }}
-                        </span>
-                    </div>
-                </div>
+            {{-- Récapitulatif financier — masqué pour manager (MVP #14) --}}
+            <div class="rounded-xl p-4 text-center" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                <p class="text-sm text-gray-400 font-medium">Les montants financiers ne sont pas accessibles au manager.</p>
             </div>
 
             {{-- Statut card --}}

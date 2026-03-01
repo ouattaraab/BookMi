@@ -230,10 +230,27 @@ main.page-content { background: #F2EFE9 !important; }
                     <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">Cachet talent</span>
                     <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->cachet_amount, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
                 </div>
+                @if($booking->is_express)
+                <div style="display:flex;justify-content:flex-end;margin:-4px 0 8px;">
+                    <span style="font-size:0.7rem;font-weight:800;padding:2px 8px;border-radius:9999px;background:#FFF8F5;border:1px solid #FECDBB;color:#C85A20;">⚡ Réservation express</span>
+                </div>
+                @endif
                 @if($booking->commission_amount)
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
                     <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">Commission BookMi</span>
                     <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->commission_amount, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                </div>
+                @endif
+                @if($booking->express_fee > 0)
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">⚡ Supplément express (10%)</span>
+                    <span style="font-size:0.875rem;font-weight:800;color:#FF6B35;">{{ number_format($booking->express_fee, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                </div>
+                @endif
+                @if($booking->travel_cost > 0)
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                    <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">Frais de déplacement</span>
+                    <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->travel_cost, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
                 </div>
                 @endif
                 <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid #E5E1DA;">

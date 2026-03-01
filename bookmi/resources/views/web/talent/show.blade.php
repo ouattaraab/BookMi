@@ -418,6 +418,9 @@
                                         {{ number_format($pkg->cachet_amount, 0, ',', ' ') }}
                                     </p>
                                     <p style="color:rgba(255,255,255,0.3); font-size:0.72rem; font-weight:600; margin:2px 0 0;">FCFA</p>
+                                    <p style="font-size:0.72rem;color:#B0A89E;font-weight:600;margin:4px 0 0;text-align:right;">
+                                        Total estimé : {{ number_format((int)($pkg->cachet_amount * 1.15), 0, ',', ' ') }} FCFA <span style="font-weight:500;">(+ commission 15%)</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
