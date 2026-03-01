@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use App\Models\PortfolioItem;
 use App\Models\Review;
+use App\Models\TalentFollow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -56,6 +57,12 @@ class TalentDetailResource extends JsonResource
                     'reply_at'      => $review->reply_at instanceof \Carbon\Carbon ? $review->reply_at->format('d/m/Y') : null,
                     'created_at'    => $review->created_at?->format('d/m/Y'),
                 ])->values()->all(), []),
+                'is_following'    => auth()->check()
+                    ? TalentFollow::where('user_id', auth()->id())
+                        ->where('talent_profile_id', $this->id)
+                        ->exists()
+                    : false,
+                'followers_count' => $this->followers()->count(),
                 'created_at' => $this->created_at?->toIso8601String(),
                 'category' => [
                     'id' => $this->category->id,

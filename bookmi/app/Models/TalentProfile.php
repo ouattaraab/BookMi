@@ -237,6 +237,14 @@ class TalentProfile extends Model
             ->withTimestamps();
     }
 
+    /**
+     * @return HasMany<\App\Models\TalentFollow, $this>
+     */
+    public function followers(): HasMany
+    {
+        return $this->hasMany(TalentFollow::class);
+    }
+
     public function hasCoordinates(): bool
     {
         return $this->latitude !== null && $this->longitude !== null;

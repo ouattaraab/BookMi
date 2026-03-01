@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:bookmi_app/core/network/api_client.dart';
+import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/components/service_package_card.dart';
@@ -11,6 +13,7 @@ import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/booking.dart';
+import 'package:bookmi_app/features/discovery/data/repositories/follow_repository.dart';
 import 'package:bookmi_app/features/favorites/widgets/favorite_button.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_event.dart';
@@ -41,9 +44,14 @@ class TalentProfilePage extends StatefulWidget {
 }
 
 class _TalentProfilePageState extends State<TalentProfilePage> {
+  bool _isFollowing = false;
+  int _followersCount = 0;
+  late final FollowRepository _followRepo;
+
   @override
   void initState() {
     super.initState();
+    _followRepo = FollowRepository(apiClient: ApiClient.instance);
     context.read<TalentProfileBloc>().add(
       TalentProfileFetched(slug: widget.slug),
     );
@@ -57,7 +65,20 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: BlocBuilder<TalentProfileBloc, TalentProfileState>(
+        body: BlocConsumer<TalentProfileBloc, TalentProfileState>(
+          listener: (context, state) {
+            if (state is TalentProfileLoaded) {
+              final authState = context.read<AuthBloc>().state;
+              if (authState is AuthAuthenticated) {
+                setState(() {
+                  _isFollowing =
+                      state.profile['is_following'] as bool? ?? false;
+                  _followersCount =
+                      state.profile['followers_count'] as int? ?? 0;
+                });
+              }
+            }
+          },
           builder: (context, state) {
             return switch (state) {
               TalentProfileInitial() ||
@@ -73,6 +94,36 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
         ),
       ),
     );
+  }
+
+  Future<void> _toggleFollow(int talentProfileId) async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+
+    final wasFollowing = _isFollowing;
+    setState(() {
+      _isFollowing = !wasFollowing;
+      _followersCount += wasFollowing ? -1 : 1;
+    });
+
+    final result = wasFollowing
+        ? await _followRepo.unfollow(talentProfileId)
+        : await _followRepo.follow(talentProfileId);
+
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess(:final data):
+        setState(() {
+          _isFollowing = data.isFollowing;
+          _followersCount = data.followersCount;
+        });
+      case ApiFailure():
+        // Revert optimistic update
+        setState(() {
+          _isFollowing = wasFollowing;
+          _followersCount += wasFollowing ? 1 : -1;
+        });
+    }
   }
 
   Widget _buildLoading(BuildContext context) {
@@ -175,6 +226,22 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                 backgroundColor: BookmiColors.brandNavy,
                 foregroundColor: Colors.white,
                 actions: [
+                  // Follow button (authenticated only)
+                  if (context.read<AuthBloc>().state is AuthAuthenticated)
+                    IconButton(
+                      icon: Icon(
+                        _isFollowing
+                            ? Icons.notifications_active
+                            : Icons.notifications_none,
+                        color: _isFollowing
+                            ? BookmiColors.brandBlueLight
+                            : Colors.white70,
+                      ),
+                      tooltip: _isFollowing
+                          ? 'Ne plus suivre ($_followersCount)'
+                          : 'Suivre ($_followersCount)',
+                      onPressed: () => _toggleFollow(talentId),
+                    ),
                   Padding(
                     padding: const EdgeInsets.only(
                       right: BookmiSpacing.spaceBase,

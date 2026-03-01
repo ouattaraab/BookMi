@@ -143,6 +143,14 @@ class User extends Authenticatable implements FilamentUser, HasName
     }
 
     /**
+     * @return HasMany<\App\Models\TalentFollow, $this>
+     */
+    public function talentFollows(): HasMany
+    {
+        return $this->hasMany(TalentFollow::class);
+    }
+
+    /**
      * @return HasMany<\App\Models\AdminWarning, $this>
      */
     public function warnings(): HasMany

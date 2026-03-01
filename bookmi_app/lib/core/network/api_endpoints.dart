@@ -33,6 +33,7 @@ abstract final class ApiEndpoints {
       '/talents/$talentId/calendar';
   static const categories = '/categories';
   static String talentFavorite(int talentId) => '/talents/$talentId/favorite';
+  static String talentFollow(int talentId) => '/talents/$talentId/follow';
 
   // Profile
   static const meStats = '/me/stats';

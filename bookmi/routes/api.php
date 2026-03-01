@@ -27,6 +27,7 @@ use App\Http\Controllers\Api\V1\BookingRequestController;
 use App\Http\Controllers\Api\V1\CalendarSlotController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\FavoriteController;
+use App\Http\Controllers\Api\V1\FollowController;
 use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\TalentController;
 use App\Http\Controllers\Api\V1\ServicePackageController;
@@ -184,6 +185,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->name('favorites.destroy');
         Route::get('/talents/{talentProfileId}/favorite', [FavoriteController::class, 'check'])
             ->name('favorites.check');
+
+        // Suivi d'artistes (#22)
+        Route::post('/talents/{talentProfileId}/follow', [FollowController::class, 'store'])
+            ->name('follow.store');
+        Route::delete('/talents/{talentProfileId}/follow', [FollowController::class, 'destroy'])
+            ->name('follow.destroy');
+        Route::get('/talents/{talentProfileId}/follow', [FollowController::class, 'check'])
+            ->name('follow.check');
 
         // Notifications push (Story 5.4)
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');

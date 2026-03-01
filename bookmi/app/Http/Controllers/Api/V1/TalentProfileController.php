@@ -8,6 +8,7 @@ use App\Http\Requests\Api\UpdateAutoReplyRequest;
 use App\Http\Requests\Api\UpdatePayoutMethodRequest;
 use App\Http\Requests\Api\UpdateTalentProfileRequest;
 use App\Http\Resources\TalentProfileResource;
+use App\Jobs\NotifyTalentFollowers;
 use App\Models\TalentProfile;
 use App\Services\AdminNotificationService;
 use App\Services\TalentProfileService;
@@ -64,6 +65,15 @@ class TalentProfileController extends BaseController
     public function update(UpdateTalentProfileRequest $request, TalentProfile $talentProfile): JsonResponse
     {
         $profile = $this->service->updateProfile($talentProfile, $request->validated());
+
+        if ($profile->followers()->exists()) {
+            NotifyTalentFollowers::dispatch(
+                $profile->id,
+                $profile->stage_name,
+                "Mise à jour de {$profile->stage_name}",
+                'Un artiste que vous suivez a mis à jour son profil.',
+            );
+        }
 
         return $this->successResponse(
             new TalentProfileResource($profile->load('category', 'subcategory')),
@@ -171,6 +181,15 @@ class TalentProfileController extends BaseController
         ]);
 
         $profile->update($validated);
+
+        if ($profile->followers()->exists()) {
+            NotifyTalentFollowers::dispatch(
+                $profile->id,
+                $profile->stage_name,
+                "Nouveau contenu de {$profile->stage_name}",
+                'Un artiste que vous suivez a partagé du nouveau contenu.',
+            );
+        }
 
         return $this->successResponse(
             new TalentProfileResource($profile->fresh()->load('category', 'subcategory')),
