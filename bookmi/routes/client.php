@@ -7,6 +7,7 @@ use App\Http\Controllers\Web\Client\MessageController;
 use App\Http\Controllers\Web\Client\NotificationController;
 use App\Http\Controllers\Web\Client\ReviewController;
 use App\Http\Controllers\Web\Client\SettingsController;
+use App\Http\Controllers\Web\Client\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard

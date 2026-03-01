@@ -75,6 +75,7 @@ class BookingModel {
     required this.commissionAmount,
     required this.totalAmount,
     required this.expressFeee,
+    required this.discountAmount,
     required this.isExpress,
     required this.contractAvailable,
     required this.hasClientReview,
@@ -88,6 +89,7 @@ class BookingModel {
     this.refundAmount,
     this.cancellationPolicyApplied,
     this.devisMessage,
+    this.appliedPromoCode,
     this.statusLogs,
     this.pendingReschedule,
   });
@@ -110,6 +112,7 @@ class BookingModel {
   final int commissionAmount;
   final int totalAmount;
   final int expressFeee;
+  final int discountAmount;
   final bool isExpress;
   final bool contractAvailable;
   final bool hasClientReview;
@@ -125,6 +128,7 @@ class BookingModel {
   final int? refundAmount;
   final String? cancellationPolicyApplied;
   final String? devisMessage;
+  final String? appliedPromoCode;
   final List<BookingStatusLog>? statusLogs;
   final RescheduleInfo? pendingReschedule;
 
@@ -152,6 +156,7 @@ class BookingModel {
       commissionAmount: (devis?['commission_amount'] as int?) ?? 0,
       totalAmount: (devis?['total_amount'] as int?) ?? 0,
       expressFeee: (devis?['express_fee'] as int?) ?? 0,
+      discountAmount: (devis?['discount_amount'] as int?) ?? 0,
       isExpress: (json['is_express'] as bool?) ?? false,
       contractAvailable: (json['contract_available'] as bool?) ?? false,
       hasClientReview: (json['has_client_review'] as bool?) ?? false,
@@ -163,6 +168,7 @@ class BookingModel {
       refundAmount: json['refund_amount'] as int?,
       cancellationPolicyApplied: json['cancellation_policy_applied'] as String?,
       devisMessage: devis?['message'] as String?,
+      appliedPromoCode: devis?['promo_code'] as String?,
       statusLogs: historyJson
           ?.map((e) => BookingStatusLog.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -191,6 +197,7 @@ class BookingModel {
     int? commissionAmount,
     int? totalAmount,
     int? expressFeee,
+    int? discountAmount,
     bool? isExpress,
     bool? contractAvailable,
     bool? hasClientReview,
@@ -202,6 +209,7 @@ class BookingModel {
     int? refundAmount,
     String? cancellationPolicyApplied,
     String? devisMessage,
+    String? appliedPromoCode,
     List<BookingStatusLog>? statusLogs,
     RescheduleInfo? pendingReschedule,
   }) {
@@ -222,6 +230,7 @@ class BookingModel {
       commissionAmount: commissionAmount ?? this.commissionAmount,
       totalAmount: totalAmount ?? this.totalAmount,
       expressFeee: expressFeee ?? this.expressFeee,
+      discountAmount: discountAmount ?? this.discountAmount,
       isExpress: isExpress ?? this.isExpress,
       contractAvailable: contractAvailable ?? this.contractAvailable,
       hasClientReview: hasClientReview ?? this.hasClientReview,
@@ -234,6 +243,7 @@ class BookingModel {
       cancellationPolicyApplied:
           cancellationPolicyApplied ?? this.cancellationPolicyApplied,
       devisMessage: devisMessage ?? this.devisMessage,
+      appliedPromoCode: appliedPromoCode ?? this.appliedPromoCode,
       statusLogs: statusLogs ?? this.statusLogs,
       pendingReschedule: pendingReschedule ?? this.pendingReschedule,
     );

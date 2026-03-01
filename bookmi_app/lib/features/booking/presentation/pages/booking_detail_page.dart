@@ -277,6 +277,16 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                   value: TalentCard.formatCachet(booking.commissionAmount),
                   small: true,
                 ),
+                if (booking.discountAmount > 0)
+                  _DevisRow(
+                    label: booking.appliedPromoCode != null
+                        ? 'Réduction (${booking.appliedPromoCode})'
+                        : 'Réduction code promo',
+                    value:
+                        '-${TalentCard.formatCachet(booking.discountAmount)}',
+                    small: true,
+                    valueColor: const Color(0xFF4CAF50),
+                  ),
                 const Divider(color: Colors.white12, height: 20),
                 _DevisRow(
                   label: 'Total',

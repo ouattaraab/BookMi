@@ -21,6 +21,7 @@ BookingModel _makeBooking({
   commissionAmount: 15000,
   totalAmount: 115000,
   expressFeee: 0,
+  discountAmount: 0,
   isExpress: isExpress,
   contractAvailable: false,
   hasClientReview: false,

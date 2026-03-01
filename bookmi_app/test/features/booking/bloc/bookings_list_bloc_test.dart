@@ -25,6 +25,7 @@ BookingModel _makeBooking(int id) => BookingModel(
   commissionAmount: 7500,
   totalAmount: 57500,
   expressFeee: 0,
+  discountAmount: 0,
   isExpress: false,
   contractAvailable: false,
   hasClientReview: false,

@@ -185,13 +185,15 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
       listener: (context, state) {
         if (state is BookingFlowSuccess) {
           // Booking request sent — show success overlay then close the sheet.
-          // The client will pay once the talent accepts.
+          // Express: auto-accepted; standard: pending talent validation.
           CelebrationOverlay.show(
             context,
-            title: 'Demande envoyée !',
-            subtitle:
-                'Le talent ${widget.talentStageName} va recevoir votre demande. '
-                'Vous serez notifié dès validation.',
+            title: _isExpress ? 'Réservation confirmée !' : 'Demande envoyée !',
+            subtitle: _isExpress
+                ? 'Votre réservation express avec ${widget.talentStageName} '
+                    'est confirmée. Procédez au paiement pour finaliser.'
+                : 'Le talent ${widget.talentStageName} va recevoir votre demande. '
+                    'Vous serez notifié dès validation.',
             onDismiss: () {
               if (context.mounted) Navigator.of(context).pop();
             },

@@ -64,6 +64,8 @@ class BookingRequestResource extends JsonResource
                 'travel_cost'       => $this->travel_cost,
                 'express_fee'       => $this->express_fee,
                 'commission_amount' => $this->commission_amount,
+                'discount_amount'   => $this->discount_amount ?? 0,
+                'promo_code'        => $this->promoCode?->code,
                 'total_amount'      => $this->total_amount,
                 'message'           => sprintf(
                     'Cachet artiste intact — BookMi ajoute %d%% de frais de service',

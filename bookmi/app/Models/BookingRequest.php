@@ -80,6 +80,14 @@ class BookingRequest extends Model
     }
 
     /**
+     * @return BelongsTo<PromoCode, $this>
+     */
+    public function promoCode(): BelongsTo
+    {
+        return $this->belongsTo(PromoCode::class);
+    }
+
+    /**
      * @return BelongsTo<TalentProfile, $this>
      */
     public function talentProfile(): BelongsTo

@@ -36,6 +36,7 @@ void main() {
     commissionAmount: 15000,
     totalAmount: 115000,
     expressFeee: 0,
+    discountAmount: 0,
     isExpress: false,
     contractAvailable: false,
     hasClientReview: false,
