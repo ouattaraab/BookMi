@@ -42,6 +42,9 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
   Timer? _debounce;
   String _selectedCategory = '';
   _ViewMode _viewMode = _ViewMode.grid;
+  Map<String, dynamic> _advancedFilters = {};
+
+  int get _activeFilterCount => _advancedFilters.length;
 
   @override
   void initState() {
@@ -75,22 +78,48 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 350), () {
       if (!mounted) return;
-      context.read<DiscoveryBloc>().add(
-        DiscoverySearchChanged(query: _searchController.text.trim()),
-      );
+      if (_advancedFilters.isEmpty) {
+        context.read<DiscoveryBloc>().add(
+          DiscoverySearchChanged(query: _searchController.text.trim()),
+        );
+      } else {
+        _dispatchCombinedFilters();
+      }
     });
+  }
+
+  void _dispatchCombinedFilters() {
+    final filters = <String, dynamic>{
+      if (_selectedCategory.isNotEmpty)
+        'category_id': int.tryParse(_selectedCategory) ?? _selectedCategory,
+      if (_searchController.text.trim().isNotEmpty)
+        'q': _searchController.text.trim(),
+      ..._advancedFilters,
+    };
+    final bloc = context.read<DiscoveryBloc>();
+    if (filters.isEmpty) {
+      bloc.add(const DiscoveryFilterCleared());
+    } else {
+      bloc.add(DiscoveryFiltersChanged(filters: filters));
+    }
+  }
+
+  void _applyAdvancedFilters(Map<String, dynamic> filters) {
+    setState(() => _advancedFilters = filters);
+    _dispatchCombinedFilters();
   }
 
   void _onCategoryTap(String key) {
     setState(() => _selectedCategory = key);
     final bloc = context.read<DiscoveryBloc>();
     if (key.isEmpty) {
-      if (_searchController.text.isNotEmpty) {
-        bloc.add(
-          DiscoveryFiltersChanged(
-            filters: {'q': _searchController.text.trim()},
-          ),
-        );
+      if (_searchController.text.isNotEmpty || _advancedFilters.isNotEmpty) {
+        final filters = <String, dynamic>{
+          if (_searchController.text.isNotEmpty)
+            'q': _searchController.text.trim(),
+          ..._advancedFilters,
+        };
+        bloc.add(DiscoveryFiltersChanged(filters: filters));
       } else {
         bloc.add(const DiscoveryFilterCleared());
       }
@@ -101,6 +130,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
             'category_id': int.tryParse(key) ?? key,
             if (_searchController.text.isNotEmpty)
               'q': _searchController.text.trim(),
+            ..._advancedFilters,
           },
         ),
       );
@@ -135,7 +165,7 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title row + view toggle
+                // Title row + filter button + view toggle
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -149,6 +179,72 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                       ),
                     ),
                     const Spacer(),
+                    // Filter button with active-count badge
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await _FilterSheet.show(
+                          context,
+                          initialFilters: _advancedFilters,
+                        );
+                        if (result != null && mounted) {
+                          _applyAdvancedFilters(result);
+                        }
+                      },
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            height: 34,
+                            width: 34,
+                            decoration: BoxDecoration(
+                              color: _activeFilterCount > 0
+                                  ? _primary
+                                  : Colors.white.withValues(alpha: 0.07),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.10),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.tune_rounded,
+                              size: 16,
+                              color: _activeFilterCount > 0
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.45),
+                            ),
+                          ),
+                          if (_activeFilterCount > 0)
+                            Positioned(
+                              top: -4,
+                              right: -4,
+                              child: Container(
+                                width: 15,
+                                height: 15,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF6B6B),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFF0F1923),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '$_activeFilterCount',
+                                    style: const TextStyle(
+                                      fontSize: 8,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     _ViewToggle(
                       current: _viewMode,
                       onChanged: (mode) => setState(() => _viewMode = mode),
@@ -204,10 +300,13 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
                         GestureDetector(
                           onTap: () {
                             _searchController.clear();
+                            setState(() {
+                              _selectedCategory = '';
+                              _advancedFilters = {};
+                            });
                             context.read<DiscoveryBloc>().add(
                               const DiscoveryFilterCleared(),
                             );
-                            setState(() => _selectedCategory = '');
                           },
                           child: Padding(
                             padding: const EdgeInsets.only(right: 12),
@@ -381,7 +480,10 @@ class _DiscoveryPageState extends State<DiscoveryPage> {
           GestureDetector(
             onTap: () {
               _searchController.clear();
-              setState(() => _selectedCategory = '');
+              setState(() {
+                _selectedCategory = '';
+                _advancedFilters = {};
+              });
               context.read<DiscoveryBloc>().add(const DiscoveryFilterCleared());
             },
             child: Container(
@@ -785,6 +887,482 @@ class _TalentListItem extends StatelessWidget {
     return Container(
       color: const Color(0xFF0D1421),
       child: const Icon(Icons.person, color: _mutedFg, size: 32),
+    );
+  }
+}
+
+// ── Filter / Sort bottom sheet ─────────────────────────────────────────────
+
+enum _SortOption { popularity, rating, priceAsc, priceDesc }
+
+class _FilterSheet extends StatefulWidget {
+  const _FilterSheet({required this.initialFilters});
+
+  final Map<String, dynamic> initialFilters;
+
+  static Future<Map<String, dynamic>?> show(
+    BuildContext context, {
+    required Map<String, dynamic> initialFilters,
+  }) {
+    return showModalBottomSheet<Map<String, dynamic>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _FilterSheet(initialFilters: initialFilters),
+    );
+  }
+
+  @override
+  State<_FilterSheet> createState() => _FilterSheetState();
+}
+
+class _FilterSheetState extends State<_FilterSheet> {
+  late _SortOption _sort;
+  late TextEditingController _cityCtrl;
+  late TextEditingController _minBudgetCtrl;
+  late TextEditingController _maxBudgetCtrl;
+  double? _minRating;
+
+  @override
+  void initState() {
+    super.initState();
+    final f = widget.initialFilters;
+    _cityCtrl = TextEditingController(text: f['city'] as String? ?? '');
+    _minBudgetCtrl = TextEditingController(
+      text: f['min_cachet']?.toString() ?? '',
+    );
+    _maxBudgetCtrl = TextEditingController(
+      text: f['max_cachet']?.toString() ?? '',
+    );
+    _minRating = (f['min_rating'] as num?)?.toDouble();
+
+    final sortBy = f['sort_by'] as String?;
+    final sortDir = f['sort_direction'] as String?;
+    if (sortBy == 'rating') {
+      _sort = _SortOption.rating;
+    } else if (sortBy == 'cachet_amount' && sortDir == 'asc') {
+      _sort = _SortOption.priceAsc;
+    } else if (sortBy == 'cachet_amount' && sortDir == 'desc') {
+      _sort = _SortOption.priceDesc;
+    } else {
+      _sort = _SortOption.popularity;
+    }
+  }
+
+  @override
+  void dispose() {
+    _cityCtrl.dispose();
+    _minBudgetCtrl.dispose();
+    _maxBudgetCtrl.dispose();
+    super.dispose();
+  }
+
+  Map<String, dynamic> _buildFilters() {
+    final filters = <String, dynamic>{};
+    if (_sort == _SortOption.rating) {
+      filters['sort_by'] = 'rating';
+      filters['sort_direction'] = 'desc';
+    } else if (_sort == _SortOption.priceAsc) {
+      filters['sort_by'] = 'cachet_amount';
+      filters['sort_direction'] = 'asc';
+    } else if (_sort == _SortOption.priceDesc) {
+      filters['sort_by'] = 'cachet_amount';
+      filters['sort_direction'] = 'desc';
+    }
+    if (_cityCtrl.text.trim().isNotEmpty) {
+      filters['city'] = _cityCtrl.text.trim();
+    }
+    final minVal = int.tryParse(_minBudgetCtrl.text);
+    final maxVal = int.tryParse(_maxBudgetCtrl.text);
+    if (minVal != null) filters['min_cachet'] = minVal;
+    if (maxVal != null) filters['max_cachet'] = maxVal;
+    if (_minRating != null) filters['min_rating'] = _minRating;
+    return filters;
+  }
+
+  int get _activeCount => _buildFilters().length;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F1923),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        top: 12,
+        left: 20,
+        right: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Header
+            Row(
+              children: [
+                Text(
+                  'Filtres & Tri',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => setState(() {
+                    _sort = _SortOption.popularity;
+                    _cityCtrl.clear();
+                    _minBudgetCtrl.clear();
+                    _maxBudgetCtrl.clear();
+                    _minRating = null;
+                  }),
+                  child: Text(
+                    'Réinitialiser',
+                    style: GoogleFonts.manrope(
+                      fontSize: 13,
+                      color: const Color(0xFF64B5F6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // ── Sort ────────────────────────────────────────────────
+            _SectionLabel(label: 'TRIER PAR'),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _SortChip(
+                  label: 'Popularité',
+                  icon: Icons.trending_up_rounded,
+                  isActive: _sort == _SortOption.popularity,
+                  onTap: () => setState(() => _sort = _SortOption.popularity),
+                ),
+                _SortChip(
+                  label: 'Mieux notés',
+                  icon: Icons.star_rounded,
+                  isActive: _sort == _SortOption.rating,
+                  onTap: () => setState(() => _sort = _SortOption.rating),
+                ),
+                _SortChip(
+                  label: 'Prix croissant',
+                  icon: Icons.arrow_upward_rounded,
+                  isActive: _sort == _SortOption.priceAsc,
+                  onTap: () => setState(() => _sort = _SortOption.priceAsc),
+                ),
+                _SortChip(
+                  label: 'Prix décroissant',
+                  icon: Icons.arrow_downward_rounded,
+                  isActive: _sort == _SortOption.priceDesc,
+                  onTap: () => setState(() => _sort = _SortOption.priceDesc),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+
+            // ── City ─────────────────────────────────────────────────
+            _SectionLabel(label: 'VILLE'),
+            const SizedBox(height: 10),
+            _FilterTextField(
+              controller: _cityCtrl,
+              hint: 'Ex : Abidjan, Dakar, Paris…',
+            ),
+            const SizedBox(height: 22),
+
+            // ── Budget ───────────────────────────────────────────────
+            _SectionLabel(label: 'BUDGET (FCFA)'),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: _FilterTextField(
+                    controller: _minBudgetCtrl,
+                    hint: 'Min',
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    '—',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: _FilterTextField(
+                    controller: _maxBudgetCtrl,
+                    hint: 'Max',
+                    keyboardType: TextInputType.number,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
+
+            // ── Min rating ───────────────────────────────────────────
+            _SectionLabel(label: 'NOTE MINIMALE'),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                _RatingChip(
+                  label: 'Toutes',
+                  isActive: _minRating == null,
+                  onTap: () => setState(() => _minRating = null),
+                ),
+                const SizedBox(width: 8),
+                _RatingChip(
+                  label: '3 ★+',
+                  isActive: _minRating == 3.0,
+                  onTap: () => setState(() => _minRating = 3.0),
+                ),
+                const SizedBox(width: 8),
+                _RatingChip(
+                  label: '4 ★+',
+                  isActive: _minRating == 4.0,
+                  onTap: () => setState(() => _minRating = 4.0),
+                ),
+                const SizedBox(width: 8),
+                _RatingChip(
+                  label: '5 ★',
+                  isActive: _minRating == 5.0,
+                  onTap: () => setState(() => _minRating = 5.0),
+                ),
+              ],
+            ),
+            const SizedBox(height: 30),
+
+            // ── Apply button ─────────────────────────────────────────
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2196F3), Color(0xFF1565C0)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF2196F3).withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(_buildFilters()),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: Text(
+                    _activeCount > 0
+                        ? 'Appliquer ($_activeCount filtre${_activeCount > 1 ? 's' : ''})'
+                        : 'Appliquer',
+                    style: GoogleFonts.nunito(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Shared sheet helper widgets ────────────────────────────────────────────
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: GoogleFonts.manrope(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: Colors.white.withValues(alpha: 0.45),
+        letterSpacing: 0.8,
+      ),
+    );
+  }
+}
+
+class _FilterTextField extends StatelessWidget {
+  const _FilterTextField({
+    required this.controller,
+    required this.hint,
+    this.keyboardType,
+  });
+
+  final TextEditingController controller;
+  final String hint;
+  final TextInputType? keyboardType;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 46,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        style: GoogleFonts.nunito(fontSize: 14, color: Colors.white),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.nunito(
+            fontSize: 14,
+            color: Colors.white.withValues(alpha: 0.3),
+          ),
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 14,
+          ),
+          isDense: true,
+        ),
+      ),
+    );
+  }
+}
+
+class _SortChip extends StatelessWidget {
+  const _SortChip({
+    required this.label,
+    required this.icon,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: isActive ? _primary : Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive
+                ? _primary
+                : Colors.white.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isActive
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.55),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: GoogleFonts.nunito(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: isActive
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RatingChip extends StatelessWidget {
+  const _RatingChip({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color(0xFFFFB300).withValues(alpha: 0.18)
+              : Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isActive
+                ? const Color(0xFFFFB300).withValues(alpha: 0.6)
+                : Colors.white.withValues(alpha: 0.12),
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.nunito(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: isActive
+                ? const Color(0xFFFFB300)
+                : Colors.white.withValues(alpha: 0.6),
+          ),
+        ),
+      ),
     );
   }
 }
