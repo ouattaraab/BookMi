@@ -45,3 +45,15 @@ final class MessagingError extends MessagingState {
   const MessagingError(this.message);
   final String message;
 }
+
+/// Emitted when the server rejects a message because it contains
+/// contact information (CONTACT_SHARING_DETECTED).
+/// Carries the current message list so the UI can keep displaying it.
+final class ContactSharingBlocked extends MessagingState {
+  const ContactSharingBlocked({
+    required this.conversationId,
+    required this.messages,
+  });
+  final int conversationId;
+  final List<MessageModel> messages;
+}

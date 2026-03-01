@@ -22,6 +22,11 @@ class BookingRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Réservations';
 
     protected static ?string $modelLabel = 'Réservation';

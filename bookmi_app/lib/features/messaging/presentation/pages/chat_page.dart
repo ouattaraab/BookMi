@@ -253,7 +253,9 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: BlocConsumer<MessagingCubit, MessagingState>(
               listener: (context, state) {
-                if (state is MessagesLoaded || state is MessageSending) {
+                if (state is MessagesLoaded ||
+                    state is MessageSending ||
+                    state is ContactSharingBlocked) {
                   _scrollToBottom();
                 }
               },
@@ -261,6 +263,7 @@ class _ChatPageState extends State<ChatPage> {
                 final messages = switch (state) {
                   MessagesLoaded(:final messages) => messages,
                   MessageSending(:final messages) => messages,
+                  ContactSharingBlocked(:final messages) => messages,
                   _ => null,
                 };
 
@@ -299,7 +302,7 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 }
 
-                return ListView.builder(
+                final listView = ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -322,6 +325,17 @@ class _ChatPageState extends State<ChatPage> {
                     );
                   },
                 );
+
+                if (state is ContactSharingBlocked) {
+                  return Column(
+                    children: [
+                      Expanded(child: listView),
+                      const _ContactBlockedBanner(),
+                    ],
+                  );
+                }
+
+                return listView;
               },
             ),
           ),
@@ -555,6 +569,62 @@ class _ClosedBanner extends StatelessWidget {
                 color: _mutedFg,
                 fontWeight: FontWeight.w500,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Contact sharing blocked banner ────────────────────────────────
+class _ContactBlockedBanner extends StatelessWidget {
+  const _ContactBlockedBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _warning.withValues(alpha: 0.10),
+        border: Border(
+          top: BorderSide(color: _warning.withValues(alpha: 0.35)),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Icon(
+              Icons.warning_amber_rounded,
+              size: 18,
+              color: _warning,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Message non envoyé — coordonnées détectées',
+                  style: GoogleFonts.manrope(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: _warning,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  'BookMi ne permet pas l\'échange de coordonnées directes. Les paiements et communications doivent rester sur la plateforme.',
+                  style: GoogleFonts.manrope(
+                    fontSize: 12,
+                    color: const Color(0xFFF59E0B),
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

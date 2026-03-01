@@ -61,6 +61,9 @@ class TalentProfile extends Model
         'overload_notified_at',
         'visibility_score',
         'calendar_empty_notified_at',
+        'is_group',
+        'group_size',
+        'collective_name',
     ];
 
     /**
@@ -87,6 +90,8 @@ class TalentProfile extends Model
             'overload_notified_at' => 'datetime',
             'visibility_score' => 'float',
             'calendar_empty_notified_at' => 'datetime',
+            'is_group'   => 'boolean',
+            'group_size' => 'integer',
         ];
     }
 

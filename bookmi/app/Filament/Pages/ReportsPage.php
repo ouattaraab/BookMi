@@ -22,6 +22,13 @@ class ReportsPage extends Page
 
     protected static string $view = 'filament.pages.reports-page';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false;
+    }
+
+
+
     public string $start_date = '';
 
     public string $end_date = '';

@@ -25,7 +25,10 @@ class TalentResource extends JsonResource
                 'city' => $this->city,
                 'cachet_amount' => $this->cachet_amount,
                 'average_rating' => (float) $this->average_rating,
-                'is_verified' => $this->is_verified,
+                'is_verified'     => $this->is_verified,
+                'is_group'        => $this->is_group,
+                'group_size'      => $this->group_size,
+                'collective_name' => $this->collective_name,
                 'talent_level' => $this->talent_level,
                 'category' => $this->category ? [
                     'id' => $this->category->id,

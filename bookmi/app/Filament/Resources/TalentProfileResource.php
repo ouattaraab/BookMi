@@ -22,6 +22,11 @@ class TalentProfileResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-musical-note';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_controleur', 'admin_moderateur']) ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Profils talents';
 
     protected static ?string $modelLabel = 'Profil talent';
@@ -73,6 +78,15 @@ class TalentProfileResource extends Resource
                         ->disabled(),
                     Forms\Components\Toggle::make('talentProfile.is_verified')
                         ->label('Vérifié')
+                        ->disabled(),
+                    Forms\Components\Toggle::make('talentProfile.is_group')
+                        ->label('Groupe / Collectif')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.group_size')
+                        ->label('Taille du groupe')
+                        ->disabled(),
+                    Forms\Components\TextInput::make('talentProfile.collective_name')
+                        ->label('Nom du collectif')
                         ->disabled(),
                     Forms\Components\TextInput::make('talentProfile.average_rating')
                         ->label('Note moyenne')
@@ -166,6 +180,15 @@ class TalentProfileResource extends Resource
                     ->falseIcon('heroicon-o-shield-exclamation')
                     ->trueColor('success')
                     ->falseColor('warning'),
+
+                Tables\Columns\IconColumn::make('talentProfile.is_group')
+                    ->label('Groupe')
+                    ->boolean()
+                    ->trueIcon('heroicon-o-user-group')
+                    ->falseIcon('heroicon-o-user')
+                    ->trueColor('info')
+                    ->falseColor('gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('talentProfile.average_rating')
                     ->label('Note moy.')

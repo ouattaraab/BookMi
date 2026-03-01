@@ -16,6 +16,12 @@ class KpisPage extends Page
 
     protected static string $view = 'filament.pages.kpis-page';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false;
+    }
+
+
     public array $kpis = [];
     public array $monthlyRevenue = [];
 

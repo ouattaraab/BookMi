@@ -20,6 +20,11 @@ class AdminWarningResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-exclamation-triangle';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Avertissements';
 
     protected static ?string $modelLabel = 'Avertissement';

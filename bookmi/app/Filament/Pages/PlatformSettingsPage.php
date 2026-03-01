@@ -16,6 +16,11 @@ class PlatformSettingsPage extends Page
 
     protected static string $view = 'filament.pages.platform-settings-page';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasRole('admin_ceo') ?? false;
+    }
+
     public array $settings = [];
 
     public function mount(): void

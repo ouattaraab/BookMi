@@ -22,6 +22,11 @@ class PayoutMethodResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Validations de comptes';
 
     protected static ?string $modelLabel = 'Compte de paiement';

@@ -17,6 +17,11 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('admin_ceo') ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Catégories';
 
     protected static ?string $modelLabel = 'Catégorie';

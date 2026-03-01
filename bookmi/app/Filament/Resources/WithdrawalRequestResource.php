@@ -23,6 +23,11 @@ class WithdrawalRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Demandes de reversement';
 
     protected static ?string $modelLabel = 'Demande de reversement';

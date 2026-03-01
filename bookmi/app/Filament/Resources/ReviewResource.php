@@ -23,6 +23,11 @@ class ReviewResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Avis';
 
     protected static ?string $modelLabel = 'Avis';

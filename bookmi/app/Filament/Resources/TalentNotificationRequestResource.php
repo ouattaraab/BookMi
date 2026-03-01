@@ -20,6 +20,11 @@ class TalentNotificationRequestResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasRole('admin_ceo') ?? false;
+    }
+
     protected static ?string $navigationLabel = 'Alertes disponibilité';
 
     protected static ?string $modelLabel = 'Alerte disponibilité';

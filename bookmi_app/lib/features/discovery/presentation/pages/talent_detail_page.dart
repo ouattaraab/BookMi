@@ -29,6 +29,9 @@ class TalentDetailPage extends StatelessWidget {
     final cachetAmount = (data['cachet_amount'] as int?) ?? 0;
     final averageRating = double.tryParse('${data['average_rating']}') ?? 0;
     final isVerified = (data['is_verified'] as bool?) ?? false;
+    final isGroup = (data['is_group'] as bool?) ?? false;
+    final groupSize = data['group_size'] as int?;
+    final collectiveName = data['collective_name'] as String?;
 
     return Container(
       decoration: const BoxDecoration(
@@ -146,6 +149,44 @@ class TalentDetailPage extends StatelessWidget {
                             ),
                           ),
                         ],
+                      ),
+                    ],
+                    if (isGroup) ...[
+                      const SizedBox(height: BookmiSpacing.spaceSm),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: BookmiColors.glassWhite,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: BookmiColors.glassBorder),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.group_outlined,
+                              size: 13,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              collectiveName != null &&
+                                      collectiveName.isNotEmpty
+                                  ? collectiveName
+                                  : groupSize != null
+                                  ? 'Groupe · $groupSize personnes'
+                                  : 'Groupe',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.white.withValues(alpha: 0.85),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                     const SizedBox(height: BookmiSpacing.spaceMd),

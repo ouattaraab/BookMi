@@ -69,14 +69,23 @@ class MessagingCubit extends Cubit<MessagingState> {
     );
 
     switch (await _repository.sendMessage(conversationId, content: content)) {
-      case ApiFailure(:final message):
-        emit(
-          MessagesLoaded(
-            conversationId: conversationId,
-            messages: currentMessages,
-          ),
-        );
-        addError(Exception(message));
+      case ApiFailure(:final code, :final message):
+        if (code == 'CONTACT_SHARING_DETECTED') {
+          emit(
+            ContactSharingBlocked(
+              conversationId: conversationId,
+              messages: currentMessages,
+            ),
+          );
+        } else {
+          emit(
+            MessagesLoaded(
+              conversationId: conversationId,
+              messages: currentMessages,
+            ),
+          );
+          addError(Exception(message));
+        }
       case ApiSuccess(:final data):
         emit(
           MessagesLoaded(

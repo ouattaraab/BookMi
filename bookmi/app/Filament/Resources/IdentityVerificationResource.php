@@ -24,6 +24,11 @@ class IdentityVerificationResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-identification';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false;
+    }
+
     protected static ?string $navigationLabel = "Vérifications d'identité";
 
     protected static ?string $modelLabel = "Vérification d'identité";

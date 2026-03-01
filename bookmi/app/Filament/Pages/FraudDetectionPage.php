@@ -22,6 +22,11 @@ class FraudDetectionPage extends Page
 
     protected static string $view = 'filament.pages.fraud-detection-page';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false;
+    }
+
     /** @var array<int, array<string, mixed>> */
     public array $phoneDuplicates = [];
 

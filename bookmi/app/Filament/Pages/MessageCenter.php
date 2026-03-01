@@ -28,6 +28,11 @@ class MessageCenter extends Page implements HasForms
     protected static ?int    $navigationSort  = 20;
     protected static string  $view            = 'filament.pages.message-center';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasRole('admin_ceo') ?? false;
+    }
+
     public ?array $data = [];
     public Collection $recentMessages;
 

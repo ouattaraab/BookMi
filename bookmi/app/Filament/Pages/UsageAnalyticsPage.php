@@ -16,6 +16,11 @@ class UsageAnalyticsPage extends Page
 
     protected static string $view = 'filament.pages.usage-analytics-page';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false;
+    }
+
     public array $topPages   = [];
     public array $topButtons = [];
     public array $heatmap    = [];

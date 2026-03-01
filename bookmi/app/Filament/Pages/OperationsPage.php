@@ -15,6 +15,11 @@ class OperationsPage extends Page
 
     protected static string $view = 'filament.pages.operations-page';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false;
+    }
+
     public Collection $todayBookings;
     public int $checkedIn = 0;
     public int $pendingCheckin = 0;
