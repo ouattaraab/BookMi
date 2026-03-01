@@ -103,6 +103,37 @@ main.page-content { background: #F2EFE9 !important; }
         <p style="font-size:0.875rem;color:#8A8278;font-weight:500;margin:0;">Gérez votre profil et la sécurité de votre compte</p>
     </div>
 
+
+    {{-- Vérification d'identité --}}
+    <div class="dash-fade bg-white rounded-2xl border border-gray-100 shadow-sm p-5" style="animation-delay:20ms;margin-bottom:24px;">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#EFF6FF">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="#2196F3" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <div>
+                    <p class="text-sm font-bold text-gray-900">Vérification d'identité</p>
+                    @if(auth()->user()->is_client_verified)
+                        <p class="text-xs text-green-600 font-semibold mt-0.5">✓ Identité vérifiée</p>
+                    @else
+                        <p class="text-xs text-gray-400 mt-0.5">Non vérifié — obtenez le badge client</p>
+                    @endif
+                </div>
+            </div>
+            @if(auth()->user()->is_client_verified)
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Client vérifié
+                </span>
+            @else
+                <a href="{{ route('client.verification') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-white transition-opacity hover:opacity-90" style="background:#2196F3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                    Vérifier mon identité
+                </a>
+            @endif
+        </div>
+    </div>
+
     {{-- ── Profile Section ── --}}
     <div class="dash-fade settings-card-l" style="animation-delay:40ms;margin-bottom:24px;">
         <div style="display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #EAE7E0;">

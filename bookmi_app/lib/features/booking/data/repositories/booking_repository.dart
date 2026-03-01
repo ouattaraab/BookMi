@@ -271,6 +271,31 @@ class BookingRepository {
     }
   }
 
+  /// Submit a post-event report for a completed booking (client action).
+  ///
+  /// Calls POST /booking_requests/{id}/reports with reason + optional description.
+  /// Allowed reasons: no_show, late_arrival, quality_issue, payment_issue,
+  /// inappropriate_behaviour, other.
+  Future<ApiResult<void>> reportBooking({
+    required int bookingId,
+    required String reason,
+    String? description,
+  }) async {
+    try {
+      await _dio.post<void>(
+        ApiEndpoints.bookingReports(bookingId),
+        data: {
+          'reason': reason,
+          if (description != null && description.isNotEmpty)
+            'description': description,
+        },
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Reply to a client review (talent action).
   ///
   /// Calls POST /api/v1/reviews/{reviewId}/reply with the reply text.

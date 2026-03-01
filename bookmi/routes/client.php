@@ -53,3 +53,7 @@ Route::post('/settings/2fa/disable', [SettingsController::class, 'disable'])->na
 Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
 Route::delete('/settings/avatar', [SettingsController::class, 'deleteAvatar'])->name('settings.avatar.delete');
 Route::post('/settings/notifications', [SettingsController::class, 'updateNotificationPreferences'])->name('settings.notifications.update');
+
+// Vérification d'identité
+Route::get('/verification', [VerificationController::class, 'index'])->name('verification');
+Route::post('/verification', [VerificationController::class, 'submit'])->name('verification.submit');

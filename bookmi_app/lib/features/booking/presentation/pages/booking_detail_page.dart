@@ -485,6 +485,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
+          // Client: report a completed booking (post-event)
+          if (!isTalent && booking.status == 'completed') ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _ReportButton(bookingId: booking.id),
+          ],
+
           // Talent: see client reviews and reply (confirmed or completed)
           if (isTalent &&
               booking.hasClientReview &&
@@ -2424,6 +2430,210 @@ class _CancelBookingButtonState extends State<_CancelBookingButton> {
         ),
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Colors.red, width: 1.2),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Report booking (client: completed bookings only) ────────────────────────
+
+class _ReportButton extends StatefulWidget {
+  const _ReportButton({required this.bookingId});
+  final int bookingId;
+
+  @override
+  State<_ReportButton> createState() => _ReportButtonState();
+}
+
+class _ReportButtonState extends State<_ReportButton> {
+  bool _loading = false;
+  String _selectedReason = 'other';
+  final _descController = TextEditingController();
+
+  static const _reasons = [
+    ('no_show', 'Talent absent'),
+    ('late_arrival', 'Retard important'),
+    ('quality_issue', 'Qualité insuffisante'),
+    ('payment_issue', 'Problème de paiement'),
+    ('inappropriate_behaviour', 'Comportement inapproprié'),
+    ('other', 'Autre motif'),
+  ];
+
+  @override
+  void dispose() {
+    _descController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _showReportDialog() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => AlertDialog(
+          backgroundColor: const Color(0xFF1A2744),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.flag_outlined, color: Color(0xFFFF9800), size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Signaler la réservation',
+                style: TextStyle(
+                  color: Color(0xFFFF9800),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Motif du signalement',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ..._reasons.map(
+                  (r) => RadioListTile<String>(
+                    value: r.$1,
+                    groupValue: _selectedReason,
+                    onChanged: (v) =>
+                        setModalState(() => _selectedReason = v ?? 'other'),
+                    title: Text(
+                      r.$2,
+                      style: const TextStyle(color: Colors.white, fontSize: 13),
+                    ),
+                    activeColor: const Color(0xFFFF9800),
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _descController,
+                  maxLines: 3,
+                  maxLength: 500,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Description (optionnelle)…',
+                    hintStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                      fontSize: 13,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.08),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
+                    counterStyle: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                'Annuler',
+                style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text(
+                'Envoyer',
+                style: TextStyle(
+                  color: Color(0xFFFF9800),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _loading = true);
+    final repo = context.read<BookingRepository>();
+    final result = await repo.reportBooking(
+      bookingId: widget.bookingId,
+      reason: _selectedReason,
+      description: _descController.text.trim().isEmpty
+          ? null
+          : _descController.text.trim(),
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Signalement envoyé. Notre équipe va examiner le dossier.',
+            ),
+            backgroundColor: Color(0xFFFF9800),
+          ),
+        );
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: BookmiColors.error,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _loading ? null : _showReportDialog,
+        icon: _loading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Color(0xFFFF9800),
+                ),
+              )
+            : const Icon(
+                Icons.flag_outlined,
+                size: 18,
+                color: Color(0xFFFF9800),
+              ),
+        label: Text(
+          _loading ? 'Envoi...' : 'Signaler un problème',
+          style: const TextStyle(
+            color: Color(0xFFFF9800),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFFF9800), width: 1.2),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
