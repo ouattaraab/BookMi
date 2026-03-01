@@ -3,7 +3,9 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\UserRole;
+use App\Events\BookingCreated;
 use App\Events\MessageSent;
+use App\Models\BookingRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\TalentProfile;
@@ -140,6 +142,57 @@ class AutoReplyTest extends TestCase
         ])->assertCreated();
 
         $this->assertDatabaseCount('messages', 1);
+        $this->assertDatabaseMissing('messages', ['is_auto_reply' => true]);
+    }
+
+    // ── Auto-reply triggered on BookingCreated event ───────────────────────────
+
+    public function test_auto_reply_sent_on_booking_creation_when_enabled(): void
+    {
+        Event::fake([MessageSent::class]);
+
+        [$talentUser, $talentProfile] = $this->makeTalentWithProfile(
+            autoReplyActive: true,
+            autoReplyMessage: 'Merci pour votre réservation, je vous confirme très vite !',
+        );
+        $client = $this->makeClient();
+
+        $booking = BookingRequest::factory()
+            ->state(['talent_profile_id' => $talentProfile->id])
+            ->create(['client_id' => $client->id]);
+
+        BookingCreated::dispatch($booking);
+
+        // A conversation linked to the booking should have been created
+        $this->assertDatabaseHas('conversations', ['booking_request_id' => $booking->id]);
+
+        // Auto-reply message should exist in that conversation
+        $autoReply = Message::where('is_auto_reply', true)->first();
+        $this->assertNotNull($autoReply);
+        $this->assertEquals($talentUser->id, $autoReply->sender_id);
+        $this->assertEquals(
+            'Merci pour votre réservation, je vous confirme très vite !',
+            $autoReply->content,
+        );
+    }
+
+    public function test_auto_reply_not_sent_on_booking_creation_when_disabled(): void
+    {
+        Event::fake([MessageSent::class]);
+
+        [$talentUser, $talentProfile] = $this->makeTalentWithProfile(
+            autoReplyActive: false,
+            autoReplyMessage: 'Message auto désactivé.',
+        );
+        $client = $this->makeClient();
+
+        $booking = BookingRequest::factory()
+            ->state(['talent_profile_id' => $talentProfile->id])
+            ->create(['client_id' => $client->id]);
+
+        BookingCreated::dispatch($booking);
+
+        $this->assertDatabaseMissing('conversations', ['booking_request_id' => $booking->id]);
         $this->assertDatabaseMissing('messages', ['is_auto_reply' => true]);
     }
 

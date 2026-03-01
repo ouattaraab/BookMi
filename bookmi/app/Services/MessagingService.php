@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\MessageType;
 use App\Events\MessageSent;
 use App\Jobs\SendPushNotification;
+use App\Models\BookingRequest;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\TalentProfile;
@@ -17,8 +18,7 @@ class MessagingService
 {
     public function __construct(
         private readonly ContactDetectionService $contactDetector,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns all conversations for the authenticated user,
@@ -71,17 +71,17 @@ class MessagingService
             $conversation = Conversation::firstOrCreate(
                 ['booking_request_id' => $bookingRequestId],
                 [
-                    'client_id'         => $client->id,
+                    'client_id' => $client->id,
                     'talent_profile_id' => $talentProfileId,
-                    'last_message_at'   => now(),
+                    'last_message_at' => now(),
                 ],
             );
         } else {
             /** @var Conversation $conversation */
             $conversation = Conversation::firstOrCreate(
                 [
-                    'client_id'          => $client->id,
-                    'talent_profile_id'  => $talentProfileId,
+                    'client_id' => $client->id,
+                    'talent_profile_id' => $talentProfileId,
                     'booking_request_id' => null,
                 ],
                 ['last_message_at' => now()],
@@ -129,23 +129,23 @@ class MessagingService
             : false;
 
         $mediaPath = null;
-        $mimeType  = null;
+        $mimeType = null;
 
         if ($mediaFile !== null) {
-            $dir       = "messages/{$conversation->id}";
+            $dir = "messages/{$conversation->id}";
             $mediaPath = $mediaFile->store($dir, 'public');
-            $mimeType  = $mediaFile->getMimeType();
+            $mimeType = $mediaFile->getMimeType();
         }
 
         $message = Message::create([
             'conversation_id' => $conversation->id,
-            'sender_id'       => $sender->id,
-            'content'         => $content,
-            'type'            => $type,
-            'is_auto_reply'   => $isAutoReply,
-            'is_flagged'      => $isFlagged,
-            'media_path'      => $mediaPath,
-            'media_type'      => $mimeType,
+            'sender_id' => $sender->id,
+            'content' => $content,
+            'type' => $type,
+            'is_auto_reply' => $isAutoReply,
+            'is_flagged' => $isFlagged,
+            'media_path' => $mediaPath,
+            'media_type' => $mimeType,
         ]);
 
         $conversation->update(['last_message_at' => now()]);
@@ -180,7 +180,7 @@ class MessagingService
         }
 
         $senderName = $sender->first_name ?? 'Quelqu\'un';
-        $preview    = $message->type !== MessageType::Text
+        $preview = $message->type !== MessageType::Text
             ? ($message->type === MessageType::Image ? '📷 Photo' : '🎥 Vidéo')
             : mb_substr($message->content, 0, 80);
 
@@ -190,11 +190,58 @@ class MessagingService
                 title: "Nouveau message de {$senderName}",
                 body: $preview,
                 data: [
-                    'type'            => 'new_message',
+                    'type' => 'new_message',
                     'conversation_id' => (string) $conversation->id,
                 ],
             );
         }
+    }
+
+    /**
+     * Creates the booking conversation and sends the talent's auto-reply when a
+     * new booking is created — if the talent has auto-reply configured and active.
+     *
+     * Idempotent: a second call for the same booking is a no-op if an auto-reply
+     * message already exists on that conversation.
+     */
+    public function autoReplyOnBookingCreated(BookingRequest $booking): void
+    {
+        $talentProfile = $booking->talentProfile ?? $booking->load('talentProfile')->talentProfile;
+
+        if (! $talentProfile || ! $talentProfile->auto_reply_is_active || ! $talentProfile->auto_reply_message) {
+            return;
+        }
+
+        $client = $booking->client ?? $booking->load('client')->client;
+        if (! $client) {
+            return;
+        }
+
+        $talentUser = $talentProfile->user ?? $talentProfile->load('user')->user;
+        if (! $talentUser) {
+            return;
+        }
+
+        $conversation = $this->getOrCreateConversation(
+            $client,
+            $talentProfile->id,
+            $booking->id,
+        );
+
+        $alreadyReplied = $conversation->messages()
+            ->where('is_auto_reply', true)
+            ->exists();
+
+        if ($alreadyReplied) {
+            return;
+        }
+
+        $this->sendMessage(
+            conversation: $conversation,
+            sender: $talentUser,
+            content: $talentProfile->auto_reply_message,
+            isAutoReply: true,
+        );
     }
 
     /**

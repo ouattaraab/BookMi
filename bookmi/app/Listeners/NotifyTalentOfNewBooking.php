@@ -5,10 +5,15 @@ namespace App\Listeners;
 use App\Events\BookingCreated;
 use App\Jobs\SendPushNotification;
 use App\Notifications\BookingRequestedNotification;
+use App\Services\MessagingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 class NotifyTalentOfNewBooking implements ShouldQueue
 {
+    public function __construct(private readonly MessagingService $messagingService)
+    {
+    }
+
     public function handle(BookingCreated $event): void
     {
         $booking = $event->booking->loadMissing([
@@ -35,5 +40,9 @@ class NotifyTalentOfNewBooking implements ShouldQueue
             "{$clientName} souhaite réserver — {$packageName}",
             ['booking_id' => $booking->id, 'type' => 'booking_requested'],
         );
+
+        // Auto-reply: create the booking conversation and send the talent's
+        // welcome message immediately if auto-reply is configured and active.
+        $this->messagingService->autoReplyOnBookingCreated($booking);
     }
 }
