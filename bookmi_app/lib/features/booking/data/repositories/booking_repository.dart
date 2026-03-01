@@ -76,12 +76,15 @@ class BookingRepository {
   }
 
   /// Create a new booking request.
+  ///
+  /// [eventDate], [startTime], and [eventLocation] may be null for micro/digital
+  /// packages — the backend auto-fills them from the package's delivery_days.
   Future<ApiResult<BookingModel>> createBooking({
     required int talentProfileId,
     required int servicePackageId,
-    required String eventDate,
-    required String startTime,
-    required String eventLocation,
+    String? eventDate,
+    String? startTime,
+    String? eventLocation,
     String? message,
     bool isExpress = false,
     int? travelCost,
@@ -93,9 +96,10 @@ class BookingRepository {
         data: {
           'talent_profile_id': talentProfileId,
           'service_package_id': servicePackageId,
-          'event_date': eventDate,
-          'start_time': startTime,
-          'event_location': eventLocation,
+          if (eventDate != null && eventDate.isNotEmpty) 'event_date': eventDate,
+          if (startTime != null && startTime.isNotEmpty) 'start_time': startTime,
+          if (eventLocation != null && eventLocation.isNotEmpty)
+            'event_location': eventLocation,
           if (message != null && message.isNotEmpty) 'message': message,
           'is_express': isExpress,
           if (travelCost != null && travelCost > 0) 'travel_cost': travelCost,

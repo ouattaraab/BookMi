@@ -10,9 +10,9 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
   const BookingFlowSubmitted({
     required this.talentProfileId,
     required this.servicePackageId,
-    required this.eventDate,
-    required this.startTime,
-    required this.eventLocation,
+    this.eventDate,
+    this.startTime,
+    this.eventLocation,
     this.message,
     this.isExpress = false,
     this.travelCost,
@@ -23,11 +23,15 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
   final int servicePackageId;
 
   /// Date only, format YYYY-MM-DD (e.g. "2026-03-15").
-  final String eventDate;
+  /// Null for micro/digital packages — the backend auto-fills from delivery_days.
+  final String? eventDate;
 
   /// Time only, format HH:MM (e.g. "18:00").
-  final String startTime;
-  final String eventLocation;
+  /// Null for micro packages.
+  final String? startTime;
+
+  /// Event location. Null for micro packages (defaults to "Livraison digitale").
+  final String? eventLocation;
   final String? message;
   final bool isExpress;
 

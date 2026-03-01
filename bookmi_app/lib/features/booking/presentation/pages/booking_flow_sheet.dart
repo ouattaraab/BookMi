@@ -102,7 +102,18 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     return (attrs['type'] as String?) == 'micro';
   }
 
+  int get _deliveryDays {
+    final attrs =
+        _selectedPackage?['attributes'] as Map<String, dynamic>? ??
+        _selectedPackage ??
+        {};
+    return (attrs['delivery_days'] as int?) ?? 7;
+  }
+
   String get _formattedDate {
+    if (_isMicroPackage) {
+      return 'Livraison dans $_deliveryDays jour${_deliveryDays > 1 ? 's' : ''}';
+    }
     if (_selectedDate == null) return '';
     const months = [
       'jan',
@@ -130,10 +141,11 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   bool get _canProceed {
     return switch (_currentStep) {
       0 => _selectedPackageId != null,
-      1 =>
-        _selectedDate != null &&
-            _selectedTime != null &&
-            _location.trim().isNotEmpty,
+      // Micro packages: date/time/location are auto-filled by the backend.
+      1 => _isMicroPackage ||
+          (_selectedDate != null &&
+              _selectedTime != null &&
+              _location.trim().isNotEmpty),
       2 => true,
       _ => false,
     };
@@ -166,18 +178,22 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         {};
     final pkgId = pkg['id'] as int? ?? _selectedPackageId!;
 
+    final isMicro = _isMicroPackage;
     context.read<BookingFlowBloc>().add(
       BookingFlowSubmitted(
         talentProfileId: widget.talentProfileId,
         servicePackageId: pkgId,
-        eventDate:
-            '${_selectedDate!.year}-'
-            '${_selectedDate!.month.toString().padLeft(2, '0')}-'
-            '${_selectedDate!.day.toString().padLeft(2, '0')}',
-        startTime:
-            '${_selectedTime!.hour.toString().padLeft(2, '0')}:'
-            '${_selectedTime!.minute.toString().padLeft(2, '0')}',
-        eventLocation: _location.trim(),
+        // Micro packages: omit date/time/location — backend auto-fills them.
+        eventDate: isMicro
+            ? null
+            : '${_selectedDate!.year}-'
+                '${_selectedDate!.month.toString().padLeft(2, '0')}-'
+                '${_selectedDate!.day.toString().padLeft(2, '0')}',
+        startTime: isMicro
+            ? null
+            : '${_selectedTime!.hour.toString().padLeft(2, '0')}:'
+                '${_selectedTime!.minute.toString().padLeft(2, '0')}',
+        eventLocation: isMicro ? null : _location.trim(),
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,
         travelCost: _travelCost > 0 ? _travelCost : null,
@@ -351,17 +367,19 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           });
         },
       ),
-      1 => Step2DateLocation(
-        selectedDate: _selectedDate,
-        selectedTime: _selectedTime,
-        location: _location,
-        travelCost: _travelCost,
-        showTravelCost: !_isMicroPackage,
-        onDateSelected: (d) => setState(() => _selectedDate = d),
-        onTimeSelected: (t) => setState(() => _selectedTime = t),
-        onLocationChanged: (v) => setState(() => _location = v),
-        onTravelCostChanged: (v) => setState(() => _travelCost = v),
-      ),
+      1 => _isMicroPackage
+          ? _MicroDeliveryStep(deliveryDays: _deliveryDays)
+          : Step2DateLocation(
+              selectedDate: _selectedDate,
+              selectedTime: _selectedTime,
+              location: _location,
+              travelCost: _travelCost,
+              showTravelCost: true,
+              onDateSelected: (d) => setState(() => _selectedDate = d),
+              onTimeSelected: (t) => setState(() => _selectedTime = t),
+              onLocationChanged: (v) => setState(() => _location = v),
+              onTravelCostChanged: (v) => setState(() => _travelCost = v),
+            ),
       2 => BlocBuilder<BookingFlowBloc, BookingFlowState>(
         builder: (context, state) {
           return Step3Recap(
@@ -377,7 +395,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             totalAmount: _totalAmount,
             travelCost: _travelCost,
             eventDate: _formattedDate,
-            eventLocation: _location,
+            eventLocation: _isMicroPackage ? 'Livraison digitale' : _location,
             enableExpress: widget.enableExpress,
             isExpress: _isExpress,
             message: _message,
@@ -485,6 +503,143 @@ class _BottomCta extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+// ── Micro-service delivery info step ─────────────────────────────────────────
+
+/// Shown in Step 2 when the selected package is a micro-service.
+/// Replaces the date/location pickers with a delivery timeline summary.
+class _MicroDeliveryStep extends StatelessWidget {
+  const _MicroDeliveryStep({required this.deliveryDays});
+
+  final int deliveryDays;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Delivery timeline card
+          Container(
+            padding: const EdgeInsets.all(BookmiSpacing.spaceMd),
+            decoration: BoxDecoration(
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.35),
+              ),
+            ),
+            child: Column(
+              children: [
+                const Icon(
+                  Icons.bolt_rounded,
+                  size: 48,
+                  color: Color(0xFF8B5CF6),
+                ),
+                const SizedBox(height: BookmiSpacing.spaceSm),
+                const Text(
+                  'Mini-service',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Livraison digitale en $deliveryDays jour${deliveryDays > 1 ? 's' : ''}',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF8B5CF6),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: BookmiSpacing.spaceMd),
+          // Info items
+          _MicroInfoRow(
+            icon: Icons.schedule_outlined,
+            title: 'Aucune date à choisir',
+            subtitle:
+                'Votre prestation sera livrée dans $deliveryDays jour${deliveryDays > 1 ? 's' : ''} après acceptation.',
+          ),
+          const SizedBox(height: BookmiSpacing.spaceSm),
+          _MicroInfoRow(
+            icon: Icons.download_outlined,
+            title: 'Livraison digitale',
+            subtitle:
+                'Vous recevrez votre commande directement via la messagerie BookMi.',
+          ),
+          const SizedBox(height: BookmiSpacing.spaceSm),
+          _MicroInfoRow(
+            icon: Icons.verified_outlined,
+            title: 'Paiement sécurisé',
+            subtitle:
+                'Le cachet est versé au talent uniquement après votre confirmation de réception.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MicroInfoRow extends StatelessWidget {
+  const _MicroInfoRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 38,
+          height: 38,
+          decoration: BoxDecoration(
+            color: BookmiColors.brandBlue.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: BookmiColors.brandBlueLight),
+        ),
+        const SizedBox(width: BookmiSpacing.spaceSm),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.6),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

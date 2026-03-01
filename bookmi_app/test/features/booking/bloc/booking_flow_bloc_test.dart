@@ -146,6 +146,35 @@ void main() {
     );
 
     blocTest<BookingFlowBloc, BookingFlowState>(
+      'micro package — submits without eventDate/startTime/eventLocation',
+      build: () {
+        when(
+          () => repository.createBooking(
+            talentProfileId: any(named: 'talentProfileId'),
+            servicePackageId: any(named: 'servicePackageId'),
+            eventDate: any(named: 'eventDate'),
+            startTime: any(named: 'startTime'),
+            eventLocation: any(named: 'eventLocation'),
+            message: any(named: 'message'),
+            isExpress: any(named: 'isExpress'),
+          ),
+        ).thenAnswer((_) async => ApiSuccess(_booking));
+        return BookingFlowBloc(repository: repository);
+      },
+      act: (bloc) => bloc.add(
+        const BookingFlowSubmitted(
+          talentProfileId: 1,
+          servicePackageId: 3,
+          // No eventDate, startTime, eventLocation — micro package
+        ),
+      ),
+      expect: () => [
+        isA<BookingFlowSubmitting>(),
+        isA<BookingFlowSuccess>(),
+      ],
+    );
+
+    blocTest<BookingFlowBloc, BookingFlowState>(
       'passes travelCost to repository when provided',
       build: () {
         when(

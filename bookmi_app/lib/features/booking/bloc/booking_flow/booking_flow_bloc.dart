@@ -37,6 +37,8 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
       travelCost: event.travelCost,
       promoCode: event.promoCode,
     );
+    // Note: eventDate/startTime/eventLocation are nullable for micro packages.
+    // The repository guards against sending null fields to the API.
 
     switch (result) {
       case ApiSuccess(:final data):
