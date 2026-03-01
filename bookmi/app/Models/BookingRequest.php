@@ -34,6 +34,8 @@ class BookingRequest extends Model
         'commission_amount',
         'total_amount',
         'refund_amount',
+        'promo_code_id',
+        'discount_amount',
         'cancellation_policy_applied',
         'accept_comment',
         'mediator_id',
@@ -56,6 +58,7 @@ class BookingRequest extends Model
             'commission_amount' => 'integer',
             'total_amount'      => 'integer',
             'refund_amount'     => 'integer',
+            'discount_amount'   => 'integer',
             'package_snapshot'  => 'array',
         ];
     }

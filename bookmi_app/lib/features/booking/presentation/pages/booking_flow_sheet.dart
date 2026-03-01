@@ -76,6 +76,11 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   bool _isExpress = false;
   String _message = '';
 
+  // Promo code
+  String _promoCodeInput = '';
+  String? _appliedPromoCode;
+  int _discountAmount = 0;
+
   // Computed devis (set after step 1 selection)
   int get _cachetAmount {
     final attrs =
@@ -166,6 +171,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         eventLocation: _location.trim(),
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,
+        promoCode: _appliedPromoCode,
       ),
     );
   }
@@ -189,6 +195,18 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             onDismiss: () {
               if (context.mounted) Navigator.of(context).pop();
             },
+          );
+        } else if (state is BookingFlowPromoValidated) {
+          setState(() {
+            _appliedPromoCode = state.appliedCode;
+            _discountAmount = state.discountAmount;
+          });
+        } else if (state is BookingFlowPromoError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: BookmiColors.error,
+            ),
           );
         } else if (state is BookingFlowFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -349,6 +367,23 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             message: _message,
             onExpressChanged: (v) => setState(() => _isExpress = v),
             onMessageChanged: (v) => setState(() => _message = v),
+            appliedPromoCode: _appliedPromoCode,
+            discountAmount: _discountAmount,
+            promoLoading: state is BookingFlowPromoValidating,
+            onPromoCodeChanged: (v) => setState(() => _promoCodeInput = v),
+            onApplyPromo: _promoCodeInput.trim().isEmpty
+                ? null
+                : () => context.read<BookingFlowBloc>().add(
+                    PromoCodeValidationRequested(
+                      code: _promoCodeInput.trim(),
+                      bookingAmount: _totalAmount,
+                    ),
+                  ),
+            onClearPromo: () => setState(() {
+              _appliedPromoCode = null;
+              _discountAmount = 0;
+              _promoCodeInput = '';
+            }),
           );
         },
       ),

@@ -39,6 +39,7 @@ class StoreBookingRequestRequest extends FormRequest
             'message'        => ['nullable', 'string', 'max:1000'],
             'travel_cost'    => ['nullable', 'integer', 'min:0'],
             'is_express'     => ['nullable', 'boolean'],
+            'promo_code'     => ['nullable', 'string', 'max:50'],
         ];
     }
 

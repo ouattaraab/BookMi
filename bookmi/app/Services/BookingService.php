@@ -13,6 +13,7 @@ use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
 use App\Models\BookingStatusLog;
 use App\Models\CalendarSlot;
+use App\Models\PromoCode;
 use App\Models\ServicePackage;
 use App\Models\TalentProfile;
 use App\Models\User;
@@ -30,7 +31,7 @@ class BookingService
     /**
      * Create a new booking request from a client.
      *
-     * @param array{talent_profile_id: int, service_package_id: int, event_date: string, start_time?: string|null, event_location: string, message?: string|null, is_express?: bool} $data
+     * @param array{talent_profile_id: int, service_package_id: int, event_date: string, start_time?: string|null, event_location: string, message?: string|null, is_express?: bool, travel_cost?: int|null, promo_code?: string|null} $data
      */
     public function createBookingRequest(User $client, array $data): BookingRequest
     {
@@ -62,6 +63,18 @@ class BookingService
         $expressFee       = $isExpress ? (int) round($cachetAmount * 0.15) : 0;
         $totalAmount      = $cachetAmount + $travelCost + $commissionAmount + $expressFee;
 
+        // Apply promo code discount if provided and valid
+        $discountAmount = 0;
+        $promoCodeId    = null;
+        if (! empty($data['promo_code'])) {
+            $promo = PromoCode::where('code', strtoupper($data['promo_code']))->first();
+            if ($promo && $promo->isValidFor($totalAmount)) {
+                $discountAmount = $promo->calculateDiscount($totalAmount);
+                $promoCodeId    = $promo->id;
+                $totalAmount    = max(0, $totalAmount - $discountAmount);
+            }
+        }
+
         $packageSnapshot = [
             'id'               => $package->id,
             'name'             => $package->name,
@@ -88,7 +101,13 @@ class BookingService
             'commission_amount'  => $commissionAmount,
             'total_amount'       => $totalAmount,
             'express_fee'        => $expressFee,
+            'promo_code_id'      => $promoCodeId,
+            'discount_amount'    => $discountAmount,
         ]);
+
+        if ($promoCodeId !== null) {
+            PromoCode::where('id', $promoCodeId)->increment('used_count');
+        }
 
         // Log creation
         $this->logStatusTransition($booking, null, BookingStatus::Pending, $client->id);

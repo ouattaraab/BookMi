@@ -47,6 +47,48 @@ final class BookingFlowPaystackReady extends BookingFlowState {
   int get hashCode => accessCode.hashCode;
 }
 
+/// Promo code validation is in progress.
+final class BookingFlowPromoValidating extends BookingFlowState {
+  const BookingFlowPromoValidating();
+}
+
+/// Promo code validated successfully — discount applied.
+@immutable
+final class BookingFlowPromoValidated extends BookingFlowState {
+  const BookingFlowPromoValidated({
+    required this.appliedCode,
+    required this.discountAmount,
+  });
+
+  final String appliedCode;
+  final int discountAmount;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookingFlowPromoValidated &&
+          appliedCode == other.appliedCode &&
+          discountAmount == other.discountAmount;
+
+  @override
+  int get hashCode => Object.hash(appliedCode, discountAmount);
+}
+
+/// Promo code validation failed.
+@immutable
+final class BookingFlowPromoError extends BookingFlowState {
+  const BookingFlowPromoError({required this.message});
+  final String message;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BookingFlowPromoError && message == other.message;
+
+  @override
+  int get hashCode => message.hashCode;
+}
+
 @immutable
 final class BookingFlowFailure extends BookingFlowState {
   const BookingFlowFailure({required this.code, required this.message});

@@ -9,6 +9,7 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
     : _repository = repository,
       super(const BookingFlowInitial()) {
     on<BookingFlowSubmitted>(_onSubmitted);
+    on<PromoCodeValidationRequested>(_onPromoValidation);
     on<BookingFlowPaymentInitiated>(_onPaymentInitiated);
     on<BookingFlowReset>(_onReset);
   }
@@ -19,7 +20,9 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
     BookingFlowSubmitted event,
     Emitter<BookingFlowState> emit,
   ) async {
-    if (state is BookingFlowSubmitting) return;
+    if (state is BookingFlowSubmitting || state is BookingFlowPromoValidating) {
+      return;
+    }
 
     emit(const BookingFlowSubmitting());
 
@@ -31,6 +34,7 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
       eventLocation: event.eventLocation,
       message: event.message,
       isExpress: event.isExpress,
+      promoCode: event.promoCode,
     );
 
     switch (result) {
@@ -38,6 +42,34 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
         emit(BookingFlowSuccess(booking: data));
       case ApiFailure(:final code, :final message):
         emit(BookingFlowFailure(code: code, message: message));
+    }
+  }
+
+  Future<void> _onPromoValidation(
+    PromoCodeValidationRequested event,
+    Emitter<BookingFlowState> emit,
+  ) async {
+    if (state is BookingFlowPromoValidating) return;
+
+    emit(const BookingFlowPromoValidating());
+
+    final result = await _repository.validatePromoCode(
+      code: event.code,
+      bookingAmount: event.bookingAmount,
+    );
+
+    switch (result) {
+      case ApiSuccess(:final data):
+        final discountAmount = data['discount_amount'] as int? ?? 0;
+        final appliedCode = data['code'] as String? ?? event.code;
+        emit(
+          BookingFlowPromoValidated(
+            appliedCode: appliedCode,
+            discountAmount: discountAmount,
+          ),
+        );
+      case ApiFailure(:final message):
+        emit(BookingFlowPromoError(message: message));
     }
   }
 
@@ -68,7 +100,7 @@ class BookingFlowBloc extends Bloc<BookingFlowEvent, BookingFlowState> {
           emit(
             const BookingFlowFailure(
               code: 'PAYMENT_ERROR',
-              message: 'Impossible d\'initialiser le paiement Paystack.',
+              message: "Impossible d'initialiser le paiement Paystack.",
             ),
           );
         }

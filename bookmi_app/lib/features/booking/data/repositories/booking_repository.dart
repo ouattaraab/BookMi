@@ -85,6 +85,7 @@ class BookingRepository {
     String? message,
     bool isExpress = false,
     int? travelCost,
+    String? promoCode,
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
@@ -98,6 +99,8 @@ class BookingRepository {
           if (message != null && message.isNotEmpty) 'message': message,
           'is_express': isExpress,
           if (travelCost != null && travelCost > 0) 'travel_cost': travelCost,
+          if (promoCode != null && promoCode.isNotEmpty)
+            'promo_code': promoCode,
         },
       );
 
@@ -105,6 +108,23 @@ class BookingRepository {
         response.data!['data'] as Map<String, dynamic>,
       );
       return ApiSuccess(booking);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Validate a promo code against a booking amount.
+  /// Returns discount_amount and final_amount on success.
+  Future<ApiResult<Map<String, dynamic>>> validatePromoCode({
+    required String code,
+    required int bookingAmount,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/promo_codes/validate',
+        data: {'code': code, 'booking_amount': bookingAmount},
+      );
+      return ApiSuccess(response.data!['data'] as Map<String, dynamic>);
     } on DioException catch (e) {
       return _mapDioError(e);
     }

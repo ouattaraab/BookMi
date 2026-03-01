@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\FinancialDashboardController;
 use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaystackWebhookController;
+use App\Http\Controllers\Api\V1\PromoCodeController;
 use App\Http\Controllers\Api\V1\RescheduleController;
 use App\Http\Controllers\Api\V1\BookingRequestController;
 use App\Http\Controllers\Api\V1\CalendarSlotController;
@@ -138,6 +139,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('/calendar_slots/{slot}', [CalendarSlotController::class, 'destroy'])->name('calendar.destroy');
 
         // Réservations
+        Route::post('/promo_codes/validate', [PromoCodeController::class, 'validate'])->name('promo_codes.validate');
+
         Route::get('/booking_requests', [BookingRequestController::class, 'index'])->name('booking_requests.index');
         Route::post('/booking_requests', [BookingRequestController::class, 'store'])->name('booking_requests.store');
         Route::get('/booking_requests/{booking}', [BookingRequestController::class, 'show'])->name('booking_requests.show');

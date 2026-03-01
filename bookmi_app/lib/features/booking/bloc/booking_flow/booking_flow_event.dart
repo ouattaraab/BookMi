@@ -15,6 +15,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     required this.eventLocation,
     this.message,
     this.isExpress = false,
+    this.promoCode,
   });
 
   final int talentProfileId;
@@ -29,6 +30,9 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
   final String? message;
   final bool isExpress;
 
+  /// Applied promo code (uppercase), or null if none.
+  final String? promoCode;
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -39,7 +43,8 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
           startTime == other.startTime &&
           eventLocation == other.eventLocation &&
           message == other.message &&
-          isExpress == other.isExpress;
+          isExpress == other.isExpress &&
+          promoCode == other.promoCode;
 
   @override
   int get hashCode => Object.hash(
@@ -50,7 +55,30 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     eventLocation,
     message,
     isExpress,
+    promoCode,
   );
+}
+
+/// Validate a promo code against the current booking total.
+@immutable
+final class PromoCodeValidationRequested extends BookingFlowEvent {
+  const PromoCodeValidationRequested({
+    required this.code,
+    required this.bookingAmount,
+  });
+
+  final String code;
+  final int bookingAmount;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is PromoCodeValidationRequested &&
+          code == other.code &&
+          bookingAmount == other.bookingAmount;
+
+  @override
+  int get hashCode => Object.hash(code, bookingAmount);
 }
 
 /// Initialise la transaction Paystack pour la réservation créée (step 4).
