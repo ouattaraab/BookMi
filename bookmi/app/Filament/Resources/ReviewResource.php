@@ -26,7 +26,7 @@ class ReviewResource extends Resource
     public static function canViewAny(): bool
     {
         $user = auth()->user();
-        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false);
+        return ($user?->is_admin === true) || ($user?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false);
     }
 
     protected static ?string $navigationLabel = 'Avis';

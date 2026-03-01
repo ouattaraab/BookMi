@@ -19,7 +19,7 @@ class KpisPage extends Page
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false);
+        return ($user?->is_admin === true) || ($user?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false);
     }
 
 
