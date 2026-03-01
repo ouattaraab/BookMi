@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
@@ -7,6 +9,7 @@ import 'package:bookmi_app/features/tracking/data/models/tracking_event_model.da
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// Shows the real-time status timeline for a booking.
 ///
@@ -347,6 +350,11 @@ class _NextStepButton extends StatelessWidget {
       );
     }
 
+    // Arriving on site requires GPS check-in via the dedicated endpoint.
+    if (transition.$2 == 'arrived') {
+      return _CheckInButton(bookingId: bookingId);
+    }
+
     return _ActionButton(
       label: transition.$3,
       status: transition.$2,
@@ -417,6 +425,138 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
+// ── Check-in Button (GPS required) ───────────────────────────────────────────
+
+/// Shown when the talent needs to confirm physical arrival.
+/// Requests GPS permission, obtains coordinates, then calls [TrackingCubit.checkIn].
+class _CheckInButton extends StatefulWidget {
+  const _CheckInButton({required this.bookingId});
+
+  final int bookingId;
+
+  @override
+  State<_CheckInButton> createState() => _CheckInButtonState();
+}
+
+class _CheckInButtonState extends State<_CheckInButton> {
+  bool _fetchingLocation = false;
+
+  Future<void> _onTap() async {
+    setState(() => _fetchingLocation = true);
+    try {
+      // 1. Check service availability.
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        _showError(
+          'Le service de localisation est désactivé. '
+          'Activez-le dans les paramètres de votre appareil.',
+        );
+        return;
+      }
+
+      // 2. Check / request permission.
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        _showError(
+          'Permission de localisation refusée. '
+          "Autorisez l'accès dans les paramètres de l'application.",
+        );
+        return;
+      }
+
+      // 3. Obtain position (15 s timeout).
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 15),
+        ),
+      );
+
+      if (!mounted) return;
+
+      // 4. Send check-in with GPS coordinates.
+      await context.read<TrackingCubit>().checkIn(
+        widget.bookingId,
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
+    } on TimeoutException {
+      _showError(
+        "Impossible d'obtenir votre position. "
+        'Vérifiez votre connexion GPS et réessayez.',
+      );
+    } on Exception catch (_) {
+      _showError('Erreur lors de la récupération de votre position.');
+    } finally {
+      if (mounted) setState(() => _fetchingLocation = false);
+    }
+  }
+
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: BookmiColors.error),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<TrackingCubit, TrackingState>(
+      builder: (context, state) {
+        final busy = _fetchingLocation || state is TrackingUpdating;
+
+        return SizedBox(
+          width: double.infinity,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: busy ? null : BookmiColors.gradientBrand,
+              color: busy ? Colors.white12 : null,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TextButton.icon(
+              onPressed: busy ? null : _onTap,
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  vertical: BookmiSpacing.spaceMd,
+                ),
+                foregroundColor: Colors.white,
+                disabledForegroundColor: Colors.white38,
+              ),
+              icon: busy
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white38,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.location_on_outlined,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+              label: busy
+                  ? const SizedBox.shrink()
+                  : const Text(
+                      'Je suis arrivé',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 // ── Celebration Overlay ───────────────────────────────────────────────────────
 
 class _CelebrationOverlay extends StatefulWidget {
@@ -443,7 +583,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
       parent: _controller,
       curve: Curves.easeIn,
     );
-    _controller.forward();
+    unawaited(_controller.forward());
   }
 
   @override
@@ -453,9 +593,9 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
   }
 
   void _dismiss() {
-    _controller.reverse().then((_) {
+    unawaited(_controller.reverse().then((_) {
       if (mounted) setState(() => _dismissed = true);
-    });
+    }));
   }
 
   @override
