@@ -298,6 +298,11 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
               ),
             ),
           ],
+          const SizedBox(height: 16),
+          // ── Visibilité ───────────────────────────────────────────────
+          _SectionTitle(title: 'Visibilité'),
+          const SizedBox(height: 8),
+          _VisibilityScoreCard(score: _stats?.visibilityScore ?? 0.0),
           const SizedBox(height: 24),
         ],
       ),
@@ -477,5 +482,104 @@ class _RevenueBarChart extends StatelessWidget {
     ];
     final month = int.tryParse(parts[1]) ?? 0;
     return month >= 1 && month <= 12 ? names[month] : yyyyMm;
+  }
+}
+
+class _VisibilityScoreCard extends StatelessWidget {
+  const _VisibilityScoreCard({required this.score});
+  final double score;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (score / 100).clamp(0.0, 1.0);
+    final color = score >= 70
+        ? _success
+        : score >= 40
+            ? _warning
+            : const Color(0xFFEF4444);
+    final label = score >= 70
+        ? 'Excellent'
+        : score >= 40
+            ? 'Bon'
+            : 'À améliorer';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D1B38),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.trending_up, size: 18, color: color),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Score de visibilité',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _secondary,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: color.withValues(alpha: 0.3)),
+                ),
+                child: Text(
+                  label,
+                  style: GoogleFonts.manrope(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: pct,
+                    backgroundColor: const Color(0xFF1A2E54),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    minHeight: 8,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                '${score.toStringAsFixed(0)}/100',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'Calculé à partir de vos prestations récentes, votre note moyenne et votre statut vérifié.',
+            style: GoogleFonts.manrope(fontSize: 11, color: _mutedFg),
+          ),
+        ],
+      ),
+    );
   }
 }

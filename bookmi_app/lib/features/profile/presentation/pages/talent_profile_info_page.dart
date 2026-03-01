@@ -34,6 +34,10 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
   final _tiktokCtrl = TextEditingController();
   final _twitterCtrl = TextEditingController();
 
+  bool _isGroup = false;
+  int _groupSize = 1;
+  final _collectiveNameCtrl = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -48,6 +52,7 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
     _youtubeCtrl.dispose();
     _tiktokCtrl.dispose();
     _twitterCtrl.dispose();
+    _collectiveNameCtrl.dispose();
     super.dispose();
   }
 
@@ -60,13 +65,17 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
     if (!mounted) return;
     switch (result) {
       case ApiSuccess(:final data):
-        final social = data['social_links'] as Map<String, dynamic>? ?? {};
-        _bioCtrl.text = data['bio'] as String? ?? '';
+        final attrs = data['attributes'] as Map<String, dynamic>? ?? {};
+        final social = attrs['social_links'] as Map<String, dynamic>? ?? {};
+        _bioCtrl.text = attrs['bio'] as String? ?? '';
         _instagramCtrl.text = social['instagram'] as String? ?? '';
         _facebookCtrl.text = social['facebook'] as String? ?? '';
         _youtubeCtrl.text = social['youtube'] as String? ?? '';
         _tiktokCtrl.text = social['tiktok'] as String? ?? '';
         _twitterCtrl.text = social['twitter'] as String? ?? '';
+        _isGroup = (attrs['is_group'] as bool?) ?? false;
+        _groupSize = (attrs['group_size'] as int?) ?? 1;
+        _collectiveNameCtrl.text = attrs['collective_name'] as String? ?? '';
         setState(() => _loading = false);
       case ApiFailure(:final message):
         setState(() {
@@ -101,6 +110,11 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
     final result = await widget.repository.updateTalentProfileInfo(
       bio: _bioCtrl.text.trim().isEmpty ? null : _bioCtrl.text.trim(),
       socialLinks: socialLinks,
+      isGroup: _isGroup,
+      groupSize: _isGroup ? _groupSize : null,
+      collectiveName: _isGroup && _collectiveNameCtrl.text.trim().isNotEmpty
+          ? _collectiveNameCtrl.text.trim()
+          : null,
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -246,7 +260,119 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
                     icon: Icons.alternate_email,
                     color: const Color(0xFF1DA1F2),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
+
+                  // ── Groupe / Collectif ───────────────────────────
+                  _SectionHeader(
+                    icon: Icons.group_outlined,
+                    title: 'Groupe / Collectif',
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Activez si vous représentez un groupe ou collectif',
+                    style: GoogleFonts.manrope(fontSize: 12, color: _muted),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _inputBg,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: _border),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Artiste / groupe',
+                          style: GoogleFonts.manrope(
+                            fontSize: 14,
+                            color: _secondary,
+                          ),
+                        ),
+                        Switch(
+                          value: _isGroup,
+                          onChanged: (v) => setState(() => _isGroup = v),
+                          activeColor: _primary,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_isGroup) ...[
+                    const SizedBox(height: 10),
+                    _FormField(
+                      controller: _collectiveNameCtrl,
+                      label: 'Nom du collectif',
+                      hint: 'Ex: Les Étoiles, Jazz Quartet...',
+                      validator: (v) {
+                        if (_isGroup && (v == null || v.trim().isEmpty)) {
+                          return 'Nom du collectif requis';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Nombre de membres',
+                          style: GoogleFonts.manrope(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: _muted,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            IconButton(
+                              onPressed: () => setState(() {
+                                if (_groupSize > 1) _groupSize--;
+                              }),
+                              icon: const Icon(
+                                Icons.remove_circle_outline,
+                                color: _primary,
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: _inputBg,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: _border),
+                                ),
+                                child: Text(
+                                  '$_groupSize',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: _secondary,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () => setState(() {
+                                if (_groupSize < 100) _groupSize++;
+                              }),
+                              icon: const Icon(
+                                Icons.add_circle_outline,
+                                color: _primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 24),
 
                   // ── Save button ──────────────────────────────────
                   SizedBox(

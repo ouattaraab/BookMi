@@ -33,6 +33,7 @@ class TalentProfileResource extends JsonResource
                 'talent_level' => $this->talent_level,
                 'average_rating' => $this->average_rating,
                 'total_bookings' => $this->total_bookings,
+                'visibility_score' => round((float) $this->visibility_score, 1),
                 'profile_completion_percentage' => $this->profile_completion_percentage,
                 'category' => [
                     'id' => $this->category->id,

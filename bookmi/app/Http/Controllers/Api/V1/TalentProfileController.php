@@ -178,6 +178,9 @@ class TalentProfileController extends BaseController
             'social_links.youtube' => ['nullable', 'url'],
             'social_links.tiktok' => ['nullable', 'url'],
             'social_links.twitter' => ['nullable', 'url'],
+            'is_group' => ['nullable', 'boolean'],
+            'group_size' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'collective_name' => ['nullable', 'string', 'max:100'],
         ]);
 
         $profile->update($validated);

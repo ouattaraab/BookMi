@@ -21,6 +21,7 @@ class ProfileStats {
     this.profileViewsTotal = 0,
     this.talentLevel = '',
     this.totalBookings = 0,
+    this.visibilityScore = 0.0,
   });
 
   final int bookingCount;
@@ -37,6 +38,7 @@ class ProfileStats {
   final int profileViewsTotal;
   final String talentLevel;
   final int totalBookings;
+  final double visibilityScore;
 }
 
 class ProfileRepository {
@@ -68,6 +70,7 @@ class ProfileRepository {
       var mensuels = <Map<String, dynamic>>[];
       var talentLevel = '';
       var totalBookings = 0;
+      var visibilityScore = 0.0;
 
       if (isTalent) {
         final finRes = await _dio.get<Map<String, dynamic>>(
@@ -84,8 +87,11 @@ class ProfileRepository {
             ApiEndpoints.meTalentProfile,
           );
           final pd = profileRes.data?['data'] as Map<String, dynamic>? ?? {};
-          talentLevel = (pd['talent_level'] as String?) ?? '';
-          totalBookings = (pd['total_bookings'] as int?) ?? nombrePrestations;
+          final attrs = pd['attributes'] as Map<String, dynamic>? ?? {};
+          talentLevel = (attrs['talent_level'] as String?) ?? '';
+          totalBookings = (attrs['total_bookings'] as int?) ?? nombrePrestations;
+          visibilityScore =
+              (attrs['visibility_score'] as num?)?.toDouble() ?? 0.0;
         } on DioException {
           // talent_level unavailable — keep defaults
         }
@@ -107,6 +113,7 @@ class ProfileRepository {
           profileViewsTotal: profileViewsTotal,
           talentLevel: talentLevel,
           totalBookings: totalBookings,
+          visibilityScore: visibilityScore,
         ),
       );
     } on DioException catch (e) {
@@ -273,11 +280,17 @@ class ProfileRepository {
   Future<ApiResult<Map<String, dynamic>>> updateTalentProfileInfo({
     String? bio,
     Map<String, String?>? socialLinks,
+    bool? isGroup,
+    int? groupSize,
+    String? collectiveName,
   }) async {
     try {
       final data = <String, dynamic>{};
       if (bio != null) data['bio'] = bio;
       if (socialLinks != null) data['social_links'] = socialLinks;
+      if (isGroup != null) data['is_group'] = isGroup;
+      if (groupSize != null) data['group_size'] = groupSize;
+      if (collectiveName != null) data['collective_name'] = collectiveName;
       final res = await _dio.patch<Map<String, dynamic>>(
         ApiEndpoints.meTalentProfileInfo,
         data: data,
