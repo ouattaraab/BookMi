@@ -209,6 +209,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/talents/{talentProfileId}/follow', [FollowController::class, 'check'])
             ->name('follow.check');
 
+        // Alertes disponibilité
+        Route::post('/talents/{talent}/notify-availability', [TalentController::class, 'notifyAvailability'])
+            ->name('talents.notify-availability');
+
         // Notifications push (Story 5.4)
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

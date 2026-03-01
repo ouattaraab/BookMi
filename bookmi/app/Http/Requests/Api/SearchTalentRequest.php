@@ -27,6 +27,7 @@ class SearchTalentRequest extends FormRequest
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'radius' => ['nullable', 'numeric', 'min:1', 'max:500'],
+            'event_date' => ['nullable', 'date', 'after_or_equal:today'],
             'sort_by' => ['nullable', 'string', 'in:rating,cachet_amount,created_at,distance'],
             'sort_direction' => ['nullable', 'string', 'in:asc,desc'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],

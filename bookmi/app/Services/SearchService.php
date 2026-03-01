@@ -21,6 +21,7 @@ class SearchService
         'max_cachet',
         'city',
         'min_rating',
+        'event_date',
     ];
 
     public function __construct(

@@ -2,15 +2,27 @@
 
 namespace Tests\Feature\Api\V1;
 
+use App\Enums\CalendarSlotStatus;
+use App\Enums\UserRole;
+use App\Models\CalendarSlot;
 use App\Models\Category;
 use App\Models\TalentProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
 use Tests\TestCase;
 
 class TalentControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->withoutMiddleware([ThrottleRequests::class, ThrottleRequestsWithRedis::class]);
+        $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+    }
 
     private function createVerifiedTalent(array $attributes = []): TalentProfile
     {
@@ -714,5 +726,131 @@ class TalentControllerTest extends TestCase
                 'data' => ['id', 'type', 'attributes'],
                 'meta' => ['similar_talents'],
             ]);
+    }
+
+    // ── event_date availability filter ────────────────────────────────────────
+
+    public function test_search_without_event_date_does_not_return_is_available(): void
+    {
+        $this->createVerifiedTalent();
+
+        $response = $this->getJson('/api/v1/talents');
+
+        $response->assertOk();
+        $this->assertArrayNotHasKey('is_available', $response->json('data.0.attributes'));
+    }
+
+    public function test_search_with_event_date_returns_available_when_no_blocking_slot(): void
+    {
+        $talent = $this->createVerifiedTalent();
+        $eventDate = now()->addDays(10)->toDateString();
+
+        // No calendar slot created → talent is available
+        $response = $this->getJson("/api/v1/talents?event_date={$eventDate}");
+
+        $response->assertOk();
+        $this->assertTrue($response->json('data.0.attributes.is_available'));
+    }
+
+    public function test_search_with_event_date_returns_unavailable_when_slot_is_blocked(): void
+    {
+        $talent = $this->createVerifiedTalent();
+        $eventDate = now()->addDays(10)->toDateString();
+
+        CalendarSlot::factory()->create([
+            'talent_profile_id' => $talent->id,
+            'date'              => $eventDate,
+            'status'            => CalendarSlotStatus::Blocked,
+        ]);
+
+        $response = $this->getJson("/api/v1/talents?event_date={$eventDate}");
+
+        $response->assertOk();
+        $this->assertFalse($response->json('data.0.attributes.is_available'));
+    }
+
+    public function test_search_with_event_date_returns_available_when_slot_is_available(): void
+    {
+        $talent = $this->createVerifiedTalent();
+        $eventDate = now()->addDays(10)->toDateString();
+
+        CalendarSlot::factory()->create([
+            'talent_profile_id' => $talent->id,
+            'date'              => $eventDate,
+            'status'            => CalendarSlotStatus::Available,
+        ]);
+
+        $response = $this->getJson("/api/v1/talents?event_date={$eventDate}");
+
+        $response->assertOk();
+        $this->assertTrue($response->json('data.0.attributes.is_available'));
+    }
+
+    public function test_event_date_in_the_past_is_rejected(): void
+    {
+        $response = $this->getJson('/api/v1/talents?event_date=2000-01-01');
+
+        $response->assertUnprocessable();
+    }
+
+    // ── POST /talents/{talent}/notify-availability ────────────────────────────
+
+    public function test_authenticated_user_can_register_availability_alert(): void
+    {
+        $talent = $this->createVerifiedTalent();
+        $user = User::factory()->create();
+        $user->assignRole(UserRole::CLIENT->value);
+        $eventDate = now()->addDays(15)->toDateString();
+
+        $this->actingAs($user)
+            ->postJson("/api/v1/talents/{$talent->id}/notify-availability", [
+                'event_date' => $eventDate,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('availability_alerts', [
+            'user_id'           => $user->id,
+            'talent_profile_id' => $talent->id,
+            'event_date'        => $eventDate,
+        ]);
+    }
+
+    public function test_availability_alert_is_idempotent(): void
+    {
+        $talent = $this->createVerifiedTalent();
+        $user = User::factory()->create();
+        $user->assignRole(UserRole::CLIENT->value);
+        $eventDate = now()->addDays(15)->toDateString();
+
+        $this->actingAs($user)->postJson("/api/v1/talents/{$talent->id}/notify-availability", [
+            'event_date' => $eventDate,
+        ])->assertOk();
+
+        $this->actingAs($user)->postJson("/api/v1/talents/{$talent->id}/notify-availability", [
+            'event_date' => $eventDate,
+        ])->assertOk();
+
+        $this->assertDatabaseCount('availability_alerts', 1);
+    }
+
+    public function test_notify_availability_requires_authentication(): void
+    {
+        $talent = $this->createVerifiedTalent();
+
+        $this->postJson("/api/v1/talents/{$talent->id}/notify-availability", [
+            'event_date' => now()->addDays(5)->toDateString(),
+        ])->assertUnauthorized();
+    }
+
+    public function test_notify_availability_rejects_past_date(): void
+    {
+        $talent = $this->createVerifiedTalent();
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->postJson("/api/v1/talents/{$talent->id}/notify-availability", [
+                'event_date' => '2000-01-01',
+            ])
+            ->assertUnprocessable();
     }
 }

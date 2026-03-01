@@ -45,6 +45,10 @@ class TalentResource extends JsonResource
                     $this->resource->getAttribute('distance_km') !== null,
                     fn () => round((float) $this->resource->getAttribute('distance_km'), 2),
                 ),
+                'is_available' => $this->when(
+                    $this->resource->getAttribute('is_available') !== null,
+                    fn () => (bool) $this->resource->getAttribute('is_available'),
+                ),
             ],
         ];
     }

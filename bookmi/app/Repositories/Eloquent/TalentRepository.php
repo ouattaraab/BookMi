@@ -53,14 +53,31 @@ class TalentRepository implements TalentRepositoryInterface
                 fn ($q) => $q->where('average_rating', '>=', $filters['min_rating']),
             );
 
+        // Build SELECT: base columns + optional distance + optional is_available
+        $selectParts = ['talent_profiles.*'];
+        $selectBindings = [];
+
         if ($geoParams) {
-            $haversineBindings = [$geoParams['lat'], $geoParams['lat'], $geoParams['lng']];
+            $selectParts[] = TalentProfile::HAVERSINE_SQL . ' AS distance_km';
+            $selectBindings = [$geoParams['lat'], $geoParams['lat'], $geoParams['lng']];
+        }
 
-            $query->selectRaw(
-                'talent_profiles.*, ' . TalentProfile::HAVERSINE_SQL . ' AS distance_km',
-                $haversineBindings,
-            );
+        if (isset($filters['event_date'])) {
+            // is_available = 1 when no blocking slot exists for that date
+            $selectParts[] = '(CASE WHEN NOT EXISTS ('
+                . 'SELECT 1 FROM calendar_slots'
+                . ' WHERE calendar_slots.talent_profile_id = talent_profiles.id'
+                . ' AND calendar_slots.date = ?'
+                . " AND calendar_slots.status != 'available'"
+                . ') THEN 1 ELSE 0 END) AS is_available';
+            $selectBindings[] = $filters['event_date'];
+        }
 
+        if (count($selectParts) > 1) {
+            $query->selectRaw(implode(', ', $selectParts), $selectBindings);
+        }
+
+        if ($geoParams) {
             $query->withinRadiusOf(
                 $geoParams['lat'],
                 $geoParams['lng'],

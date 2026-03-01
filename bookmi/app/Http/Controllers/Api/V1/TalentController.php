@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Requests\Api\SearchTalentRequest;
 use App\Http\Resources\TalentDetailResource;
 use App\Http\Resources\TalentResource;
+use App\Models\AvailabilityAlert;
 use App\Models\ProfileView;
+use App\Models\TalentProfile;
 use App\Services\SearchService;
 use App\Services\TalentProfileService;
 use Illuminate\Http\JsonResponse;
@@ -56,6 +58,28 @@ class TalentController extends BaseController
                 'similar_talents' => TalentResource::collection($result['similar_talents']),
             ],
         );
+    }
+
+    /**
+     * POST /api/v1/talents/{talent}/notify-availability
+     * Register the authenticated user to be notified when the talent
+     * becomes available on a given event_date.
+     */
+    public function notifyAvailability(Request $request, TalentProfile $talent): JsonResponse
+    {
+        $validated = $request->validate([
+            'event_date' => ['required', 'date', 'after_or_equal:today'],
+        ]);
+
+        AvailabilityAlert::firstOrCreate([
+            'user_id'           => $request->user()->id,
+            'talent_profile_id' => $talent->id,
+            'event_date'        => $validated['event_date'],
+        ]);
+
+        return $this->successResponse([
+            'message' => 'Vous serez notifié lorsque ce talent sera disponible à cette date.',
+        ]);
     }
 
     private function trackProfileView(Request $request, int $talentProfileId): void
