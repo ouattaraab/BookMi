@@ -48,7 +48,9 @@ class AppServiceProvider extends ServiceProvider
         // au panel Filament (canViewAny, canAccess, canCreate, canEdit, canDelete…).
         // Ce Gate::before n'affecte pas les utilisateurs API normaux (qui n'ont pas is_admin).
         Gate::before(function ($user, string $ability) {
-            if (property_exists($user, 'is_admin') && $user->is_admin) {
+            // Les attributs Eloquent ne sont pas des propriétés PHP réelles :
+            // property_exists() échoue → utiliser isset() qui passe par __isset().
+            if (isset($user->is_admin) && $user->is_admin === true) {
                 return true;
             }
 
