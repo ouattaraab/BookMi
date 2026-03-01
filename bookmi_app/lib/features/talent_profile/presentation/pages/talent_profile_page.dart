@@ -205,6 +205,10 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
             ?.cast<Map<String, dynamic>>() ??
         [];
     final reviewsCount = profile['reviews_count'] as int? ?? 0;
+    final avgPunctuality = double.tryParse('${profile['avg_punctuality_score']}');
+    final avgQuality = double.tryParse('${profile['avg_quality_score']}');
+    final avgProfessionalism = double.tryParse('${profile['avg_professionalism_score']}');
+    final avgContractRespect = double.tryParse('${profile['avg_contract_respect_score']}');
 
     return Stack(
       children: [
@@ -523,6 +527,10 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                               reviews: recentReviews,
                               reviewsCount: reviewsCount,
                               averageRating: averageRating,
+                              avgPunctuality: avgPunctuality,
+                              avgQuality: avgQuality,
+                              avgProfessionalism: avgProfessionalism,
+                              avgContractRespect: avgContractRespect,
                             ),
                           ],
                         ),

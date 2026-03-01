@@ -201,6 +201,12 @@ class TalentProfileResource extends Resource
                     ->formatStateUsing(fn ($state): string => $state !== null ? (string) $state : '0')
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('talentProfile.visibility_score')
+                    ->label('Score visibilité')
+                    ->formatStateUsing(fn ($state): string => $state !== null ? number_format((float) $state, 1) . ' / 100' : '—')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('talentProfile.profile_completion_percentage')
                     ->label('Complétion')
                     ->formatStateUsing(fn ($state): string => $state !== null ? $state . '%' : '—')
@@ -350,6 +356,39 @@ class TalentProfileResource extends Resource
                         Notification::make()
                             ->title('Compte de paiement invalidé')
                             ->warning()
+                            ->send();
+                    }),
+
+                // ── Recalculer le score de visibilité ───────────────────────
+                Tables\Actions\Action::make('recalculate_visibility')
+                    ->label('Recalculer score')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('gray')
+                    ->visible(fn (User $record): bool => $record->talentProfile !== null)
+                    ->action(function (User $record): void {
+                        $profile = $record->talentProfile;
+                        if (! $profile) {
+                            return;
+                        }
+
+                        $recent = min(
+                            \App\Models\BookingRequest::where('talent_profile_id', $profile->id)
+                                ->where('status', \App\Enums\BookingStatus::Completed->value)
+                                ->where('updated_at', '>=', now()->subDays(30))
+                                ->count(),
+                            5
+                        );
+                        $score = min(100, round(
+                            ($recent / 5 * 40)
+                            + ((float) $profile->average_rating / 5 * 40)
+                            + ($profile->is_verified ? 20 : 0),
+                            2
+                        ));
+                        $profile->update(['visibility_score' => $score]);
+
+                        Notification::make()
+                            ->title('Score recalculé : ' . $score . ' / 100')
+                            ->success()
                             ->send();
                     }),
 

@@ -154,12 +154,21 @@ class ReviewService
 
     private function recomputeTalentRating(int $talentProfileId): void
     {
-        $avg = Review::where('type', ReviewType::ClientToTalent)
-            ->whereHas('bookingRequest', fn ($q) => $q->where('talent_profile_id', $talentProfileId))
-            ->avg('rating');
+        $base = Review::where('type', ReviewType::ClientToTalent)
+            ->whereHas('bookingRequest', fn ($q) => $q->where('talent_profile_id', $talentProfileId));
+
+        $avgRating = $base->avg('rating');
+        $avgPunc   = $base->avg('punctuality_score');
+        $avgQual   = $base->avg('quality_score');
+        $avgProf   = $base->avg('professionalism_score');
+        $avgCont   = $base->avg('contract_respect_score');
 
         TalentProfile::where('id', $talentProfileId)->update([
-            'average_rating' => round((float) $avg, 2),
+            'average_rating'             => round((float) ($avgRating ?? 0), 2),
+            'avg_punctuality_score'      => $avgPunc !== null ? round((float) $avgPunc, 2) : null,
+            'avg_quality_score'          => $avgQual !== null ? round((float) $avgQual, 2) : null,
+            'avg_professionalism_score'  => $avgProf !== null ? round((float) $avgProf, 2) : null,
+            'avg_contract_respect_score' => $avgCont !== null ? round((float) $avgCont, 2) : null,
         ]);
     }
 }

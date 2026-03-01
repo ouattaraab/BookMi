@@ -8,12 +8,26 @@ class ReviewsSection extends StatelessWidget {
     required this.reviews,
     required this.reviewsCount,
     required this.averageRating,
+    this.avgPunctuality,
+    this.avgQuality,
+    this.avgProfessionalism,
+    this.avgContractRespect,
     super.key,
   });
 
   final List<Map<String, dynamic>> reviews;
   final int reviewsCount;
   final double averageRating;
+  final double? avgPunctuality;
+  final double? avgQuality;
+  final double? avgProfessionalism;
+  final double? avgContractRespect;
+
+  bool get _hasCriteria =>
+      avgPunctuality != null ||
+      avgQuality != null ||
+      avgProfessionalism != null ||
+      avgContractRespect != null;
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +35,10 @@ class ReviewsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildHeader(),
+        if (_hasCriteria) ...[
+          const SizedBox(height: BookmiSpacing.spaceSm),
+          _buildCriteriaBreakdown(),
+        ],
         const SizedBox(height: BookmiSpacing.spaceSm),
         if (reviews.isEmpty) _buildEmptyState() else _buildReviewsList(),
       ],
@@ -53,6 +71,60 @@ class ReviewsSection extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCriteriaBreakdown() {
+    final items = <(String, double?)>[
+      ('Ponctualité', avgPunctuality),
+      ('Qualité', avgQuality),
+      ('Professionnalisme', avgProfessionalism),
+      ('Respect contrat', avgContractRespect),
+    ].where((e) => e.$2 != null).toList();
+
+    return GlassCard(
+      child: Column(
+        children: items.map((item) {
+          final score = item.$2!;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 124,
+                  child: Text(
+                    item.$1,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: LinearProgressIndicator(
+                    value: score / 5,
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      BookmiColors.brandElectricBlue,
+                    ),
+                    minHeight: 5,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  score.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 
