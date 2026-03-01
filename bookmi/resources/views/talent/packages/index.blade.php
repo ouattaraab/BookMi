@@ -62,15 +62,23 @@
                            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
                            value="{{ old('duration_minutes') }}">
                 </div>
-                <div>
+                <div x-data="{ isMicro: '{{ old('type') }}' === 'micro' }">
                     <label class="block text-xs font-semibold text-gray-700 mb-1.5">Type</label>
-                    <select name="type" class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+                    <select name="type" x-model="isMicro" @change="isMicro = $event.target.value === 'micro'"
+                            class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
                         <option value="">-- Choisir un type --</option>
                         <option value="essentiel" {{ old('type') === 'essentiel' ? 'selected' : '' }}>Essentiel</option>
                         <option value="standard" {{ old('type') === 'standard' ? 'selected' : '' }}>Standard</option>
                         <option value="premium" {{ old('type') === 'premium' ? 'selected' : '' }}>Premium</option>
-                        <option value="micro" {{ old('type') === 'micro' ? 'selected' : '' }}>Micro-prestation</option>
+                        <option value="micro" {{ old('type') === 'micro' ? 'selected' : '' }}>Micro-prestation ⚡</option>
                     </select>
+                    <div x-show="isMicro === true || isMicro === 'micro'" x-cloak class="mt-3">
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Délai de livraison (jours) *</label>
+                        <input type="number" name="delivery_days" min="1" max="90" placeholder="3"
+                               value="{{ old('delivery_days') }}"
+                               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+                        <p class="text-xs text-gray-400 mt-1">Livraison digitale (vidéo, dédicace…) dans ce délai après commande.</p>
+                    </div>
                 </div>
             </div>
             <div class="flex justify-end gap-3 mt-5">
@@ -149,7 +157,8 @@
                                     cachet_amount: {{ $package->cachet_amount }},
                                     duration_minutes: {{ $package->duration_minutes ?? 'null' }},
                                     type: {{ json_encode($package->type ?? '') }},
-                                    is_active: {{ $package->is_active ? 'true' : 'false' }}
+                                    is_active: {{ $package->is_active ? 'true' : 'false' }},
+                                    delivery_days: {{ $package->delivery_days ?? 'null' }}
                                 }"
                                 class="px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600 transition-colors">
                                 Modifier
@@ -217,15 +226,23 @@
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Type d'événement</label>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1.5">Type</label>
                         <select name="type" x-model="editData.type"
                                 class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
                             <option value="">-- Choisir un type --</option>
                             <option value="essentiel">Essentiel</option>
                             <option value="standard">Standard</option>
                             <option value="premium">Premium</option>
-                            <option value="micro">Micro-prestation</option>
+                            <option value="micro">Micro-prestation ⚡</option>
                         </select>
+                        <div x-show="editData.type === 'micro'" x-cloak class="mt-3">
+                            <label class="block text-xs font-semibold text-gray-700 mb-1.5">Délai de livraison (jours) *</label>
+                            <input type="number" name="delivery_days" min="1" max="90"
+                                   x-model="editData.delivery_days"
+                                   placeholder="3"
+                                   class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+                            <p class="text-xs text-gray-400 mt-1">Livraison digitale dans ce délai après commande.</p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-3">
                         <input type="checkbox" name="is_active" id="is_active_edit" value="1"

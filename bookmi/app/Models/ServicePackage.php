@@ -24,6 +24,7 @@ class ServicePackage extends Model
         'type',
         'is_active',
         'sort_order',
+        'delivery_days',
     ];
 
     /**
@@ -38,6 +39,7 @@ class ServicePackage extends Model
             'inclusions' => 'array',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'delivery_days' => 'integer',
         ];
     }
 

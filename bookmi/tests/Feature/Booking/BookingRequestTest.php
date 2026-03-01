@@ -578,4 +578,98 @@ class BookingRequestTest extends TestCase
         $this->assertEquals(0, $booking->express_fee);
     }
 
+    // ─── Micro-service tests ───────────────────────────────────────────────────
+
+    #[Test]
+    public function micro_service_booking_does_not_require_event_date(): void
+    {
+        $client = $this->createClientUser();
+
+        [$talentUser, $talentProfile] = $this->createTalentUser();
+        $package = ServicePackage::factory()->micro()->create([
+            'talent_profile_id' => $talentProfile->id,
+            'cachet_amount'     => 5_000_000,
+            'delivery_days'     => 3,
+            'is_active'         => true,
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/booking_requests', [
+                'talent_profile_id'  => $talentProfile->id,
+                'service_package_id' => $package->id,
+                // no event_date — micro-service should not require it
+            ]);
+
+        $response->assertCreated();
+    }
+
+    #[Test]
+    public function micro_service_booking_auto_sets_event_date_from_delivery_days(): void
+    {
+        $client = $this->createClientUser();
+
+        [$talentUser, $talentProfile] = $this->createTalentUser();
+        $deliveryDays = 5;
+        $package = ServicePackage::factory()->micro()->create([
+            'talent_profile_id' => $talentProfile->id,
+            'cachet_amount'     => 5_000_000,
+            'delivery_days'     => $deliveryDays,
+            'is_active'         => true,
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/booking_requests', [
+                'talent_profile_id'  => $talentProfile->id,
+                'service_package_id' => $package->id,
+                // no event_date — should be auto-set to today + delivery_days
+            ]);
+
+        $response->assertCreated();
+
+        $booking = BookingRequest::latest()->first();
+        $expectedDate = now()->addDays($deliveryDays)->format('Y-m-d');
+        $this->assertEquals($expectedDate, $booking->event_date->format('Y-m-d'));
+        $this->assertEquals('Livraison digitale', $booking->event_location);
+    }
+
+    #[Test]
+    public function micro_service_booking_delivery_days_stored_in_package_snapshot(): void
+    {
+        $client = $this->createClientUser();
+
+        [$talentUser, $talentProfile] = $this->createTalentUser();
+        $package = ServicePackage::factory()->micro()->create([
+            'talent_profile_id' => $talentProfile->id,
+            'cachet_amount'     => 3_000_000,
+            'delivery_days'     => 7,
+            'is_active'         => true,
+        ]);
+
+        $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/booking_requests', [
+                'talent_profile_id'  => $talentProfile->id,
+                'service_package_id' => $package->id,
+            ]);
+
+        $booking = BookingRequest::latest()->first();
+        $this->assertEquals(7, $booking->package_snapshot['delivery_days']);
+    }
+
+    // ─── Private helpers ──────────────────────────────────────────────────────
+
+    /**
+     * @return array{0: User, 1: TalentProfile}
+     */
+    private function createTalentUser(): array
+    {
+        $user = User::factory()->create([
+            'phone_verified_at' => now(),
+            'is_active'         => true,
+        ]);
+        $user->assignRole('talent');
+        $talent = TalentProfile::factory()->verified()->create(['user_id' => $user->id]);
+
+        return [$user, $talent];
+    }
+
 }

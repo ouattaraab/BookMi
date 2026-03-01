@@ -470,8 +470,65 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                       ),
                       const SizedBox(height: BookmiSpacing.spaceMd),
 
-                      // Packages section
-                      if (servicePackages.isNotEmpty) ...[
+                      // Mini-services section (type = micro)
+                      if (servicePackages.any((p) {
+                        final a = p['attributes'] as Map<String, dynamic>? ?? p;
+                        return (a['type'] as String?) == 'micro';
+                      })) ...[
+                        const Padding(
+                          padding: EdgeInsets.only(
+                            bottom: BookmiSpacing.spaceSm,
+                          ),
+                          child: Text(
+                            'Mini-services ⚡',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        ...servicePackages
+                            .where((p) {
+                              final a =
+                                  p['attributes'] as Map<String, dynamic>? ?? p;
+                              return (a['type'] as String?) == 'micro';
+                            })
+                            .map((pkg) {
+                              final attrs =
+                                  pkg['attributes'] as Map<String, dynamic>? ??
+                                  pkg;
+                              final deliveryDays =
+                                  attrs['delivery_days'] as int?;
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: BookmiSpacing.spaceMd,
+                                ),
+                                child: ServicePackageCard(
+                                  name: attrs['name'] as String? ?? '',
+                                  description: deliveryDays != null
+                                      ? '${attrs['description'] ?? ''}\nLivraison en $deliveryDays jour${deliveryDays > 1 ? 's' : ''}'
+                                          .trim()
+                                      : attrs['description'] as String?,
+                                  cachetAmount:
+                                      attrs['cachet_amount'] as int? ?? 0,
+                                  durationMinutes:
+                                      attrs['duration_minutes'] as int?,
+                                  inclusions:
+                                      (attrs['inclusions'] as List<dynamic>?)
+                                          ?.cast<String>(),
+                                  type: 'micro',
+                                ),
+                              );
+                            }),
+                        const SizedBox(height: BookmiSpacing.spaceSm),
+                      ],
+
+                      // Packages section (non-micro)
+                      if (servicePackages.any((p) {
+                        final a = p['attributes'] as Map<String, dynamic>? ?? p;
+                        return (a['type'] as String?) != 'micro';
+                      })) ...[
                         const Padding(
                           padding: EdgeInsets.only(
                             bottom: BookmiSpacing.spaceSm,
@@ -485,28 +542,36 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                             ),
                           ),
                         ),
-                        ...servicePackages.map((pkg) {
-                          final attrs =
-                              pkg['attributes'] as Map<String, dynamic>? ?? pkg;
-                          final pkgType = attrs['type'] as String? ?? '';
-                          return Padding(
-                            padding: const EdgeInsets.only(
-                              bottom: BookmiSpacing.spaceMd,
-                            ),
-                            child: ServicePackageCard(
-                              name: attrs['name'] as String? ?? '',
-                              description: attrs['description'] as String?,
-                              cachetAmount: attrs['cachet_amount'] as int? ?? 0,
-                              durationMinutes:
-                                  attrs['duration_minutes'] as int?,
-                              inclusions:
-                                  (attrs['inclusions'] as List<dynamic>?)
-                                      ?.cast<String>(),
-                              type: pkgType,
-                              isRecommended: pkgType == 'premium',
-                            ),
-                          );
-                        }),
+                        ...servicePackages
+                            .where((p) {
+                              final a =
+                                  p['attributes'] as Map<String, dynamic>? ?? p;
+                              return (a['type'] as String?) != 'micro';
+                            })
+                            .map((pkg) {
+                              final attrs =
+                                  pkg['attributes'] as Map<String, dynamic>? ??
+                                  pkg;
+                              final pkgType = attrs['type'] as String? ?? '';
+                              return Padding(
+                                padding: const EdgeInsets.only(
+                                  bottom: BookmiSpacing.spaceMd,
+                                ),
+                                child: ServicePackageCard(
+                                  name: attrs['name'] as String? ?? '',
+                                  description: attrs['description'] as String?,
+                                  cachetAmount:
+                                      attrs['cachet_amount'] as int? ?? 0,
+                                  durationMinutes:
+                                      attrs['duration_minutes'] as int?,
+                                  inclusions:
+                                      (attrs['inclusions'] as List<dynamic>?)
+                                          ?.cast<String>(),
+                                  type: pkgType,
+                                  isRecommended: pkgType == 'premium',
+                                ),
+                              );
+                            }),
                       ],
 
                       // Reviews section

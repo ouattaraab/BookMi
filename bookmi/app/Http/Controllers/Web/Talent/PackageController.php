@@ -32,6 +32,7 @@ class PackageController extends Controller
             'cachet_amount'    => 'required|integer|min:0',
             'duration_minutes' => 'nullable|integer|min:0',
             'type'             => 'nullable|string|max:50',
+            'delivery_days'    => 'nullable|integer|min:1|max:90',
         ]);
 
         $profile = auth()->user()->talentProfile;
@@ -52,6 +53,7 @@ class PackageController extends Controller
             'duration_minutes' => 'nullable|integer|min:0',
             'type'             => 'nullable|string|max:150',
             'is_active'        => 'nullable|boolean',
+            'delivery_days'    => 'nullable|integer|min:1|max:90',
         ]);
 
         // Normalize checkbox: if not submitted, treat as false

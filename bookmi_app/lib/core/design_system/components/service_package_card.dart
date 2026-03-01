@@ -36,18 +36,21 @@ class ServicePackageCard extends StatelessWidget {
   Color get _borderColor => switch (type) {
     'premium' => BookmiColors.brandBlueLight,
     'standard' => BookmiColors.brandBlue,
+    'micro' => const Color(0xFF8B5CF6),
     _ => BookmiColors.glassBorder,
   };
 
   String? get _badgeLabel => switch (type) {
     'premium' => 'Recommandé',
     'standard' => 'Populaire',
+    'micro' => 'Mini-service ⚡',
     _ => null,
   };
 
   Color get _badgeColor => switch (type) {
     'premium' => BookmiColors.brandBlueLight,
     'standard' => BookmiColors.brandBlue,
+    'micro' => const Color(0xFF8B5CF6),
     _ => BookmiColors.glassBorder,
   };
 

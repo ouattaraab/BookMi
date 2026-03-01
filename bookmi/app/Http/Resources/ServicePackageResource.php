@@ -27,6 +27,7 @@ class ServicePackageResource extends JsonResource
                 'type' => $this->type,
                 'is_active' => $this->is_active,
                 'sort_order' => $this->sort_order,
+                'delivery_days' => $this->delivery_days,
                 'created_at' => $this->created_at?->toIso8601String(),
             ],
         ];

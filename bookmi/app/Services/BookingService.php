@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\BookingStatus;
+use App\Enums\PackageType;
 use App\Enums\CalendarSlotStatus;
 use App\Events\BookingAccepted;
 use App\Events\BookingCancelled;
@@ -52,8 +53,19 @@ class BookingService
             throw BookingException::packageNotBelongToTalent();
         }
 
-        if (! $this->calendarService->isDateAvailable($talentProfile, $data['event_date'], $startTime)) {
-            throw BookingException::dateUnavailable();
+        $isMicro = $package->type instanceof PackageType
+            ? $package->type === PackageType::Micro
+            : $package->type === PackageType::Micro->value;
+
+        // Micro-service: auto-fill event_date and location; skip calendar availability check
+        if ($isMicro) {
+            $deliveryDays = max(1, (int) ($package->delivery_days ?? 7));
+            $data['event_date']     = $data['event_date'] ?? now()->addDays($deliveryDays)->format('Y-m-d');
+            $data['event_location'] = $data['event_location'] ?? 'Livraison digitale';
+        } else {
+            if (! $this->calendarService->isDateAvailable($talentProfile, $data['event_date'], $startTime)) {
+                throw BookingException::dateUnavailable();
+            }
         }
 
         $cachetAmount     = $package->cachet_amount;
@@ -83,6 +95,7 @@ class BookingService
             'duration_minutes' => $package->duration_minutes,
             'inclusions'       => $package->inclusions,
             'type'             => $package->type instanceof \BackedEnum ? $package->type->value : $package->type,
+            'delivery_days'    => $package->delivery_days,
         ];
 
         $booking = BookingRequest::create([

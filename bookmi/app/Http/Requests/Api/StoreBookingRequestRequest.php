@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Enums\PackageType;
+use App\Models\ServicePackage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,6 +19,8 @@ class StoreBookingRequestRequest extends FormRequest
      */
     public function rules(): array
     {
+        $isMicro = $this->isMicroPackage();
+
         return [
             'talent_profile_id'  => [
                 'required',
@@ -33,14 +37,36 @@ class StoreBookingRequestRequest extends FormRequest
                                  ->whereNull('deleted_at')
                 ),
             ],
-            'event_date'     => ['required', 'date', 'date_format:Y-m-d', 'after:today'],
+            // Micro-service: event_date is optional — auto-set from delivery_days in BookingService
+            'event_date'     => $isMicro
+                ? ['nullable', 'date', 'date_format:Y-m-d']
+                : ['required', 'date', 'date_format:Y-m-d', 'after:today'],
             'start_time'     => ['nullable', 'date_format:H:i'],
-            'event_location' => ['required', 'string', 'max:255'],
+            // Micro-service: location defaults to "Livraison digitale"
+            'event_location' => $isMicro
+                ? ['nullable', 'string', 'max:255']
+                : ['required', 'string', 'max:255'],
             'message'        => ['nullable', 'string', 'max:1000'],
             'travel_cost'    => ['nullable', 'integer', 'min:0'],
             'is_express'     => ['nullable', 'boolean'],
             'promo_code'     => ['nullable', 'string', 'max:50'],
         ];
+    }
+
+    /**
+     * Returns true when the requested service_package is of type Micro.
+     */
+    private function isMicroPackage(): bool
+    {
+        $packageId = $this->input('service_package_id');
+        if (! $packageId) {
+            return false;
+        }
+        $pkg = ServicePackage::find($packageId);
+
+        return $pkg && ($pkg->type instanceof PackageType
+            ? $pkg->type === PackageType::Micro
+            : $pkg->type === PackageType::Micro->value);
     }
 
     /**
