@@ -26,7 +26,9 @@ class SettingsController extends Controller
             $qrCode = $this->twoFactorService->getQrCodeSvg($user, $tempSecret);
         }
 
-        return view('talent.settings.index', compact('user', 'qrCode', 'secret'));
+        $notifPrefs = $user->notification_preferences ?? \App\Models\User::defaultNotificationPreferences();
+
+        return view('talent.settings.index', compact('user', 'qrCode', 'secret', 'notifPrefs'));
     }
 
     public function setupTotp(Request $request): RedirectResponse
@@ -78,5 +80,20 @@ class SettingsController extends Controller
         }
         $this->twoFactorService->disable(auth()->user());
         return back()->with('success', '2FA désactivée.');
+    }
+
+    public function updateNotificationPreferences(Request $request): RedirectResponse
+    {
+        $keys = ['new_message', 'booking_updates', 'new_review', 'follow_update', 'admin_broadcast'];
+        $prefs = [];
+        foreach ($keys as $key) {
+            $prefs[$key] = $request->boolean($key);
+        }
+        $user = auth()->user();
+        $user->update(['notification_preferences' => array_merge(
+            $user->notification_preferences ?? \App\Models\User::defaultNotificationPreferences(),
+            $prefs,
+        )]);
+        return back()->with('success', 'Préférences de notifications mises à jour.');
     }
 }

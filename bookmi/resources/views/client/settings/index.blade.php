@@ -412,5 +412,78 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
     </div>
 
+
+    {{-- ── Notification Preferences Section ── --}}
+    <div class="dash-fade settings-card-l" style="animation-delay:200ms;">
+        <div style="display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid #EAE7E0;">
+            <div class="option-icon-l" style="background:#F0FDF4;border:1px solid #86EFAC;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#15803D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            </div>
+            <div>
+                <h2 style="font-weight:900;font-size:0.95rem;color:#1A2744;margin:0 0 2px 0;">Préférences de notifications</h2>
+                <p style="font-size:0.75rem;color:#8A8278;margin:0;font-weight:500;">Choisissez les notifications push que vous souhaitez recevoir</p>
+            </div>
+        </div>
+
+        <form action="{{ route('client.settings.notifications.update') }}" method="POST">
+            @csrf
+            <div style="padding:20px 24px;display:flex;flex-direction:column;gap:0;">
+                @php
+                $notifLabels = [
+                    'new_message'     => ['label' => 'Nouveaux messages',             'desc' => 'Quand un talent vous envoie un message'],
+                    'booking_updates' => ['label' => 'Mises à jour des réservations', 'desc' => 'Acceptation, refus, confirmation de vos réservations'],
+                    'new_review'      => ['label' => 'Avis reçus',                    'desc' => 'Quand quelqu'un laisse un avis sur votre prestation'],
+                    'follow_update'   => ['label' => 'Nouveaux abonnés',              'desc' => 'Quand quelqu'un suit votre activité'],
+                    'admin_broadcast' => ['label' => 'Annonces BookMi',               'desc' => 'Actualités et informations importantes de la plateforme'],
+                ];
+                @endphp
+                @foreach($notifLabels as $key => $info)
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;{{ !$loop->last ? 'border-bottom:1px solid #EAE7E0;' : '' }}">
+                    <div style="flex:1;min-width:0;padding-right:16px;">
+                        <p style="font-weight:700;font-size:0.875rem;color:#1A2744;margin:0 0 2px 0;">{{ $info['label'] }}</p>
+                        <p style="font-size:0.72rem;color:#8A8278;font-weight:500;margin:0;">{{ $info['desc'] }}</p>
+                    </div>
+                    <label style="position:relative;display:inline-flex;align-items:center;cursor:pointer;flex-shrink:0;">
+                        <input type="checkbox" name="{{ $key }}" value="1"
+                               {{ ($notifPrefs[$key] ?? true) ? 'checked' : '' }}
+                               style="sr-only;opacity:0;width:0;height:0;position:absolute;">
+                        <div class="toggle-track" data-key="{{ $key }}"
+                             style="width:44px;height:24px;border-radius:12px;transition:background 0.2s;cursor:pointer;position:relative;{{ ($notifPrefs[$key] ?? true) ? 'background:#FF6B35;' : 'background:#D1C9C1;' }}"
+                             onclick="toggleNotif(this)">
+                            <div style="position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.2);transition:transform 0.2s;{{ ($notifPrefs[$key] ?? true) ? 'transform:translateX(20px);' : '' }}"></div>
+                        </div>
+                    </label>
+                </div>
+                @endforeach
+            </div>
+            <div style="padding:16px 24px;border-top:1px solid #EAE7E0;">
+                <button type="submit"
+                    style="padding:11px 24px;border-radius:12px;font-size:0.875rem;font-weight:900;color:white;background:linear-gradient(135deg,#FF6B35,#FF8C42);border:none;cursor:pointer;box-shadow:0 4px 14px rgba(255,107,53,0.28);transition:opacity 0.15s;"
+                    onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+                    Enregistrer les préférences
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    function toggleNotif(track) {
+        const isOn = track.style.background.includes('FF6B35') || track.style.background.includes('ff6b35');
+        const key = track.dataset.key;
+        const checkbox = track.closest('label').querySelector('input[type="checkbox"]');
+        if (isOn) {
+            track.style.background = '#D1C9C1';
+            track.querySelector('div').style.transform = 'translateX(0px)';
+            checkbox.removeAttribute('checked');
+            checkbox.checked = false;
+        } else {
+            track.style.background = '#FF6B35';
+            track.querySelector('div').style.transform = 'translateX(20px)';
+            checkbox.setAttribute('checked', '');
+            checkbox.checked = true;
+        }
+    }
+    </script>
+
 </div>
 @endsection

@@ -90,8 +90,11 @@ main.page-content { background: #F2EFE9 !important; }
         selectedPkg: {{ $talent->servicePackages->isNotEmpty() ? $talent->servicePackages->first()->id : 'null' }},
         selectedAmount: {{ $talent->servicePackages->isNotEmpty() ? $talent->servicePackages->first()->cachet_amount : ($talent->cachet_amount ?? 0) }},
         commissionRate: 15,
+        isExpress: false,
+        travelCost: 0,
         get commission() { return Math.round(this.selectedAmount * this.commissionRate / 100); },
-        get total() { return this.selectedAmount + this.commission; },
+        get expressFee() { return this.isExpress ? Math.round(this.selectedAmount * 0.10) : 0; },
+        get total() { return this.selectedAmount + this.commission + this.expressFee + (parseInt(this.travelCost) || 0); },
         selectPkg(id, amount) { this.selectedPkg = id; this.selectedAmount = amount; },
         fmt(n) { return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f'); }
      }">
@@ -229,6 +232,46 @@ main.page-content { background: #F2EFE9 !important; }
                     </div>
                 </div>
 
+                @if($talent->enable_express_booking)
+                {{-- Express booking --}}
+                <div class="dash-fade" style="animation-delay:195ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:22px 24px;margin-bottom:20px;">
+                    <h2 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0 0 14px 0;">Options</h2>
+                    <label style="display:flex;align-items:flex-start;gap:14px;cursor:pointer;padding:14px 16px;border-radius:14px;border:2px solid;transition:all 0.2s;"
+                           :style="isExpress ? 'border-color:#FF6B35;background:#FFF8F5;' : 'border-color:#E5E1DA;background:#FDFCFA;'"
+                           @click="isExpress = !isExpress">
+                        <input type="checkbox" name="is_express" value="1" x-model="isExpress" style="display:none;">
+                        <div style="width:22px;height:22px;border-radius:6px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;"
+                             :style="isExpress ? 'background:#FF6B35;border:2px solid #FF6B35;' : 'background:#FDFCFA;border:2px solid #D1C9C1;'">
+                            <svg x-show="isExpress" xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div style="flex:1;">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;">
+                                <span style="font-weight:800;font-size:0.9rem;color:#1A2744;">&#x26A1; Réservation express</span>
+                                <span style="font-size:0.8rem;font-weight:800;color:#FF6B35;" x-text="'+ ' + fmt(expressFee) + ' FCFA'"></span>
+                            </div>
+                            <p style="font-size:0.78rem;color:#8A8278;margin:0;line-height:1.5;font-weight:500;">Réponse garantie sous 2h — priorité absolue dans la liste du talent. Supplément de 10%.</p>
+                        </div>
+                    </label>
+                </div>
+                @endif
+
+                {{-- Travel cost --}}
+                <div class="dash-fade" style="animation-delay:205ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:22px 24px;margin-bottom:20px;">
+                    <h2 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0 0 14px 0;">Frais de déplacement <span style="font-weight:500;font-size:0.8rem;text-transform:none;letter-spacing:0;color:#B0A89E;">(optionnel)</span></h2>
+                    <p style="font-size:0.78rem;color:#8A8278;margin:0 0 12px 0;font-weight:500;">Si le talent doit se déplacer en dehors de sa ville, indiquez les frais de transport convenus.</p>
+                    <div style="position:relative;">
+                        <input type="number" name="travel_cost" id="travel_cost"
+                               min="0" max="999999" step="500"
+                               placeholder="0"
+                               x-model="travelCost"
+                               class="booking-input" style="padding-right:60px;">
+                        <span style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:0.75rem;font-weight:800;color:#B0A89E;pointer-events:none;">FCFA</span>
+                    </div>
+                    @error('travel_cost')
+                    <p style="color:#EF4444;font-size:0.75rem;font-weight:600;margin:6px 0 0;">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Mobile: récapitulatif before submit --}}
                 <div class="dash-fade" style="animation-delay:200ms;display:none;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:20px 24px;margin-bottom:20px;">
                     {{-- Mobile récap is handled by sidebar on desktop --}}
@@ -264,6 +307,16 @@ main.page-content { background: #F2EFE9 !important; }
                     <span style="font-size:0.88rem;font-weight:800;color:#1A2744;" x-text="fmt(commission) + '\u202f' + 'FCFA'"></span>
                 </div>
 
+                {{-- Express fee (dynamic) --}}
+                <div x-show="expressFee > 0" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EAE7E0;">
+                    <span style="font-size:0.82rem;font-weight:600;color:#6B7280;">&#x26A1; Supplément express (10%)</span>
+                    <span style="font-size:0.88rem;font-weight:800;color:#FF6B35;" x-text="fmt(expressFee) + '\u202f' + 'FCFA'"></span>
+                </div>
+                {{-- Travel cost (dynamic) --}}
+                <div x-show="(parseInt(travelCost) || 0) > 0" style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EAE7E0;">
+                    <span style="font-size:0.82rem;font-weight:600;color:#6B7280;">Déplacement</span>
+                    <span style="font-size:0.88rem;font-weight:800;color:#1A2744;" x-text="fmt(parseInt(travelCost) || 0) + '\u202f' + 'FCFA'"></span>
+                </div>
                 {{-- Total --}}
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0 0;">
                     <span style="font-size:0.9rem;font-weight:900;color:#1A2744;">Total</span>

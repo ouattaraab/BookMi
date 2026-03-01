@@ -67,6 +67,8 @@ class BookingController extends Controller
             'start_time'         => ['nullable', 'date_format:H:i'],
             'event_location'     => ['required', 'string', 'max:255'],
             'message'            => ['nullable', 'string', 'max:1000'],
+            'is_express'         => ['nullable', 'boolean'],
+            'travel_cost'        => ['nullable', 'integer', 'min:0', 'max:999999'],
         ]);
 
         $talent = TalentProfile::with('servicePackages')->findOrFail($validated['talent_profile_id']);
@@ -86,7 +88,11 @@ class BookingController extends Controller
 
         $commissionRate   = (int) config('bookmi.commission_rate', 15);
         $commissionAmount = (int) round($cachetAmount * $commissionRate / 100);
-        $totalAmount      = $cachetAmount + $commissionAmount;
+
+        $isExpress  = $request->boolean('is_express') && $talent->enable_express_booking;
+        $travelCost = (int) ($validated['travel_cost'] ?? 0);
+        $expressFee = $isExpress ? (int) round($cachetAmount * 0.10) : 0;
+        $totalAmount = $cachetAmount + $commissionAmount + $expressFee + $travelCost;
 
         $booking = BookingRequest::create([
             'client_id'          => auth()->id(),
@@ -99,6 +105,9 @@ class BookingController extends Controller
             'status'             => 'pending',
             'cachet_amount'      => $cachetAmount,
             'commission_amount'  => $commissionAmount,
+            'is_express'         => $isExpress,
+            'travel_cost'        => $travelCost ?: null,
+            'express_fee'        => $expressFee ?: null,
             'total_amount'       => $totalAmount,
         ]);
 

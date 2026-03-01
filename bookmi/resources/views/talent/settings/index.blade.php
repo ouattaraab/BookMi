@@ -205,5 +205,78 @@
         </div>
     </div>
 
+
+    {{-- Notification preferences --}}
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:#f0fdf4;border:1px solid #bbf7d0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="#16a34a"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+            </div>
+            <div>
+                <h2 class="text-base font-black text-gray-900">Préférences de notifications</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Choisissez les notifications push à recevoir</p>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('talent.settings.notifications.update') }}">
+            @csrf
+            <div class="divide-y divide-gray-100">
+                @php
+                $notifLabels = [
+                    'new_message'     => ['label' => 'Nouveaux messages',             'desc' => 'Quand un client vous envoie un message'],
+                    'booking_updates' => ['label' => 'Mises à jour des réservations', 'desc' => 'Nouvelles demandes, paiements et confirmations'],
+                    'new_review'      => ['label' => 'Nouveaux avis',                 'desc' => 'Quand un client laisse un avis sur votre prestation'],
+                    'follow_update'   => ['label' => 'Nouveaux abonnés',              'desc' => 'Quand quelqu'un commence à vous suivre'],
+                    'admin_broadcast' => ['label' => 'Annonces BookMi',               'desc' => 'Actualités et informations importantes de la plateforme'],
+                ];
+                @endphp
+                @foreach($notifLabels as $key => $info)
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex-1 min-w-0 pr-4">
+                        <p class="text-sm font-semibold text-gray-900">{{ $info['label'] }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ $info['desc'] }}</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                        <input type="checkbox" name="{{ $key }}" value="1"
+                               {{ ($notifPrefs[$key] ?? true) ? 'checked' : '' }}
+                               class="sr-only peer">
+                        <div class="talent-toggle-track w-11 h-6 rounded-full transition-all cursor-pointer relative"
+                             data-key="{{ $key }}"
+                             style="{{ ($notifPrefs[$key] ?? true) ? 'background:#FF6B35;' : 'background:#D1D5DB;' }}"
+                             onclick="toggleTalentNotif(this)">
+                            <div class="absolute top-[3px] left-[3px] w-[18px] h-[18px] bg-white rounded-full shadow-sm transition-transform"
+                                 style="{{ ($notifPrefs[$key] ?? true) ? 'transform:translateX(20px);' : '' }}"></div>
+                        </div>
+                    </label>
+                </div>
+                @endforeach
+            </div>
+            <div class="px-6 py-4 border-t border-gray-100">
+                <button type="submit"
+                        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                        style="background:#FF6B35">
+                    Enregistrer les préférences
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+    function toggleTalentNotif(track) {
+        const isOn = track.style.background.includes('FF6B35') || track.style.background.includes('ff6b35');
+        const checkbox = track.closest('label').querySelector('input[type="checkbox"]');
+        const thumb = track.querySelector('div');
+        if (isOn) {
+            track.style.background = '#D1D5DB';
+            thumb.style.transform = 'translateX(0px)';
+            checkbox.checked = false;
+        } else {
+            track.style.background = '#FF6B35';
+            thumb.style.transform = 'translateX(20px)';
+            checkbox.checked = true;
+        }
+    }
+    </script>
+
 </div>
 @endsection

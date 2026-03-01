@@ -86,3 +86,4 @@ Route::post('/settings/2fa/enable/totp', [SettingsController::class, 'enableTotp
 Route::post('/settings/2fa/setup/email', [SettingsController::class, 'setupEmail'])->name('settings.2fa.setup.email');
 Route::post('/settings/2fa/enable/email', [SettingsController::class, 'enableEmail'])->name('settings.2fa.enable.email');
 Route::post('/settings/2fa/disable', [SettingsController::class, 'disable'])->name('settings.2fa.disable');
+Route::post('/settings/notifications', [SettingsController::class, 'updateNotificationPreferences'])->name('settings.notifications.update');
