@@ -186,6 +186,22 @@ class UserResource extends Resource
                     ->color('warning')
                     ->url(fn (User $record): string => \App\Filament\Resources\AdminWarningResource::getUrl('index'))
                     ->openUrlInNewTab(),
+
+                Tables\Actions\Action::make('toggle_manager_role')
+                    ->label(fn (User $record): string => $record->hasRole('manager', 'api') ? 'Retirer Manager' : 'Attribuer Manager')
+                    ->icon(fn (User $record): string => $record->hasRole('manager', 'api') ? 'heroicon-o-user-minus' : 'heroicon-o-user-plus')
+                    ->color(fn (User $record): string => $record->hasRole('manager', 'api') ? 'danger' : 'success')
+                    ->requiresConfirmation()
+                    ->visible(fn (User $record): bool => ! $record->is_admin)
+                    ->action(function (User $record): void {
+                        if ($record->hasRole('manager', 'api')) {
+                            $record->removeRole('manager');
+                            Notification::make()->title('Rôle manager retiré')->warning()->send();
+                        } else {
+                            $record->assignRole('manager');
+                            Notification::make()->title('Rôle manager attribué')->success()->send();
+                        }
+                    }),
             ])
             ->defaultSort('created_at', 'desc');
     }

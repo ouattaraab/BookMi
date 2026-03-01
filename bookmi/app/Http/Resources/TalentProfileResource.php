@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
@@ -47,6 +48,17 @@ class TalentProfileResource extends JsonResource
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at,
             ],
+            'managers' => $this->when(
+                $this->relationLoaded('managers'),
+                fn (): array => $this->managers
+                    ->map(fn (User $m): array => [
+                        'id'    => $m->id,
+                        'name'  => $m->first_name . ' ' . $m->last_name,
+                        'email' => $m->email,
+                    ])
+                    ->toArray(),
+                [],
+            ),
         ];
     }
 }

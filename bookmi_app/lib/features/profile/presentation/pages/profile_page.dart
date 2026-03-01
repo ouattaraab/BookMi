@@ -817,6 +817,12 @@ class _GeneralSection extends StatelessWidget {
               label: 'Gestion du calendrier',
               onTap: () => context.pushNamed(RouteNames.profileCalendar),
             ),
+            _MenuItem(
+              icon: Icons.group_outlined,
+              label: 'Mes managers',
+              onTap: () =>
+                  context.pushNamed(RouteNames.profileManagerAssignment),
+            ),
           ],
           _Divider(),
           _MenuItem(

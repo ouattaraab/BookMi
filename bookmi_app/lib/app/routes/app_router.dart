@@ -45,6 +45,7 @@ import 'package:bookmi_app/features/profile/presentation/pages/package_manager_p
 import 'package:bookmi_app/features/profile/presentation/pages/two_factor_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/notification_preferences_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/calendar_management_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/manager_assignment_page.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_profile_page.dart';
@@ -441,6 +442,12 @@ GoRouter buildAppRouter(
                     name: RouteNames.profileCalendar,
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const CalendarManagementPage(),
+                  ),
+                  GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    name: RouteNames.profileManagerAssignment,
+                    path: RoutePaths.profileManagerAssignment,
+                    builder: (context, state) => const ManagerAssignmentPage(),
                   ),
                 ],
               ),

@@ -30,6 +30,7 @@ abstract final class RouteNames {
   static const talentDeepLink = 'talentDeepLink';
   static const clientReviews = 'clientReviews';
   static const profileCalendar = 'profileCalendar';
+  static const profileManagerAssignment = 'profileManagerAssignment';
   static const profileTwoFactor = 'profileTwoFactor';
   static const profileNotifications = 'profileNotifications';
   // Manager routes
@@ -68,6 +69,7 @@ abstract final class RoutePaths {
   static const profileTwoFactor = 'two-factor';
   static const profileNotifications = 'notifications-prefs';
   static const profileCalendar = 'calendar';
+  static const profileManagerAssignment = 'manager-assignment';
   static const notifications = '/notifications';
   // Manager routes
   static const managerDashboard = '/manager-dashboard';

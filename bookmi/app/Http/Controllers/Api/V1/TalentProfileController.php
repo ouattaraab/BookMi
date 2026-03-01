@@ -58,7 +58,7 @@ class TalentProfileController extends BaseController
         }
 
         return $this->successResponse(
-            new TalentProfileResource($profile->load('category', 'subcategory')),
+            new TalentProfileResource($profile->load('category', 'subcategory', 'managers:id,first_name,last_name,email')),
         );
     }
 

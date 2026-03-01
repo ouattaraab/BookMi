@@ -418,7 +418,7 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
   String _type = 'standard';
   bool _saving = false;
 
-  static const _types = ['standard', 'premium', 'express'];
+  static const _types = ['standard', 'premium', 'express', 'micro'];
 
   @override
   void initState() {
@@ -613,7 +613,13 @@ class _PackageFormSheetState extends State<_PackageFormSheet> {
                           ),
                         ),
                         child: Text(
-                          t,
+                          switch (t) {
+                            'standard' => 'Standard',
+                            'premium' => 'Premium',
+                            'express' => 'Express',
+                            'micro' => 'Micro',
+                            _ => t,
+                          },
                           style: GoogleFonts.manrope(
                             fontSize: 13,
                             fontWeight: isSelected

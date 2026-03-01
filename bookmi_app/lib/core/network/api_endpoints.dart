@@ -109,6 +109,7 @@ abstract final class ApiEndpoints {
 
   // Talent profile (own)
   static const meTalentProfile = '/talent_profiles/me';
+  static const meTalentManagers = '/talent_profiles/me/manager';
   static const meTalentProfileInfo = '/talent_profiles/me/info';
 
   // Payout method (talent)
