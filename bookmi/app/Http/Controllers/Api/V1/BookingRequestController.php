@@ -256,6 +256,69 @@ class BookingRequestController extends BaseController
     }
 
     /**
+     * GET /api/v1/booking_requests/export
+     *
+     * Returns a CSV file of the current user's bookings.
+     * Optional query params: ?status=completed&from=2025-01-01&to=2025-12-31
+     */
+    public function export(Request $request): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $user = $request->user();
+
+        $query = \App\Models\BookingRequest::with($this->bookingRelations())
+            ->where(function ($q) use ($user) {
+                $q->where('client_id', $user->id)
+                    ->orWhereHas('talentProfile', fn ($t) => $t->where('user_id', $user->id));
+            });
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->query('status'));
+        }
+        if ($request->filled('from')) {
+            $query->whereDate('created_at', '>=', $request->query('from'));
+        }
+        if ($request->filled('to')) {
+            $query->whereDate('created_at', '<=', $request->query('to'));
+        }
+
+        $bookings = $query->orderByDesc('created_at')->get();
+
+        $filename = 'bookings_' . now()->format('Ymd_His') . '.csv';
+
+        // Pre-process rows so the closure only outputs plain arrays
+        $rows = [];
+        foreach ($bookings as $b) {
+            /** @var \App\Models\BookingRequest $b */
+            $rows[] = [
+                $b->id,
+                $b->created_at?->format('d/m/Y H:i'),
+                $b->getRawOriginal('status'),
+                $b->talentProfile->stage_name ?? 'N/A',
+                $b->servicePackage->name ?? 'N/A',
+                $b->getRawOriginal('event_date'),
+                $b->event_location,
+                $b->total_amount,
+            ];
+        }
+
+        return response()->streamDownload(function () use ($rows) {
+            $out = fopen('php://output', 'w');
+            // BOM for Excel UTF-8 compatibility
+            fwrite($out, "\xEF\xBB\xBF");
+            fputcsv($out, ['ID', 'Date création', 'Statut', 'Talent', 'Package', 'Date événement', 'Lieu', 'Total (FCFA)']);
+
+            foreach ($rows as $row) {
+                fputcsv($out, $row);
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
      * Minimal relations for list items.
      *
      * @return array<int, string>

@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\V1\EscrowController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\PaystackWebhookController;
 use App\Http\Controllers\Api\V1\PromoCodeController;
+use App\Http\Controllers\Api\V1\ReferralController;
 use App\Http\Controllers\Api\V1\RescheduleController;
 use App\Http\Controllers\Api\V1\BookingRequestController;
 use App\Http\Controllers\Api\V1\CalendarSlotController;
@@ -140,6 +141,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // Réservations
         Route::post('/promo_codes/validate', [PromoCodeController::class, 'validate'])->name('promo_codes.validate');
+
+        // Parrainage (referral)
+        Route::get('/referrals', [ReferralController::class, 'show'])->name('referrals.show');
+        Route::post('/referrals/apply', [ReferralController::class, 'apply'])->name('referrals.apply');
+
+        // Export CSV réservations
+        Route::get('/booking_requests/export', [BookingRequestController::class, 'export'])->name('booking_requests.export');
 
         Route::get('/booking_requests', [BookingRequestController::class, 'index'])->name('booking_requests.index');
         Route::post('/booking_requests', [BookingRequestController::class, 'store'])->name('booking_requests.store');

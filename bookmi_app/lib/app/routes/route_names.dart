@@ -34,6 +34,7 @@ abstract final class RouteNames {
   static const profileTwoFactor = 'profileTwoFactor';
   static const profileNotifications = 'profileNotifications';
   static const profileAutoReply = 'profileAutoReply';
+  static const profileReferral = 'profileReferral';
   // Manager routes
   static const managerDashboard = 'managerDashboard';
 }
@@ -70,6 +71,7 @@ abstract final class RoutePaths {
   static const profileTwoFactor = 'two-factor';
   static const profileNotifications = 'notifications-prefs';
   static const profileAutoReply = 'auto-reply';
+  static const profileReferral = 'referral';
   static const profileCalendar = 'calendar';
   static const profileManagerAssignment = 'manager-assignment';
   static const notifications = '/notifications';

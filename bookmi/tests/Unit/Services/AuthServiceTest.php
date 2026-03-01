@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\ReferralService;
 use App\Services\SmsService;
 use App\Services\TwoFactorService;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -28,7 +29,10 @@ class AuthServiceTest extends TestCase
 
         $this->smsService = $this->mock(SmsService::class);
         $twoFactorService = $this->mock(TwoFactorService::class);
-        $this->authService = new AuthService($this->smsService, $twoFactorService);
+        $referralService = $this->mock(ReferralService::class);
+        $referralService->shouldReceive('ensureCodeFor')->andReturn(new \App\Models\ReferralCode());
+        $referralService->shouldReceive('applyCode')->andReturnNull();
+        $this->authService = new AuthService($this->smsService, $twoFactorService, $referralService);
     }
 
     #[Test]

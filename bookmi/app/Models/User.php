@@ -55,6 +55,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'phone_verified_at',
         'avatar',
         'notification_preferences',
+        'referred_by_code',
     ];
 
     /**
@@ -158,6 +159,24 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function warnings(): HasMany
     {
         return $this->hasMany(AdminWarning::class);
+    }
+
+    /**
+     * @return HasOne<ReferralCode, $this>
+     */
+    public function referralCode(): HasOne
+    {
+        return $this->hasOne(ReferralCode::class);
+    }
+
+    /**
+     * Referrals where this user is the referrer.
+     *
+     * @return HasMany<Referral, $this>
+     */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
     }
 
     public function canAccessPanel(Panel $panel): bool

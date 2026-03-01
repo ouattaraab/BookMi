@@ -27,6 +27,7 @@ class RegisterRequest extends FormRequest
             'role' => ['required', 'string', 'in:' . implode(',', UserRole::registrableRoles())],
             'category_id' => ['required_if:role,talent', 'nullable', 'integer', 'exists:categories,id'],
             'subcategory_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'referral_code' => ['nullable', 'string', 'max:20'],
         ];
     }
 

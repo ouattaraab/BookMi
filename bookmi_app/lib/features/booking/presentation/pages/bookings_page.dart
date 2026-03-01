@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
@@ -16,6 +18,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/features/payment/presentation/pages/paystack_webview_page.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class BookingsPage extends StatelessWidget {
   const BookingsPage({super.key});
@@ -95,7 +100,7 @@ class _BookingsViewState extends State<_BookingsView>
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Page title
+          // Page title + export button
           Padding(
             padding: EdgeInsets.fromLTRB(
               20,
@@ -103,14 +108,21 @@ class _BookingsViewState extends State<_BookingsView>
               20,
               16,
             ),
-            child: const Text(
-              'Mes Réservations',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: -0.5,
-              ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Mes Réservations',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ),
+                _ExportButton(repository: context.read<BookingRepository>()),
+              ],
             ),
           ),
           // Segmented glass tab control
@@ -577,4 +589,81 @@ class _Tab {
   const _Tab({required this.label, this.status});
   final String label;
   final String? status;
+}
+
+// ── Export CSV button ─────────────────────────────────────────────────────────
+
+class _ExportButton extends StatefulWidget {
+  const _ExportButton({required this.repository});
+  final BookingRepository repository;
+
+  @override
+  State<_ExportButton> createState() => _ExportButtonState();
+}
+
+class _ExportButtonState extends State<_ExportButton> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final result = await widget.repository.exportBookings();
+      if (!mounted) return;
+      switch (result) {
+        case ApiSuccess(:final data):
+          final dir = await getTemporaryDirectory();
+          final file = File(
+            '${dir.path}/bookmi_reservations_${DateTime.now().millisecondsSinceEpoch}.csv',
+          );
+          await file.writeAsBytes(data);
+          if (Platform.isIOS || Platform.isAndroid) {
+            await OpenFilex.open(file.path);
+          } else {
+            await Share.shareXFiles([XFile(file.path)]);
+          }
+        case ApiFailure(:final message):
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: BookmiColors.error,
+              ),
+            );
+          }
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: _exporting ? null : _export,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: _exporting
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white70,
+                ),
+              )
+            : const Icon(
+                Icons.download_outlined,
+                size: 20,
+                color: Colors.white70,
+              ),
+      ),
+    );
+  }
 }

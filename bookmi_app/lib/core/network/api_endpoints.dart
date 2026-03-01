@@ -125,6 +125,13 @@ abstract final class ApiEndpoints {
   // Withdrawal requests (talent)
   static const meWithdrawalRequests = '/me/withdrawal_requests';
 
+  // Referral
+  static const meReferral = '/referrals';
+  static const meReferralApply = '/referrals/apply';
+
+  // Booking export
+  static const bookingExport = '/booking_requests/export';
+
   // 2FA
   static const auth2faStatus = '/auth/2fa/status';
   static const auth2faSetupTotp = '/auth/2fa/setup/totp';

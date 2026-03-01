@@ -113,6 +113,23 @@ class BookingRepository {
     }
   }
 
+  /// Download a CSV export of the current user's bookings.
+  /// Returns the raw bytes of the CSV file.
+  Future<ApiResult<List<int>>> exportBookings({String? status}) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        ApiEndpoints.bookingExport,
+        queryParameters: {
+          if (status != null) 'status': status,
+        },
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return ApiSuccess(response.data ?? []);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Validate a promo code against a booking amount.
   /// Returns discount_amount and final_amount on success.
   Future<ApiResult<Map<String, dynamic>>> validatePromoCode({

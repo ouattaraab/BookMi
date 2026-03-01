@@ -869,6 +869,12 @@ class _GeneralSection extends StatelessWidget {
           ],
           _Divider(),
           _MenuItem(
+            icon: Icons.card_giftcard_outlined,
+            label: 'Parrainage',
+            onTap: () => context.pushNamed(RouteNames.profileReferral),
+          ),
+          _Divider(),
+          _MenuItem(
             icon: Icons.notifications_outlined,
             label: 'Notifications',
             onTap: () => context.pushNamed(RouteNames.profileNotifications),

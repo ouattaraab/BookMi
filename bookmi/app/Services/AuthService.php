@@ -18,6 +18,7 @@ class AuthService
     public function __construct(
         private readonly SmsService $smsService,
         private readonly TwoFactorService $twoFactorService,
+        private readonly ReferralService $referralService,
     ) {
     }
 
@@ -43,6 +44,14 @@ class AuthService
             ]);
 
             $user->assignRole($data['role']);
+
+            // Auto-generate a referral code for every new user
+            $this->referralService->ensureCodeFor($user);
+
+            // Apply referral code if provided at registration
+            if (! empty($data['referral_code'])) {
+                $this->referralService->applyCode($user, $data['referral_code']);
+            }
 
             $user->notify(new WelcomeNotification($data['role']));
 

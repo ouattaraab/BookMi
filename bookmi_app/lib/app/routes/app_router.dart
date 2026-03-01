@@ -44,6 +44,7 @@ import 'package:bookmi_app/features/profile/presentation/pages/portfolio_manager
 import 'package:bookmi_app/features/profile/presentation/pages/package_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/two_factor_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/auto_reply_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/referral_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/notification_preferences_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/calendar_management_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/manager_assignment_page.dart';
@@ -455,6 +456,12 @@ GoRouter buildAppRouter(
                     name: RouteNames.profileManagerAssignment,
                     path: RoutePaths.profileManagerAssignment,
                     builder: (context, state) => const ManagerAssignmentPage(),
+                  ),
+                  GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    name: RouteNames.profileReferral,
+                    path: RoutePaths.profileReferral,
+                    builder: (context, state) => const ReferralPage(),
                   ),
                 ],
               ),
