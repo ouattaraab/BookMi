@@ -234,6 +234,25 @@ class BookingRepository {
     }
   }
 
+  /// Complete a confirmed booking (client action).
+  ///
+  /// Calls POST /booking_requests/{id}/complete which transitions the
+  /// booking from `confirmed` → `completed` after the event date has passed.
+  Future<ApiResult<void>> completeBooking(int bookingId) async {
+    try {
+      await _dio.post<void>(ApiEndpoints.bookingComplete(bookingId));
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return ApiFailure(
+        code:
+            e.response?.data?['error']?['code'] as String? ?? 'COMPLETE_ERROR',
+        message:
+            e.response?.data?['error']?['message'] as String? ??
+            'Erreur lors de la validation.',
+      );
+    }
+  }
+
   /// Reply to a client review (talent action).
   ///
   /// Calls POST /api/v1/reviews/{reviewId}/reply with the reply text.

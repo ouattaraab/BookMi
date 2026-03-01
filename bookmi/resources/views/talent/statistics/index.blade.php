@@ -215,7 +215,9 @@
                     $bStats = [
                         ['label' => 'Total réservations',  'value' => $bookingStats['total'],     'color' => '#FF6B35'],
                         ['label' => 'Prestations terminées','value' => $bookingStats['completed'], 'color' => '#15803D'],
-                        ['label' => 'En attente',           'value' => $bookingStats['pending'],   'color' => '#B45309'],
+                        ['label' => 'Confirmées (payées)', 'value' => $bookingStats['confirmed'],  'color' => '#2196F3'],
+                        ['label' => 'Acceptées',           'value' => $bookingStats['accepted'],   'color' => '#7C3AED'],
+                        ['label' => 'En attente',          'value' => $bookingStats['pending'],    'color' => '#B45309'],
                     ];
                 @endphp
                 @foreach($bStats as $bs)

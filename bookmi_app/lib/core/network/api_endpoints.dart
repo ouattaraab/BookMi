@@ -88,6 +88,9 @@ abstract final class ApiEndpoints {
   static String bookingTalentConfirm(int id) =>
       '/booking_requests/$id/talent_confirm';
 
+  // Client: complete booking (confirmed → completed)
+  static String bookingComplete(int id) => '/booking_requests/$id/complete';
+
   // Service packages (talent own)
   static const servicePackages = '/service_packages';
   static String servicePackage(int id) => '/service_packages/$id';

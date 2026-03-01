@@ -152,6 +152,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         Route::post('/booking_requests/{booking}/confirm_delivery', [EscrowController::class, 'confirmDelivery'])->name('booking_requests.confirm_delivery');
         Route::post('/booking_requests/{booking}/talent_confirm', [EscrowController::class, 'talentConfirm'])->name('booking_requests.talent_confirm');
+        Route::post('/booking_requests/{booking}/complete', [EscrowController::class, 'completeDelivery'])->name('booking_requests.complete');
 
         // Report de réservation
         Route::post('/reschedule_requests/{reschedule}/accept', [RescheduleController::class, 'accept'])->name('reschedule_requests.accept');

@@ -8,6 +8,8 @@ use App\Http\Resources\ConversationResource;
 use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\TalentProfile;
+use App\Models\User;
 use App\Services\MessagingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,25 +37,46 @@ class MessageController extends BaseController
     /**
      * POST /api/v1/conversations
      * Start a new conversation (or retrieve existing) and send the first message.
+     * Both clients and talents (via booking_request_id) can initiate.
      */
     public function store(StartConversationRequest $request): JsonResponse
     {
         $user = $request->user();
+        $bookingRequestId = $request->integer('booking_request_id') ?: null;
 
-        // Only clients can start conversations
-        if (! $user->hasRole(\App\Enums\UserRole::CLIENT->value)) {
+        // Determine client and talentProfileId from context
+        if ($user->hasRole(\App\Enums\UserRole::CLIENT->value)) {
+            // Standard client flow
+            $clientUser      = $user;
+            $talentProfileId = $request->integer('talent_profile_id');
+        } elseif ($bookingRequestId !== null) {
+            // Talent flow: look up booking to get client + talent_profile_id
+            $booking = \App\Models\BookingRequest::find($bookingRequestId);
+            if (! $booking) {
+                return response()->json(['error' => ['code' => 'NOT_FOUND', 'message' => 'Réservation introuvable.']], 404);
+            }
+            // Verify caller is the talent for this booking
+            $isTalent = TalentProfile::where('id', $booking->talent_profile_id)
+                ->where('user_id', $user->id)
+                ->exists();
+            if (! $isTalent) {
+                return response()->json(['error' => ['code' => 'FORBIDDEN', 'message' => 'Accès refusé.']], 403);
+            }
+            $clientUser      = User::findOrFail($booking->client_id);
+            $talentProfileId = $booking->talent_profile_id;
+        } else {
             return response()->json([
-                'error' => ['code' => 'FORBIDDEN', 'message' => 'Only clients can start conversations.'],
+                'error' => ['code' => 'FORBIDDEN', 'message' => 'Seuls les clients peuvent initier une conversation sans réservation.'],
             ], 403);
         }
 
         $messageText = $request->filled('message') ? $request->string('message')->toString() : null;
 
-        [$conversation, $message] = DB::transaction(function () use ($user, $request, $messageText) {
+        [$conversation, $message] = DB::transaction(function () use ($clientUser, $talentProfileId, $bookingRequestId, $user, $messageText) {
             $conversation = $this->messagingService->getOrCreateConversation(
-                client: $user,
-                talentProfileId: $request->integer('talent_profile_id'),
-                bookingRequestId: $request->integer('booking_request_id') ?: null,
+                client: $clientUser,
+                talentProfileId: $talentProfileId,
+                bookingRequestId: $bookingRequestId,
             );
 
             $msg = null;

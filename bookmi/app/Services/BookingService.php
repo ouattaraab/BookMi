@@ -185,6 +185,36 @@ class BookingService
     }
 
     /**
+     * Transition a confirmed booking to completed.
+     *
+     * - Skips silently if already completed.
+     * - Releases cachet_amount to talent's available_balance.
+     * - Updates TalentProfile::total_bookings with live count.
+     */
+    public function markCompleted(BookingRequest $booking): void
+    {
+        if ($booking->status === BookingStatus::Completed) {
+            return;
+        }
+
+        if ($booking->status !== BookingStatus::Confirmed) {
+            return;
+        }
+
+        $booking->update(['status' => BookingStatus::Completed]);
+
+        TalentProfile::where('id', $booking->talent_profile_id)
+            ->increment('available_balance', $booking->cachet_amount);
+
+        $count = BookingRequest::where('talent_profile_id', $booking->talent_profile_id)
+            ->where('status', BookingStatus::Completed->value)
+            ->count();
+
+        TalentProfile::where('id', $booking->talent_profile_id)
+            ->update(['total_bookings' => $count]);
+    }
+
+    /**
      * Cancel a booking (client action) with graduated refund policy.
      *
      * Policy (from config):

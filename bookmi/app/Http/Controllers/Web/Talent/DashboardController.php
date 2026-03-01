@@ -43,7 +43,11 @@ class DashboardController extends Controller
             ? $profile->talent_level
             : TalentLevel::from((string) $profile->talent_level);
 
-        $levelData = $this->buildLevelData($talentLevel, (int) $profile->total_bookings);
+        $completedCount = BookingRequest::where('talent_profile_id', $profile->id)
+            ->where('status', 'completed')
+            ->count();
+
+        $levelData = $this->buildLevelData($talentLevel, $completedCount);
 
         return view('talent.dashboard', compact('bookings', 'stats', 'profile', 'levelData'));
     }

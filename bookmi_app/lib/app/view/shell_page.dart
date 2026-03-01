@@ -236,6 +236,8 @@ class _ShellPageState extends State<ShellPage> {
             extendBody: true,
             body: Stack(
               children: [
+                // ── Static background layer ─────────────────────────
+                const _AppBackground(),
                 // ── Glow 1 : double halo bleu en haut ──────────────
                 Positioned(
                   top: -40,
@@ -320,4 +322,80 @@ class _ShellPageState extends State<ShellPage> {
       ),
     );
   }
+}
+
+// ── Static background painter ─────────────────────────────────────────────────
+
+class _AppBackground extends StatelessWidget {
+  const _AppBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: CustomPaint(painter: _BackgroundPainter()),
+    );
+  }
+}
+
+class _BackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Subtle dot grid
+    final dotPaint = Paint()
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.05)
+      ..style = PaintingStyle.fill;
+    const spacing = 32.0;
+    for (double x = 0; x < size.width; x += spacing) {
+      for (double y = 0; y < size.height; y += spacing) {
+        canvas.drawCircle(Offset(x, y), 1.0, dotPaint);
+      }
+    }
+
+    // Top-right decorative arc (orange accent)
+    final arcPaint = Paint()
+      ..color = const Color(0xFFFF6B35).withValues(alpha: 0.08)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(size.width, 0), radius: size.width * 0.45),
+      1.57,
+      1.57,
+      false,
+      arcPaint,
+    );
+    canvas.drawArc(
+      Rect.fromCircle(center: Offset(size.width, 0), radius: size.width * 0.65),
+      1.57,
+      1.57,
+      false,
+      arcPaint..color = const Color(0xFF38BDF8).withValues(alpha: 0.06),
+    );
+
+    // Bottom glow band
+    final bandPaint = Paint()
+      ..shader =
+          const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Colors.transparent,
+              Color(0x142196F3), // 0x14 ≈ 0.08 alpha
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromLTWH(
+              0,
+              size.height * 0.75,
+              size.width,
+              size.height * 0.25,
+            ),
+          );
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * 0.75, size.width, size.height * 0.25),
+      bandPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_BackgroundPainter oldDelegate) => false;
 }

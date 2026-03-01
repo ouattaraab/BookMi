@@ -13,14 +13,20 @@ use Illuminate\Validation\ValidationException;
 
 class ReviewService
 {
+    public function __construct(
+        private readonly BookingService $bookingService,
+    ) {
+    }
+
     /**
      * Submit a review for a completed booking.
      *
      * Rules:
-     *  - Booking must be Completed.
+     *  - Booking must be Confirmed or Completed.
      *  - Only one review per type per booking (enforced at DB + service level).
      *  - Client submits client_to_talent; talent submits talent_to_client.
      *  - After a client_to_talent review, recompute TalentProfile::average_rating.
+     *  - A client_to_talent review on a confirmed booking triggers completion.
      *
      * @throws ValidationException
      */
@@ -41,7 +47,7 @@ class ReviewService
 
         $reviewee = $this->resolveReviewee($booking, $type);
 
-        return DB::transaction(function () use (
+        $review = DB::transaction(function () use (
             $booking,
             $reviewer,
             $reviewee,
@@ -72,6 +78,13 @@ class ReviewService
 
             return $review;
         });
+
+        // Transition confirmed booking to completed when client reviews
+        if ($type === ReviewType::ClientToTalent && $booking->fresh()->status === BookingStatus::Confirmed) {
+            $this->bookingService->markCompleted($booking->fresh());
+        }
+
+        return $review;
     }
 
     /**

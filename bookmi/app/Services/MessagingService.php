@@ -106,6 +106,7 @@ class MessagingService
 
     /**
      * Sends a message in a conversation and broadcasts the event.
+     * Throws a 422 abort if the booking linked to the conversation is completed.
      */
     public function sendMessage(
         Conversation $conversation,
@@ -115,6 +116,14 @@ class MessagingService
         bool $isAutoReply = false,
         ?UploadedFile $mediaFile = null,
     ): Message {
+        // Block sending if the booking is completed
+        if ($conversation->booking_request_id !== null) {
+            $bookingStatus = \App\Models\BookingRequest::where('id', $conversation->booking_request_id)->value('status');
+            if ($bookingStatus === \App\Enums\BookingStatus::Completed->value) {
+                abort(422, 'Cette réservation est terminée. Les échanges ne sont plus possibles.');
+            }
+        }
+
         $isFlagged = $type === MessageType::Text
             ? $this->contactDetector->containsContactInfo($content)
             : false;

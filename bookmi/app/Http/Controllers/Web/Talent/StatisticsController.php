@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Enums\BookingStatus;
-use App\Enums\PayoutStatus;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
-use App\Models\Payout;
 use App\Models\ProfileView;
 use Illuminate\View\View;
 
@@ -31,18 +29,18 @@ class StatisticsController extends Controller
             'total' => ProfileView::where('talent_profile_id', $profile->id)->count(),
         ];
 
-        // ── Financial data (succeeded payouts only) ────────────────────────
+        // ── Financial data (completed bookings) ────────────────────────────
         $now              = now();
         $startOfMonth     = $now->copy()->startOfMonth();
         $startOfPrevMonth = $now->copy()->subMonth()->startOfMonth();
         $endOfPrevMonth   = $now->copy()->subMonth()->endOfMonth();
 
-        $base = Payout::where('talent_profile_id', $profile->id)
-            ->where('status', PayoutStatus::Succeeded->value);
+        $base = BookingRequest::where('talent_profile_id', $profile->id)
+            ->where('status', BookingStatus::Completed->value);
 
-        $revenusTotal         = (int) (clone $base)->sum('amount');
-        $revenusMoisCourant   = (int) (clone $base)->where('processed_at', '>=', $startOfMonth)->sum('amount');
-        $revenusMoisPrecedent = (int) (clone $base)->whereBetween('processed_at', [$startOfPrevMonth, $endOfPrevMonth])->sum('amount');
+        $revenusTotal         = (int) (clone $base)->sum('cachet_amount');
+        $revenusMoisCourant   = (int) (clone $base)->where('updated_at', '>=', $startOfMonth)->sum('cachet_amount');
+        $revenusMoisPrecedent = (int) (clone $base)->whereBetween('updated_at', [$startOfPrevMonth, $endOfPrevMonth])->sum('cachet_amount');
         $nombrePrestations    = (clone $base)->count();
         $cachetMoyen          = $nombrePrestations > 0 ? (int) round($revenusTotal / $nombrePrestations) : 0;
 
@@ -55,12 +53,12 @@ class StatisticsController extends Controller
 
         // ── Last 6 months chart data ───────────────────────────────────────
         $sixMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
-        $rawPayouts   = (clone $base)->where('processed_at', '>=', $sixMonthsAgo)->select(['amount', 'processed_at'])->get();
+        $rawBookings  = (clone $base)->where('updated_at', '>=', $sixMonthsAgo)->select(['cachet_amount', 'updated_at'])->get();
 
         $monthlyMap = [];
-        foreach ($rawPayouts as $p) {
-            $key             = \Carbon\Carbon::parse($p->processed_at)->format('Y-m');
-            $monthlyMap[$key] = ($monthlyMap[$key] ?? 0) + $p->amount;
+        foreach ($rawBookings as $b) {
+            $key              = \Carbon\Carbon::parse($b->updated_at)->format('Y-m');
+            $monthlyMap[$key] = ($monthlyMap[$key] ?? 0) + $b->cachet_amount;
         }
 
         $mensuels = [];
@@ -73,7 +71,9 @@ class StatisticsController extends Controller
         $bookingStats = [
             'total'     => BookingRequest::where('talent_profile_id', $profile->id)->count(),
             'completed' => BookingRequest::where('talent_profile_id', $profile->id)->where('status', BookingStatus::Completed->value)->count(),
+            'confirmed' => BookingRequest::where('talent_profile_id', $profile->id)->where('status', 'confirmed')->count(),
             'pending'   => BookingRequest::where('talent_profile_id', $profile->id)->where('status', BookingStatus::Pending->value)->count(),
+            'accepted'  => BookingRequest::where('talent_profile_id', $profile->id)->where('status', 'accepted')->count(),
         ];
 
         // ── Monthly booking activity table (last 6 months) ────────────────

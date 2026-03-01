@@ -12,6 +12,7 @@ import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/data/models/booking_model.dart';
 import 'package:bookmi_app/features/booking/data/repositories/booking_repository.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
+import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/data/repositories/messaging_repository.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/chat_page.dart';
 import 'package:dio/dio.dart';
@@ -59,6 +60,16 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
   static bool _isEventPast24h(String eventDate) {
     final deadline = DateTime.parse(eventDate).add(const Duration(hours: 24));
     return DateTime.now().isAfter(deadline);
+  }
+
+  /// Returns true when the event date has passed (event is over).
+  static bool _eventDatePassed(String eventDate) {
+    try {
+      final date = DateTime.parse(eventDate);
+      return DateTime.now().isAfter(date);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _fetch() async {
@@ -321,6 +332,8 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               talentProfileId: booking.talentProfileId!,
               talentName: booking.talentStageName,
               talentAvatarUrl: booking.talentAvatarUrl,
+              bookingStatus: booking.status,
+              eventDate: booking.eventDate,
             ),
           ],
 
@@ -398,6 +411,23 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             _ConfirmDeliveryButton(
               bookingId: booking.id,
               onConfirmed: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _fetch();
+              },
+            ),
+          ],
+
+          // Client: validate end of service (only when status = confirmed + event date passed)
+          if (!isTalent &&
+              booking.status == 'confirmed' &&
+              _eventDatePassed(booking.eventDate)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _CompleteBookingButton(
+              bookingId: booking.id,
+              onCompleted: () {
                 setState(() {
                   _loading = true;
                   _error = null;
@@ -965,12 +995,16 @@ class _MessageButton extends StatefulWidget {
     required this.talentProfileId,
     required this.talentName,
     this.talentAvatarUrl,
+    this.bookingStatus,
+    this.eventDate,
   });
 
   final int bookingId;
   final int talentProfileId;
   final String talentName;
   final String? talentAvatarUrl;
+  final String? bookingStatus;
+  final String? eventDate;
 
   @override
   State<_MessageButton> createState() => _MessageButtonState();
@@ -1007,6 +1041,14 @@ class _MessageButtonState extends State<_MessageButton> {
                 conversationId: conversationId,
                 otherPartyName: widget.talentName,
                 talentAvatarUrl: widget.talentAvatarUrl,
+                booking: widget.bookingStatus != null
+                    ? BookingInfo(
+                        id: widget.bookingId,
+                        status: widget.bookingStatus!,
+                        isClosed: widget.bookingStatus == 'completed',
+                        eventDate: widget.eventDate,
+                      )
+                    : null,
               ),
             ),
           ),
@@ -1064,6 +1106,106 @@ class _MessageButtonState extends State<_MessageButton> {
                 ),
                 const Text(
                   'Discutez des détails de votre événement',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: BookmiColors.brandBlueLight,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.arrow_forward_ios,
+            color: Colors.white38,
+            size: 14,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Complete booking button (client only, status=confirmed + event past) ────────
+
+class _CompleteBookingButton extends StatefulWidget {
+  const _CompleteBookingButton({
+    required this.bookingId,
+    required this.onCompleted,
+  });
+
+  final int bookingId;
+  final VoidCallback onCompleted;
+
+  @override
+  State<_CompleteBookingButton> createState() => _CompleteBookingButtonState();
+}
+
+class _CompleteBookingButtonState extends State<_CompleteBookingButton> {
+  bool _loading = false;
+
+  Future<void> _complete() async {
+    if (_loading) return;
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.completeBooking(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess():
+        widget.onCompleted();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(message)),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: _complete,
+      borderColor: BookmiColors.brandBlueLight.withValues(alpha: 0.4),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: BookmiColors.brandBlue.withValues(alpha: 0.15),
+            ),
+            child: _loading
+                ? const Padding(
+                    padding: EdgeInsets.all(10),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: BookmiColors.brandBlueLight,
+                    ),
+                  )
+                : const Icon(
+                    Icons.check_circle_outline,
+                    color: BookmiColors.brandBlueLight,
+                    size: 20,
+                  ),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Valider la fin de prestation',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                Text(
+                  'Marquez la prestation comme terminée',
                   style: TextStyle(
                     fontSize: 12,
                     color: BookmiColors.brandBlueLight,
