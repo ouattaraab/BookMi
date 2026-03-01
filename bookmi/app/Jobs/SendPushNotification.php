@@ -46,6 +46,24 @@ class SendPushNotification implements ShouldQueue
             return;
         }
 
+        // Check user notification preferences
+        $notifType = $this->data['type'] ?? null;
+        $prefKey = match (true) {
+            $notifType === 'new_message'                           => 'new_message',
+            str_starts_with((string) $notifType, 'booking_')
+                || in_array($notifType, ['dispute_opened', 'reminder_7d', 'reminder_2d',
+                    'reschedule_proposed', 'reschedule_accepted', 'reschedule_rejected',
+                    'client_confirmed', 'talent_confirmed', 'booking_completed']) => 'booking_updates',
+            $notifType === 'new_review'                            => 'new_review',
+            $notifType === 'follow_update'                         => 'follow_update',
+            $notifType === 'admin_broadcast'                       => 'admin_broadcast',
+            default                                                => null,
+        };
+
+        if ($prefKey !== null && ! $user->getNotificationPreference($prefKey)) {
+            return;
+        }
+
         // Persist notification record first
         $notification = PushNotification::create([
             'user_id' => $this->userId,

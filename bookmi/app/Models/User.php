@@ -54,6 +54,7 @@ class User extends Authenticatable implements FilamentUser, HasName
         'two_factor_confirmed_at',
         'phone_verified_at',
         'avatar',
+        'notification_preferences',
     ];
 
     /**
@@ -87,6 +88,7 @@ class User extends Authenticatable implements FilamentUser, HasName
             'suspended_until'         => 'datetime',
             'two_factor_enabled'      => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
+            'notification_preferences' => 'array',
         ];
     }
 
@@ -176,5 +178,22 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function getAvatarUrlAttribute(): ?string
     {
         return $this->avatar ? Storage::disk('public')->url($this->avatar) : null;
+    }
+
+    public static function defaultNotificationPreferences(): array
+    {
+        return [
+            'new_message'      => true,
+            'booking_updates'  => true,
+            'new_review'       => true,
+            'follow_update'    => true,
+            'admin_broadcast'  => true,
+        ];
+    }
+
+    public function getNotificationPreference(string $type): bool
+    {
+        $prefs = $this->notification_preferences ?? self::defaultNotificationPreferences();
+        return (bool) ($prefs[$type] ?? true);
     }
 }

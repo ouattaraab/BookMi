@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\AdminRefundController;
 use App\Http\Controllers\Api\V1\MessageController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\NotificationPreferenceController;
 use App\Http\Controllers\Api\V1\AdminReportController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\TwoFactorController;
@@ -201,6 +202,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
         Route::get('/me/broadcasts', [NotificationController::class, 'broadcasts'])->name('me.broadcasts');
         Route::put('/me/fcm_token', [NotificationController::class, 'updateFcmToken'])->name('me.fcm_token');
+        Route::get('/me/notification_preferences', [NotificationPreferenceController::class, 'show'])->name('me.notification_preferences.show');
+        Route::put('/me/notification_preferences', [NotificationPreferenceController::class, 'update'])->name('me.notification_preferences.update');
 
         // Messagerie interne (Story 5.1)
         Route::get('/conversations', [MessageController::class, 'index'])->name('conversations.index');
