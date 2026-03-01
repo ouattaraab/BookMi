@@ -9,6 +9,7 @@ use App\Models\BookingRequest;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 
 class ViewBookingRequest extends ViewRecord
 {
@@ -90,6 +91,24 @@ class ViewBookingRequest extends ViewRecord
                     $this->refreshFormData(['contract_path']);
                 })
                 ->successNotificationTitle('Génération lancée — le PDF sera disponible dans quelques secondes.'),
+
+            Actions\Action::make('view_timeline')
+                ->label('Chronologie')
+                ->icon('heroicon-o-clock')
+                ->color('info')
+                ->slideOver()
+                ->modalContent(function (): View {
+                    /** @var BookingRequest $booking */
+                    $booking = $this->record;
+                    $logs = $booking->statusLogs()->with('performer')->get();
+
+                    return view('filament.booking-timeline', [
+                        'logs'    => $logs,
+                        'booking' => $booking,
+                    ]);
+                })
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Fermer'),
 
             Actions\EditAction::make()
                 ->label('Modifier / uploader contrat'),

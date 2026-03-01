@@ -281,6 +281,53 @@
         @endif
     </div>
 
+    {{-- ── Chronologie des statuts ── --}}
+    @if($booking->statusLogs->isNotEmpty())
+    @php
+        $tlColors = [
+            'pending'   => '#FF9800', 'accepted'  => '#2196F3', 'paid'      => '#9C27B0',
+            'confirmed' => '#00BCD4', 'completed' => '#4CAF50', 'cancelled' => '#9E9E9E',
+            'rejected'  => '#f44336', 'disputed'  => '#FF5722',
+        ];
+        $tlLabels = [
+            'pending'   => 'En attente', 'accepted'  => 'Acceptée',  'paid'      => 'Payée',
+            'confirmed' => 'Confirmée',  'completed' => 'Terminée',  'cancelled' => 'Annulée',
+            'rejected'  => 'Rejetée',    'disputed'  => 'Litige',
+        ];
+    @endphp
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" stroke="#FF6B35" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <h2 class="text-base font-bold text-gray-900">Chronologie de la réservation</h2>
+        </div>
+        <div class="p-6">
+            <ol class="relative border-l border-gray-200 ml-3">
+                @foreach($booking->statusLogs as $log)
+                @php
+                    $dotColor  = $tlColors[$log->to_status] ?? '#9E9E9E';
+                    $toLabel   = $tlLabels[$log->to_status] ?? ucfirst($log->to_status ?? '—');
+                    $fromLabel = $log->from_status ? ($tlLabels[$log->from_status] ?? ucfirst($log->from_status)) : 'Création';
+                @endphp
+                <li class="mb-4 ml-5">
+                    <span class="absolute flex items-center justify-center w-3 h-3 rounded-full -left-1.5 ring-2 ring-white" style="background:{{ $dotColor }}"></span>
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-800 leading-tight">{{ $fromLabel }} &rarr; {{ $toLabel }}</p>
+                            @if($log->performer)
+                                <p class="text-xs text-gray-500 mt-0.5">Par {{ $log->performer->first_name ?? '' }} {{ $log->performer->last_name ?? '' }}</p>
+                            @else
+                                <p class="text-xs text-gray-400 mt-0.5">Système automatique</p>
+                            @endif
+                        </div>
+                        <time class="text-xs text-gray-400 whitespace-nowrap shrink-0">{{ $log->created_at?->format('d/m/Y H:i') ?? '—' }}</time>
+                    </div>
+                </li>
+                @endforeach
+            </ol>
+        </div>
+    </div>
+    @endif
+
     {{-- ── Avis client sur cette réservation ── --}}
     @if(in_array($sk, ['confirmed', 'completed']))
     @php $clientReview = $booking->reviews->firstWhere('type', \App\Enums\ReviewType::ClientToTalent); @endphp

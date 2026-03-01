@@ -409,6 +409,59 @@ Cette action est irréversible.')">
     </div>
     @endif
 
+    {{-- ── Chronologie des statuts ── --}}
+    @if($booking->statusLogs->isNotEmpty())
+    @php
+        $sColors = [
+            'pending'   => '#F59E0B', 'accepted'  => '#3B82F6', 'paid'      => '#8B5CF6',
+            'confirmed' => '#06B6D4', 'completed' => '#10B981', 'cancelled' => '#9CA3AF',
+            'rejected'  => '#EF4444', 'disputed'  => '#F97316',
+        ];
+        $sLabels = [
+            'pending'   => 'En attente', 'accepted'  => 'Acceptée',  'paid'      => 'Payée',
+            'confirmed' => 'Confirmée',  'completed' => 'Terminée',  'cancelled' => 'Annulée',
+            'rejected'  => 'Rejetée',    'disputed'  => 'Litige',
+        ];
+    @endphp
+    <div class="dash-fade" style="animation-delay:185ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;">
+        <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#2563EB;flex-shrink:0;"></div>
+            <h3 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0;">Chronologie de la réservation</h3>
+        </div>
+        <div style="padding:20px 24px;">
+            @foreach($booking->statusLogs as $log)
+            @php
+                $isLast = $loop->last;
+                $dotBg  = $sColors[$log->to_status] ?? '#9CA3AF';
+                $toL    = $sLabels[$log->to_status] ?? ucfirst($log->to_status ?? '—');
+                $fromL  = $log->from_status ? ($sLabels[$log->from_status] ?? ucfirst($log->from_status)) : 'Création';
+            @endphp
+            <div style="display:flex;gap:14px;{{ $isLast ? '' : 'margin-bottom:4px;' }}">
+                <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:{{ $dotBg }};border:2px solid white;box-shadow:0 0 0 2px {{ $dotBg }};flex-shrink:0;"></div>
+                    @if(!$isLast)
+                    <div style="width:2px;flex:1;background:#EAE7E0;margin:4px 0;min-height:28px;"></div>
+                    @endif
+                </div>
+                <div style="padding-bottom:{{ $isLast ? '0' : '20px' }};flex:1;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+                        <div>
+                            <p style="font-size:0.875rem;font-weight:800;color:#1A2744;margin:0 0 2px;">{{ $fromL }} &rarr; {{ $toL }}</p>
+                            @if($log->performer)
+                            <p style="font-size:0.75rem;color:#8A8278;font-weight:500;margin:0;">Par {{ $log->performer->first_name ?? '' }} {{ $log->performer->last_name ?? '' }}</p>
+                            @else
+                            <p style="font-size:0.75rem;color:#B0A89E;font-weight:500;margin:0;">Système automatique</p>
+                            @endif
+                        </div>
+                        <span style="font-size:0.7rem;color:#B0A89E;font-weight:500;white-space:nowrap;flex-shrink:0;">{{ $log->created_at?->format('d/m/Y H:i') ?? '—' }}</span>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- Formulaire avis (status completed seulement, pas encore évalué) --}}
     @if($sk === 'completed' && !$hasReview)
     <div class="dash-fade" style="animation-delay:190ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;"

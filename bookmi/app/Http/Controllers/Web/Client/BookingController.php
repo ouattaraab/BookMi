@@ -123,7 +123,7 @@ class BookingController extends Controller
     public function show(int $id): View
     {
         $booking = BookingRequest::where('client_id', auth()->id())
-            ->with(['talentProfile.user', 'talentProfile.category', 'servicePackage', 'trackingEvents'])
+            ->with(['talentProfile.user', 'talentProfile.category', 'servicePackage', 'trackingEvents', 'statusLogs.performer'])
             ->findOrFail($id);
 
         $hasReview = \App\Models\Review::where('booking_request_id', $id)
