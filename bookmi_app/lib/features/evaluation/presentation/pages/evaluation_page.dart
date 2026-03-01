@@ -203,8 +203,7 @@ class _EvaluationFormState extends State<_EvaluationForm> {
                       label: 'Ponctualité',
                       value: _punctualityScore,
                       enabled: !isSubmitting,
-                      onChanged: (v) =>
-                          setState(() => _punctualityScore = v),
+                      onChanged: (v) => setState(() => _punctualityScore = v),
                     ),
                     const SizedBox(height: BookmiSpacing.spaceSm),
                     _CriteriaRow(
@@ -370,9 +369,7 @@ class _CriteriaRow extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 2),
                   child: Icon(
-                    isFilled
-                        ? Icons.star_rounded
-                        : Icons.star_outline_rounded,
+                    isFilled ? Icons.star_rounded : Icons.star_outline_rounded,
                     size: 24,
                     color: isFilled
                         ? BookmiColors.brandBlueLight
