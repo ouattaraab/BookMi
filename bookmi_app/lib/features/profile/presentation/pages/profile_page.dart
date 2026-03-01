@@ -808,6 +808,12 @@ class _GeneralSection extends StatelessWidget {
                 RouteNames.profilePackageManager,
               ),
             ),
+            _Divider(),
+            _MenuItem(
+              icon: Icons.calendar_month_outlined,
+              label: 'Gestion du calendrier',
+              onTap: () => context.pushNamed(RouteNames.profileCalendar),
+            ),
           ],
           _Divider(),
           _MenuItem(

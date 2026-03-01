@@ -281,6 +281,7 @@ class BookingRequestController extends BaseController
             ...$this->bookingRelations(),
             'statusLogs',
             'statusLogs.performer:id,first_name,last_name',
+            'rescheduleRequests',
         ];
     }
 }

@@ -1,5 +1,33 @@
 import 'package:flutter/foundation.dart';
 
+/// Pending reschedule request on a booking.
+@immutable
+class RescheduleInfo {
+  const RescheduleInfo({
+    required this.id,
+    required this.proposedDate,
+    required this.requestedById,
+    required this.status,
+    this.message,
+  });
+
+  final int id;
+  final String proposedDate;
+  final String? message;
+  final int requestedById;
+  final String status;
+
+  factory RescheduleInfo.fromJson(Map<String, dynamic> json) {
+    return RescheduleInfo(
+      id: json['id'] as int,
+      proposedDate: json['proposed_date'] as String,
+      message: json['message'] as String?,
+      requestedById: json['requested_by_id'] as int,
+      status: json['status'] as String,
+    );
+  }
+}
+
 /// One entry in the booking status audit trail.
 @immutable
 class BookingStatusLog {
@@ -60,6 +88,7 @@ class BookingModel {
     this.cancellationPolicyApplied,
     this.devisMessage,
     this.statusLogs,
+    this.pendingReschedule,
   });
 
   final int id;
@@ -95,6 +124,7 @@ class BookingModel {
   final String? cancellationPolicyApplied;
   final String? devisMessage;
   final List<BookingStatusLog>? statusLogs;
+  final RescheduleInfo? pendingReschedule;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     final client = json['client'] as Map<String, dynamic>?;
@@ -133,6 +163,11 @@ class BookingModel {
       statusLogs: historyJson
           ?.map((e) => BookingStatusLog.fromJson(e as Map<String, dynamic>))
           .toList(),
+      pendingReschedule: json['pending_reschedule'] != null
+          ? RescheduleInfo.fromJson(
+              json['pending_reschedule'] as Map<String, dynamic>,
+            )
+          : null,
     );
   }
 

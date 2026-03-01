@@ -155,6 +155,9 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
     final authState = context.read<AuthBloc>().state;
     final isTalent =
         authState is AuthAuthenticated && authState.roles.contains('talent');
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : 0;
     return RefreshIndicator(
       color: BookmiColors.brandBlue,
       onRefresh: () async {
@@ -334,6 +337,35 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
           ],
 
           // ── Action buttons ──────────────────────────────────────────────
+
+          // Reschedule (proposed or accepted)
+          if (['accepted', 'paid', 'confirmed'].contains(booking.status)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            if (booking.pendingReschedule != null)
+              _PendingRescheduleCard(
+                reschedule: booking.pendingReschedule!,
+                currentUserId: currentUserId,
+                bookingId: booking.id,
+                onResponded: () {
+                  setState(() {
+                    _loading = true;
+                    _error = null;
+                  });
+                  _fetch();
+                },
+              )
+            else
+              _ProposeRescheduleButton(
+                bookingId: booking.id,
+                onProposed: () {
+                  setState(() {
+                    _loading = true;
+                    _error = null;
+                  });
+                  _fetch();
+                },
+              ),
+          ],
 
           // Talent: track the service (during event — before 24h deadline)
           if (isTalent &&
@@ -1696,6 +1728,356 @@ class _DisputeButtonState extends State<_DisputeButton> {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.amber.shade300,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Reschedule widgets ───────────────────────────────────────────────────────
+
+class _PendingRescheduleCard extends StatefulWidget {
+  const _PendingRescheduleCard({
+    required this.reschedule,
+    required this.currentUserId,
+    required this.bookingId,
+    required this.onResponded,
+  });
+
+  final RescheduleInfo reschedule;
+  final int currentUserId;
+  final int bookingId;
+  final VoidCallback onResponded;
+
+  @override
+  State<_PendingRescheduleCard> createState() => _PendingRescheduleCardState();
+}
+
+class _PendingRescheduleCardState extends State<_PendingRescheduleCard> {
+  bool _loading = false;
+
+  Future<void> _respond(bool accept) async {
+    setState(() => _loading = true);
+    final repo = context.read<BookingRepository>();
+    final result = accept
+        ? await repo.acceptReschedule(widget.reschedule.id)
+        : await repo.rejectReschedule(widget.reschedule.id);
+    if (!mounted) return;
+    setState(() => _loading = false);
+    switch (result) {
+      case ApiSuccess():
+        widget.onResponded();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isRequester = widget.reschedule.requestedById == widget.currentUserId;
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.event_repeat_outlined,
+                  size: 16,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Report proposé',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Nouvelle date : ${widget.reschedule.proposedDate}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.65),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (widget.reschedule.message != null &&
+              widget.reschedule.message!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              widget.reschedule.message!,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.6),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+          const SizedBox(height: 12),
+          if (isRequester)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'En attente de réponse',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.orange.shade300,
+                ),
+              ),
+            )
+          else if (_loading)
+            const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white60,
+                ),
+              ),
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white60,
+                      side: const BorderSide(color: Colors.white24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    onPressed: () => _respond(false),
+                    child: const Text(
+                      'Refuser',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BookmiColors.success,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    onPressed: () => _respond(true),
+                    child: const Text(
+                      'Accepter',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProposeRescheduleButton extends StatefulWidget {
+  const _ProposeRescheduleButton({
+    required this.bookingId,
+    required this.onProposed,
+  });
+
+  final int bookingId;
+  final VoidCallback onProposed;
+
+  @override
+  State<_ProposeRescheduleButton> createState() =>
+      _ProposeRescheduleButtonState();
+}
+
+class _ProposeRescheduleButtonState extends State<_ProposeRescheduleButton> {
+  bool _loading = false;
+
+  Future<void> _propose() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().add(const Duration(days: 1)),
+      firstDate: DateTime.now().add(const Duration(days: 1)),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      locale: const Locale('fr'),
+      builder: (ctx, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: BookmiColors.brandBlueLight,
+            surface: Color(0xFF1A2233),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked == null || !mounted) return;
+
+    final dateStr =
+        '${picked.year.toString().padLeft(4, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+
+    // Optional message
+    String? message;
+    final msgController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2233),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Proposer un report',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Nouvelle date : $dateStr',
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: msgController,
+              maxLines: 2,
+              decoration: InputDecoration(
+                labelText: 'Message (optionnel)',
+                labelStyle: const TextStyle(color: Colors.white54),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.white24),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(
+                    color: BookmiColors.brandBlueLight,
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.05),
+              ),
+              style: const TextStyle(color: Colors.white),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text(
+              'Annuler',
+              style: TextStyle(color: Colors.white54),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              message = msgController.text.trim().isEmpty
+                  ? null
+                  : msgController.text.trim();
+              Navigator.of(ctx).pop(true);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: BookmiColors.brandBlueLight,
+            ),
+            child: const Text('Envoyer'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _loading = true);
+    final repo = context.read<BookingRepository>();
+    final result = await repo.proposeReschedule(
+      bookingId: widget.bookingId,
+      proposedDate: dateStr,
+      message: message,
+    );
+    if (!mounted) return;
+    setState(() => _loading = false);
+    switch (result) {
+      case ApiSuccess():
+        widget.onProposed();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      child: InkWell(
+        onTap: _loading ? null : _propose,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (_loading)
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white54,
+                  ),
+                )
+              else
+                const Icon(
+                  Icons.event_repeat_outlined,
+                  size: 18,
+                  color: Colors.white60,
+                ),
+              const SizedBox(width: 8),
+              const Text(
+                'Proposer un report',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white70,
                 ),
               ),
             ],

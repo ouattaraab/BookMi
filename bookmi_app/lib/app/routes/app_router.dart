@@ -42,6 +42,7 @@ import 'package:bookmi_app/features/profile/presentation/pages/talent_profile_in
 import 'package:bookmi_app/features/profile/presentation/pages/portfolio_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/package_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/two_factor_page.dart';
+import 'package:bookmi_app/features/profile/presentation/pages/calendar_management_page.dart';
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_profile_page.dart';
@@ -417,6 +418,12 @@ GoRouter buildAppRouter(
                     name: RouteNames.profileTwoFactor,
                     parentNavigatorKey: rootNavigatorKey,
                     builder: (context, state) => const TwoFactorPage(),
+                  ),
+                  GoRoute(
+                    path: RoutePaths.profileCalendar,
+                    name: RouteNames.profileCalendar,
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => const CalendarManagementPage(),
                   ),
                 ],
               ),

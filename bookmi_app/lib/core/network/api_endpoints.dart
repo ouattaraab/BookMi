@@ -36,6 +36,15 @@ abstract final class ApiEndpoints {
   static String talentFollow(int talentId) => '/talents/$talentId/follow';
   static String bookingDispute(int id) => '/booking_requests/$id/dispute';
 
+  // Reschedule
+  static String bookingReschedule(int id) => '/booking_requests/$id/reschedule';
+  static String rescheduleAccept(int id) => '/reschedule_requests/$id/accept';
+  static String rescheduleReject(int id) => '/reschedule_requests/$id/reject';
+
+  // Calendar management (talent)
+  static const calendarSlots = '/calendar_slots';
+  static String calendarSlot(int id) => '/calendar_slots/$id';
+
   // Profile
   static const meStats = '/me/stats';
   static const meAvatar = '/me/avatar';

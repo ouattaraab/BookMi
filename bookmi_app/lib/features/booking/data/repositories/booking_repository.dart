@@ -287,6 +287,46 @@ class BookingRepository {
     }
   }
 
+  /// Propose a reschedule for a booking (either party).
+  Future<ApiResult<Map<String, dynamic>>> proposeReschedule({
+    required int bookingId,
+    required String proposedDate,
+    String? message,
+  }) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingReschedule(bookingId),
+        data: {
+          'proposed_date': proposedDate,
+          if (message != null && message.isNotEmpty) 'message': message,
+        },
+      );
+      return ApiSuccess(response.data!['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Accept a pending reschedule (counterparty only).
+  Future<ApiResult<void>> acceptReschedule(int rescheduleId) async {
+    try {
+      await _dio.post<void>(ApiEndpoints.rescheduleAccept(rescheduleId));
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Reject a pending reschedule (counterparty only).
+  Future<ApiResult<void>> rejectReschedule(int rescheduleId) async {
+    try {
+      await _dio.post<void>(ApiEndpoints.rescheduleReject(rescheduleId));
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
   BookingListResponse _parseListResponse(Map<String, dynamic> data) {

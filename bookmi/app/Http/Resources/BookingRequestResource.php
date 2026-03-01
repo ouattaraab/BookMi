@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Enums\BookingStatus;
+use App\Enums\RescheduleStatus;
 use App\Enums\ReviewType;
 use App\Models\BookingRequest;
 use Illuminate\Http\Request;
@@ -82,6 +83,27 @@ class BookingRequestResource extends JsonResource
                     ] : null,
                     'created_at'   => $log->created_at?->toIso8601String(),
                 ])->values()
+            ),
+            // Pending reschedule (only available in detail view)
+            'pending_reschedule' => $this->whenLoaded(
+                'rescheduleRequests',
+                function () {
+                    $pending = $this->rescheduleRequests
+                        ->first(fn ($r) => $r->status === RescheduleStatus::Pending);
+
+                    if (! $pending) {
+                        return null;
+                    }
+
+                    return [
+                        'id'              => $pending->id,
+                        'proposed_date'   => $pending->proposed_date->toDateString(),
+                        'message'         => $pending->message,
+                        'requested_by_id' => $pending->requested_by_id,
+                        'status'          => $pending->status->value,
+                        'created_at'      => $pending->created_at?->toIso8601String(),
+                    ];
+                },
             ),
         ];
     }

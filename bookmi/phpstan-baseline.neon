@@ -531,13 +531,13 @@ parameters:
 		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
-			count: 1
+			count: 2
 			path: app/Http/Resources/BookingRequestResource.php
 
 		-
 			message: '#^Cannot call method toDateString\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
+			count: 2
 			path: app/Http/Resources/BookingRequestResource.php
 
 		-
