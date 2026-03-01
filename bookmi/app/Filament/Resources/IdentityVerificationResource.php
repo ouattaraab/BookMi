@@ -26,7 +26,8 @@ class IdentityVerificationResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false);
     }
 
     protected static ?string $navigationLabel = "Vérifications d'identité";

@@ -24,7 +24,8 @@ class ReportsPage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_comptable']) ?? false);
     }
 
 

@@ -20,7 +20,8 @@ class ClientResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false);
     }
 
     protected static ?string $navigationLabel = 'Clients';

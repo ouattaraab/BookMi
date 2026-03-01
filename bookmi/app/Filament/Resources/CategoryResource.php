@@ -19,7 +19,8 @@ class CategoryResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('admin_ceo') ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasRole('admin_ceo') ?? false);
     }
 
     protected static ?string $navigationLabel = 'Catégories';

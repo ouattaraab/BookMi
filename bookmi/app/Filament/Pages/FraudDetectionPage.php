@@ -24,7 +24,8 @@ class FraudDetectionPage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_moderateur']) ?? false);
     }
 
     /** @var array<int, array<string, mixed>> */

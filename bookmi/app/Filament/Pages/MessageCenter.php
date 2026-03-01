@@ -30,7 +30,8 @@ class MessageCenter extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('admin_ceo') ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasRole('admin_ceo') ?? false);
     }
 
     public ?array $data = [];

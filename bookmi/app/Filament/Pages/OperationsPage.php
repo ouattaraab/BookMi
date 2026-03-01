@@ -17,7 +17,8 @@ class OperationsPage extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false;
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasAnyRole(['admin_ceo', 'admin_controleur']) ?? false);
     }
 
     public Collection $todayBookings;

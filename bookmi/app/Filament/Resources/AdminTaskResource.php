@@ -30,12 +30,13 @@ class AdminTaskResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasAnyRole([
+        $user = auth()->user();
+        return ($user?->is_admin ?? false) || ($user?->hasAnyRole([
             'admin_ceo',
             'admin_controleur',
             'admin_comptable',
             'admin_moderateur',
-        ]) ?? false;
+        ]) ?? false);
     }
 
     public static function form(Form $form): Form
