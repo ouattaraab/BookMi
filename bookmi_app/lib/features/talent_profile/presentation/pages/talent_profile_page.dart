@@ -189,6 +189,8 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
     final averageRating = double.tryParse('${profile['average_rating']}') ?? 0;
     final bio = profile['bio'] as String?;
     final talentLevel = profile['talent_level'] as String?;
+    final totalBookings = profile['total_bookings'] as int? ?? 0;
+    final profileUserId = profile['user_id'] as int?;
     final reliabilityScore = profile['reliability_score'] as int?;
     final socialLinks = profile['social_links'] as Map<String, dynamic>?;
     final createdAt = profile['created_at'] as String?;
@@ -444,6 +446,34 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                                     ),
                                   ),
                               ],
+                            ),
+                            // Level progression bar — own profile only
+                            Builder(
+                              builder: (ctx) {
+                                final authState =
+                                    ctx.read<AuthBloc>().state;
+                                if (authState is! AuthAuthenticated) {
+                                  return const SizedBox.shrink();
+                                }
+                                final isOwnProfile =
+                                    authState.roles.contains('talent') &&
+                                    profileUserId != null &&
+                                    profileUserId ==
+                                        authState.user.id;
+                                if (!isOwnProfile ||
+                                    talentLevel == null) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: BookmiSpacing.spaceSm,
+                                  ),
+                                  child: _buildLevelProgressBar(
+                                    talentLevel,
+                                    totalBookings,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -827,6 +857,97 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
           ),
         );
       }).toList(),
+    );
+  }
+
+  /// Level thresholds matching bookmi.php config (min_bookings per level).
+  static const _levelOrder = ['nouveau', 'confirme', 'populaire', 'elite'];
+  static const _levelThresholds = {
+    'nouveau': 0,
+    'confirme': 6,
+    'populaire': 21,
+    'elite': 51,
+  };
+
+  static Widget _buildLevelProgressBar(String level, int totalBookings) {
+    final idx = _levelOrder.indexOf(level);
+    final isElite = level == 'elite';
+
+    if (isElite) {
+      return Row(
+        children: [
+          const Icon(Icons.star, size: 13, color: Color(0xFFFFD700)),
+          const SizedBox(width: 4),
+          Text(
+            'Niveau maximum atteint !',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      );
+    }
+
+    final nextLevel =
+        idx >= 0 && idx + 1 < _levelOrder.length
+            ? _levelOrder[idx + 1]
+            : null;
+    if (nextLevel == null) return const SizedBox.shrink();
+
+    final currentMin = _levelThresholds[level] ?? 0;
+    final nextMin = _levelThresholds[nextLevel] ?? 1;
+    final span = nextMin - currentMin;
+    final progress =
+        span > 0
+            ? ((totalBookings - currentMin).clamp(0, span) / span)
+                .toDouble()
+            : 0.0;
+    final remaining = (nextMin - totalBookings).clamp(0, span);
+
+    final nextLabel = switch (nextLevel) {
+      'confirme' => 'Confirmé',
+      'populaire' => 'Populaire',
+      'elite' => 'Élite',
+      _ => nextLevel,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Prochain niveau : $nextLabel',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.white.withValues(alpha: 0.6),
+              ),
+            ),
+            Text(
+              remaining == 0
+                  ? 'Presque !'
+                  : '$remaining réservation${remaining > 1 ? 's' : ''} restante${remaining > 1 ? 's' : ''}',
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.white.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: progress,
+            backgroundColor: Colors.white.withValues(alpha: 0.12),
+            valueColor: const AlwaysStoppedAnimation(Color(0xFF7B61FF)),
+            minHeight: 5,
+          ),
+        ),
+      ],
     );
   }
 

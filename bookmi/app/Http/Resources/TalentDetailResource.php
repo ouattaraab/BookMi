@@ -22,6 +22,7 @@ class TalentDetailResource extends JsonResource
             'id' => $this->id,
             'type' => 'talent_profile',
             'attributes' => [
+                'user_id' => $this->user_id,
                 'stage_name' => $this->stage_name,
                 'slug' => $this->slug,
                 'photo_url' => $this->cover_photo_url,
@@ -34,6 +35,7 @@ class TalentDetailResource extends JsonResource
                 'group_size'      => $this->group_size,
                 'collective_name' => $this->collective_name,
                 'talent_level' => $this->talent_level,
+                'total_bookings' => $this->total_bookings,
                 'profile_completion_percentage' => $this->profile_completion_percentage,
                 'social_links' => $this->social_links,
                 'reliability_score' => $this->calculateReliabilityScore(),

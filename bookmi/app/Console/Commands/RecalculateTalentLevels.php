@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\TalentLevel;
+use App\Jobs\SendPushNotification;
 use App\Models\TalentProfile;
 use Illuminate\Console\Command;
 
@@ -38,14 +39,32 @@ class RecalculateTalentLevels extends Command
                 }
 
                 if ($talent->talent_level !== $newLevel) {
+                    // Determine if this is a promotion (upgrade) or demotion.
+                    // Use config array to avoid PHPStan issues with enum casts.
+                    $oldLevelValue   = is_string($talent->talent_level)
+                        ? $talent->talent_level
+                        : ($talent->talent_level instanceof TalentLevel ? $talent->talent_level->value : 'nouveau');
+                    $oldMinBookings  = (int) ($sortedLevels[$oldLevelValue]['min_bookings'] ?? 0);
+                    $isUpgrade       = $newLevel->minBookings() > $oldMinBookings;
+
                     $this->line(
                         "Talent #{$talent->id} ({$talent->stage_name}): "
-                        . "{$talent->talent_level?->value} → {$newLevel->value}"
+                        . "{$oldLevelValue} → {$newLevel->value}"
+                        . ($isUpgrade ? ' ↑' : ' ↓')
                         . ($isDryRun ? ' [DRY-RUN]' : ''),
                     );
 
                     if (! $isDryRun) {
                         $talent->update(['talent_level' => $newLevel]);
+
+                        if ($isUpgrade) {
+                            SendPushNotification::dispatch(
+                                userId: $talent->user_id,
+                                title: '🎉 Niveau ' . $newLevel->label() . ' atteint !',
+                                body: "Félicitations ! Votre visibilité sur BookMi vient d'augmenter.",
+                                data: ['type' => 'talent_level_up', 'new_level' => $newLevel->value],
+                            );
+                        }
                     }
 
                     $updated++;
