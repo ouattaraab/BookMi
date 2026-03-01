@@ -262,6 +262,18 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="#16A34A"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <p class="text-sm font-semibold" style="color:#15803D">Arrivée confirmée ✓ Le client a été notifié.</p>
                 </div>
+                @if($booking->event_date->addDay()->lte(now()))
+                <form method="POST" action="{{ route('talent.bookings.complete', $booking->id) }}" class="mt-3">
+                    @csrf
+                    <button type="submit"
+                            class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                            style="background:#FF6B35"
+                            onclick="return confirm('Marquer cette réservation comme terminée ? Le paiement sera libéré.')">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Marquer comme terminé
+                    </button>
+                </form>
+                @endif
                 @endif
             </div>
             @endif

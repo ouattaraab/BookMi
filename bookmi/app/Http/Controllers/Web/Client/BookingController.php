@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Web\Client;
 use App\Enums\BookingStatus;
 use App\Enums\PaymentMethod;
 use App\Events\BookingCreated;
+use App\Exceptions\BookingException;
 use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Models\TalentProfile;
 use App\Models\Transaction;
+use App\Services\BookingService;
 use App\Services\CalendarService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +27,7 @@ class BookingController extends Controller
     public function __construct(
         private readonly PaymentService $paymentService,
         private readonly CalendarService $calendarService,
+        private readonly BookingService $bookingService,
     ) {
     }
 
@@ -175,10 +178,36 @@ class BookingController extends Controller
     public function cancel(int $id): RedirectResponse
     {
         $booking = BookingRequest::where('client_id', auth()->id())
-            ->whereIn('status', ['pending', 'accepted'])
+            ->whereIn('status', ['pending', 'accepted', 'paid', 'confirmed'])
             ->findOrFail($id);
-        $booking->update(['status' => 'cancelled']);
-        return back()->with('success', 'Réservation annulée avec succès.');
+
+        $status = $booking->status instanceof BookingStatus
+            ? $booking->status
+            : BookingStatus::from((string) $booking->status);
+
+        // Pre-payment: just cancel directly, no refund
+        if (in_array($status, [BookingStatus::Pending, BookingStatus::Accepted], strict: true)) {
+            $booking->update(['status' => 'cancelled']);
+            return back()->with('success', 'Réservation annulée avec succès.');
+        }
+
+        // Post-payment: apply graduated refund policy via BookingService
+        try {
+            $this->bookingService->cancelBooking($booking);
+
+            $policy = $booking->fresh()->cancellation_policy_applied;
+            $refund = $booking->fresh()->refund_amount ?? 0;
+
+            $message = match ($policy) {
+                'full_refund'    => 'Réservation annulée. Remboursement intégral de ' . number_format($refund, 0, ',', ' ') . ' FCFA en cours.',
+                'partial_refund' => 'Réservation annulée. Remboursement partiel de ' . number_format($refund, 0, ',', ' ') . ' FCFA (50%) en cours.',
+                default          => 'Réservation annulée.',
+            };
+
+            return back()->with('success', $message);
+        } catch (BookingException $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     /**

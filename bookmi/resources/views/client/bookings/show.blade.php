@@ -80,6 +80,21 @@ main.page-content { background: #F2EFE9 !important; }
         ?? trim(($booking->talentProfile->user->first_name ?? '') . ' ' . ($booking->talentProfile->user->last_name ?? ''))
         ?: '?';
 @endphp
+@php
+    $eventDate      = \Carbon\Carbon::parse($booking->event_date)->startOfDay();
+    $daysUntilEvent = (int) now()->startOfDay()->diffInDays($eventDate, false);
+    $cancelPolicy   = match(true) {
+        $daysUntilEvent >= 14 => ['tier' => 'full',      'label' => 'Remboursement intégral (J-14+)',       'color' => '#15803D', 'bg' => '#F0FDF4', 'border' => '#86EFAC'],
+        $daysUntilEvent >= 7  => ['tier' => 'partial',   'label' => 'Remboursement 50% (J-7 à J-14)',       'color' => '#B45309', 'bg' => '#FFFBEB', 'border' => '#FCD34D'],
+        $daysUntilEvent >= 2  => ['tier' => 'mediation', 'label' => 'Médiation requise (J-2 à J-7)',        'color' => '#9333EA', 'bg' => '#FAF5FF', 'border' => '#D8B4FE'],
+        default               => ['tier' => 'none',      'label' => 'Annulation non disponible (< J-2)',    'color' => '#991B1B', 'bg' => '#FEF2F2', 'border' => '#FCA5A5'],
+    };
+    $refundAmount = match($cancelPolicy['tier']) {
+        'full'    => $booking->total_amount ?? 0,
+        'partial' => (int) round(($booking->total_amount ?? 0) * 0.5),
+        default   => 0,
+    };
+@endphp
 
 <div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:780px;">
 
@@ -236,11 +251,48 @@ main.page-content { background: #F2EFE9 !important; }
                 💳 Payer maintenant
             </a>
             @endif
+            {{-- Cancellation policy info --}}
+            <div style="margin-bottom:12px;padding:12px 14px;border-radius:12px;background:{{ $cancelPolicy['bg'] }};border:1px solid {{ $cancelPolicy['border'] }};">
+                <p style="font-size:0.75rem;font-weight:700;color:{{ $cancelPolicy['color'] }};margin:0;display:flex;align-items:center;gap:6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Politique d'annulation : {{ $cancelPolicy['label'] }}
+                </p>
+            </div>
             <form action="{{ route('client.bookings.cancel', $booking->id) }}" method="POST"
-                  style="flex:1;" onsubmit="return confirm('Confirmer l\'annulation de cette réservation ?')">
+                  style="flex:1;" onsubmit="return confirm('Annuler cette réservation ?\n\nPolitique applicable : {{ addslashes($cancelPolicy[\'label\']) }}')">
                 @csrf
                 <button type="submit" class="btn-cancel">Annuler la réservation</button>
             </form>
+        </div>
+        @endif
+
+        {{-- Cancel for paid/confirmed (graduated policy) --}}
+        @if(in_array($sk, ['paid', 'confirmed']) && $cancelPolicy['tier'] !== 'none')
+        <div style="padding:0 24px 16px;">
+            <div style="padding:12px 14px;border-radius:12px;background:{{ $cancelPolicy['bg'] }};border:1px solid {{ $cancelPolicy['border'] }};margin-bottom:10px;">
+                <p style="font-size:0.75rem;font-weight:700;color:{{ $cancelPolicy['color'] }};margin:0;">
+                    Politique d'annulation : {{ $cancelPolicy['label'] }}
+                    @if($cancelPolicy['tier'] === 'full') — Remboursement : {{ number_format($refundAmount, 0, ',', ' ') }} FCFA
+                    @elseif($cancelPolicy['tier'] === 'partial') — Remboursement estimé : {{ number_format($refundAmount, 0, ',', ' ') }} FCFA (50%)
+                    @elseif($cancelPolicy['tier'] === 'mediation') — L'équipe BookMi vous contactera pour médiation.
+                    @endif
+                </p>
+            </div>
+            @if($cancelPolicy['tier'] !== 'mediation')
+            <form action="{{ route('client.bookings.cancel', $booking->id) }}" method="POST"
+                  onsubmit="return confirm('Annuler cette réservation ?
+
+{{ addslashes($cancelPolicy['label']) }}
+Remboursement estimé : {{ number_format($refundAmount, 0, ",", " ") }} FCFA
+
+Cette action est irréversible.')">
+                @csrf
+                <button type="submit" style="width:100%;padding:12px 20px;border-radius:12px;font-size:0.85rem;font-weight:800;color:#991B1B;background:#FEF2F2;border:1.5px solid #FCA5A5;cursor:pointer;font-family:'Nunito',sans-serif;transition:background 0.15s;"
+                        onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
+                    Annuler la réservation
+                </button>
+            </form>
+            @endif
         </div>
         @endif
 
