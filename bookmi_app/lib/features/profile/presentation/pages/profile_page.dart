@@ -127,6 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     SliverToBoxAdapter(
                       child: _GeneralSection(
                         isTalent: isTalent,
+                        isManager: roles.contains('manager'),
                         isPhoneVerified: user?.phoneVerifiedAt != null,
                       ),
                     ),
@@ -746,10 +747,12 @@ class _ActionButton extends StatelessWidget {
 class _GeneralSection extends StatelessWidget {
   const _GeneralSection({
     required this.isTalent,
+    required this.isManager,
     required this.isPhoneVerified,
   });
 
   final bool isTalent;
+  final bool isManager;
   final bool isPhoneVerified;
 
   @override
@@ -871,6 +874,13 @@ class _GeneralSection extends StatelessWidget {
             onTap: () => context.pushNamed(RouteNames.profileTwoFactor),
           ),
           _Divider(),
+          if (isManager)
+            _MenuItem(
+              icon: Icons.manage_accounts_outlined,
+              label: 'Dashboard Manager',
+              onTap: () => context.pushNamed(RouteNames.managerDashboard),
+            ),
+          if (isManager) _Divider(),
           _MenuItem(
             icon: Icons.help_outline,
             label: 'Aide et support',

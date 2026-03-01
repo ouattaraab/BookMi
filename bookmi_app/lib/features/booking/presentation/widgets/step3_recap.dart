@@ -63,6 +63,11 @@ class _Step3RecapState extends State<Step3Recap> {
 
   @override
   Widget build(BuildContext context) {
+    final expressFee = widget.isExpress
+        ? (widget.cachetAmount * 0.15).round()
+        : 0;
+    final displayTotal = widget.totalAmount + expressFee;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
       child: Column(
@@ -94,6 +99,16 @@ class _Step3RecapState extends State<Step3Recap> {
                   valueColor: Colors.white.withValues(alpha: 0.6),
                   fontSize: 13,
                 ),
+                if (widget.isExpress) ...[
+                  const SizedBox(height: BookmiSpacing.spaceSm),
+                  _RecapRow(
+                    label: 'Frais urgence (express)',
+                    value: TalentCard.formatCachet(expressFee),
+                    labelColor: Colors.orange,
+                    valueColor: Colors.orange,
+                    fontSize: 13,
+                  ),
+                ],
                 const SizedBox(height: BookmiSpacing.spaceSm),
                 _RecapRow(
                   label: 'Date',
@@ -113,7 +128,7 @@ class _Step3RecapState extends State<Step3Recap> {
                 const Divider(color: Colors.white12, height: 24),
                 _RecapRow(
                   label: 'Total',
-                  value: TalentCard.formatCachet(widget.totalAmount),
+                  value: TalentCard.formatCachet(displayTotal),
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                   valueColor: BookmiColors.brandBlueLight,

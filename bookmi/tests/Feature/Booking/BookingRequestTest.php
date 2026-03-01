@@ -498,4 +498,84 @@ class BookingRequestTest extends TestCase
         $response->assertStatus(422);
         $response->assertJsonPath('error.code', 'BOOKING_INVALID_TRANSITION');
     }
+    // ─── AC: Express booking surcharge ───────────────────────────────────────
+
+    #[Test]
+    public function test_express_booking_includes_urgency_fee(): void
+    {
+        $client = User::factory()->create([
+            'phone_verified_at' => now(),
+            'is_active'         => true,
+        ]);
+        $client->assignRole('client');
+
+        $talentUser = User::factory()->create([
+            'phone_verified_at' => now(),
+            'is_active'         => true,
+        ]);
+        $talentUser->assignRole('talent');
+        $talentProfile = TalentProfile::factory()->verified()->create([
+            'user_id'                => $talentUser->id,
+            'enable_express_booking' => true,
+        ]);
+        $package = ServicePackage::factory()->create([
+            'talent_profile_id' => $talentProfile->id,
+            'cachet_amount'     => 100000,
+            'is_active'         => true,
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/booking_requests', [
+                'talent_profile_id' => $talentProfile->id,
+                'service_package_id' => $package->id,
+                'event_date' => now()->addDays(3)->format('Y-m-d'),
+                'event_location' => 'Abidjan',
+                'is_express' => true,
+            ]);
+
+        $response->assertCreated();
+
+        $booking = BookingRequest::latest()->first();
+        $this->assertEquals(15000, $booking->express_fee); // 15% of 100000
+        $this->assertGreaterThan(100000, $booking->total_amount); // total includes express fee
+    }
+
+    #[Test]
+    public function test_non_express_booking_has_no_express_fee(): void
+    {
+        $client = User::factory()->create([
+            'phone_verified_at' => now(),
+            'is_active'         => true,
+        ]);
+        $client->assignRole('client');
+
+        $talentUser = User::factory()->create([
+            'phone_verified_at' => now(),
+            'is_active'         => true,
+        ]);
+        $talentUser->assignRole('talent');
+        $talentProfile = TalentProfile::factory()->verified()->create([
+            'user_id' => $talentUser->id,
+        ]);
+        $package = ServicePackage::factory()->create([
+            'talent_profile_id' => $talentProfile->id,
+            'cachet_amount'     => 100000,
+            'is_active'         => true,
+        ]);
+
+        $response = $this->actingAs($client, 'sanctum')
+            ->postJson('/api/v1/booking_requests', [
+                'talent_profile_id' => $talentProfile->id,
+                'service_package_id' => $package->id,
+                'event_date' => now()->addDays(30)->format('Y-m-d'),
+                'event_location' => 'Abidjan',
+                'is_express' => false,
+            ]);
+
+        $response->assertCreated();
+
+        $booking = BookingRequest::latest()->first();
+        $this->assertEquals(0, $booking->express_fee);
+    }
+
 }

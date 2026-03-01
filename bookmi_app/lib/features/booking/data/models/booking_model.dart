@@ -74,6 +74,7 @@ class BookingModel {
     required this.travelCost,
     required this.commissionAmount,
     required this.totalAmount,
+    required this.expressFeee,
     required this.isExpress,
     required this.contractAvailable,
     required this.hasClientReview,
@@ -108,6 +109,7 @@ class BookingModel {
   final int travelCost;
   final int commissionAmount;
   final int totalAmount;
+  final int expressFeee;
   final bool isExpress;
   final bool contractAvailable;
   final bool hasClientReview;
@@ -149,6 +151,7 @@ class BookingModel {
       travelCost: (devis?['travel_cost'] as int?) ?? 0,
       commissionAmount: (devis?['commission_amount'] as int?) ?? 0,
       totalAmount: (devis?['total_amount'] as int?) ?? 0,
+      expressFeee: (devis?['express_fee'] as int?) ?? 0,
       isExpress: (json['is_express'] as bool?) ?? false,
       contractAvailable: (json['contract_available'] as bool?) ?? false,
       hasClientReview: (json['has_client_review'] as bool?) ?? false,
@@ -168,6 +171,71 @@ class BookingModel {
               json['pending_reschedule'] as Map<String, dynamic>,
             )
           : null,
+    );
+  }
+
+  BookingModel copyWith({
+    int? id,
+    String? status,
+    String? clientName,
+    String? talentStageName,
+    int? talentProfileId,
+    String? talentAvatarUrl,
+    String? packageName,
+    String? packageType,
+    String? eventDate,
+    String? startTime,
+    String? eventLocation,
+    int? cachetAmount,
+    int? travelCost,
+    int? commissionAmount,
+    int? totalAmount,
+    int? expressFeee,
+    bool? isExpress,
+    bool? contractAvailable,
+    bool? hasClientReview,
+    bool? hasTalentReview,
+    int? clientReviewId,
+    String? clientReviewReply,
+    String? message,
+    String? rejectReason,
+    int? refundAmount,
+    String? cancellationPolicyApplied,
+    String? devisMessage,
+    List<BookingStatusLog>? statusLogs,
+    RescheduleInfo? pendingReschedule,
+  }) {
+    return BookingModel(
+      id: id ?? this.id,
+      status: status ?? this.status,
+      clientName: clientName ?? this.clientName,
+      talentStageName: talentStageName ?? this.talentStageName,
+      talentProfileId: talentProfileId ?? this.talentProfileId,
+      talentAvatarUrl: talentAvatarUrl ?? this.talentAvatarUrl,
+      packageName: packageName ?? this.packageName,
+      packageType: packageType ?? this.packageType,
+      eventDate: eventDate ?? this.eventDate,
+      startTime: startTime ?? this.startTime,
+      eventLocation: eventLocation ?? this.eventLocation,
+      cachetAmount: cachetAmount ?? this.cachetAmount,
+      travelCost: travelCost ?? this.travelCost,
+      commissionAmount: commissionAmount ?? this.commissionAmount,
+      totalAmount: totalAmount ?? this.totalAmount,
+      expressFeee: expressFeee ?? this.expressFeee,
+      isExpress: isExpress ?? this.isExpress,
+      contractAvailable: contractAvailable ?? this.contractAvailable,
+      hasClientReview: hasClientReview ?? this.hasClientReview,
+      hasTalentReview: hasTalentReview ?? this.hasTalentReview,
+      clientReviewId: clientReviewId ?? this.clientReviewId,
+      clientReviewReply: clientReviewReply ?? this.clientReviewReply,
+      message: message ?? this.message,
+      rejectReason: rejectReason ?? this.rejectReason,
+      refundAmount: refundAmount ?? this.refundAmount,
+      cancellationPolicyApplied:
+          cancellationPolicyApplied ?? this.cancellationPolicyApplied,
+      devisMessage: devisMessage ?? this.devisMessage,
+      statusLogs: statusLogs ?? this.statusLogs,
+      pendingReschedule: pendingReschedule ?? this.pendingReschedule,
     );
   }
 

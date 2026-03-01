@@ -62,6 +62,7 @@ class BookingRequestResource extends JsonResource
             'devis'           => [
                 'cachet_amount'     => $this->cachet_amount,
                 'travel_cost'       => $this->travel_cost,
+                'express_fee'       => $this->express_fee,
                 'commission_amount' => $this->commission_amount,
                 'total_amount'      => $this->total_amount,
                 'message'           => sprintf(

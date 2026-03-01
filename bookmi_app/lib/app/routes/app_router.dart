@@ -8,6 +8,7 @@ import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/notifications/presentation/pages/notifications_page.dart';
+import 'package:bookmi_app/features/manager/presentation/pages/manager_dashboard_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/presentation/pages/talent_review_replies_page.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
@@ -119,6 +120,14 @@ GoRouter buildAppRouter(
         name: RouteNames.notifications,
         builder: (context, state) =>
             NotificationsPage(repository: notificationRepo),
+      ),
+
+      // ── Manager dashboard (accessible above shell for manager role) ──
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        name: RouteNames.managerDashboard,
+        path: RoutePaths.managerDashboard,
+        builder: (context, state) => const ManagerDashboardPage(),
       ),
 
       // ── Auth routes (outside shell) ──────────────────────

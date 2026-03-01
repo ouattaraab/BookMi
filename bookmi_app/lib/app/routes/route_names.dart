@@ -32,6 +32,8 @@ abstract final class RouteNames {
   static const profileCalendar = 'profileCalendar';
   static const profileTwoFactor = 'profileTwoFactor';
   static const profileNotifications = 'profileNotifications';
+  // Manager routes
+  static const managerDashboard = 'managerDashboard';
 }
 
 abstract final class RoutePaths {
@@ -67,4 +69,6 @@ abstract final class RoutePaths {
   static const profileNotifications = 'notifications-prefs';
   static const profileCalendar = 'calendar';
   static const notifications = '/notifications';
+  // Manager routes
+  static const managerDashboard = '/manager-dashboard';
 }
