@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
@@ -6,6 +8,8 @@ import 'package:bookmi_app/features/profile/data/repositories/profile_repository
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 
 class TalentEarningsPage extends StatefulWidget {
   const TalentEarningsPage({required this.repository, super.key});
@@ -149,6 +153,8 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
                   padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
                   children: [
                     if (_meta.isNotEmpty) _SummaryGrid(meta: _meta),
+                    const SizedBox(height: BookmiSpacing.spaceMd),
+                    _RevenueCertificateCard(repository: widget.repository),
                     const SizedBox(height: BookmiSpacing.spaceMd),
                     if (_earnings.isNotEmpty) ...[
                       Text(
@@ -531,6 +537,207 @@ class _EarningCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Revenue certificate download card ────────────────────────────────────────
+
+class _RevenueCertificateCard extends StatefulWidget {
+  const _RevenueCertificateCard({required this.repository});
+  final ProfileRepository repository;
+
+  @override
+  State<_RevenueCertificateCard> createState() =>
+      _RevenueCertificateCardState();
+}
+
+class _RevenueCertificateCardState extends State<_RevenueCertificateCard> {
+  final int _currentYear = DateTime.now().year;
+  late int _selectedYear;
+  bool _downloading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Default to previous year (most common use-case for tax certificates)
+    _selectedYear = _currentYear - 1;
+  }
+
+  Future<void> _download() async {
+    setState(() => _downloading = true);
+    final result =
+        await widget.repository.downloadRevenueCertificate(_selectedYear);
+    if (!mounted) return;
+    setState(() => _downloading = false);
+    switch (result) {
+      case ApiSuccess(:final data):
+        if (data.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Aucune donnée disponible pour cette année.'),
+              backgroundColor: BookmiColors.warning,
+            ),
+          );
+          return;
+        }
+        final dir = await getTemporaryDirectory();
+        final file = File('${dir.path}/attestation_$_selectedYear.pdf');
+        await file.writeAsBytes(data);
+        if (!mounted) return;
+        await OpenFilex.open(file.path);
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: BookmiColors.error,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Offer years from 2024 up to (currentYear - 1)
+    final years = List.generate(
+      (_currentYear - 1) - 2024 + 1,
+      (i) => 2024 + i,
+    ).reversed.toList();
+
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: BookmiColors.ctaOrange.withValues(alpha: 0.15),
+                ),
+                child: const Icon(
+                  Icons.receipt_long_outlined,
+                  size: 18,
+                  color: BookmiColors.ctaOrange,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Attestation de revenus',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'PDF officiel pour votre déclaration fiscale',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.white38,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              // Year selector
+              if (years.isNotEmpty) ...[
+                Container(
+                  height: 38,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                    ),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: _selectedYear,
+                      dropdownColor: const Color(0xFF1A2744),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      items: years
+                          .map(
+                            (y) => DropdownMenuItem(
+                              value: y,
+                              child: Text(y.toString()),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) {
+                        if (v != null) setState(() => _selectedYear = v);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+              ],
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: (years.isEmpty || _downloading) ? null : _download,
+                  icon: _downloading
+                      ? const SizedBox(
+                          height: 14,
+                          width: 14,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.download_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                  label: Text(
+                    years.isEmpty
+                        ? 'Disponible en $_currentYear'
+                        : (_downloading ? 'Téléchargement...' : 'Télécharger'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BookmiColors.ctaOrange,
+                    disabledBackgroundColor:
+                        BookmiColors.ctaOrange.withValues(alpha: 0.3),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (years.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'L\'attestation $_currentYear sera disponible à partir du 1er janvier ${_currentYear + 1}.',
+                style: const TextStyle(fontSize: 11, color: Colors.white38),
+              ),
+            ),
+        ],
       ),
     );
   }

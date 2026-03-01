@@ -411,6 +411,21 @@ class ProfileRepository {
     }
   }
 
+  /// Download the revenue certificate PDF for [year].
+  /// Returns the raw PDF bytes.
+  Future<ApiResult<List<int>>> downloadRevenueCertificate(int year) async {
+    try {
+      final res = await _dio.get<List<int>>(
+        ApiEndpoints.meRevenueCertificate,
+        queryParameters: {'year': year},
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return ApiSuccess(res.data ?? []);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   // ─── Portfolio ─────────────────────────────────────────────────────────────
 
   Future<ApiResult<List<Map<String, dynamic>>>> getPortfolio() async {

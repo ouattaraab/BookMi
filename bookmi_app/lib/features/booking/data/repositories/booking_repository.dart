@@ -130,6 +130,30 @@ class BookingRepository {
     }
   }
 
+  /// Submit a client portfolio media item for a completed booking.
+  ///
+  /// Sends a multipart POST to /booking_requests/{id}/client-portfolio.
+  /// [file] must be an image (jpg/png/gif) or video (mp4/mov) ≤ 20 MB.
+  Future<ApiResult<Map<String, dynamic>>> submitClientPortfolio({
+    required int bookingId,
+    required String filePath,
+    String? caption,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(filePath),
+        if (caption != null && caption.isNotEmpty) 'caption': caption,
+      });
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingClientPortfolio(bookingId),
+        data: formData,
+      );
+      return ApiSuccess(response.data!['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Validate a promo code against a booking amount.
   /// Returns discount_amount and final_amount on success.
   Future<ApiResult<Map<String, dynamic>>> validatePromoCode({

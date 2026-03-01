@@ -20,6 +20,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -495,9 +496,11 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
-          // Client: report a completed booking (post-event)
+          // Client: submit portfolio media + report (post-event, completed)
           if (!isTalent && booking.status == 'completed') ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
+            _PortfolioSubmitButton(bookingId: booking.id),
+            const SizedBox(height: BookmiSpacing.spaceSm),
             _ReportButton(bookingId: booking.id),
           ],
 
@@ -2649,6 +2652,291 @@ class _ReportButtonState extends State<_ReportButton> {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Portfolio submission button (client, completed bookings) ─────────────────
+
+class _PortfolioSubmitButton extends StatefulWidget {
+  const _PortfolioSubmitButton({required this.bookingId});
+  final int bookingId;
+
+  @override
+  State<_PortfolioSubmitButton> createState() => _PortfolioSubmitButtonState();
+}
+
+class _PortfolioSubmitButtonState extends State<_PortfolioSubmitButton> {
+  bool _submitting = false;
+
+  Future<void> _showSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _PortfolioSubmitSheet(
+        bookingId: widget.bookingId,
+        repository: ctx.read<BookingRepository>(),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _submitting ? null : _showSheet,
+        icon: const Icon(
+          Icons.add_photo_alternate_outlined,
+          color: BookmiColors.brandElectricBlue,
+          size: 18,
+        ),
+        label: const Text(
+          'Ajouter au portfolio du talent',
+          style: TextStyle(
+            color: BookmiColors.brandElectricBlue,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(
+            color: BookmiColors.brandElectricBlue,
+            width: 1.2,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PortfolioSubmitSheet extends StatefulWidget {
+  const _PortfolioSubmitSheet({
+    required this.bookingId,
+    required this.repository,
+  });
+  final int bookingId;
+  final BookingRepository repository;
+
+  @override
+  State<_PortfolioSubmitSheet> createState() => _PortfolioSubmitSheetState();
+}
+
+class _PortfolioSubmitSheetState extends State<_PortfolioSubmitSheet> {
+  XFile? _picked;
+  final _captionController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _captionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pick() async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file != null) setState(() => _picked = file);
+  }
+
+  Future<void> _submit() async {
+    if (_picked == null) return;
+    setState(() => _submitting = true);
+    final result = await widget.repository.submitClientPortfolio(
+      bookingId: widget.bookingId,
+      filePath: _picked!.path,
+      caption: _captionController.text.trim().isEmpty
+          ? null
+          : _captionController.text.trim(),
+    );
+    if (!mounted) return;
+    setState(() => _submitting = false);
+    switch (result) {
+      case ApiSuccess():
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Média soumis ! Le talent devra valider avant publication.',
+            ),
+            backgroundColor: BookmiColors.success,
+          ),
+        );
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: BookmiColors.error,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final insets = MediaQuery.of(context).viewInsets;
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F1C3A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + insets.bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Ajouter au portfolio',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Partagez une photo de la prestation. Le talent devra valider avant publication.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withValues(alpha: 0.5),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Image picker
+          GestureDetector(
+            onTap: _pick,
+            child: Container(
+              width: double.infinity,
+              height: 140,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _picked != null
+                      ? BookmiColors.brandElectricBlue.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.12),
+                ),
+              ),
+              child: _picked != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(11),
+                      child: Image.file(
+                        File(_picked!.path),
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.add_photo_alternate_outlined,
+                          color: BookmiColors.brandElectricBlue,
+                          size: 32,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Choisir une photo',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Caption
+          TextField(
+            controller: _captionController,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            maxLength: 255,
+            decoration: InputDecoration(
+              hintText: 'Légende (optionnel)',
+              hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35),
+                fontSize: 13,
+              ),
+              counterStyle:
+                  TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.04),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 10,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: BookmiColors.brandElectricBlue,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Submit
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: (_picked == null || _submitting) ? null : _submit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BookmiColors.brandBlue,
+                disabledBackgroundColor:
+                    BookmiColors.brandBlue.withValues(alpha: 0.3),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _submitting
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      'Soumettre',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

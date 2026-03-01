@@ -132,6 +132,13 @@ abstract final class ApiEndpoints {
   // Booking export
   static const bookingExport = '/booking_requests/export';
 
+  // Client portfolio submission (post-event)
+  static String bookingClientPortfolio(int bookingId) =>
+      '/booking_requests/$bookingId/client-portfolio';
+
+  // Revenue certificate (talent)
+  static const meRevenueCertificate = '/me/revenue_certificate';
+
   // 2FA
   static const auth2faStatus = '/auth/2fa/status';
   static const auth2faSetupTotp = '/auth/2fa/setup/totp';
