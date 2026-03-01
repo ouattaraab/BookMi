@@ -411,6 +411,32 @@ class ProfileRepository {
     }
   }
 
+  /// Fetch real-time calendar health alerts for the authenticated talent.
+  Future<ApiResult<Map<String, dynamic>>> getCalendarAlerts() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.meCalendarAlerts,
+      );
+      return ApiSuccess(res.data?['data'] as Map<String, dynamic>? ?? {});
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
+  /// Export earnings as CSV bytes for [year] (all years if null).
+  Future<ApiResult<List<int>>> exportEarnings({int? year}) async {
+    try {
+      final res = await _dio.get<List<int>>(
+        ApiEndpoints.meEarningsExport,
+        queryParameters: {if (year != null) 'year': year},
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return ApiSuccess(res.data ?? []);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Download the revenue certificate PDF for [year].
   /// Returns the raw PDF bytes.
   Future<ApiResult<List<int>>> downloadRevenueCertificate(int year) async {

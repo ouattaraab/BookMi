@@ -28,10 +28,21 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
   int _page = 1;
   bool _hasMore = false;
 
+  Map<String, dynamic>? _alerts;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadAlerts();
+  }
+
+  Future<void> _loadAlerts() async {
+    final result = await widget.repository.getCalendarAlerts();
+    if (!mounted) return;
+    if (result case ApiSuccess(:final data)) {
+      setState(() => _alerts = data);
+    }
   }
 
   Future<void> _load({bool refresh = false}) async {
@@ -125,9 +136,13 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          _ExportEarningsButton(repository: widget.repository),
           IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white70, size: 20),
-            onPressed: () => _load(refresh: true),
+            onPressed: () {
+              _load(refresh: true);
+              _loadAlerts();
+            },
           ),
         ],
       ),
@@ -152,6 +167,10 @@ class _TalentEarningsPageState extends State<TalentEarningsPage> {
                 child: ListView(
                   padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
                   children: [
+                    if (_alerts != null) ...[
+                      _CalendarAlertBanner(alerts: _alerts!),
+                      const SizedBox(height: BookmiSpacing.spaceSm),
+                    ],
                     if (_meta.isNotEmpty) _SummaryGrid(meta: _meta),
                     const SizedBox(height: BookmiSpacing.spaceMd),
                     _RevenueCertificateCard(repository: widget.repository),
@@ -739,6 +758,137 @@ class _RevenueCertificateCardState extends State<_RevenueCertificateCard> {
             ),
         ],
       ),
+    );
+  }
+}
+
+// ─── Calendar alert banner ────────────────────────────────────────────────
+
+class _CalendarAlertBanner extends StatefulWidget {
+  const _CalendarAlertBanner({required this.alerts});
+  final Map<String, dynamic> alerts;
+
+  @override
+  State<_CalendarAlertBanner> createState() => _CalendarAlertBannerState();
+}
+
+class _CalendarAlertBannerState extends State<_CalendarAlertBanner> {
+  bool _dismissed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_dismissed) return const SizedBox.shrink();
+
+    final isOverloaded = widget.alerts['is_overloaded'] as bool? ?? false;
+    final hasEmpty = widget.alerts['has_empty_upcoming'] as bool? ?? false;
+
+    if (!isOverloaded && !hasEmpty) return const SizedBox.shrink();
+
+    final isWarning = isOverloaded;
+    final color = isWarning ? const Color(0xFFFF6B35) : const Color(0xFF64B5F6);
+    final bgColor = isWarning
+        ? const Color(0xFFFF6B35).withValues(alpha: 0.12)
+        : const Color(0xFF1E3A5F);
+    final icon = isWarning
+        ? Icons.warning_amber_rounded
+        : Icons.calendar_today_outlined;
+    final message = isOverloaded
+        ? 'Agenda surchargé : vous avez ${widget.alerts['active_booking_count']} réservations actives (seuil : ${widget.alerts['overload_threshold']}). Pensez à bloquer des créneaux.'
+        : 'Aucune prestation prévue dans les 30 prochains jours. Mettez à jour votre disponibilité pour attirer des clients.';
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.manrope(
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.85),
+                height: 1.4,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _dismissed = true),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: Icon(
+                Icons.close,
+                size: 16,
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Export earnings button ───────────────────────────────────────────────
+
+class _ExportEarningsButton extends StatefulWidget {
+  const _ExportEarningsButton({required this.repository});
+  final ProfileRepository repository;
+
+  @override
+  State<_ExportEarningsButton> createState() => _ExportEarningsButtonState();
+}
+
+class _ExportEarningsButtonState extends State<_ExportEarningsButton> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) return;
+    setState(() => _exporting = true);
+    try {
+      final result = await widget.repository.exportEarnings();
+      if (!mounted) return;
+      switch (result) {
+        case ApiSuccess(:final data):
+          final dir = await getTemporaryDirectory();
+          final filename =
+              'revenus_${DateTime.now().year}_${DateTime.now().millisecondsSinceEpoch}.csv';
+          final file = File('${dir.path}/$filename');
+          await file.writeAsBytes(data);
+          await OpenFilex.open(file.path);
+        case ApiFailure(:final message):
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(message)),
+            );
+          }
+      }
+    } finally {
+      if (mounted) setState(() => _exporting = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: 'Exporter CSV',
+      icon: _exporting
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white70,
+              ),
+            )
+          : const Icon(Icons.download_outlined, color: Colors.white70, size: 20),
+      onPressed: _exporting ? null : _export,
     );
   }
 }

@@ -9,6 +9,7 @@ use App\Models\Payout;
 use App\Models\TalentProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class FinancialDashboardController extends BaseController
 {
@@ -110,6 +111,108 @@ class FinancialDashboardController extends BaseController
                 'per_page'     => $payouts->perPage(),
                 'total'        => $payouts->total(),
             ],
+        ]);
+    }
+
+    /**
+     * GET /api/v1/me/calendar/alerts
+     *
+     * Returns real-time calendar health for the authenticated talent:
+     * - is_overloaded: active bookings ≥ overload_threshold
+     * - has_empty_upcoming: no booking in the next 30 days
+     */
+    public function calendarAlerts(Request $request): JsonResponse
+    {
+        $talentProfile = TalentProfile::where('user_id', $request->user()->id)->first();
+
+        if (! $talentProfile) {
+            return $this->errorResponse('TALENT_PROFILE_NOT_FOUND', 'Aucun profil talent trouvé.', 404);
+        }
+
+        $activeBookings = BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->whereIn('status', [BookingStatus::Paid->value, BookingStatus::Confirmed->value])
+            ->count();
+
+        $threshold   = (int) ($talentProfile->overload_threshold ?? 5);
+        $isOverloaded = $activeBookings >= $threshold;
+
+        $hasUpcoming = BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->whereIn('status', [
+                BookingStatus::Pending->value,
+                BookingStatus::Accepted->value,
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+            ])
+            ->where('event_date', '>=', now()->toDateString())
+            ->where('event_date', '<=', now()->addDays(30)->toDateString())
+            ->exists();
+
+        return response()->json([
+            'data' => [
+                'is_overloaded'        => $isOverloaded,
+                'active_booking_count' => $activeBookings,
+                'overload_threshold'   => $threshold,
+                'has_empty_upcoming'   => ! $hasUpcoming,
+            ],
+        ]);
+    }
+
+    /**
+     * GET /api/v1/me/earnings/export
+     *
+     * Returns a UTF-8 CSV file of all completed bookings for the authenticated talent.
+     * Optional query param: year (e.g. ?year=2025)
+     */
+    public function exportEarnings(Request $request): Response|JsonResponse
+    {
+        $talentProfile = TalentProfile::where('user_id', $request->user()->id)->first();
+
+        if (! $talentProfile) {
+            return $this->errorResponse('TALENT_PROFILE_NOT_FOUND', 'Aucun profil talent trouvé.', 404);
+        }
+
+        $year = $request->query('year') !== null ? (int) $request->query('year') : null;
+
+        $query = BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->where('status', BookingStatus::Completed->value)
+            ->with(['client:id,first_name,last_name'])
+            ->orderByDesc('event_date');
+
+        if ($year !== null) {
+            $query->whereYear('event_date', $year);
+        }
+
+        $bookings = $query->get();
+
+        $filename = 'revenus_' . ($year ?? date('Y')) . '_' . date('Ymd') . '.csv';
+
+        /** @var resource $handle */
+        $handle = fopen('php://memory', 'w+');
+        fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel
+        fputcsv($handle, ['Date prestation', 'Client', 'Forfait', 'Cachet (FCFA)', 'Commission (FCFA)', 'Net (FCFA)'], ';');
+
+        foreach ($bookings as $b) {
+            $cachet     = (int) $b->cachet_amount;
+            $commission = (int) $b->commission_amount;
+            $net        = $cachet - $commission;
+            $clientName = trim(($b->client->first_name ?? '') . ' ' . ($b->client->last_name ?? ''));
+            $packageName = isset($b->package_snapshot['name'])
+                ? $b->package_snapshot['name']
+                : 'Prestation libre';
+            $eventDate  = $b->event_date instanceof \Carbon\Carbon
+                ? $b->event_date->format('d/m/Y')
+                : (string) $b->event_date;
+
+            fputcsv($handle, [$eventDate, $clientName, $packageName, $cachet, $commission, $net], ';');
+        }
+
+        rewind($handle);
+        $csv = (string) stream_get_contents($handle);
+        fclose($handle);
+
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 

@@ -105,6 +105,8 @@ abstract final class ApiEndpoints {
 
   // Earnings (talent)
   static const meEarnings = '/me/earnings';
+  static const meEarningsExport = '/me/earnings/export';
+  static const meCalendarAlerts = '/me/calendar/alerts';
 
   // Admin broadcasts (push notifications of type admin_broadcast)
   static const meBroadcasts = '/me/broadcasts';

@@ -239,4 +239,94 @@ class FinancialDashboardControllerTest extends TestCase
     {
         $this->getJson('/api/v1/me/payouts')->assertStatus(401);
     }
+
+    // ── Calendar alerts ───────────────────────────────────────────────────────
+
+    public function test_calendar_alerts_returns_alert_structure(): void
+    {
+        [$user, $profile] = $this->makeTalentUser();
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/me/calendar/alerts');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [
+                    'is_overloaded',
+                    'active_booking_count',
+                    'overload_threshold',
+                    'has_empty_upcoming',
+                ],
+            ]);
+    }
+
+    public function test_calendar_alerts_detects_overload(): void
+    {
+        [$user, $profile] = $this->makeTalentUser();
+        $profile->update(['overload_threshold' => 2]);
+
+        // Create 3 active bookings (paid)
+        BookingRequest::factory()->count(3)->create([
+            'talent_profile_id' => $profile->id,
+            'status'            => 'paid',
+            'event_date'        => now()->addDays(10)->toDateString(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/me/calendar/alerts');
+
+        $response->assertStatus(200)
+            ->assertJson(['data' => ['is_overloaded' => true, 'active_booking_count' => 3]]);
+    }
+
+    public function test_calendar_alerts_detects_empty_upcoming(): void
+    {
+        [$user, $profile] = $this->makeTalentUser();
+
+        // No upcoming bookings — should report empty
+        $response = $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/me/calendar/alerts');
+
+        $response->assertStatus(200)
+            ->assertJson(['data' => ['has_empty_upcoming' => true]]);
+    }
+
+    public function test_calendar_alerts_returns_404_for_non_talent(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/v1/me/calendar/alerts')
+            ->assertStatus(404);
+    }
+
+    // ── Earnings export ───────────────────────────────────────────────────────
+
+    public function test_export_earnings_returns_csv_for_talent(): void
+    {
+        [$user, $profile] = $this->makeTalentUser();
+
+        BookingRequest::factory()->create([
+            'talent_profile_id' => $profile->id,
+            'status'            => 'completed',
+            'cachet_amount'     => 100_000,
+            'commission_amount' => 15_000,
+            'event_date'        => now()->subDays(5)->toDateString(),
+        ]);
+
+        $response = $this->actingAs($user, 'sanctum')
+            ->get('/api/v1/me/earnings/export');
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('text/csv', $response->headers->get('Content-Type') ?? '');
+    }
+
+    public function test_export_earnings_returns_404_for_non_talent(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user, 'sanctum')
+            ->get('/api/v1/me/earnings/export')
+            ->assertStatus(404);
+    }
 }

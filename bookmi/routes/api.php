@@ -248,6 +248,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Earnings (talent)
         Route::get('me/earnings', [FinancialDashboardController::class, 'earnings'])
              ->name('api.v1.me.earnings');
+        Route::get('me/earnings/export', [FinancialDashboardController::class, 'exportEarnings'])
+             ->name('api.v1.me.earnings.export');
+        // Calendar alerts (talent)
+        Route::get('me/calendar/alerts', [FinancialDashboardController::class, 'calendarAlerts'])
+             ->name('api.v1.me.calendar_alerts');
 
         // Signalement problème (Story 6.6)
         Route::post('/booking_requests/{booking}/reports', [ReportController::class, 'store'])->name('reports.store');
