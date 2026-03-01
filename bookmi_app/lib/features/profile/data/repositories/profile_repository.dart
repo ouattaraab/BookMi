@@ -452,6 +452,21 @@ class ProfileRepository {
     }
   }
 
+  /// GET /me/analytics — returns detailed analytics: top cities, booking
+  /// breakdown by status, 12-month revenue, rating history, daily profile views.
+  Future<ApiResult<Map<String, dynamic>>> getAnalytics() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.meAnalytics,
+      );
+      return ApiSuccess(
+        (res.data?['data'] as Map<String, dynamic>?) ?? {},
+      );
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   // ─── Portfolio ─────────────────────────────────────────────────────────────
 
   Future<ApiResult<List<Map<String, dynamic>>>> getPortfolio() async {
@@ -501,7 +516,8 @@ class ProfileRepository {
   }
 
   /// Get client-submitted portfolio items awaiting talent approval.
-  Future<ApiResult<List<Map<String, dynamic>>>> getPendingPortfolioSubmissions() async {
+  Future<ApiResult<List<Map<String, dynamic>>>>
+  getPendingPortfolioSubmissions() async {
     try {
       final res = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.mePortfolioPending,

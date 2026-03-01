@@ -100,6 +100,23 @@ class AnalyticsController extends BaseController
             ->values()
             ->toArray();
 
+        // Top 5 cities for bookings (paid + confirmed + completed) — PHP-level to avoid DB date functions
+        $cityBookings = BookingRequest::where('talent_profile_id', $talent->id)
+            ->whereIn('status', [
+                BookingStatus::Paid->value,
+                BookingStatus::Confirmed->value,
+                BookingStatus::Completed->value,
+            ])
+            ->whereNotNull('event_location')
+            ->where('event_location', '!=', '')
+            ->get(['event_location'])
+            ->groupBy(fn ($b) => trim($b->event_location))
+            ->map(fn ($group, $city) => ['city' => $city, 'count' => $group->count()])
+            ->sortByDesc('count')
+            ->values()
+            ->take(5)
+            ->toArray();
+
         return [
             'talent_profile_id' => $talent->id,
             'stage_name' => $talent->stage_name,
@@ -116,6 +133,7 @@ class AnalyticsController extends BaseController
                 'last_30_days' => $profileViewsLast30,
                 'daily_breakdown' => $dailyViews,
             ],
+            'top_cities' => $cityBookings,
         ];
     }
 }

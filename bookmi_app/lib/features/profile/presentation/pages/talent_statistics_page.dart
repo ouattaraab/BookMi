@@ -23,6 +23,7 @@ class TalentStatisticsPage extends StatefulWidget {
 class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
   Map<String, dynamic>? _data;
   ProfileStats? _stats;
+  Map<String, dynamic>? _analytics;
   bool _loading = true;
   String? _error;
 
@@ -38,16 +39,18 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
       _error = null;
     });
 
-    // Fetch both endpoints in parallel
+    // Fetch all three endpoints in parallel
     final results = await Future.wait([
       widget.repository.getFinancialDashboard(),
       widget.repository.getStats(isTalent: true),
+      widget.repository.getAnalytics(),
     ]);
 
     if (!mounted) return;
 
     final finResult = results[0] as ApiResult<Map<String, dynamic>>;
     final statsResult = results[1] as ApiResult<ProfileStats>;
+    final analyticsResult = results[2] as ApiResult<Map<String, dynamic>>;
 
     switch (finResult) {
       case ApiSuccess(:final data):
@@ -55,6 +58,9 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
           _data = data;
           if (statsResult case ApiSuccess(:final data)) {
             _stats = data;
+          }
+          if (analyticsResult case ApiSuccess(:final data)) {
+            _analytics = data;
           }
           _loading = false;
         });
@@ -298,6 +304,15 @@ class _TalentStatisticsPageState extends State<TalentStatisticsPage> {
               ),
             ),
           ],
+          // ── Top villes ──────────────────────────────────────────────
+          if (_analytics != null) ...[
+            const SizedBox(height: 16),
+            _TopCitiesCard(analytics: _analytics!),
+            const SizedBox(height: 16),
+            _BookingStatusCard(analytics: _analytics!),
+            const SizedBox(height: 16),
+            _RatingHistoryCard(analytics: _analytics!),
+          ],
           const SizedBox(height: 16),
           // ── Visibilité ───────────────────────────────────────────────
           _SectionTitle(title: 'Visibilité'),
@@ -482,6 +497,332 @@ class _RevenueBarChart extends StatelessWidget {
     ];
     final month = int.tryParse(parts[1]) ?? 0;
     return month >= 1 && month <= 12 ? names[month] : yyyyMm;
+  }
+}
+
+// ── Top villes ──────────────────────────────────────────────────────────────
+
+class _TopCitiesCard extends StatelessWidget {
+  const _TopCitiesCard({required this.analytics});
+  final Map<String, dynamic> analytics;
+
+  @override
+  Widget build(BuildContext context) {
+    final topCities =
+        ((analytics['top_cities'] as List?)?.cast<Map<String, dynamic>>()) ??
+        [];
+    if (topCities.isEmpty) return const SizedBox.shrink();
+
+    final maxCount = topCities
+        .map((c) => (c['count'] as int?) ?? 0)
+        .fold(0, (a, b) => a > b ? a : b);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D1B38),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.location_on_outlined, size: 16, color: _primary),
+              const SizedBox(width: 6),
+              Text(
+                'Villes des prestations',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: _secondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...topCities.map((c) {
+            final city = (c['city'] as String?) ?? '—';
+            final count = (c['count'] as int?) ?? 0;
+            final ratio = maxCount > 0 ? count / maxCount : 0.0;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        city,
+                        style: GoogleFonts.manrope(
+                          fontSize: 12,
+                          color: _secondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '$count prestation${count > 1 ? 's' : ''}',
+                        style: GoogleFonts.manrope(
+                          fontSize: 11,
+                          color: _mutedFg,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: ratio,
+                      backgroundColor: const Color(0xFF1A2E54),
+                      valueColor: const AlwaysStoppedAnimation<Color>(_primary),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Répartition des réservations ────────────────────────────────────────────
+
+class _BookingStatusCard extends StatelessWidget {
+  const _BookingStatusCard({required this.analytics});
+  final Map<String, dynamic> analytics;
+
+  @override
+  Widget build(BuildContext context) {
+    final byStatus =
+        (analytics['bookings_by_status'] as Map<String, dynamic>?) ?? {};
+    if (byStatus.isEmpty) return const SizedBox.shrink();
+
+    final total = byStatus.values.fold<int>(
+      0,
+      (sum, v) => sum + ((v as num?)?.toInt() ?? 0),
+    );
+    if (total == 0) return const SizedBox.shrink();
+
+    const statusLabels = <String, String>{
+      'pending': 'En attente',
+      'accepted': 'Acceptées',
+      'paid': 'Payées',
+      'confirmed': 'Confirmées',
+      'completed': 'Terminées',
+      'cancelled': 'Annulées',
+      'rejected': 'Refusées',
+      'disputed': 'Litiges',
+    };
+    const statusColors = <String, Color>{
+      'pending': Color(0xFFFBBF24),
+      'accepted': Color(0xFF3B9DF2),
+      'paid': Color(0xFF8B5CF6),
+      'confirmed': Color(0xFF06B6D4),
+      'completed': Color(0xFF14B8A6),
+      'cancelled': Color(0xFF6B7280),
+      'rejected': Color(0xFFEF4444),
+      'disputed': Color(0xFFF97316),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D1B38),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.donut_small_outlined,
+                size: 16,
+                color: _warning,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Répartition des réservations',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: _secondary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: byStatus.entries
+                .where((e) => ((e.value as num?)?.toInt() ?? 0) > 0)
+                .map((e) {
+                  final count = (e.value as num?)?.toInt() ?? 0;
+                  final label = statusLabels[e.key] ?? e.key;
+                  final color = statusColors[e.key] ?? const Color(0xFF8FA3C0);
+                  final pct = (count / total * 100).round();
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: color.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$label · $count ($pct%)',
+                          style: GoogleFonts.manrope(
+                            fontSize: 11,
+                            color: color,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                })
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Tendance des notes ───────────────────────────────────────────────────────
+
+class _RatingHistoryCard extends StatelessWidget {
+  const _RatingHistoryCard({required this.analytics});
+  final Map<String, dynamic> analytics;
+
+  @override
+  Widget build(BuildContext context) {
+    final ratingHistory =
+        ((analytics['rating_history'] as List?)
+            ?.cast<Map<String, dynamic>>()) ??
+        [];
+    final avgRating = (analytics['average_rating'] as num?)?.toDouble() ?? 0.0;
+
+    if (ratingHistory.isEmpty) return const SizedBox.shrink();
+
+    // Take last 10 reviews for the mini chart
+    final recent = ratingHistory.take(10).toList().reversed.toList();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D1B38),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: _border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.star_outline, size: 16, color: _warning),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Tendance des notes',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: _secondary,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: _warning.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.star, size: 12, color: _warning),
+                    const SizedBox(width: 4),
+                    Text(
+                      avgRating.toStringAsFixed(1),
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: _warning,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 40,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: recent.map((r) {
+                final rating = (r['rating'] as int?) ?? 0;
+                final height = (rating / 5 * 40).clamp(4.0, 40.0);
+                final color = rating >= 4
+                    ? _success
+                    : rating >= 3
+                    ? _warning
+                    : const Color(0xFFEF4444);
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 1),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        height: height,
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${ratingHistory.length} avis reçus — ${recent.length} derniers affichés',
+            style: GoogleFonts.manrope(fontSize: 10, color: _mutedFg),
+          ),
+        ],
+      ),
+    );
   }
 }
 
