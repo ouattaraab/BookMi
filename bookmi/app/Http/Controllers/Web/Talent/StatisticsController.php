@@ -84,6 +84,16 @@ class StatisticsController extends Controller
             ->orderBy('year')->orderBy('month')
             ->get();
 
+        // ── Top cities (event locations) ──────────────────────────────────
+        $topCities = BookingRequest::where('talent_profile_id', $profile->id)
+            ->whereNotNull('event_location')
+            ->where('event_location', '!=', '')
+            ->selectRaw('event_location, COUNT(*) as cnt')
+            ->groupBy('event_location')
+            ->orderByDesc('cnt')
+            ->limit(5)
+            ->get();
+
         $financial = compact(
             'revenusTotal',
             'revenusMoisCourant',
@@ -94,6 +104,6 @@ class StatisticsController extends Controller
             'mensuels'
         );
 
-        return view('talent.statistics.index', compact('profileViews', 'financial', 'bookingStats', 'monthly'));
+        return view('talent.statistics.index', compact('profileViews', 'financial', 'bookingStats', 'monthly', 'topCities'));
     }
 }

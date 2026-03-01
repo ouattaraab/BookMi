@@ -314,5 +314,35 @@
         @endif
     </div>
 
+    {{-- ── Section 5 : Top villes ── --}}
+    @if($topCities->isNotEmpty())
+    <div class="stat-fade" style="animation-delay:300ms;margin-top:24px;">
+        <div class="section-card">
+            <div class="section-header">
+                <div class="dot" style="background:#2196F3;"></div>
+                <h2 style="font-size:0.95rem;font-weight:900;color:#1A2744;margin:0;">Top villes clientes</h2>
+            </div>
+            <div style="padding:20px 24px;display:flex;flex-direction:column;gap:12px;">
+                @php $maxCityCount = $topCities->max('cnt') ?: 1; @endphp
+                @foreach($topCities as $i => $city)
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="width:20px;text-align:center;font-size:0.72rem;font-weight:800;color:#B0A89E;">{{ $loop->iteration }}</span>
+                    <div style="flex:1;min-width:0;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                            <span style="font-size:0.855rem;font-weight:700;color:#1A2744;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%;">{{ $city->event_location }}</span>
+                            <span style="font-size:0.82rem;font-weight:800;color:#2196F3;flex-shrink:0;">{{ $city->cnt }} réserv.</span>
+                        </div>
+                        <div style="background:#EAE7E0;border-radius:9999px;height:5px;overflow:hidden;">
+                            <div style="height:5px;border-radius:9999px;background:linear-gradient(90deg,#2196F3,#1565C0);width:{{ round(($city->cnt / $maxCityCount) * 100) }}%;transition:width 0.8s ease;"></div>
+                        </div>
+                    </div>
+                </div>
+                @if(!$loop->last)<div style="height:1px;background:#F5F3EF;"></div>@endif
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
+
 </div>
 @endsection

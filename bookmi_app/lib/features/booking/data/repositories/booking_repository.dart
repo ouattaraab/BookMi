@@ -253,6 +253,24 @@ class BookingRepository {
     }
   }
 
+  /// Cancel a paid/confirmed booking (client action).
+  ///
+  /// Calls POST /booking_requests/{id}/cancel which applies the graduated
+  /// refund policy: full refund (≥14d), partial 50% (≥7d), mediation (≥2d).
+  Future<ApiResult<BookingModel>> cancelBooking(int id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingCancel(id),
+      );
+      final booking = BookingModel.fromJson(
+        response.data!['data'] as Map<String, dynamic>,
+      );
+      return ApiSuccess(booking);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   /// Reply to a client review (talent action).
   ///
   /// Calls POST /api/v1/reviews/{reviewId}/reply with the reply text.

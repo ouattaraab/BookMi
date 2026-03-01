@@ -437,6 +437,25 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
+          // Client: cancel booking (paid/confirmed — only if event is ≥ 2 days away)
+          if (!isTalent &&
+              ['paid', 'confirmed'].contains(booking.status) &&
+              _CancelBookingButton.daysUntilEvent(booking.eventDate) >= 2) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _CancelBookingButton(
+              bookingId: booking.id,
+              eventDate: booking.eventDate,
+              cachetAmount: booking.cachetAmount,
+              onCancelled: () {
+                setState(() {
+                  _loading = true;
+                  _error = null;
+                });
+                _fetch();
+              },
+            ),
+          ],
+
           // Client: open dispute (paid or confirmed)
           if (!isTalent && ['paid', 'confirmed'].contains(booking.status)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
@@ -2223,6 +2242,191 @@ class _ProposeRescheduleButtonState extends State<_ProposeRescheduleButton> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Cancel booking button (client: paid/confirmed, ≥ 2 days before event) ──
+
+enum _CancelTier { full, partial, mediation }
+
+class _CancelBookingButton extends StatefulWidget {
+  const _CancelBookingButton({
+    required this.bookingId,
+    required this.eventDate,
+    required this.cachetAmount,
+    required this.onCancelled,
+  });
+
+  final int bookingId;
+  final String eventDate;
+  final int cachetAmount;
+  final VoidCallback onCancelled;
+
+  /// Days between now and the event date (negative if past).
+  static int daysUntilEvent(String eventDate) {
+    try {
+      return DateTime.parse(eventDate).difference(DateTime.now()).inDays;
+    } catch (_) {
+      return -1;
+    }
+  }
+
+  static _CancelTier tierFor(int daysUntil) {
+    if (daysUntil >= 14) return _CancelTier.full;
+    if (daysUntil >= 7) return _CancelTier.partial;
+    return _CancelTier.mediation;
+  }
+
+  @override
+  State<_CancelBookingButton> createState() => _CancelBookingButtonState();
+}
+
+class _CancelBookingButtonState extends State<_CancelBookingButton> {
+  bool _loading = false;
+
+  Future<void> _confirmCancel() async {
+    final days = _CancelBookingButton.daysUntilEvent(widget.eventDate);
+    final tier = _CancelBookingButton.tierFor(days);
+
+    String title;
+    String body;
+    Color accentColor;
+
+    switch (tier) {
+      case _CancelTier.full:
+        title = 'Remboursement intégral';
+        body =
+            'L\'événement est dans $days jours. Vous serez remboursé intégralement.';
+        accentColor = const Color(0xFF4CAF50);
+      case _CancelTier.partial:
+        final refund = (widget.cachetAmount * 0.5).round();
+        title = 'Remboursement partiel (50%)';
+        body =
+            'L\'événement est dans $days jours. Vous serez remboursé à hauteur de ${TalentCard.formatCachet(refund)}.';
+        accentColor = const Color(0xFFFF9800);
+      case _CancelTier.mediation:
+        title = 'Médiation requise';
+        body =
+            'L\'événement est dans $days jours. L\'annulation est soumise à médiation — aucun remboursement automatique.';
+        accentColor = const Color(0xFFF44336);
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1A2744),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.info_outline, color: accentColor, size: 22),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: accentColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              body,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Confirmer l\'annulation de cette réservation ?',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.6),
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              'Non, garder',
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.6)),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'Oui, annuler',
+              style: TextStyle(color: accentColor, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _loading = true);
+
+    final repo = context.read<BookingRepository>();
+    final result = await repo.cancelBooking(widget.bookingId);
+
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    switch (result) {
+      case ApiSuccess():
+        widget.onCancelled();
+      case ApiFailure(:final message):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: BookmiColors.error,
+          ),
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _loading ? null : _confirmCancel,
+        icon: _loading
+            ? const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.red,
+                ),
+              )
+            : const Icon(Icons.cancel_outlined, size: 18, color: Colors.red),
+        label: Text(
+          _loading ? 'Annulation...' : 'Annuler la réservation',
+          style: const TextStyle(
+            color: Colors.red,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Colors.red, width: 1.2),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
