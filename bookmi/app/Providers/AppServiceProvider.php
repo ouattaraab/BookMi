@@ -22,6 +22,7 @@ use App\Repositories\Eloquent\TalentRepository;
 use App\Repositories\Eloquent\VerificationRepository;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -43,6 +44,17 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // ── Super-admin bypass : les utilisateurs is_admin ont accès complet
+        // au panel Filament (canViewAny, canAccess, canCreate, canEdit, canDelete…).
+        // Ce Gate::before n'affecte pas les utilisateurs API normaux (qui n'ont pas is_admin).
+        Gate::before(function ($user, string $ability) {
+            if (property_exists($user, 'is_admin') && $user->is_admin) {
+                return true;
+            }
+
+            return null; // laisse les vérifications normales s'appliquer
+        });
+
         TalentProfile::observe(TalentProfileObserver::class);
         BookingRequest::observe(BookingRequestObserver::class);
         PortfolioItem::observe(PortfolioItemObserver::class);
