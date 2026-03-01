@@ -18,8 +18,12 @@ class ReviewController extends Controller
     public function store(int $id, Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'rating'  => ['required', 'integer', 'min:1', 'max:5'],
-            'comment' => ['nullable', 'string', 'max:1000'],
+            'rating'                 => ['required', 'integer', 'min:1', 'max:5'],
+            'comment'                => ['nullable', 'string', 'max:1000'],
+            'punctuality_score'      => ['nullable', 'integer', 'min:1', 'max:5'],
+            'quality_score'          => ['nullable', 'integer', 'min:1', 'max:5'],
+            'professionalism_score'  => ['nullable', 'integer', 'min:1', 'max:5'],
+            'contract_respect_score' => ['nullable', 'integer', 'min:1', 'max:5'],
         ]);
 
         $booking = BookingRequest::where('client_id', auth()->id())
@@ -33,6 +37,10 @@ class ReviewController extends Controller
                 ReviewType::ClientToTalent,
                 (int) $validated['rating'],
                 $validated['comment'] ?? null,
+                isset($validated['punctuality_score']) ? (int) $validated['punctuality_score'] : null,
+                isset($validated['quality_score']) ? (int) $validated['quality_score'] : null,
+                isset($validated['professionalism_score']) ? (int) $validated['professionalism_score'] : null,
+                isset($validated['contract_respect_score']) ? (int) $validated['contract_respect_score'] : null,
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->with('error', implode(' ', $e->errors()['booking'] ?? $e->errors()['type'] ?? ['Impossible de soumettre cet avis.']));

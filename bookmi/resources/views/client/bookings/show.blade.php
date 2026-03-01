@@ -363,12 +363,65 @@ main.page-content { background: #F2EFE9 !important; }
                               onfocus="this.style.borderColor='#FF6B35'"
                               onblur="this.style.borderColor='#E5E1DA'">{{ old('comment') }}</textarea>
                 </div>
+
+                {{-- Évaluation détaillée multi-critères (optionnel) --}}
+                <div style="margin-bottom:20px;padding:16px;background:#F9F8F5;border-radius:14px;border:1px solid #EAE7E0;">
+                    <p style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#8A8278;margin:0 0 14px;">Évaluation détaillée (optionnel)</p>
+                    @foreach([
+                        ['name' => 'punctuality_score',      'label' => 'Ponctualité'],
+                        ['name' => 'quality_score',          'label' => 'Qualité de la prestation'],
+                        ['name' => 'professionalism_score',  'label' => 'Professionnalisme'],
+                        ['name' => 'contract_respect_score', 'label' => 'Respect du contrat'],
+                    ] as $criterion)
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+                        <label style="font-size:0.875rem;color:#4A4540;font-weight:600;min-width:180px;">{{ $criterion['label'] }}</label>
+                        <div style="display:flex;gap:4px;">
+                            @for($star = 1; $star <= 5; $star++)
+                            <label style="cursor:pointer;line-height:1;">
+                                <input type="radio" name="{{ $criterion['name'] }}" value="{{ $star }}" style="position:absolute;opacity:0;width:0;height:0;">
+                                <span class="criteria-star" data-value="{{ $star }}" data-name="{{ $criterion['name'] }}"
+                                      style="font-size:1.5rem;color:#D1C7BC;cursor:pointer;transition:color 0.15s;user-select:none;">&#9733;</span>
+                            </label>
+                            @endfor
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+
                 <button type="submit"
                         style="padding:12px 28px;border-radius:14px;font-size:0.875rem;font-weight:800;color:white;background:linear-gradient(135deg,#FF6B35,#C85A20);border:none;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 14px rgba(255,107,53,0.28);transition:transform 0.2s;"
                         onmouseover="this.style.transform='translateY(-2px)'"
                         onmouseout="this.style.transform=''">
                     Publier mon avis
                 </button>
+
+                <script>
+                document.querySelectorAll('.criteria-star').forEach(function(star) {
+                    star.addEventListener('click', function() {
+                        var name = this.dataset.name;
+                        var value = parseInt(this.dataset.value);
+                        document.querySelector('input[name="' + name + '"][value="' + value + '"]').checked = true;
+                        document.querySelectorAll('.criteria-star[data-name="' + name + '"]').forEach(function(s) {
+                            s.style.color = parseInt(s.dataset.value) <= value ? '#FF6B35' : '#D1C7BC';
+                        });
+                    });
+                    star.addEventListener('mouseover', function() {
+                        var name = this.dataset.name;
+                        var value = parseInt(this.dataset.value);
+                        document.querySelectorAll('.criteria-star[data-name="' + name + '"]').forEach(function(s) {
+                            s.style.color = parseInt(s.dataset.value) <= value ? '#FF6B35' : '#D1C7BC';
+                        });
+                    });
+                    star.addEventListener('mouseout', function() {
+                        var name = this.dataset.name;
+                        var checkedInput = document.querySelector('input[name="' + name + '"]:checked');
+                        var checkedValue = checkedInput ? parseInt(checkedInput.value) : 0;
+                        document.querySelectorAll('.criteria-star[data-name="' + name + '"]').forEach(function(s) {
+                            s.style.color = parseInt(s.dataset.value) <= checkedValue ? '#FF6B35' : '#D1C7BC';
+                        });
+                    });
+                });
+                </script>
             </form>
         </div>
     </div>
