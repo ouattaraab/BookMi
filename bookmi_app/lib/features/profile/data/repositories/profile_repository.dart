@@ -321,6 +321,15 @@ class ProfileRepository {
     }
   }
 
+  Future<ApiResult<void>> deactivateAccount() async {
+    try {
+      await _dio.post<Map<String, dynamic>>(ApiEndpoints.meDeactivate);
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      return _mapDioError(e);
+    }
+  }
+
   Future<ApiResult<Map<String, dynamic>>> getIdentityStatus() async {
     try {
       final res = await _dio.get<Map<String, dynamic>>(

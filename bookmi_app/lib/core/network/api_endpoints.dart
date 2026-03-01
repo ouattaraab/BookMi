@@ -48,6 +48,7 @@ abstract final class ApiEndpoints {
   // Profile
   static const meStats = '/me/stats';
   static const meAvatar = '/me/avatar';
+  static const meDeactivate = '/me/deactivate';
   static const meIdentityStatus = '/me/identity/status';
   static const meIdentityDocument = '/me/identity/document';
   static const meIdentitySelfie = '/me/identity/selfie';

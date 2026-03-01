@@ -33,6 +33,7 @@ class PersonalInfoPage extends StatefulWidget {
 class _PersonalInfoPageState extends State<PersonalInfoPage> {
   bool _isEditing = false;
   bool _isSaving = false;
+  bool _isDeactivating = false;
 
   late TextEditingController _firstNameCtrl;
   late TextEditingController _lastNameCtrl;
@@ -213,6 +214,73 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
         margin: const EdgeInsets.all(16),
       ),
     );
+  }
+
+  Future<void> _deactivateAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            surface: _cardBg,
+            primary: _errorRed,
+          ),
+          dialogBackgroundColor: _cardBg,
+        ),
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Text(
+            'Désactiver le compte',
+            style: GoogleFonts.nunito(
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              fontSize: 17,
+            ),
+          ),
+          content: Text(
+            'Votre compte sera désactivé et vous serez déconnecté immédiatement. '
+            'Contactez le support pour réactiver votre compte.',
+            style: GoogleFonts.manrope(color: _muted, fontSize: 14),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                'Annuler',
+                style: GoogleFonts.manrope(color: _muted),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                'Désactiver',
+                style: GoogleFonts.manrope(
+                  color: _errorRed,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isDeactivating = true);
+    final repo = context.read<ProfileRepository>();
+    final result = await repo.deactivateAccount();
+    if (!mounted) return;
+    setState(() => _isDeactivating = false);
+
+    switch (result) {
+      case ApiSuccess():
+        context.read<AuthBloc>().add(const AuthLogoutRequested());
+      case ApiFailure(:final message):
+        _showSnack(message, isError: true);
+    }
   }
 
   // ── AppBar ──────────────────────────────────────────────────────
@@ -469,6 +537,64 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
+
+                        // ── Danger zone ────────────────────────────
+                        if (!_isEditing) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: _errorRed.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(18),
+                              border: Border.all(
+                                color: _errorRed.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 18,
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Zone de danger',
+                                        style: GoogleFonts.nunito(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: _errorRed,
+                                          letterSpacing: -0.2,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        'Désactiver votre compte le rend inaccessible.',
+                                        style: GoogleFonts.manrope(
+                                          fontSize: 12,
+                                          color: _muted,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                _GhostButton(
+                                  label: _isDeactivating
+                                      ? '…'
+                                      : 'Désactiver',
+                                  icon: Icons.block_rounded,
+                                  onTap: _isDeactivating
+                                      ? () {}
+                                      : _deactivateAccount,
+                                  isDestructive: true,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
 
                         // ── Save button (edit mode) ─────────────────
                         if (_isEditing)
