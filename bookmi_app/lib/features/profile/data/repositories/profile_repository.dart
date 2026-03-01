@@ -89,7 +89,8 @@ class ProfileRepository {
           final pd = profileRes.data?['data'] as Map<String, dynamic>? ?? {};
           final attrs = pd['attributes'] as Map<String, dynamic>? ?? {};
           talentLevel = (attrs['talent_level'] as String?) ?? '';
-          totalBookings = (attrs['total_bookings'] as int?) ?? nombrePrestations;
+          totalBookings =
+              (attrs['total_bookings'] as int?) ?? nombrePrestations;
           visibilityScore =
               (attrs['visibility_score'] as num?)?.toDouble() ?? 0.0;
         } on DioException {

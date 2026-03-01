@@ -495,13 +495,13 @@ class _VisibilityScoreCard extends StatelessWidget {
     final color = score >= 70
         ? _success
         : score >= 40
-            ? _warning
-            : const Color(0xFFEF4444);
+        ? _warning
+        : const Color(0xFFEF4444);
     final label = score >= 70
         ? 'Excellent'
         : score >= 40
-            ? 'Bon'
-            : 'À améliorer';
+        ? 'Bon'
+        : 'À améliorer';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -531,7 +531,10 @@ class _VisibilityScoreCard extends StatelessWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),

@@ -340,8 +340,9 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
                             ),
                             Expanded(
                               child: Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                ),
                                 decoration: BoxDecoration(
                                   color: _inputBg,
                                   borderRadius: BorderRadius.circular(10),
