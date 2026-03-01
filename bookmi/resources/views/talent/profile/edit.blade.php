@@ -193,6 +193,42 @@
                 </div>
             </div>
 
+            {{-- Groupe / Collectif --}}
+            <div x-data="{ isGroup: {{ old('is_group', $profile->is_group ?? false) ? 'true' : 'false' }} }">
+                <label class="block text-xs font-semibold text-gray-700 mb-2">Groupe / Collectif</label>
+                <div class="p-4 rounded-xl space-y-3" style="background:#f9fafb;border:1px solid #e5e7eb;">
+                    <label class="flex items-center gap-3 cursor-pointer select-none">
+                        <div class="relative flex-shrink-0">
+                            <input type="hidden" name="is_group" value="0">
+                            <input type="checkbox" name="is_group" value="1"
+                                   x-model="isGroup"
+                                   {{ old('is_group', $profile->is_group ?? false) ? 'checked' : '' }}
+                                   class="sr-only">
+                            <div class="w-11 h-6 rounded-full transition-colors duration-200"
+                                 :style="isGroup ? 'background:#FF6B35' : 'background:#d1d5db'"></div>
+                            <div class="absolute top-1 left-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200"
+                                 :style="isGroup ? 'transform:translateX(20px)' : ''"></div>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-700" x-text="isGroup ? 'Groupe / Collectif' : 'Artiste solo'"></span>
+                    </label>
+                    <div x-show="isGroup" x-cloak class="space-y-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1.5">Nom du collectif</label>
+                            <input type="text" name="collective_name" maxlength="100"
+                                   value="{{ old('collective_name', $profile->collective_name ?? '') }}"
+                                   placeholder="Ex : Jazz Quartet, Les Étoiles…"
+                                   class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1.5">Nombre de membres</label>
+                            <input type="number" name="group_size" min="1" max="100"
+                                   value="{{ old('group_size', $profile->group_size ?? 2) }}"
+                                   class="w-32 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Email (readonly) --}}
             <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1.5">Email</label>

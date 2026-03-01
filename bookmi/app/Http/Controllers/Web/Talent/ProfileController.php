@@ -37,6 +37,9 @@ class ProfileController extends Controller
             'social_links.twitter'    => 'nullable|url|max:300',
             'auto_reply_is_active'    => 'nullable|boolean',
             'auto_reply_message'      => 'nullable|string|max:500',
+            'is_group'                => 'nullable|boolean',
+            'group_size'              => 'nullable|integer|min:1|max:100',
+            'collective_name'         => 'nullable|string|max:100',
         ]);
 
         // Ensure cachet_amount always has a value (NOT NULL in DB)
@@ -55,6 +58,13 @@ class ProfileController extends Controller
 
         // Normalize auto-reply checkbox (unchecked = not sent = false)
         $data['auto_reply_is_active'] = $request->boolean('auto_reply_is_active');
+
+        // Normalize group checkbox
+        $data['is_group'] = $request->boolean('is_group');
+        if (! $data['is_group']) {
+            $data['group_size']      = null;
+            $data['collective_name'] = null;
+        }
 
         if ($profile) {
             $profile->update($data);
