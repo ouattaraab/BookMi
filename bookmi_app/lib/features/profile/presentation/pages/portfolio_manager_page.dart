@@ -86,7 +86,9 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
         await _load();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Média approuvé et ajouté au portfolio')),
+            const SnackBar(
+              content: Text('Média approuvé et ajouté au portfolio'),
+            ),
           );
         }
       case ApiFailure(:final message):
@@ -503,11 +505,11 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
                       padding: const EdgeInsets.all(16),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1,
-                      ),
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 1,
+                          ),
                       itemCount: _items.length,
                       itemBuilder: (context, index) {
                         final item = _items[index];
@@ -519,9 +521,11 @@ class _PortfolioManagerPageState extends State<PortfolioManagerPage> {
                             attrs['url'] as String? ??
                             '';
                         final caption = attrs['caption'] as String? ?? '';
-                        final isApproved = attrs['is_approved'] as bool? ?? true;
+                        final isApproved =
+                            attrs['is_approved'] as bool? ?? true;
                         final status = isApproved ? 'approved' : 'pending';
-                        final mediaType = attrs['media_type'] as String? ?? 'image';
+                        final mediaType =
+                            attrs['media_type'] as String? ?? 'image';
 
                         return _PortfolioItem(
                           mediaUrl: mediaUrl,
@@ -690,8 +694,7 @@ class _PendingSubmissionsSection extends StatelessWidget {
                           ? CachedNetworkImage(
                               imageUrl: mediaUrl,
                               fit: BoxFit.cover,
-                              placeholder: (_, __) =>
-                                  Container(color: _border),
+                              placeholder: (_, __) => Container(color: _border),
                               errorWidget: (_, __, ___) => Container(
                                 color: _border,
                                 child: const Icon(
@@ -764,8 +767,9 @@ class _PendingSubmissionsSection extends StatelessWidget {
                               child: Container(
                                 height: 28,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF4CAF50)
-                                      .withValues(alpha: 0.85),
+                                  color: const Color(
+                                    0xFF4CAF50,
+                                  ).withValues(alpha: 0.85),
                                   borderRadius: const BorderRadius.only(
                                     bottomRight: Radius.circular(12),
                                   ),

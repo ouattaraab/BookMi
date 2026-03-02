@@ -207,10 +207,16 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
             ?.cast<Map<String, dynamic>>() ??
         [];
     final reviewsCount = profile['reviews_count'] as int? ?? 0;
-    final avgPunctuality = double.tryParse('${profile['avg_punctuality_score']}');
+    final avgPunctuality = double.tryParse(
+      '${profile['avg_punctuality_score']}',
+    );
     final avgQuality = double.tryParse('${profile['avg_quality_score']}');
-    final avgProfessionalism = double.tryParse('${profile['avg_professionalism_score']}');
-    final avgContractRespect = double.tryParse('${profile['avg_contract_respect_score']}');
+    final avgProfessionalism = double.tryParse(
+      '${profile['avg_professionalism_score']}',
+    );
+    final avgContractRespect = double.tryParse(
+      '${profile['avg_contract_respect_score']}',
+    );
 
     return Stack(
       children: [
@@ -450,18 +456,15 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                             // Level progression bar — own profile only
                             Builder(
                               builder: (ctx) {
-                                final authState =
-                                    ctx.read<AuthBloc>().state;
+                                final authState = ctx.read<AuthBloc>().state;
                                 if (authState is! AuthAuthenticated) {
                                   return const SizedBox.shrink();
                                 }
                                 final isOwnProfile =
                                     authState.roles.contains('talent') &&
                                     profileUserId != null &&
-                                    profileUserId ==
-                                        authState.user.id;
-                                if (!isOwnProfile ||
-                                    talentLevel == null) {
+                                    profileUserId == authState.user.id;
+                                if (!isOwnProfile || talentLevel == null) {
                                   return const SizedBox.shrink();
                                 }
                                 return Padding(
@@ -538,7 +541,7 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                                   name: attrs['name'] as String? ?? '',
                                   description: deliveryDays != null
                                       ? '${attrs['description'] ?? ''}\nLivraison en $deliveryDays jour${deliveryDays > 1 ? 's' : ''}'
-                                          .trim()
+                                            .trim()
                                       : attrs['description'] as String?,
                                   cachetAmount:
                                       attrs['cachet_amount'] as int? ?? 0,
@@ -890,20 +893,17 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
       );
     }
 
-    final nextLevel =
-        idx >= 0 && idx + 1 < _levelOrder.length
-            ? _levelOrder[idx + 1]
-            : null;
+    final nextLevel = idx >= 0 && idx + 1 < _levelOrder.length
+        ? _levelOrder[idx + 1]
+        : null;
     if (nextLevel == null) return const SizedBox.shrink();
 
     final currentMin = _levelThresholds[level] ?? 0;
     final nextMin = _levelThresholds[nextLevel] ?? 1;
     final span = nextMin - currentMin;
-    final progress =
-        span > 0
-            ? ((totalBookings - currentMin).clamp(0, span) / span)
-                .toDouble()
-            : 0.0;
+    final progress = span > 0
+        ? ((totalBookings - currentMin).clamp(0, span) / span).toDouble()
+        : 0.0;
     final remaining = (nextMin - totalBookings).clamp(0, span);
 
     final nextLabel = switch (nextLevel) {

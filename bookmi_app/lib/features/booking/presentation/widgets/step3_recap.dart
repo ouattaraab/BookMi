@@ -151,8 +151,7 @@ class _Step3RecapState extends State<Step3Recap> {
                   const SizedBox(height: BookmiSpacing.spaceSm),
                   _RecapRow(
                     label: 'Réduction (${widget.appliedPromoCode})',
-                    value:
-                        '-${TalentCard.formatCachet(widget.discountAmount)}',
+                    value: '-${TalentCard.formatCachet(widget.discountAmount)}',
                     labelColor: const Color(0xFF4CAF50),
                     valueColor: const Color(0xFF4CAF50),
                     fontSize: 13,
@@ -373,8 +372,7 @@ class _Step3RecapState extends State<Step3Recap> {
                   maxLines: 3,
                   style: const TextStyle(color: Colors.white, fontSize: 14),
                   decoration: InputDecoration(
-                    hintText:
-                        "Précisez vos attentes, le thème de l'événement…",
+                    hintText: "Précisez vos attentes, le thème de l'événement…",
                     hintStyle: TextStyle(
                       color: Colors.white.withValues(alpha: 0.4),
                       fontSize: 13,

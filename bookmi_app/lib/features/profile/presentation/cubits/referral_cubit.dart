@@ -24,8 +24,9 @@ class ReferralCubit extends Cubit<ReferralState> {
   }
 
   Future<void> applyCode(String code) async {
-    final currentInfo =
-        state is ReferralLoaded ? (state as ReferralLoaded).info : null;
+    final currentInfo = state is ReferralLoaded
+        ? (state as ReferralLoaded).info
+        : null;
 
     emit(const ReferralApplying());
     final result = await _repository.applyCode(code);

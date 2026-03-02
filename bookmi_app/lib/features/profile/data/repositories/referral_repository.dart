@@ -35,7 +35,9 @@ class ReferralRepository {
   /// Fetch current user's referral code + stats.
   Future<ApiResult<ReferralInfo>> getReferralInfo() async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>(ApiEndpoints.meReferral);
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.meReferral,
+      );
       final data = response.data!['data'] as Map<String, dynamic>;
       return ApiSuccess(ReferralInfo.fromJson(data));
     } on DioException catch (e) {
@@ -61,8 +63,7 @@ class ReferralRepository {
     final error = errorData?['error'] as Map<String, dynamic>?;
     return ApiFailure(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-      message:
-          (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
     );
   }
 }

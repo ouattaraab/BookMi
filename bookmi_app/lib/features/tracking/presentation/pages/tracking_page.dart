@@ -593,9 +593,11 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
   }
 
   void _dismiss() {
-    unawaited(_controller.reverse().then((_) {
-      if (mounted) setState(() => _dismissed = true);
-    }));
+    unawaited(
+      _controller.reverse().then((_) {
+        if (mounted) setState(() => _dismissed = true);
+      }),
+    );
   }
 
   @override

@@ -586,8 +586,9 @@ class _RevenueCertificateCardState extends State<_RevenueCertificateCard> {
 
   Future<void> _download() async {
     setState(() => _downloading = true);
-    final result =
-        await widget.repository.downloadRevenueCertificate(_selectedYear);
+    final result = await widget.repository.downloadRevenueCertificate(
+      _selectedYear,
+    );
     if (!mounted) return;
     setState(() => _downloading = false);
     switch (result) {
@@ -737,8 +738,9 @@ class _RevenueCertificateCardState extends State<_RevenueCertificateCard> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: BookmiColors.ctaOrange,
-                    disabledBackgroundColor:
-                        BookmiColors.ctaOrange.withValues(alpha: 0.3),
+                    disabledBackgroundColor: BookmiColors.ctaOrange.withValues(
+                      alpha: 0.3,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -887,7 +889,11 @@ class _ExportEarningsButtonState extends State<_ExportEarningsButton> {
                 color: Colors.white70,
               ),
             )
-          : const Icon(Icons.download_outlined, color: Colors.white70, size: 20),
+          : const Icon(
+              Icons.download_outlined,
+              color: Colors.white70,
+              size: 20,
+            ),
       onPressed: _exporting ? null : _export,
     );
   }

@@ -582,9 +582,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                 ),
                                 const SizedBox(width: 12),
                                 _GhostButton(
-                                  label: _isDeactivating
-                                      ? '…'
-                                      : 'Désactiver',
+                                  label: _isDeactivating ? '…' : 'Désactiver',
                                   icon: Icons.block_rounded,
                                   onTap: _isDeactivating
                                       ? () {}

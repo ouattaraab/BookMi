@@ -2877,8 +2877,9 @@ class _PortfolioSubmitSheetState extends State<_PortfolioSubmitSheet> {
                 color: Colors.white.withValues(alpha: 0.35),
                 fontSize: 13,
               ),
-              counterStyle:
-                  TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+              counterStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.3),
+              ),
               filled: true,
               fillColor: Colors.white.withValues(alpha: 0.04),
               contentPadding: const EdgeInsets.symmetric(
@@ -2887,13 +2888,15 @@ class _PortfolioSubmitSheetState extends State<_PortfolioSubmitSheet> {
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide:
-                    BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide:
-                    BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.12),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -2911,8 +2914,9 @@ class _PortfolioSubmitSheetState extends State<_PortfolioSubmitSheet> {
               onPressed: (_picked == null || _submitting) ? null : _submit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: BookmiColors.brandBlue,
-                disabledBackgroundColor:
-                    BookmiColors.brandBlue.withValues(alpha: 0.3),
+                disabledBackgroundColor: BookmiColors.brandBlue.withValues(
+                  alpha: 0.3,
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

@@ -96,8 +96,10 @@ class BookingRepository {
         data: {
           'talent_profile_id': talentProfileId,
           'service_package_id': servicePackageId,
-          if (eventDate != null && eventDate.isNotEmpty) 'event_date': eventDate,
-          if (startTime != null && startTime.isNotEmpty) 'start_time': startTime,
+          if (eventDate != null && eventDate.isNotEmpty)
+            'event_date': eventDate,
+          if (startTime != null && startTime.isNotEmpty)
+            'start_time': startTime,
           if (eventLocation != null && eventLocation.isNotEmpty)
             'event_location': eventLocation,
           if (message != null && message.isNotEmpty) 'message': message,

@@ -48,8 +48,11 @@ class _ReferralViewState extends State<_ReferralView> {
         backgroundColor: BookmiColors.backgroundDeep,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new,
-              color: Colors.white70, size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white70,
+            size: 18,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -364,7 +367,9 @@ class _ReferralViewState extends State<_ReferralView> {
                                 onPressed: () {
                                   final code = _codeController.text.trim();
                                   if (code.isNotEmpty) {
-                                    context.read<ReferralCubit>().applyCode(code);
+                                    context.read<ReferralCubit>().applyCode(
+                                      code,
+                                    );
                                   }
                                 },
                                 style: TextButton.styleFrom(

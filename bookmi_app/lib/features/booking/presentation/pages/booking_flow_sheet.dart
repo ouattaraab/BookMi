@@ -142,10 +142,11 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
     return switch (_currentStep) {
       0 => _selectedPackageId != null,
       // Micro packages: date/time/location are auto-filled by the backend.
-      1 => _isMicroPackage ||
-          (_selectedDate != null &&
-              _selectedTime != null &&
-              _location.trim().isNotEmpty),
+      1 =>
+        _isMicroPackage ||
+            (_selectedDate != null &&
+                _selectedTime != null &&
+                _location.trim().isNotEmpty),
       2 => true,
       _ => false,
     };
@@ -187,12 +188,12 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         eventDate: isMicro
             ? null
             : '${_selectedDate!.year}-'
-                '${_selectedDate!.month.toString().padLeft(2, '0')}-'
-                '${_selectedDate!.day.toString().padLeft(2, '0')}',
+                  '${_selectedDate!.month.toString().padLeft(2, '0')}-'
+                  '${_selectedDate!.day.toString().padLeft(2, '0')}',
         startTime: isMicro
             ? null
             : '${_selectedTime!.hour.toString().padLeft(2, '0')}:'
-                '${_selectedTime!.minute.toString().padLeft(2, '0')}',
+                  '${_selectedTime!.minute.toString().padLeft(2, '0')}',
         eventLocation: isMicro ? null : _location.trim(),
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,
@@ -217,9 +218,9 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             title: _isExpress ? 'Réservation confirmée !' : 'Demande envoyée !',
             subtitle: _isExpress
                 ? 'Votre réservation express avec ${widget.talentStageName} '
-                    'est confirmée. Procédez au paiement pour finaliser.'
+                      'est confirmée. Procédez au paiement pour finaliser.'
                 : 'Le talent ${widget.talentStageName} va recevoir votre demande. '
-                    'Vous serez notifié dès validation.',
+                      'Vous serez notifié dès validation.',
             onDismiss: () {
               if (context.mounted) Navigator.of(context).pop();
             },
@@ -367,19 +368,20 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
           });
         },
       ),
-      1 => _isMicroPackage
-          ? _MicroDeliveryStep(deliveryDays: _deliveryDays)
-          : Step2DateLocation(
-              selectedDate: _selectedDate,
-              selectedTime: _selectedTime,
-              location: _location,
-              travelCost: _travelCost,
-              showTravelCost: true,
-              onDateSelected: (d) => setState(() => _selectedDate = d),
-              onTimeSelected: (t) => setState(() => _selectedTime = t),
-              onLocationChanged: (v) => setState(() => _location = v),
-              onTravelCostChanged: (v) => setState(() => _travelCost = v),
-            ),
+      1 =>
+        _isMicroPackage
+            ? _MicroDeliveryStep(deliveryDays: _deliveryDays)
+            : Step2DateLocation(
+                selectedDate: _selectedDate,
+                selectedTime: _selectedTime,
+                location: _location,
+                travelCost: _travelCost,
+                showTravelCost: true,
+                onDateSelected: (d) => setState(() => _selectedDate = d),
+                onTimeSelected: (t) => setState(() => _selectedTime = t),
+                onLocationChanged: (v) => setState(() => _location = v),
+                onTravelCostChanged: (v) => setState(() => _travelCost = v),
+              ),
       2 => BlocBuilder<BookingFlowBloc, BookingFlowState>(
         builder: (context, state) {
           return Step3Recap(

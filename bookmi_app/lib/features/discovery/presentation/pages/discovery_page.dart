@@ -1460,9 +1460,7 @@ class _SortChip extends StatelessWidget {
           color: isActive ? _primary : Colors.white.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isActive
-                ? _primary
-                : Colors.white.withValues(alpha: 0.12),
+            color: isActive ? _primary : Colors.white.withValues(alpha: 0.12),
           ),
         ),
         child: Row(
