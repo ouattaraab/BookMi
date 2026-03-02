@@ -29,7 +29,13 @@ class AuthRepository {
         data: {'email': email, 'password': password},
       );
 
-      final data = response.data!['data'] as Map<String, dynamic>;
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'Réponse serveur invalide.',
+        );
+      }
       return ApiSuccess(AuthResponse.fromJson(data));
     } on DioException catch (e) {
       return _handleError(e);
@@ -61,7 +67,13 @@ class AuthRepository {
         data: {'phone': phone, 'code': code},
       );
 
-      final data = response.data!['data'] as Map<String, dynamic>;
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'Réponse serveur invalide.',
+        );
+      }
       return ApiSuccess(AuthResponse.fromJson(data));
     } on DioException catch (e) {
       return _handleError(e);
@@ -111,7 +123,13 @@ class AuthRepository {
     try {
       final response = await _dio.get<Map<String, dynamic>>(ApiEndpoints.me);
 
-      final data = response.data!['data'] as Map<String, dynamic>;
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'Réponse serveur invalide.',
+        );
+      }
       final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
       final roles =
           (data['roles'] as List<dynamic>?)?.cast<String>() ?? const [];
@@ -128,7 +146,8 @@ class AuthRepository {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.categories,
       );
-      final data = response.data!['data'] as List<dynamic>;
+      final data =
+          (response.data?['data'] as List<dynamic>?) ?? const <dynamic>[];
       return ApiSuccess(data.cast<Map<String, dynamic>>());
     } on DioException catch (e) {
       return _handleError(e);

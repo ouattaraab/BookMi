@@ -22,7 +22,7 @@ class MessagingRepository {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.conversations,
       );
-      final items = (response.data!['data'] as List<dynamic>)
+      final items = ((response.data?['data'] as List<dynamic>?) ?? [])
           .cast<Map<String, dynamic>>();
       return ApiSuccess(items.map(ConversationModel.fromJson).toList());
     } on DioException catch (e) {
@@ -36,7 +36,7 @@ class MessagingRepository {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.meBroadcasts,
       );
-      final items = (response.data!['data'] as List<dynamic>)
+      final items = ((response.data?['data'] as List<dynamic>?) ?? [])
           .cast<Map<String, dynamic>>();
       return ApiSuccess(
         items.map(PushNotificationModel.fromJson).toList(),
@@ -79,7 +79,7 @@ class MessagingRepository {
         ApiEndpoints.conversationMessages(conversationId),
         queryParameters: {'page': page},
       );
-      final items = (response.data!['data'] as List<dynamic>)
+      final items = ((response.data?['data'] as List<dynamic>?) ?? [])
           .cast<Map<String, dynamic>>();
       return ApiSuccess(items.map(MessageModel.fromJson).toList());
     } on DioException catch (e) {
@@ -98,7 +98,13 @@ class MessagingRepository {
         ApiEndpoints.conversationMessages(conversationId),
         data: {'content': content, 'type': type},
       );
-      final data = response.data!['data'] as Map<String, dynamic>;
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'Réponse serveur invalide.',
+        );
+      }
       return ApiSuccess(MessageModel.fromJson(data));
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -125,7 +131,13 @@ class MessagingRepository {
         ApiEndpoints.conversationMessages(conversationId),
         data: formData,
       );
-      final data = response.data!['data'] as Map<String, dynamic>;
+      final data = response.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'Réponse serveur invalide.',
+        );
+      }
       return ApiSuccess(MessageModel.fromJson(data));
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -165,7 +177,7 @@ class MessagingRepository {
       final response = await _dio.post<Map<String, dynamic>>(
         ApiEndpoints.conversationRead(conversationId),
       );
-      final markedRead = (response.data!['data']?['marked_read'] as int?) ?? 0;
+      final markedRead = (response.data?['data']?['marked_read'] as int?) ?? 0;
       return ApiSuccess(markedRead);
     } on DioException catch (e) {
       return _mapDioError(e);

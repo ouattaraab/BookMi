@@ -13,7 +13,7 @@ class AuthResponse {
     return AuthResponse(
       token: json['token'] as String,
       user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
-      roles: (json['roles'] as List<dynamic>).cast<String>(),
+      roles: (json['roles'] as List<dynamic>?)?.cast<String>() ?? const [],
     );
   }
 
