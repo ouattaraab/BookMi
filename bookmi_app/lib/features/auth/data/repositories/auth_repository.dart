@@ -95,9 +95,11 @@ class AuthRepository {
   }
 
   Future<ApiResult<void>> logout() async {
+    // Delete token first so the user is always logged out locally,
+    // even if the server request fails (network error, timeout, etc.).
+    await _secureStorage.deleteToken();
     try {
       await _dio.post<Map<String, dynamic>>(ApiEndpoints.authLogout);
-      await _secureStorage.deleteToken();
 
       return const ApiSuccess(null);
     } on DioException catch (e) {
