@@ -1,28 +1,16 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Cannot call method isToday\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Console/Commands/DetectTalentOverload.php
-
-		-
 			message: '#^Cannot call method greaterThan\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: app/Console/Commands/DetectEmptyCalendar.php
 
 		-
-			message: '#^Cannot access property \$value on string\.$#'
-			identifier: property.nonObject
+			message: '#^Cannot call method isToday\(\) on string\.$#'
+			identifier: method.nonObject
 			count: 1
-			path: app/Console/Commands/RecalculateTalentLevels.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Console/Commands/RecalculateTalentLevels.php
+			path: app/Console/Commands/DetectTalentOverload.php
 
 		-
 			message: '#^Cannot call method format\(\) on string\.$#'
@@ -89,6 +77,18 @@ parameters:
 			identifier: property.notFound
 			count: 3
 			path: app/Filament/Pages/MessageCenter.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\TalentProfile\:\:\$disputes_last_30d\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Filament/Pages/QualityDashboardPage.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TalentProfile\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Filament/Pages/QualityDashboardPage.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -1331,15 +1331,3 @@ parameters:
 			identifier: method.nonObject
 			count: 1
 			path: app/Services/TrackingService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\TalentProfile\>::map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Filament/Pages/QualityDashboardPage.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\TalentProfile::\$disputes_last_30d\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Filament/Pages/QualityDashboardPage.php
