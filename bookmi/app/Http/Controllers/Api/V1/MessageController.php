@@ -219,7 +219,7 @@ class MessageController extends BaseController
     private function authorizeParticipant(Conversation $conversation, Request $request): void
     {
         if (! $conversation->isParticipant($request->user())) {
-            abort(403, 'You are not a participant of this conversation.');
+            abort(403, 'Vous ne faites pas partie de cette conversation.');
         }
     }
 }

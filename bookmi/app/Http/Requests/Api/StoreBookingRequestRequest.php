@@ -11,7 +11,15 @@ class StoreBookingRequestRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $talentProfileId = (int) $this->input('talent_profile_id');
+        if (! $talentProfileId || ! $this->user()) {
+            return true; // La validation règles gérera le cas manquant
+        }
+
+        // Empêcher un talent de réserver son propre profil
+        return ! \App\Models\TalentProfile::where('id', $talentProfileId)
+            ->where('user_id', $this->user()->id)
+            ->exists();
     }
 
     /**

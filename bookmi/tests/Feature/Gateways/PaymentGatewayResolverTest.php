@@ -79,6 +79,7 @@ class PaymentGatewayResolverTest extends TestCase
             'https://api.fedapay.com/v1/transactions/12345/pay' => Http::response($this->fedapayPaySuccess(), 200),
         ]);
 
+        Log::shouldReceive('info')->withAnyArgs()->zeroOrMoreTimes();
         Log::shouldReceive('warning')
             ->once()
             ->withArgs(fn (string $msg) => str_contains($msg, 'paystack') && str_contains($msg, 'fallback'));

@@ -90,5 +90,15 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('forgot-password', function (Request $request) {
             return Limit::perMinute(5)->by($request->ip());
         });
+
+        RateLimiter::for('booking', function (Request $request) {
+            // 10 créations de réservation par minute par utilisateur
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('messaging', function (Request $request) {
+            // 60 messages par minute par utilisateur
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

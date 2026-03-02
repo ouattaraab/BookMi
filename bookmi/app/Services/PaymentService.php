@@ -10,6 +10,7 @@ use App\Exceptions\PaymentException;
 use App\Models\BookingRequest;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PaymentService
@@ -92,6 +93,13 @@ class PaymentService
             ]);
         });
 
+        Log::info('payment.initiated', [
+            'booking_id'      => $booking->id,
+            'transaction_id'  => $transaction->id,
+            'amount'          => $transaction->amount,
+            'method'          => $paymentMethod->value,
+        ]);
+
         // ── HTTP call OUTSIDE DB transaction — does not hold DB connection ──
         try {
             if ($paymentMethod->isMobileMoney()) {
@@ -111,6 +119,11 @@ class PaymentService
         } catch (PaymentException $e) {
             // Mark transaction as failed for observability before re-throwing
             $transaction->update(['status' => TransactionStatus::Failed->value]);
+            Log::error('payment.failed', [
+                'booking_id'     => $booking->id,
+                'transaction_id' => $transaction->id,
+                'error'          => $e->getMessage(),
+            ]);
             throw $e;
         }
 
@@ -118,6 +131,12 @@ class PaymentService
             'status'            => TransactionStatus::Processing->value,
             'gateway_reference' => $result['reference'] ?? $idempotencyKey,
             'gateway_response'  => $result,
+        ]);
+
+        Log::info('payment.processing', [
+            'booking_id'     => $booking->id,
+            'transaction_id' => $transaction->id,
+            'reference'      => $result['reference'] ?? $idempotencyKey,
         ]);
 
         return $transaction->fresh();

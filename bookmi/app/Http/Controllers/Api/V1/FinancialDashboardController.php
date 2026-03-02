@@ -237,32 +237,26 @@ class FinancialDashboardController extends BaseController
             ->orderByDesc('event_date')
             ->paginate($perPage);
 
-        // Revenus libérés = cachets des réservations terminées (escrow libéré)
-        $revenusLiberes = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
-            ->where('status', BookingStatus::Completed->value)
-            ->sum('cachet_amount');
+        // Agréger les 4 totaux en une seule requête SQL (CASE WHEN)
+        $totals = BookingRequest::where('talent_profile_id', $talentProfile->id)
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? THEN cachet_amount ELSE 0 END) AS revenus_liberes,' .
+                'SUM(CASE WHEN status IN (?, ?, ?) THEN cachet_amount ELSE 0 END) AS total_cachets_actifs,' .
+                'SUM(CASE WHEN status NOT IN (?, ?, ?) THEN cachet_amount ELSE 0 END) AS revenus_globaux,' .
+                'SUM(CASE WHEN status = ? THEN commission_amount ELSE 0 END) AS total_commission',
+                [
+                    BookingStatus::Completed->value,
+                    BookingStatus::Paid->value, BookingStatus::Confirmed->value, BookingStatus::Completed->value,
+                    BookingStatus::Cancelled->value, BookingStatus::Rejected->value, BookingStatus::Pending->value,
+                    BookingStatus::Completed->value,
+                ]
+            )
+            ->first();
 
-        // Total cachets actifs = paid + confirmed + completed (y compris à venir)
-        $totalCachetsActifs = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
-            ->whereIn('status', [
-                BookingStatus::Paid->value,
-                BookingStatus::Confirmed->value,
-                BookingStatus::Completed->value,
-            ])
-            ->sum('cachet_amount');
-
-        // Revenus globaux = toutes les réservations non annulées/rejetées
-        $revenusGlobaux = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
-            ->whereNotIn('status', [
-                BookingStatus::Cancelled->value,
-                BookingStatus::Rejected->value,
-                BookingStatus::Pending->value,
-            ])
-            ->sum('cachet_amount');
-
-        $totalCommission = (int) BookingRequest::where('talent_profile_id', $talentProfile->id)
-            ->where('status', BookingStatus::Completed->value)
-            ->sum('commission_amount');
+        $revenusLiberes     = (int) ($totals->revenus_liberes ?? 0);
+        $totalCachetsActifs = (int) ($totals->total_cachets_actifs ?? 0);
+        $revenusGlobaux     = (int) ($totals->revenus_globaux ?? 0);
+        $totalCommission    = (int) ($totals->total_commission ?? 0);
 
         $items = collect($bookings->items())->map(fn ($b) => [
             'booking_id'    => $b->id,

@@ -1273,12 +1273,6 @@ parameters:
 			path: app/Services/ManagerService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Conversation\:\:\$unread_count\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/MessagingService.php
-
-		-
 			message: '#^Generic type Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\<App\\Models\\Message\> in PHPDoc tag @return does not specify all template types of interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\: TKey, TValue$#'
 			identifier: generics.lessTypes
 			count: 1

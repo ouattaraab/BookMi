@@ -151,7 +151,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/booking_requests/export', [BookingRequestController::class, 'export'])->name('booking_requests.export');
 
         Route::get('/booking_requests', [BookingRequestController::class, 'index'])->name('booking_requests.index');
-        Route::post('/booking_requests', [BookingRequestController::class, 'store'])->name('booking_requests.store');
+        Route::post('/booking_requests', [BookingRequestController::class, 'store'])
+            ->middleware('throttle:booking')
+            ->name('booking_requests.store');
         Route::get('/booking_requests/{booking}', [BookingRequestController::class, 'show'])->name('booking_requests.show');
         Route::post('/booking_requests/{booking}/accept', [BookingRequestController::class, 'accept'])->name('booking_requests.accept');
         Route::post('/booking_requests/{booking}/reject', [BookingRequestController::class, 'reject'])->name('booking_requests.reject');
@@ -226,7 +228,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/conversations', [MessageController::class, 'index'])->name('conversations.index');
         Route::post('/conversations', [MessageController::class, 'store'])->name('conversations.store');
         Route::get('/conversations/{conversation}/messages', [MessageController::class, 'messages'])->name('conversations.messages');
-        Route::post('/conversations/{conversation}/messages', [MessageController::class, 'send'])->name('conversations.send');
+        Route::post('/conversations/{conversation}/messages', [MessageController::class, 'send'])
+            ->middleware('throttle:messaging')
+            ->name('conversations.send');
         Route::post('/conversations/{conversation}/read', [MessageController::class, 'read'])->name('conversations.read');
         Route::delete('/conversations/{conversation}', [MessageController::class, 'destroyConversation'])->name('conversations.destroy');
         Route::delete('/conversations/{conversation}/messages/{message}', [MessageController::class, 'destroyMessage'])->name('conversations.messages.destroy');

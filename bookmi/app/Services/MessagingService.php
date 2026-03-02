@@ -37,6 +37,11 @@ class MessagingService
             'latestMessage',
             'bookingRequest',
         ])
+            ->withCount([
+                'messages as unread_count' => fn ($q) => $q
+                    ->where('sender_id', '!=', $user->id)
+                    ->whereNull('read_at'),
+            ])
             ->where(function ($q) use ($user, $talentProfileId) {
                 $q->where('client_id', $user->id);
                 if ($talentProfileId) {
@@ -45,14 +50,6 @@ class MessagingService
             })
             ->orderByDesc('last_message_at')
             ->get();
-
-        // Attach unread count per conversation (messages from others, not yet read)
-        $conversations->each(function (Conversation $conv) use ($user) {
-            $conv->unread_count = $conv->messages()
-                ->where('sender_id', '!=', $user->id)
-                ->whereNull('read_at')
-                ->count();
-        });
 
         return $conversations;
     }
