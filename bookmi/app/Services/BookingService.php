@@ -62,10 +62,6 @@ class BookingService
             $deliveryDays = max(1, (int) ($package->delivery_days ?? 7));
             $data['event_date']     = $data['event_date'] ?? now()->addDays($deliveryDays)->format('Y-m-d');
             $data['event_location'] = $data['event_location'] ?? 'Livraison digitale';
-        } else {
-            if (! $this->calendarService->isDateAvailable($talentProfile, $data['event_date'], $startTime)) {
-                throw BookingException::dateUnavailable();
-            }
         }
 
         $cachetAmount     = $package->cachet_amount;
@@ -98,32 +94,52 @@ class BookingService
             'delivery_days'    => $package->delivery_days,
         ];
 
-        $booking = BookingRequest::create([
-            'client_id'          => $client->id,
-            'talent_profile_id'  => $talentProfile->id,
-            'service_package_id' => $package->id,
-            'package_snapshot'   => $packageSnapshot,
-            'event_date'         => $data['event_date'],
-            'start_time'         => $startTime,
-            'event_location'     => $data['event_location'],
-            'message'            => $data['message'] ?? null,
-            'is_express'         => $isExpress,
-            'status'             => BookingStatus::Pending,
-            'cachet_amount'      => $cachetAmount,
-            'travel_cost'        => $travelCost,
-            'commission_amount'  => $commissionAmount,
-            'total_amount'       => $totalAmount,
-            'express_fee'        => $expressFee,
-            'promo_code_id'      => $promoCodeId,
-            'discount_amount'    => $discountAmount,
-        ]);
+        // Atomic: availability check + insert inside a transaction.
+        // For non-micro bookings, lockForUpdate on the talent_profile row serializes
+        // concurrent requests for the same talent, closing the TOCTOU window between
+        // isDateAvailable() and BookingRequest::create().
+        $booking = DB::transaction(function () use (
+            $client, $data, $talentProfile, $package, $packageSnapshot,
+            $isExpress, $startTime, $isMicro,
+            $cachetAmount, $travelCost, $commissionAmount, $totalAmount,
+            $expressFee, $promoCodeId, $discountAmount,
+        ) {
+            if (! $isMicro) {
+                TalentProfile::lockForUpdate()->find($talentProfile->id);
+                if (! $this->calendarService->isDateAvailable($talentProfile, $data['event_date'], $startTime)) {
+                    throw BookingException::dateUnavailable();
+                }
+            }
 
-        if ($promoCodeId !== null) {
-            PromoCode::where('id', $promoCodeId)->increment('used_count');
-        }
+            $booking = BookingRequest::create([
+                'client_id'          => $client->id,
+                'talent_profile_id'  => $talentProfile->id,
+                'service_package_id' => $package->id,
+                'package_snapshot'   => $packageSnapshot,
+                'event_date'         => $data['event_date'],
+                'start_time'         => $startTime,
+                'event_location'     => $data['event_location'],
+                'message'            => $data['message'] ?? null,
+                'is_express'         => $isExpress,
+                'status'             => BookingStatus::Pending,
+                'cachet_amount'      => $cachetAmount,
+                'travel_cost'        => $travelCost,
+                'commission_amount'  => $commissionAmount,
+                'total_amount'       => $totalAmount,
+                'express_fee'        => $expressFee,
+                'promo_code_id'      => $promoCodeId,
+                'discount_amount'    => $discountAmount,
+            ]);
 
-        // Log creation
-        $this->logStatusTransition($booking, null, BookingStatus::Pending, $client->id);
+            if ($promoCodeId !== null) {
+                PromoCode::where('id', $promoCodeId)->increment('used_count');
+            }
+
+            // Log creation
+            $this->logStatusTransition($booking, null, BookingStatus::Pending, $client->id);
+
+            return $booking;
+        });
 
         BookingCreated::dispatch($booking);
 
