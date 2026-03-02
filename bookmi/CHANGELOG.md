@@ -4,6 +4,495 @@ Ce fichier recense toutes les actions réalisées sur le projet : fonctionnalit�
 
 ---
 
+## 2026-03-02
+
+### Fix — Firebase : configuration credentials en production
+
+**Problème :** Les push notifications FCM échouaient silencieusement avec l'erreur `Unable to determine the Firebase Project ID`. Le fichier de compte de service Firebase existait sur le serveur mais la variable `FIREBASE_CREDENTIALS` n'était pas configurée dans le `.env` actif (`/home/u726808002/bookmi_app/.env`).
+
+**Solution :**
+1. Ajout de `FIREBASE_CREDENTIALS=/home/u726808002/bookmi_app/storage/app/firebase-credentials.json` dans le `.env` de production et dans `.env.prod` local
+2. Publication de `config/firebase.php` dans le dépôt — sans ce fichier, `config:cache` ignore la config du vendor et `env('FIREBASE_CREDENTIALS')` retourne `null`
+3. Suppression du fichier manuellement publié sur le serveur (fichier non suivi git qui bloquait le `git pull`)
+4. Redéploiement manuel + `php artisan optimize`
+
+**Résultat :** `Kreait\Firebase\Messaging` se résout correctement, 0 erreur Firebase dans les logs post-déploiement.
+
+**Fichiers modifiés :**
+- `config/firebase.php` *(créé — publié depuis vendor `kreait/laravel-firebase`)*
+- `bookmi/.env.prod` — ajout `FIREBASE_CREDENTIALS`
+
+**Commit :** `676d323`
+
+---
+
+### Fix — Web : 3 erreurs 500 production (apostrophes + travel_cost null)
+
+**Contexte :** Trois pages retournaient HTTP 500. Erreurs diagnostiquées via SSH sur les logs Laravel de production.
+
+#### Fix 1 — `GET /client/settings` et `GET /talent/settings`
+
+**Erreur :** `ParseError: syntax error, unexpected identifier "un", expecting "]"`
+
+**Cause :** Apostrophe non échappée dans `quelqu'un` à l'intérieur de chaînes PHP entre guillemets simples dans des blocs `@php` de Blade.
+
+**Fix :** Escape `quelqu\'un` dans :
+- `resources/views/client/settings/index.blade.php` (lignes 466-467)
+- `resources/views/talent/settings/index.blade.php` (ligne 229)
+
+---
+
+#### Fix 2 — `GET /client/bookings/{id}`
+
+**Erreur :** `ParseError: syntax error, unexpected token "\", expecting "]"`
+
+**Cause :** `{{ addslashes($cancelPolicy[\'label\']) }}` — les backslash-escaped single quotes compilent en PHP invalide (`[\'label\']` n'est pas une syntaxe légale en PHP brut).
+
+**Fix :** Remplacement par guillemets doubles : `{{ addslashes($cancelPolicy["label"]) }}`
+
+**Fichier :** `resources/views/client/bookings/show.blade.php` ligne 279
+
+---
+
+#### Fix 3 — `POST /client/bookings` (formulaire de réservation)
+
+**Erreur :** `SQLSTATE[23000]: Integrity constraint violation: 1048 Column 'travel_cost' cannot be null`
+
+**Cause :** Les colonnes `travel_cost` et `express_fee` sont `NOT NULL DEFAULT 0` en base. Le contrôleur passait `$travelCost ?: null` — quand `$travelCost === 0`, PHP évalue `0 ?: null` en `null`.
+
+**Fix :** Suppression du `?: null` — les valeurs `0` sont désormais envoyées directement.
+
+**Fichier :** `app/Http/Controllers/Web/Client/BookingController.php` lignes 112-113
+
+**Commit :** `c15d596`
+
+---
+
+### Feat — Groupe AA : notifications push "disponibilité talent" (`bookmi:notify-availability-alerts`)
+
+**Contexte :** Le stockage des alertes de disponibilité (table `availability_alerts`, API `POST /api/v1/talents/{id}/notify-availability`, bouton Flutter) était déjà implémenté. Il manquait le mécanisme de dispatch.
+
+**Nouveau — Command `bookmi:notify-availability-alerts {--dry-run}` :**
+- Charge en chunk de 100 toutes les `AvailabilityAlert` où `notified_at IS NULL` et `event_date >= today`
+- Pour chaque alerte : vérifie l'absence de booking actif (`pending|accepted|paid|confirmed`) sur cette date
+- Si le créneau est libre : `SendPushNotification::dispatch()` → titre `"{stageName} est disponible ! 🎉"` + marque `notified_at`
+- `--dry-run` : log sans modifier la base
+- Schedule : `*/30 * * * *` (toutes les 30 minutes)
+
+**Flutter — routing FCM :**
+- Nouveau type `availability_alert` dans `app_router.dart` → redirige vers `/talent/{talent_profile_id}` (même branche que `talent_update`)
+
+**Tests :** 5 PHPUnit dans `tests/Feature/Commands/NotifyAvailabilityAlertsCommandTest.php` :
+- Slot libre → notification envoyée + `notified_at` mis à jour
+- Slot occupé → aucune notification
+- Déjà notifié → skip
+- Date passée → skip (filtre SQL `event_date >= today`)
+- `--dry-run` → aucun dispatch ni mise à jour
+
+**Fichiers créés :**
+- `app/Console/Commands/NotifyAvailabilityAlerts.php`
+- `tests/Feature/Commands/NotifyAvailabilityAlertsCommandTest.php`
+
+**Fichiers modifiés :**
+- `routes/console.php` — ajout import + `->everyThirtyMinutes()`
+- `bookmi_app/lib/app/routes/app_router.dart` — routing FCM `availability_alert`
+
+**Commit :** `28f060e`
+
+---
+
+## 2026-03-01
+
+### Feat — Groupe Z : filtre disponibilité par date + signalement réservation
+
+**Z1 — API filtre `event_date` :**
+- `GET /api/v1/talents?available_date=YYYY-MM-DD` : exclut les talents ayant un booking actif (`pending|accepted|paid|confirmed`) ce jour-là
+- Migration `availability_alerts` : table `(user_id, talent_profile_id, event_date)` unique — stocke les demandes de notification
+- API `POST /api/v1/talents/{id}/notify-availability` : enregistre l'alerte via `firstOrCreate`
+- Modèle `AvailabilityAlert` + relations `user()` / `talentProfile()`
+
+**Z2 — Signalement réservation Flutter :**
+- Bouton "Signaler un problème" sur `BookingDetailPage` pour les clients (statuts `paid|confirmed`)
+- Appel `POST /api/v1/booking_requests/{id}/dispute` → met le statut à `disputed`
+
+**Z3 — Vérification identité client (web Filament) :**
+- Actions Filament `verify_client` / `unverify_client` dans `ClientResource`
+- Migration `2026_02_28_100000` : colonnes `is_client_verified` (bool) + `client_verified_at` (timestamp) sur `users`
+- API : champ `is_client_verified` exposé dans la resource de login/profil
+- Flutter `AuthUser` : champ `isClientVerified` (bool, défaut `false`) — badge vert "Client vérifié" sur `ProfilePage`
+
+**Commits :** `cfdf9da`, `3c6759e`, `25e9c5b`, `918737e`, `3b11e86`
+
+---
+
+### Feat — Groupe Y : annulation réservation Flutter + top villes analytics
+
+**Y1 — Annulation Flutter :**
+- Bouton "Annuler" sur `BookingDetailPage` pour statuts `pending|accepted`
+- Appel `DELETE /api/v1/booking_requests/{id}` → `BookingRepository::cancel()`
+- Confirmation modal avant action
+
+**Y2 — Top villes analytics :**
+- `GET /api/v1/me/analytics` expose désormais `top_cities` : top 5 villes par nombre de réservations complétées
+- Flutter `TalentStatisticsPage` : nouvelle section "Top villes" avec barres horizontales
+
+**Commit :** `1382cee`
+
+---
+
+### Feat — Groupes H–X : fonctionnalités MVP (récapitulatif)
+
+> Ces groupes constituent le cœur du déploiement MVP du 2026-03-01. Chaque groupe correspond à une ou plusieurs stories du document MVP.
+
+#### Groupe H — Évaluation multi-critères, frais déplacement, médiation (#38 #56)
+
+- Système d'évaluation multi-critères (note globale + critères détaillés) côté Flutter
+- Frais de déplacement renseignés dans le formulaire de réservation
+- Interface de médiation enrichie admin
+
+**Commit :** `fab25ba`
+
+---
+
+#### Groupe I — Collectif/label, RBAC Filament, détection contacts (#29 #49 #53)
+
+- Talent peut appartenir à un collectif/label (champ `group_name` / `is_collective`)
+- RBAC Filament : `Gate::before` pour `is_admin` — accès panel superadmin
+- `ContactDetectionService` : détecte les coordonnées partagées dans les messages (téléphone, email, réseaux)
+- UI Flutter : indicateur visuel sur les messages flaggés
+
+**Commits :** `97ba2b3`, `2fa2bca`, `0250c96`, `d0cf1a9`, `5a15cd6`
+
+---
+
+#### Groupe J — Suivi d'artistes + notifications de mise à jour (#22)
+
+- `POST /api/v1/talents/{id}/follow` / `DELETE /api/v1/talents/{id}/follow`
+- Notifications push aux followers lors d'une mise à jour du profil talent (`talent_update`)
+- Flutter : bouton Suivre/Ne plus suivre sur `TalentProfilePage` avec état réactif
+
+**Commit :** `f93a6d6`
+
+---
+
+#### Groupe K — Codes promo + 2FA settings (#25 #48)
+
+- Backend : modèle `PromoCode`, service `PromoCodeService::apply()`, Filament CRUD
+- API : `POST /api/v1/promo-codes/apply` → valide et retourne `discount_amount`
+- Flutter : champ code promo sur `Step3Recap` du booking flow
+- Dispute web (`POST /client/bookings/{id}/dispute`) + paramètres 2FA dans l'espace client web
+
+**Commits :** `726dcbc`, `448f8ec`
+
+---
+
+#### Groupe L — Reschedule Flutter + gestion calendrier + parrainage (#20 #17)
+
+- Reschedule Flutter : `PATCH /api/v1/booking_requests/{id}/reschedule`
+- Gestion calendrier Flutter : créneaux bloqués / disponibles manuels
+- Système de parrainage : code unique, bonus à la première réservation
+- Export CSV réservations depuis l'espace talent web
+
+**Commits :** `030da03`, `d2d659b`
+
+---
+
+#### Groupe M — Quality dashboard admin + notification préférences (#57)
+
+- Page `QualityDashboardPage` dans Filament : talents à risque (faible note, litiges, inactivité)
+- Scores critiques sur avis : pondération par critère
+- Score visibilité affiché dans l'admin (TalentProfileResource)
+- Notification préférences : `GET/PATCH /api/v1/me/notification-preferences`
+
+**Commits :** `56d4d7d`, `912c674`
+
+---
+
+#### Groupe N — Express booking + manager Flutter + portfolio post-événement (#10 #17)
+
+- Express booking surcharge : +10% sur le cachet si `is_express = true` et `enable_express_booking = true`
+- Interface manager Flutter : délégation, assignation de manager
+- Portfolio post-événement : client peut soumettre des photos après une prestation (page dédiée Flutter + approval workflow admin)
+- Attestation de revenus Flutter
+
+**Commits :** `495e760`, `6ae4a5b`
+
+---
+
+#### Groupe O — Délégation admin + micro package type + géo-filtre (#29 #17 #23)
+
+- Admin : délégation de tâches entre admins (assignation + notification)
+- Type de package `micro` : réservation sans date d'événement, flux dédié
+- Geo-filtre discovery : `GET /api/v1/talents?lat=&lng=&radius_km=`
+- `canAccessPanel()` : vérification rôle `admin` / flag `is_admin` à l'entrée du panel Filament
+
+**Commits :** `7ca1309`, `f056bbe`
+
+---
+
+#### Groupe P — Auto-reply + auto-complete bookings + export CSV revenus (#50 #20)
+
+- Auto-reply : réponse automatique du talent lors de la création d'une réservation (`autoReplyOnBookingCreated`)
+- Auto-complete : commande `bookmi:auto-complete-bookings` — passe en `completed` les réservations `confirmed` dont `event_date + 7j` est dépassé
+- Alertes calendrier in-app : `GET /api/v1/me/calendar-alerts` — banner Flutter
+- Export CSV revenus talent : `GET /api/v1/me/revenue-export?year=YYYY`
+
+**Commits :** `b3219d0`, `846a003`
+
+---
+
+#### Groupe Q — Analytics enrichies + messages flaggés admin + avis multi-critères web (#21 #53 #38)
+
+- Analytics `GET /api/v1/me/analytics` : ajout `top_cities`, `booking_status_distribution`, `rating_history`
+- Flutter `TalentStatisticsPage` : sections top villes, répartition statuts, courbe notes
+- Messages flaggés : vue admin dédiée + action "Ignorer le flag"
+- Critères d'avis web : affichage des scores détaillés sur la page de réservation talent
+- Messages vocaux (type `voice`) dans le chat Flutter
+
+**Commits :** `03a604d`, `1750e17`
+
+---
+
+#### Groupe R — Score visibilité Flutter + paramètres collectif web (#56 #24)
+
+- Affichage `visibility_score` dans les statistiques talent Flutter
+- Page paramètres collectif/label dans l'espace talent web
+
+**Commit :** `d672830`
+
+---
+
+#### Groupe S — Micro-service packages : `delivery_days` + UI Flutter (#23)
+
+- Migration : colonne `delivery_days` (int nullable) sur `service_packages`
+- API : calcul automatique `estimated_delivery_date = event_date + delivery_days` dans la resource booking
+- Flutter : carte violette distincte pour les packages micro, section séparée dans `TalentProfilePage`
+- Paramètres collectif/label sur le profil talent web
+
+**Commit :** `39f4082`
+
+---
+
+#### Groupe T — Frais de déplacement dans le flux de réservation Flutter (#11)
+
+- Étape 2 du booking flow : champ optionnel "Frais de déplacement (FCFA)" (masqué pour les packages micro)
+- Étape 3 récapitulatif : ligne `Frais de déplacement` si > 0
+- BLoC : événement `TravelCostChanged` + state `travelCost`
+
+**Commit :** `576b859`
+
+---
+
+#### Groupe U — Flux UX micro-service + express booking web + préférences notification web (#10 #11 #30)
+
+- Flux booking micro : l'étape 2 affiche une carte "Infos de livraison" au lieu du sélecteur de date
+- `event_date`, `start_time`, `event_location` : nullable en base et dans le BLoC pour les packages micro
+- Express booking web : case à cocher + affichage surcharge sur le formulaire client web
+- Frais de déplacement web : champ `travel_cost` sur le formulaire
+- Préférences de notification web : page dédiée avec toggles par type d'événement
+
+**Commits :** `2fde9e9`, `3d00c46`
+
+---
+
+#### Groupe V — Avis bilatéral talent→client + check-in jour J web (#38 #37)
+
+- Avis talent vers client : formulaire sur la page de réservation talent web (statuts `confirmed|completed`)
+- Check-in jour J web : bouton "Marquer comme arrivé" sur la page de suivi talent web
+
+**Commit :** `bd1c50f`
+
+---
+
+#### Groupe W — Politique d'annulation graduée web + bouton "Prestation terminée" (#34 #26)
+
+- Politique d'annulation : remboursement 100% si annulation > 7j avant, 50% entre 2–7j, 0% < 2j
+- `BookingService::cancelBooking()` applique la politique et crée un `refund_amount` + `cancellation_policy_applied`
+- Bouton "Marquer la prestation comme terminée" côté talent web (statut `paid|confirmed`)
+- `BookingController::complete()` → passe le statut en `completed`
+
+**Commit :** `b54702c`
+
+---
+
+#### Groupe X — Devis express+travel + dropdown type package + manager finance (#6 #10 #11 #14 #23)
+
+- API devis : `GET /api/v1/quotes?talent_profile_id=&service_package_id=&is_express=&travel_cost=` → retourne le détail des montants
+- Dropdown type de package (standard / micro) dans le formulaire admin
+- Corrections manager finance : affichage correct des reversements du talent dans la vue manager
+
+**Commit :** `ba6e986`
+
+---
+
+#### Groupe S (web) — Paramètres collectif/groupe sur le profil talent web (#24)
+
+- Section "Collectif / Label" dans `resources/views/talent/profile/edit.blade.php`
+- Champs : `group_name`, `is_collective` (toggle), `group_description`
+
+**Commit :** `6aff92f`
+
+---
+
+#### Groupe T (web) — Dispute web + partage profil public + filtre prix (#25 #22 #7)
+
+- Dispute web : `POST /client/bookings/{id}/dispute` avec confirmation modale
+- Partage profil public : bouton "Partager" → URL copyée (`/talents/{slug}`)
+- Filtre fourchette de prix sur la page de recherche publique
+
+**Commit :** `aec4619`
+
+---
+
+#### Groupe V (mvp-v) — Level-up talent : notification push + barre progression (#57)
+
+- Notification push lors du passage de niveau talent (`RecalculateTalentLevels` command)
+- Flutter : barre de progression animée vers le niveau suivant dans `TalentStatisticsPage`
+
+**Commit :** `09ed838`
+
+---
+
+#### Groupe W (mvp-w) — Auto-reply à la création de réservation (#58)
+
+- `MessagingService::autoReplyOnBookingCreated()` : appelé depuis le listener `NotifyTalentOfNewBooking`
+- Crée ou récupère la conversation liée à la réservation, envoie le message d'auto-réponse du talent (si actif et configuré)
+- Idempotent : no-op si un message `is_auto_reply = true` existe déjà
+
+**Commit :** `04542f5`
+
+---
+
+### Feat — Traçabilité des statuts de réservation sur toutes les vues (#58)
+
+- Timeline `BookingStatusLog` affichée sur :
+  - Espace talent web (`/talent/bookings/{id}`) — section chronologie avec icônes et acteurs
+  - Espace client web (`/client/bookings/{id}`) — même affichage, lecture seule
+  - Filament admin : `BookingRequestResource` → slide-over avec historique complet
+- `BookingStatusLog` enregistré à chaque transition de statut via `BookingRequestObserver`
+
+**Commit :** `7ce0d6c`
+
+---
+
+### Feat — Check-in GPS (statut `arrived`) (#tracking)
+
+- Flutter `TrackingPage` : bouton "Je suis arrivé" → `POST /api/v1/tracking/arrived`
+- Backend : nouveau statut de tracking `arrived`, timestamp `arrived_at` sur `BookingRequest`
+- Notification push au client lors de l'arrivée du talent
+
+**Commit :** `6b48c90`
+
+---
+
+### Feat — Filtres avancés recherche Flutter (#56)
+
+- Panneau de filtres sur `DiscoveryPage` : tri (note, prix, popularité), ville, budget min/max, note minimale
+- Persiste dans le BLoC de recherche entre navigations
+
+**Commit :** `4bd21b7`
+
+---
+
+### Feat — Désactivation de compte (backend + Flutter) (#admin)
+
+- Admin Filament : action "Désactiver le compte" sur `ClientResource` et `TalentProfileResource`
+- API : `PATCH /api/v1/me` accepte `is_active: false` — désactive le compte et révoque tous les tokens Sanctum
+- Flutter : bouton "Désactiver mon compte" dans `PersonalInfoPage` avec confirmation et déconnexion automatique
+
+**Commits :** `3b11e86`, `918737e`
+
+---
+
+### Fix — Filament : Gate::before + is_admin bypass (#menu)
+
+- `Gate::before` : correction `property_exists` → `isset` pour les attributs Eloquent dynamiques
+- `canViewAny` / `canAccess` : vérification `is_admin` ajoutée dans les resources manquantes
+- PHPStan : remplacement `?->is_admin ?? false` par `=== true` (no mixed)
+
+**Commits :** `2fa2bca`, `0250c96`, `d0cf1a9`, `5a15cd6`
+
+---
+
+## 2026-02-28 (suite)
+
+### Feat — Groupe G : vérification client, boost visibilité, alertes calendrier vide
+
+#### G1 — Vérification d'identité client (#33)
+
+- Migration `2026_02_28_100000` : colonnes `is_client_verified` (bool, défaut `false`) + `client_verified_at` (timestamp nullable) sur `users`
+- `User` model : fillable + casts mis à jour ; `AuthService` expose `is_client_verified` dans la resource login et profil
+- Filament `ClientResource` : actions `verify_client` / `unverify_client` avec notification FCM
+- Flutter `AuthUser` : champ `isClientVerified` (défaut `false`) dans `fromJson` / `toJson` / `copyWith`
+- Flutter `ProfilePage` : badge vert "Client vérifié" affiché pour les clients non-talent
+
+**Commit :** `a0dc285` + `3c6759e`
+
+---
+
+#### G2 — Boost de visibilité automatique (#56)
+
+- Migration `2026_02_28_110000` : colonne `visibility_score FLOAT(5,2) DEFAULT 0` + index sur `talent_profiles`
+- Command `bookmi:update-visibility-scores {--dry-run}` :
+  - Score = activité récente (max 40) + note moyenne (max 40) + vérifié (20)
+  - Traitement en chunk de 100
+- Schedule : `dailyAt('02:00')`
+- `SearchService` / `TalentRepository` : `orderByDesc('visibility_score')` comme tiebreaker secondaire
+
+---
+
+#### G3 — Alertes calendrier vide (#19)
+
+- Migration `2026_02_28_120000` : colonne `calendar_empty_notified_at` (timestamp nullable) sur `talent_profiles`
+- Command `bookmi:detect-empty-calendar {--dry-run}` :
+  - Talents sans booking actif dans les 30 prochains jours
+  - Rate-limit : 1 notification par talent toutes les 7 jours
+- Schedule : `weeklyOn(1, '09:00')` (lundi 9h)
+
+**Commit :** `a0dc285`
+
+---
+
+### Feat — Browse-first / mode invité Flutter
+
+- Les invités arrivent directement sur `/home` depuis le splash (sans login obligatoire)
+- `guestRoutes` : `/home`, `/search`, `/profile`, `/talent/` accessibles sans auth
+- Onglets "Réservations" et "Messages" → bottom sheet "Connexion requise" pour les invités
+- `GuestProfilePage` : page bénéfices pour les non-connectés
+- `_AuthRequiredReservationSheet` : modal avant le bouton "Réserver" sur `TalentProfilePage`
+
+**Commit :** `e3e6eb6`
+
+---
+
+### Fix — Flutter : affichage des montants (division par 100 erronée)
+
+- Les montants s'affichaient divisés par 100 (centimes au lieu de FCFA)
+- Suppression de la division `/100` dans `formatCachet()`
+
+**Commits :** `c435547`, `093a110`
+
+---
+
+### Feat — Flutter : pages auth — bouton "Retour à l'accueil"
+
+- Ajout d'un bouton retour vers `/home` (invité) sur les pages login, inscription et récupération de mot de passe
+- Permet aux invités de revenir sur l'app sans se connecter
+
+**Commit :** `edf5054`
+
+---
+
+### Style — Pages web auth + profil talent : effets atmosphériques + couleur bleue #1AB3FF
+
+- Pages auth (login, inscription, 2FA, reset mdp, vérif téléphone) : effets visuels atmosphériques (particules, gradients animés)
+- Profil talent public + hero talent : hero plus clair, effets atmosphériques
+- Remplacement de toutes les occurrences de l'orange `#FF6B35` par le bleu `#1AB3FF` sur les pages auth et erreurs
+
+**Commits :** `a4144f1`, `8dadeca`, `3d430ac`, `ef88480`, `6219cf2`, `ee07f74`, `92c9afe`
+
+---
+
 ## 2026-02-28
 
 ### Style — Landing page et pages publiques : remplacement couleur orange → bleu #1AB3FF
