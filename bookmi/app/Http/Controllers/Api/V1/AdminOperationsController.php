@@ -34,7 +34,9 @@ class AdminOperationsController extends BaseController
                     $trackingStatus = 'completed';
                 } elseif ($checkIn) {
                     $trackingStatus = 'in_progress';
-                } elseif (now()->isAfter(now()->setTimeFrom(\Carbon\Carbon::parse($booking->event_date))->addMinutes(30))) {
+                } elseif ($booking->start_time !== null
+                    && now()->isAfter(\Carbon\Carbon::parse($booking->event_date . ' ' . $booking->start_time)->addMinutes(30))) {
+                    // late = start_time has passed by more than 30 minutes and no check-in yet
                     $trackingStatus = 'late';
                 }
 

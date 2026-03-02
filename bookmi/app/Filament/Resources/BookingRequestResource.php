@@ -360,11 +360,13 @@ class BookingRequestResource extends Resource
                     }),
 
                 Tables\Actions\DeleteAction::make()
-                    ->label('Supprimer'),
+                    ->label('Supprimer')
+                    ->requiresConfirmation(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
