@@ -12,6 +12,7 @@ use App\Services\SearchService;
 use App\Services\TalentProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class TalentController extends BaseController
 {
@@ -25,12 +26,27 @@ class TalentController extends BaseController
     {
         $validated = $request->validated();
 
-        $paginator = $this->searchService->searchTalents(
-            params: $validated,
-            sortBy: $validated['sort_by'] ?? null,
-            sortDirection: $validated['sort_direction'] ?? null,
-            perPage: (int) ($validated['per_page'] ?? 20),
-        );
+        // Pas de cache pour les recherches géolocalisées (résultats variables par coordonnées)
+        $hasGeo = isset($validated['lat'], $validated['lng']);
+
+        if ($hasGeo) {
+            $paginator = $this->searchService->searchTalents(
+                params: $validated,
+                sortBy: $validated['sort_by'] ?? null,
+                sortDirection: $validated['sort_direction'] ?? null,
+                perPage: (int) ($validated['per_page'] ?? 20),
+            );
+        } else {
+            $cacheKey = 'talents.search.' . md5(serialize($validated));
+            $paginator = Cache::remember($cacheKey, 30, function () use ($validated) {
+                return $this->searchService->searchTalents(
+                    params: $validated,
+                    sortBy: $validated['sort_by'] ?? null,
+                    sortDirection: $validated['sort_direction'] ?? null,
+                    perPage: (int) ($validated['per_page'] ?? 20),
+                );
+            });
+        }
 
         $paginator->through(fn ($talent) => new TalentResource($talent));
 
@@ -39,7 +55,10 @@ class TalentController extends BaseController
 
     public function show(Request $request, string $slug): JsonResponse
     {
-        $result = $this->talentProfileService->getPublicProfile($slug);
+        $cacheKey = 'talents.profile.' . $slug;
+        $result = Cache::remember($cacheKey, 60, function () use ($slug) {
+            return $this->talentProfileService->getPublicProfile($slug);
+        });
 
         if ($result === null) {
             return $this->errorResponse(
@@ -49,7 +68,7 @@ class TalentController extends BaseController
             );
         }
 
-        // Track profile view — deduplicated per viewer per day
+        // Track profile view — deduplicated par viewer par jour (cache-debounced)
         $this->trackProfileView($request, $result['profile']->id);
 
         return $this->successResponse(
@@ -88,6 +107,12 @@ class TalentController extends BaseController
         $viewerIp = $request->ip();
         $today = now()->toDateString();
 
+        // Debounce via cache : évite 2 requêtes DB par appel si déjà tracké aujourd'hui
+        $debounceKey = 'pv.' . $talentProfileId . '.' . $today . '.' . ($viewerId ?? md5($viewerIp));
+        if (Cache::has($debounceKey)) {
+            return;
+        }
+
         $alreadyViewed = ProfileView::where('talent_profile_id', $talentProfileId)
             ->whereDate('viewed_at', $today)
             ->when(
@@ -105,5 +130,8 @@ class TalentController extends BaseController
                 'viewed_at'         => now(),
             ]);
         }
+
+        // Mémoriser jusqu'à minuit pour ne plus interroger la DB aujourd'hui
+        Cache::put($debounceKey, true, now()->endOfDay());
     }
 }

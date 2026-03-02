@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\BookmiException;
 use App\Models\TalentProfile;
 use App\Repositories\Contracts\TalentRepositoryInterface;
+use Illuminate\Support\Facades\Cache;
 
 class TalentProfileService
 {
@@ -42,7 +43,12 @@ class TalentProfileService
         $merged = array_merge($profile->only(['bio', 'is_verified']), $data);
         $data['profile_completion_percentage'] = $this->calculateCompletionFromData($merged);
 
-        return $this->repository->update($profile, $data);
+        $updated = $this->repository->update($profile, $data);
+
+        // Invalider le cache public du profil après modification
+        Cache::forget('talents.profile.' . $profile->slug);
+
+        return $updated;
     }
 
     public function getBySlug(string $slug): ?TalentProfile
