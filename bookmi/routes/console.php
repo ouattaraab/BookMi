@@ -59,4 +59,5 @@ Schedule::command(DetectEmptyCalendar::class)->weeklyOn(1, '09:00');
 Schedule::command(AutoCompleteBookings::class)->dailyAt('03:00');
 
 // Notify users when a talent slot they requested becomes available (AA — alertes disponibilité)
-Schedule::command(NotifyAvailabilityAlerts::class)->everyThirtyMinutes();
+// withoutOverlapping: prevents duplicate notifications if a run takes > 30 minutes.
+Schedule::command(NotifyAvailabilityAlerts::class)->everyThirtyMinutes()->withoutOverlapping();

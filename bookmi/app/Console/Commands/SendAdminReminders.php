@@ -32,68 +32,68 @@ class SendAdminReminders extends Command
         $this->info("Checking pending admin actions older than {$reminderAt}h…");
 
         // Pending identity verifications
-        $pendingVerifications = IdentityVerification::where('verification_status', VerificationStatus::PENDING)
+        IdentityVerification::where('verification_status', VerificationStatus::PENDING)
             ->where('created_at', '<', $threshold)
-            ->get();
-
-        foreach ($pendingVerifications as $verification) {
-            if ($this->alerts->openExists(AlertType::PendingAction, $verification)) {
-                continue;
-            }
-            $this->warn("Pending verification #{$verification->id} — {$verification->created_at}");
-            if (! $isDryRun) {
-                $this->alerts->create(
-                    type: AlertType::PendingAction,
-                    severity: AlertSeverity::Warning,
-                    title: 'Vérification identité en attente',
-                    description: "La vérification d'identité #{$verification->id} attend depuis plus de {$reminderAt}h.",
-                    subject: $verification,
-                    metadata: ['hours_pending' => Carbon::parse($verification->created_at)->diffInHours()],
-                );
-            }
-        }
+            ->chunkById(100, function ($verifications) use ($isDryRun, $reminderAt): void {
+                foreach ($verifications as $verification) {
+                    if ($this->alerts->openExists(AlertType::PendingAction, $verification)) {
+                        continue;
+                    }
+                    $this->warn("Pending verification #{$verification->id} — {$verification->created_at}");
+                    if (! $isDryRun) {
+                        $this->alerts->create(
+                            type: AlertType::PendingAction,
+                            severity: AlertSeverity::Warning,
+                            title: 'Vérification identité en attente',
+                            description: "La vérification d'identité #{$verification->id} attend depuis plus de {$reminderAt}h.",
+                            subject: $verification,
+                            metadata: ['hours_pending' => Carbon::parse($verification->created_at)->diffInHours()],
+                        );
+                    }
+                }
+            });
 
         // Open disputes older than threshold
-        $openDisputes = BookingRequest::where('status', BookingStatus::Disputed)
+        BookingRequest::where('status', BookingStatus::Disputed)
             ->where('updated_at', '<', $threshold)
-            ->get();
-
-        foreach ($openDisputes as $booking) {
-            if ($this->alerts->openExists(AlertType::PendingAction, $booking)) {
-                continue;
-            }
-            $this->warn("Unresolved dispute #{$booking->id}");
-            if (! $isDryRun) {
-                $this->alerts->create(
-                    type: AlertType::PendingAction,
-                    severity: AlertSeverity::Critical,
-                    title: 'Litige non résolu',
-                    description: "La réservation #{$booking->id} est en litige depuis plus de {$reminderAt}h.",
-                    subject: $booking,
-                );
-            }
-        }
+            ->chunkById(100, function ($bookings) use ($isDryRun, $reminderAt): void {
+                foreach ($bookings as $booking) {
+                    if ($this->alerts->openExists(AlertType::PendingAction, $booking)) {
+                        continue;
+                    }
+                    $this->warn("Unresolved dispute #{$booking->id}");
+                    if (! $isDryRun) {
+                        $this->alerts->create(
+                            type: AlertType::PendingAction,
+                            severity: AlertSeverity::Critical,
+                            title: 'Litige non résolu',
+                            description: "La réservation #{$booking->id} est en litige depuis plus de {$reminderAt}h.",
+                            subject: $booking,
+                        );
+                    }
+                }
+            });
 
         // Reported reviews older than threshold
-        $reportedReviews = Review::where('is_reported', true)
+        Review::where('is_reported', true)
             ->where('reported_at', '<', $threshold)
-            ->get();
-
-        foreach ($reportedReviews as $review) {
-            if ($this->alerts->openExists(AlertType::PendingAction, $review)) {
-                continue;
-            }
-            $this->warn("Pending reported review #{$review->id}");
-            if (! $isDryRun) {
-                $this->alerts->create(
-                    type: AlertType::PendingAction,
-                    severity: AlertSeverity::Warning,
-                    title: 'Avis signalé en attente',
-                    description: "L'avis #{$review->id} est signalé depuis plus de {$reminderAt}h sans décision.",
-                    subject: $review,
-                );
-            }
-        }
+            ->chunkById(100, function ($reviews) use ($isDryRun, $reminderAt): void {
+                foreach ($reviews as $review) {
+                    if ($this->alerts->openExists(AlertType::PendingAction, $review)) {
+                        continue;
+                    }
+                    $this->warn("Pending reported review #{$review->id}");
+                    if (! $isDryRun) {
+                        $this->alerts->create(
+                            type: AlertType::PendingAction,
+                            severity: AlertSeverity::Warning,
+                            title: 'Avis signalé en attente',
+                            description: "L'avis #{$review->id} est signalé depuis plus de {$reminderAt}h sans décision.",
+                            subject: $review,
+                        );
+                    }
+                }
+            });
 
         $this->info('Done.');
 

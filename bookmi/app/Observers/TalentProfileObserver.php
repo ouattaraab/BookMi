@@ -60,16 +60,17 @@ class TalentProfileObserver
 
         TalentNotificationRequest::whereNull('notified_at')
             ->whereNotNull('email')
-            ->get()
-            ->each(function (TalentNotificationRequest $req) use ($talent, $stageName) {
-                $query = mb_strtolower($req->search_query);
+            ->chunkById(100, function ($requests) use ($talent, $stageName): void {
+                foreach ($requests as $req) {
+                    $query = mb_strtolower($req->search_query);
 
-                // Correspondance si le nom contient la requête ou la requête contient le nom
-                if (str_contains($stageName, $query) || str_contains($query, $stageName)) {
-                    Notification::route('mail', $req->email)
-                        ->notify(new TalentAvailableNotification($talent, $req));
+                    // Correspondance si le nom contient la requête ou la requête contient le nom
+                    if (str_contains($stageName, $query) || str_contains($query, $stageName)) {
+                        Notification::route('mail', $req->email)
+                            ->notify(new TalentAvailableNotification($talent, $req));
 
-                    $req->update(['notified_at' => now()]);
+                        $req->update(['notified_at' => now()]);
+                    }
                 }
             });
     }
