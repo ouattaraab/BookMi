@@ -6,6 +6,7 @@ use App\Console\Commands\DetectSuspiciousActivity;
 use App\Console\Commands\DetectTalentOverload;
 use App\Console\Commands\FlagLowRatingTalents;
 use App\Console\Commands\GenerateAnnualCertificates;
+use App\Console\Commands\NotifyAvailabilityAlerts;
 use App\Console\Commands\RecalculateTalentLevels;
 use App\Console\Commands\ReleaseExpiredEscrows;
 use App\Console\Commands\SendAdminReminders;
@@ -56,3 +57,6 @@ Schedule::command(DetectEmptyCalendar::class)->weeklyOn(1, '09:00');
 
 // Auto-complete confirmed bookings where event date passed 7+ days ago
 Schedule::command(AutoCompleteBookings::class)->dailyAt('03:00');
+
+// Notify users when a talent slot they requested becomes available (AA — alertes disponibilité)
+Schedule::command(NotifyAvailabilityAlerts::class)->everyThirtyMinutes();

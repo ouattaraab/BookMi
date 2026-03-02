@@ -473,16 +473,17 @@ GoRouter buildAppRouter(
   );
 
   // Wire FCM notification tap → deep-link.
-  // • booking_id present  → booking detail page
-  // • admin_broadcast      → messages tab
-  // • talent_update        → talent profile page
-  // • everything else      → notifications list
+  // • booking_id present           → booking detail page
+  // • admin_broadcast              → messages tab
+  // • talent_update                → talent profile page
+  // • availability_alert           → talent profile page
+  // • everything else              → notifications list
   notificationService?.onNotificationTap = (message) {
     final type = message.data['type'];
     final bookingId = message.data['booking_id']?.toString();
     if (bookingId != null && bookingId.isNotEmpty) {
       router.push('/bookings/booking/$bookingId');
-    } else if (type == 'talent_update') {
+    } else if (type == 'talent_update' || type == 'availability_alert') {
       final talentProfileId = message.data['talent_profile_id']?.toString();
       if (talentProfileId != null && talentProfileId.isNotEmpty) {
         router.push('/talent/$talentProfileId');
