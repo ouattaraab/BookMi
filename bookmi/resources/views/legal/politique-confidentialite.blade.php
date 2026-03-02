@@ -164,6 +164,7 @@
             <li><a href="#pc-8">Vos droits</a></li>
             <li><a href="#pc-9">Cookies et traceurs</a></li>
             <li><a href="#pc-10">Contact</a></li>
+            <li><a href="#pc-11">Utilisation du microphone</a></li>
         </ol>
     </div>
 
@@ -209,8 +210,13 @@
             </tr>
             <tr>
                 <td><strong>Communications</strong></td>
-                <td>Messages échangés entre utilisateurs</td>
+                <td>Messages texte échangés entre utilisateurs</td>
                 <td>Messagerie in-app</td>
+            </tr>
+            <tr>
+                <td><strong>Messages vocaux</strong></td>
+                <td>Enregistrements audio (messages vocaux envoyés dans la messagerie)</td>
+                <td>Messagerie in-app — uniquement sur action explicite de l'utilisateur</td>
             </tr>
             <tr>
                 <td><strong>Technique</strong></td>
@@ -228,7 +234,7 @@
         <li><strong>Gestion du compte utilisateur :</strong> création, authentification, sécurisation.</li>
         <li><strong>Fourniture du service :</strong> mise en relation Clients/Talents, gestion des réservations, traitement des paiements.</li>
         <li><strong>Vérification d'identité des Talents :</strong> conformité et sécurité de la plateforme.</li>
-        <li><strong>Communication :</strong> notifications push, emails transactionnels liés aux réservations.</li>
+        <li><strong>Communication :</strong> notifications push, emails transactionnels liés aux réservations, envoi et réception de messages vocaux entre utilisateurs.</li>
         <li><strong>Support client :</strong> traitement des demandes et litiges.</li>
         <li><strong>Amélioration du service :</strong> analyses statistiques anonymisées sur l'utilisation de la plateforme.</li>
         <li><strong>Obligations légales :</strong> conformité à la réglementation fiscale et comptable ivoirienne.</li>
@@ -300,6 +306,23 @@
         <li>Objet du message : « Protection des données personnelles »</li>
     </ul>
     <p>Si vous estimez que le traitement de vos données n'est pas conforme à la réglementation, vous avez le droit de saisir l'autorité de protection des données compétente en Côte d'Ivoire.</p>
+
+    <h2 id="pc-11">11. Utilisation du microphone (messages vocaux)</h2>
+    <p>L'application mobile BookMi demande l'accès à votre <strong>microphone</strong> afin de vous permettre d'enregistrer et d'envoyer des <strong>messages vocaux</strong> dans la messagerie intégrée entre Clients et Talents.</p>
+
+    <div class="legal-highlight">
+        <p><strong>Important :</strong> Le microphone n'est jamais activé sans une action explicite de votre part (appui sur le bouton d'enregistrement). BookMi n'enregistre pas l'audio en arrière-plan et n'accède jamais au microphone à votre insu.</p>
+    </div>
+
+    <p>Les informations relatives aux messages vocaux sont les suivantes :</p>
+    <ul>
+        <li><strong>Données collectées :</strong> fichiers audio correspondant aux messages vocaux que vous enregistrez et envoyez volontairement.</li>
+        <li><strong>Finalité :</strong> permettre la communication audio entre les utilisateurs d'une même conversation de réservation.</li>
+        <li><strong>Stockage :</strong> les fichiers audio sont hébergés sur nos serveurs sécurisés (HTTPS/TLS). Seul(e)s le destinataire du message et les équipes habilitées de BookMi peuvent y accéder.</li>
+        <li><strong>Durée de conservation :</strong> les messages vocaux sont conservés 2 ans après la clôture de la conversation liée, puis supprimés définitivement.</li>
+        <li><strong>Partage :</strong> les enregistrements audio ne sont <strong>jamais</strong> partagés avec des tiers à des fins publicitaires ou commerciales.</li>
+        <li><strong>Révocation de l'accès :</strong> vous pouvez à tout moment révoquer l'autorisation d'accès au microphone dans les paramètres de votre appareil. Cela désactivera uniquement la fonctionnalité de messages vocaux ; toutes les autres fonctions de l'application resteront disponibles.</li>
+    </ul>
 
     <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid rgba(255,255,255,0.06); display:flex; gap:1rem; flex-wrap:wrap;">
         <a href="{{ route('legal.conditions') }}" style="color:#2196F3; font-size:0.875rem; font-weight:600; text-decoration:none;">Conditions d'utilisation →</a>
