@@ -135,16 +135,26 @@ class AuthController extends BaseController
             ->whereNull('read_at')
             ->count();
 
-        // Profile views (talent only)
+        // Profile views (talent only) — 4 counts en 1 seule requête selectRaw
         $profileViewsToday = 0;
         $profileViewsWeek  = 0;
         $profileViewsMonth = 0;
         $profileViewsTotal = 0;
         if ($tp) {
-            $profileViewsToday  = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->whereDate('viewed_at', today())->count();
-            $profileViewsWeek   = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->where('viewed_at', '>=', now()->startOfWeek())->count();
-            $profileViewsMonth  = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->where('viewed_at', '>=', now()->startOfMonth())->count();
-            $profileViewsTotal  = \App\Models\ProfileView::where('talent_profile_id', $tp->id)->count();
+            $now   = now();
+            $views = \App\Models\ProfileView::where('talent_profile_id', $tp->id)
+                ->selectRaw(
+                    'COUNT(*) as total,' .
+                    'SUM(CASE WHEN DATE(viewed_at) = DATE(?) THEN 1 ELSE 0 END) as today,' .
+                    'SUM(CASE WHEN viewed_at >= ? THEN 1 ELSE 0 END) as this_week,' .
+                    'SUM(CASE WHEN viewed_at >= ? THEN 1 ELSE 0 END) as this_month',
+                    [$now->toDateString(), $now->copy()->startOfWeek(), $now->copy()->startOfMonth()]
+                )
+                ->first();
+            $profileViewsToday = (int) ($views->today ?? 0);
+            $profileViewsWeek  = (int) ($views->this_week ?? 0);
+            $profileViewsMonth = (int) ($views->this_month ?? 0);
+            $profileViewsTotal = (int) ($views->total ?? 0);
         }
 
         return $this->successResponse([

@@ -36,14 +36,17 @@ class DownloadController extends BaseController
             abort(410, 'Ce lien de téléchargement a expiré ou est invalide. Veuillez en générer un nouveau depuis l\'application.');
         }
 
-        // Single-use — delete immediately
-        Cache::forget("pdf_download:{$token}");
-
-        return match ($data['type']) {
+        // Générer d'abord, invalider le token ensuite (usage unique).
+        // L'ordre inverse supprimerait le token même si la génération échouait.
+        $response = match ($data['type']) {
             'receipt'  => $this->serveReceipt((int) $data['booking_id']),
             'contract' => $this->serveContract((int) $data['booking_id']),
             default    => abort(400, 'Type de document inconnu.'),
         };
+
+        Cache::forget("pdf_download:{$token}");
+
+        return $response;
     }
 
     // ── Private helpers ────────────────────────────────────────────────────

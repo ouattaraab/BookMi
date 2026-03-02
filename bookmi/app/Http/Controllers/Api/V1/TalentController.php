@@ -123,23 +123,28 @@ class TalentController extends BaseController
             return;
         }
 
-        $alreadyViewed = ProfileView::where('talent_profile_id', $talentProfileId)
-            ->whereDate('viewed_at', $today)
-            ->when(
-                $viewerId,
-                fn ($q) => $q->where('viewer_id', $viewerId),
-                fn ($q) => $q->whereNull('viewer_id')->where('viewer_ip', $viewerIp),
-            )
-            ->exists();
+        // Transaction + lockForUpdate : évite la race condition exists()+create()
+        // en cas de deux requêtes simultanées (même viewer, même jour)
+        \Illuminate\Support\Facades\DB::transaction(function () use ($talentProfileId, $today, $viewerId, $viewerIp) {
+            $alreadyViewed = ProfileView::where('talent_profile_id', $talentProfileId)
+                ->whereDate('viewed_at', $today)
+                ->when(
+                    $viewerId,
+                    fn ($q) => $q->where('viewer_id', $viewerId),
+                    fn ($q) => $q->whereNull('viewer_id')->where('viewer_ip', $viewerIp),
+                )
+                ->lockForUpdate()
+                ->exists();
 
-        if (! $alreadyViewed) {
-            ProfileView::create([
-                'talent_profile_id' => $talentProfileId,
-                'viewer_id'         => $viewerId,
-                'viewer_ip'         => $viewerIp,
-                'viewed_at'         => now(),
-            ]);
-        }
+            if (! $alreadyViewed) {
+                ProfileView::create([
+                    'talent_profile_id' => $talentProfileId,
+                    'viewer_id'         => $viewerId,
+                    'viewer_ip'         => $viewerIp,
+                    'viewed_at'         => now(),
+                ]);
+            }
+        });
 
         // Mémoriser jusqu'à minuit pour ne plus interroger la DB aujourd'hui
         Cache::put($debounceKey, true, now()->endOfDay());
