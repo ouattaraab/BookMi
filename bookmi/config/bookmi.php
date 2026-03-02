@@ -14,6 +14,8 @@ return [
         'max_login_attempts' => 5,
         'lockout_minutes' => 15,
         'otp_max_resend_per_hour' => 3,
+        // Must be set via PASSWORD_RESET_URL env var in production.
+        // Defaults to localhost — emails will be broken if this env var is missing.
         'password_reset_url' => env('PASSWORD_RESET_URL', 'http://localhost:3000/reset-password'),
     ],
 
@@ -37,6 +39,7 @@ return [
     'payment' => [
         'primary_gateway'  => 'paystack',
         'fallback_gateway' => 'fedapay',
+        // Must be set via PAYMENT_CALLBACK_URL env var in production.
         'callback_url'     => env('PAYMENT_CALLBACK_URL', 'http://localhost:8000/api/v1/payments/callback'),
     ],
 

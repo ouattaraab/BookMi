@@ -19,6 +19,10 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
+    // IMPORTANT: Set CORS_ALLOWED_ORIGINS in .env to a comma-separated list of
+    // allowed domains (e.g. "https://bookmi.click,https://app.bookmi.click").
+    // Leaving it as '*' is incompatible with supports_credentials=true in
+    // modern browsers and must not be used in production.
     'allowed_origins' => env('CORS_ALLOWED_ORIGINS', '*') === '*'
         ? ['*']
         : explode(',', env('CORS_ALLOWED_ORIGINS', '')),

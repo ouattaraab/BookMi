@@ -52,6 +52,10 @@ class ReferralController extends Controller
 
         $this->referralService->applyCode($user, $validated['code']);
 
+        // applyCode() persists to DB but does not update the in-memory model.
+        // Refresh to read the value that was actually saved.
+        $user->refresh();
+
         if ($user->referred_by_code === null) {
             return response()->json([
                 'error' => [

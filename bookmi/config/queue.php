@@ -41,7 +41,10 @@ return [
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
             'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
-            'after_commit' => false,
+            // true = jobs dispatched inside a transaction are only queued after
+            // the transaction commits — prevents ghost jobs when rollback occurs
+            // (e.g. GenerateContractPdf not queued if acceptBooking rolls back).
+            'after_commit' => true,
         ],
 
         'beanstalkd' => [

@@ -15,6 +15,9 @@ class ProcessPayout implements ShouldQueue
     /** @var int Maximum number of attempts (5 retries per NFR35). */
     public int $tries = 5;
 
+    /** @var int Max execution time in seconds before the job is killed. */
+    public int $timeout = 120;
+
     /**
      * Exponential backoff × 3: 10s, 30s, 90s, 270s, 810s.
      *

@@ -22,6 +22,9 @@ class HandlePaymentWebhook implements ShouldQueue
     /** Maximum number of attempts (NFR35 — 5 retries). */
     public int $tries = 5;
 
+    /** @var int Max execution time in seconds before the job is killed. */
+    public int $timeout = 60;
+
     /**
      * Backoff in seconds between retries: 10s, 30s, 90s, 270s, 810s.
      * Exponential backoff × 3 each step.

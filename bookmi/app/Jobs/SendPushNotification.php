@@ -23,6 +23,9 @@ class SendPushNotification implements ShouldQueue
      */
     public int $tries = 3;
 
+    /** @var int Max execution time in seconds before the job is killed. */
+    public int $timeout = 30;
+
     /**
      * Delay (seconds) between retries.
      */

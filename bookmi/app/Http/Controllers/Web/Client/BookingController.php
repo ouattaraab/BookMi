@@ -17,6 +17,7 @@ use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -76,11 +77,7 @@ class BookingController extends Controller
 
         $talent = TalentProfile::with('servicePackages')->findOrFail($validated['talent_profile_id']);
 
-        if (! $this->calendarService->isDateAvailable($talent, $validated['event_date'], $validated['start_time'] ?? null)) {
-            return back()->withInput()->with('error', 'Cette date n\'est pas disponible pour ce talent. Veuillez choisir une autre date ou heure.');
-        }
-
-        // Calcul du montant
+        // Calcul du montant (avant transaction — pure PHP, pas de I/O)
         $cachetAmount = $talent->cachet_amount ?? 0;
         if (! empty($validated['service_package_id'])) {
             $pkg = $talent->servicePackages->firstWhere('id', $validated['service_package_id']);
@@ -91,28 +88,42 @@ class BookingController extends Controller
 
         $commissionRate   = (int) config('bookmi.commission_rate', 15);
         $commissionAmount = (int) round($cachetAmount * $commissionRate / 100);
+        $isExpress        = $request->boolean('is_express') && $talent->enable_express_booking;
+        $travelCost       = (int) ($validated['travel_cost'] ?? 0);
+        $expressFee       = $isExpress ? (int) round($cachetAmount * 0.15) : 0;
+        $totalAmount      = $cachetAmount + $commissionAmount + $expressFee + $travelCost;
 
-        $isExpress  = $request->boolean('is_express') && $talent->enable_express_booking;
-        $travelCost = (int) ($validated['travel_cost'] ?? 0);
-        $expressFee = $isExpress ? (int) round($cachetAmount * 0.10) : 0;
-        $totalAmount = $cachetAmount + $commissionAmount + $expressFee + $travelCost;
+        // Atomic: lockForUpdate sur talent_profile sérialise les réservations
+        // concurrentes pour ce talent — ferme la fenêtre TOCTOU entre
+        // isDateAvailable() et BookingRequest::create().
+        try {
+            $booking = DB::transaction(function () use ($validated, $talent, $cachetAmount, $commissionAmount, $isExpress, $travelCost, $expressFee, $totalAmount) {
+                TalentProfile::lockForUpdate()->find($talent->id);
 
-        $booking = BookingRequest::create([
-            'client_id'          => auth()->id(),
-            'talent_profile_id'  => $validated['talent_profile_id'],
-            'service_package_id' => $validated['service_package_id'] ?? null,
-            'event_date'         => $validated['event_date'],
-            'start_time'         => $validated['start_time'] ?? null,
-            'event_location'     => $validated['event_location'],
-            'message'            => $validated['message'] ?? null,
-            'status'             => 'pending',
-            'cachet_amount'      => $cachetAmount,
-            'commission_amount'  => $commissionAmount,
-            'is_express'         => $isExpress,
-            'travel_cost'        => $travelCost,
-            'express_fee'        => $expressFee,
-            'total_amount'       => $totalAmount,
-        ]);
+                if (! $this->calendarService->isDateAvailable($talent, $validated['event_date'], $validated['start_time'] ?? null)) {
+                    throw BookingException::dateUnavailable();
+                }
+
+                return BookingRequest::create([
+                    'client_id'          => auth()->id(),
+                    'talent_profile_id'  => $validated['talent_profile_id'],
+                    'service_package_id' => $validated['service_package_id'] ?? null,
+                    'event_date'         => $validated['event_date'],
+                    'start_time'         => $validated['start_time'] ?? null,
+                    'event_location'     => $validated['event_location'],
+                    'message'            => $validated['message'] ?? null,
+                    'status'             => 'pending',
+                    'cachet_amount'      => $cachetAmount,
+                    'commission_amount'  => $commissionAmount,
+                    'is_express'         => $isExpress,
+                    'travel_cost'        => $travelCost,
+                    'express_fee'        => $expressFee,
+                    'total_amount'       => $totalAmount,
+                ]);
+            });
+        } catch (BookingException $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
 
         BookingCreated::dispatch($booking);
 

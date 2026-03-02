@@ -87,7 +87,7 @@ class WithdrawalRequestController extends BaseController
 
         $amount = (int) $request->validated('amount');
 
-        // Vérifier le solde disponible
+        // Pre-check (fast path, before acquiring lock).
         if ($amount > $profile->available_balance) {
             return $this->errorResponse(
                 'INSUFFICIENT_BALANCE',
@@ -97,18 +97,39 @@ class WithdrawalRequestController extends BaseController
             );
         }
 
-        $withdrawalRequest = DB::transaction(function () use ($profile, $amount) {
-            // Déduire du solde disponible (réservation)
-            $profile->decrement('available_balance', $amount);
+        // lockForUpdate on talent_profile sérialise les demandes concurrentes
+        // et re-vérifie le solde à l'intérieur de la transaction pour fermer
+        // la fenêtre TOCTOU entre le pre-check et le decrement.
+        $insufficientBalance = false;
+        $withdrawalRequest = DB::transaction(function () use ($profile, $amount, &$insufficientBalance) {
+            $locked = TalentProfile::lockForUpdate()->find($profile->id);
+
+            if ($amount > $locked->available_balance) {
+                $insufficientBalance = true;
+
+                return null;
+            }
+
+            $locked->decrement('available_balance', $amount);
 
             return WithdrawalRequest::create([
-                'talent_profile_id' => $profile->id,
-                'amount' => $amount,
-                'status' => WithdrawalStatus::Pending->value,
-                'payout_method' => $profile->payout_method,
-                'payout_details' => $profile->payout_details,
+                'talent_profile_id' => $locked->id,
+                'amount'            => $amount,
+                'status'            => WithdrawalStatus::Pending->value,
+                'payout_method'     => $locked->payout_method,
+                'payout_details'    => $locked->payout_details,
             ]);
         });
+
+        if ($insufficientBalance) {
+            return $this->errorResponse(
+                'INSUFFICIENT_BALANCE',
+                'Le montant demandé dépasse votre solde disponible.',
+                422,
+            );
+        }
+
+        /** @var WithdrawalRequest $withdrawalRequest */
 
         // Notifier les admins (email + push in-app)
         AdminNotificationService::withdrawalRequested($withdrawalRequest);
