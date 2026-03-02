@@ -276,7 +276,7 @@ main.page-content { background: #F2EFE9 !important; }
                 </p>
             </div>
             <form action="{{ route('client.bookings.cancel', $booking->id) }}" method="POST"
-                  style="flex:1;" onsubmit="return confirm('Annuler cette réservation ?\n\nPolitique applicable : {{ addslashes($cancelPolicy[\'label\']) }}')">
+                  style="flex:1;" onsubmit="return confirm('Annuler cette réservation ?\n\nPolitique applicable : {{ addslashes($cancelPolicy["label"]) }}')">
                 @csrf
                 <button type="submit" class="btn-cancel">Annuler la réservation</button>
             </form>

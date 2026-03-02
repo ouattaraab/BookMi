@@ -463,8 +463,8 @@ main.page-content { background: #F2EFE9 !important; }
                 $notifLabels = [
                     'new_message'     => ['label' => 'Nouveaux messages',             'desc' => 'Quand un talent vous envoie un message'],
                     'booking_updates' => ['label' => 'Mises à jour des réservations', 'desc' => 'Acceptation, refus, confirmation de vos réservations'],
-                    'new_review'      => ['label' => 'Avis reçus',                    'desc' => 'Quand quelqu'un laisse un avis sur votre prestation'],
-                    'follow_update'   => ['label' => 'Nouveaux abonnés',              'desc' => 'Quand quelqu'un suit votre activité'],
+                    'new_review'      => ['label' => 'Avis reçus',                    'desc' => 'Quand quelqu\'un laisse un avis sur votre prestation'],
+                    'follow_update'   => ['label' => 'Nouveaux abonnés',              'desc' => 'Quand quelqu\'un suit votre activité'],
                     'admin_broadcast' => ['label' => 'Annonces BookMi',               'desc' => 'Actualités et informations importantes de la plateforme'],
                 ];
                 @endphp

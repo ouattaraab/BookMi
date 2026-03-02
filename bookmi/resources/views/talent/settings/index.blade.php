@@ -226,7 +226,7 @@
                     'new_message'     => ['label' => 'Nouveaux messages',             'desc' => 'Quand un client vous envoie un message'],
                     'booking_updates' => ['label' => 'Mises à jour des réservations', 'desc' => 'Nouvelles demandes, paiements et confirmations'],
                     'new_review'      => ['label' => 'Nouveaux avis',                 'desc' => 'Quand un client laisse un avis sur votre prestation'],
-                    'follow_update'   => ['label' => 'Nouveaux abonnés',              'desc' => 'Quand quelqu'un commence à vous suivre'],
+                    'follow_update'   => ['label' => 'Nouveaux abonnés',              'desc' => 'Quand quelqu\'un commence à vous suivre'],
                     'admin_broadcast' => ['label' => 'Annonces BookMi',               'desc' => 'Actualités et informations importantes de la plateforme'],
                 ];
                 @endphp

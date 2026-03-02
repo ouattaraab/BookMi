@@ -109,8 +109,8 @@ class BookingController extends Controller
             'cachet_amount'      => $cachetAmount,
             'commission_amount'  => $commissionAmount,
             'is_express'         => $isExpress,
-            'travel_cost'        => $travelCost ?: null,
-            'express_fee'        => $expressFee ?: null,
+            'travel_cost'        => $travelCost,
+            'express_fee'        => $expressFee,
             'total_amount'       => $totalAmount,
         ]);
 
