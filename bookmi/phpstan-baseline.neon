@@ -1,6 +1,30 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Access to an undefined property App\\Models\\ProfileView\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ProfileView\:\:\$views\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ProfileView\>::map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\BookingRequest\:\:\$count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
 			message: '#^Cannot call method greaterThan\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1

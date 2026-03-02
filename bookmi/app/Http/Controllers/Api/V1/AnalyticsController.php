@@ -91,16 +91,18 @@ class AnalyticsController extends BaseController
 
         $profileViewsTotal = ProfileView::where('talent_profile_id', $talent->id)->count();
 
+        // DATE() est portable MySQL/SQLite — évite de charger toutes les lignes en PHP
         $dailyViews = ProfileView::where('talent_profile_id', $talent->id)
             ->where('viewed_at', '>=', $thirtyDaysAgo)
-            ->get(['viewed_at'])
-            ->groupBy(fn ($v) => \Carbon\Carbon::parse($v->viewed_at)->toDateString())
-            ->map(fn ($group, $date) => ['date' => $date, 'views' => $group->count()])
-            ->sortKeys()
+            ->selectRaw('DATE(viewed_at) as date, COUNT(*) as views')
+            ->groupByRaw('DATE(viewed_at)')
+            ->orderBy('date')
+            ->get()
+            ->map(fn ($row) => ['date' => $row->date, 'views' => (int) $row->views])
             ->values()
             ->toArray();
 
-        // Top 5 cities for bookings (paid + confirmed + completed) — PHP-level to avoid DB date functions
+        // Top 5 cities — GROUP BY en DB, pas besoin de charger toutes les locations en PHP
         $cityBookings = BookingRequest::where('talent_profile_id', $talent->id)
             ->whereIn('status', [
                 BookingStatus::Paid->value,
@@ -109,12 +111,13 @@ class AnalyticsController extends BaseController
             ])
             ->whereNotNull('event_location')
             ->where('event_location', '!=', '')
-            ->get(['event_location'])
-            ->groupBy(fn ($b) => trim($b->event_location))
-            ->map(fn ($group, $city) => ['city' => $city, 'count' => $group->count()])
-            ->sortByDesc('count')
+            ->select('event_location', DB::raw('COUNT(*) as count'))
+            ->groupBy('event_location')
+            ->orderByDesc('count')
+            ->limit(5)
+            ->get()
+            ->map(fn ($row) => ['city' => trim($row->event_location), 'count' => (int) $row->count])
             ->values()
-            ->take(5)
             ->toArray();
 
         return [

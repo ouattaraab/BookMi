@@ -26,18 +26,28 @@ class TalentController extends BaseController
     {
         $validated = $request->validated();
 
-        // Pas de cache pour les recherches géolocalisées (résultats variables par coordonnées)
         $hasGeo = isset($validated['lat'], $validated['lng']);
 
         if ($hasGeo) {
-            $paginator = $this->searchService->searchTalents(
-                params: $validated,
-                sortBy: $validated['sort_by'] ?? null,
-                sortDirection: $validated['sort_direction'] ?? null,
-                perPage: (int) ($validated['per_page'] ?? 20),
-            );
+            // Cache géo : arrondi à 2 décimales (~1 km) pour regrouper les recherches proches
+            // On inclut le numéro de page dans la clé (page non validée mais gérée par le paginator)
+            $geoParams = $validated;
+            $geoParams['lat'] = round((float) $validated['lat'], 2);
+            $geoParams['lng'] = round((float) $validated['lng'], 2);
+            $geoParams['_page'] = $request->integer('page', 1);
+            $cacheKey = 'talents.search.geo.' . md5(serialize($geoParams));
+            $paginator = Cache::remember($cacheKey, 30, function () use ($validated) {
+                return $this->searchService->searchTalents(
+                    params: $validated,
+                    sortBy: $validated['sort_by'] ?? null,
+                    sortDirection: $validated['sort_direction'] ?? null,
+                    perPage: (int) ($validated['per_page'] ?? 20),
+                );
+            });
         } else {
-            $cacheKey = 'talents.search.' . md5(serialize($validated));
+            $params = $validated;
+            $params['_page'] = $request->integer('page', 1);
+            $cacheKey = 'talents.search.' . md5(serialize($params));
             $paginator = Cache::remember($cacheKey, 30, function () use ($validated) {
                 return $this->searchService->searchTalents(
                     params: $validated,
