@@ -99,10 +99,21 @@ class BookingService
         // concurrent requests for the same talent, closing the TOCTOU window between
         // isDateAvailable() and BookingRequest::create().
         $booking = DB::transaction(function () use (
-            $client, $data, $talentProfile, $package, $packageSnapshot,
-            $isExpress, $startTime, $isMicro,
-            $cachetAmount, $travelCost, $commissionAmount, $totalAmount,
-            $expressFee, $promoCodeId, $discountAmount,
+            $client,
+            $data,
+            $talentProfile,
+            $package,
+            $packageSnapshot,
+            $isExpress,
+            $startTime,
+            $isMicro,
+            $cachetAmount,
+            $travelCost,
+            $commissionAmount,
+            $totalAmount,
+            $expressFee,
+            $promoCodeId,
+            $discountAmount,
         ) {
             if (! $isMicro) {
                 TalentProfile::lockForUpdate()->find($talentProfile->id);
