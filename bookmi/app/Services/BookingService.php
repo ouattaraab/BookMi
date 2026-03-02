@@ -246,31 +246,34 @@ class BookingService
     /**
      * Transition a confirmed booking to completed.
      *
-     * - Skips silently if already completed.
-     * - Releases cachet_amount to talent's available_balance.
+     * - Skips silently if already completed or not in Confirmed status.
      * - Updates TalentProfile::total_bookings with live count.
+     *
+     * NOTE: available_balance is credited by HandleEscrowReleased when the escrow
+     * is released (Paid → Confirmed). Do NOT credit it again here to avoid double-crediting.
      */
     public function markCompleted(BookingRequest $booking): void
     {
-        if ($booking->status === BookingStatus::Completed) {
-            return;
-        }
+        DB::transaction(function () use ($booking): void {
+            $fresh = BookingRequest::where('id', $booking->id)->lockForUpdate()->first();
 
-        if ($booking->status !== BookingStatus::Confirmed) {
-            return;
-        }
+            if (! $fresh || $fresh->status === BookingStatus::Completed) {
+                return;
+            }
 
-        $booking->update(['status' => BookingStatus::Completed]);
+            if ($fresh->status !== BookingStatus::Confirmed) {
+                return;
+            }
 
-        TalentProfile::where('id', $booking->talent_profile_id)
-            ->increment('available_balance', $booking->cachet_amount);
+            $fresh->update(['status' => BookingStatus::Completed]);
 
-        $count = BookingRequest::where('talent_profile_id', $booking->talent_profile_id)
-            ->where('status', BookingStatus::Completed->value)
-            ->count();
+            $count = BookingRequest::where('talent_profile_id', $fresh->talent_profile_id)
+                ->where('status', BookingStatus::Completed->value)
+                ->count();
 
-        TalentProfile::where('id', $booking->talent_profile_id)
-            ->update(['total_bookings' => $count]);
+            TalentProfile::where('id', $fresh->talent_profile_id)
+                ->update(['total_bookings' => $count]);
+        });
     }
 
     /**

@@ -38,8 +38,11 @@ class EscrowService
                 'released_at' => now(),
             ]);
 
-            // Transition booking to Confirmed if still in Paid status
-            $booking = BookingRequest::find($fresh->booking_request_id);
+            // Transition booking to Confirmed if still in Paid status.
+            // lockForUpdate prevents a concurrent cancellation from being overwritten.
+            $booking = BookingRequest::where('id', $fresh->booking_request_id)
+                ->lockForUpdate()
+                ->first();
 
             if ($booking && $booking->status === BookingStatus::Paid) {
                 $booking->update(['status' => BookingStatus::Confirmed->value]);

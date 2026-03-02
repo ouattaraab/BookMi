@@ -8,6 +8,7 @@ use App\Models\BookingRequest;
 use App\Models\Review;
 use App\Models\TalentProfile;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -43,41 +44,51 @@ class ReviewService
     ): Review {
         $this->assertBookingCompleted($booking);
         $this->assertReviewerIsAuthorized($booking, $reviewer, $type);
-        $this->assertNotAlreadyReviewed($booking, $type);
 
         $reviewee = $this->resolveReviewee($booking, $type);
 
-        $review = DB::transaction(function () use (
-            $booking,
-            $reviewer,
-            $reviewee,
-            $type,
-            $rating,
-            $comment,
-            $punctualityScore,
-            $qualityScore,
-            $professionalismScore,
-            $contractRespectScore,
-        ) {
-            $review = Review::create([
-                'booking_request_id'     => $booking->id,
-                'reviewer_id'            => $reviewer->id,
-                'reviewee_id'            => $reviewee->id,
-                'type'                   => $type,
-                'rating'                 => $rating,
-                'punctuality_score'      => $punctualityScore,
-                'quality_score'          => $qualityScore,
-                'professionalism_score'  => $professionalismScore,
-                'contract_respect_score' => $contractRespectScore,
-                'comment'                => $comment,
+        try {
+            $review = DB::transaction(function () use (
+                $booking,
+                $reviewer,
+                $reviewee,
+                $type,
+                $rating,
+                $comment,
+                $punctualityScore,
+                $qualityScore,
+                $professionalismScore,
+                $contractRespectScore,
+            ) {
+                // assertNotAlreadyReviewed inside the transaction to close the TOCTOU window.
+                // Two concurrent requests must serialize here; the DB unique constraint is the
+                // final safety net and its IntegrityConstraintViolationException is caught below.
+                $this->assertNotAlreadyReviewed($booking, $type);
+
+                $review = Review::create([
+                    'booking_request_id'     => $booking->id,
+                    'reviewer_id'            => $reviewer->id,
+                    'reviewee_id'            => $reviewee->id,
+                    'type'                   => $type,
+                    'rating'                 => $rating,
+                    'punctuality_score'      => $punctualityScore,
+                    'quality_score'          => $qualityScore,
+                    'professionalism_score'  => $professionalismScore,
+                    'contract_respect_score' => $contractRespectScore,
+                    'comment'                => $comment,
+                ]);
+
+                if ($type === ReviewType::ClientToTalent) {
+                    $this->recomputeTalentRating($booking->talent_profile_id);
+                }
+
+                return $review;
+            });
+        } catch (UniqueConstraintViolationException) {
+            throw ValidationException::withMessages([
+                'type' => 'A review of this type has already been submitted for this booking.',
             ]);
-
-            if ($type === ReviewType::ClientToTalent) {
-                $this->recomputeTalentRating($booking->talent_profile_id);
-            }
-
-            return $review;
-        });
+        }
 
         // Transition confirmed booking to completed when client reviews
         if ($type === ReviewType::ClientToTalent && $booking->fresh()->status === BookingStatus::Confirmed) {

@@ -49,11 +49,24 @@ class PayoutService
         if (! $recipientCode) {
             $recipientPayload = $this->buildRecipientPayload($payoutMethod, $payoutDetails, $talentProfile);
             $recipient        = $this->gateway->createTransferRecipient($recipientPayload);
-            $recipientCode    = $recipient['recipient_code'];
+            $newCode          = $recipient['recipient_code'];
 
-            // Cache the recipient_code to avoid re-creating on retry
-            $payoutDetails['recipient_code'] = $recipientCode;
-            $talentProfile->update(['payout_details' => $payoutDetails]);
+            // Atomic store: use a DB lock so that two concurrent payout jobs for the same
+            // talent don't each create and store a different Paystack recipient.
+            // Whichever job wins the lock keeps its code; the loser uses the winner's code.
+            $payoutDetails = DB::transaction(function () use ($talentProfile, $newCode): array {
+                $locked  = TalentProfile::where('id', $talentProfile->id)->lockForUpdate()->first();
+                $details = (array) ($locked->payout_details ?? []);
+
+                if (! isset($details['recipient_code'])) {
+                    $details['recipient_code'] = $newCode;
+                    $locked->update(['payout_details' => $details]);
+                }
+
+                return $details;
+            });
+
+            $recipientCode = $payoutDetails['recipient_code'];
         }
 
         // ── Create Payout record (Pending) — idempotency guard ──
