@@ -209,23 +209,31 @@ class BookingService
         $performerId = $booking->talentProfile?->user_id;
 
         DB::transaction(function () use ($booking, $performerId) {
-            $booking->update(['status' => BookingStatus::Accepted]);
+            // Re-acquire with lock to prevent concurrent double-accept (TOCTOU guard).
+            $locked = BookingRequest::where('id', $booking->id)->lockForUpdate()->first();
+
+            if (! $locked || ! $locked->status->canTransitionTo(BookingStatus::Accepted)) {
+                throw BookingException::invalidStatusTransition();
+            }
+
+            $locked->update(['status' => BookingStatus::Accepted]);
 
             // Only block the whole day when no start_time is set (date-only booking).
             // Time-based bookings rely on the ±1h buffer check in CalendarService::isDateAvailable().
-            if ($booking->start_time === null) {
+            if ($locked->start_time === null) {
                 CalendarSlot::updateOrCreate(
                     [
-                        'talent_profile_id' => $booking->talent_profile_id,
-                        'date'              => $booking->event_date->toDateString(),
+                        'talent_profile_id' => $locked->talent_profile_id,
+                        'date'              => $locked->event_date->toDateString(),
                     ],
                     ['status' => CalendarSlotStatus::Blocked],
                 );
             }
 
-            $this->logStatusTransition($booking, BookingStatus::Pending, BookingStatus::Accepted, $performerId);
+            $this->logStatusTransition($locked, BookingStatus::Pending, BookingStatus::Accepted, $performerId);
         });
 
+        $booking->refresh();
         BookingAccepted::dispatch($booking);
 
         // Generate contract synchronously so it is available immediately
@@ -320,14 +328,24 @@ class BookingService
 
         $fromStatus = $booking->status;
 
-        $booking->update([
-            'status'                      => BookingStatus::Cancelled,
-            'refund_amount'               => $refundAmount,
-            'cancellation_policy_applied' => $policy,
-        ]);
+        DB::transaction(function () use ($booking, $fromStatus, $refundAmount, $policy) {
+            // Re-acquire with lock to prevent concurrent cancel + accept race.
+            $locked = BookingRequest::where('id', $booking->id)->lockForUpdate()->first();
 
-        $this->logStatusTransition($booking, $fromStatus, BookingStatus::Cancelled, $booking->client_id);
+            if (! $locked || ! $locked->status->canTransitionTo(BookingStatus::Cancelled)) {
+                throw BookingException::invalidStatusTransition();
+            }
 
+            $locked->update([
+                'status'                      => BookingStatus::Cancelled,
+                'refund_amount'               => $refundAmount,
+                'cancellation_policy_applied' => $policy,
+            ]);
+
+            $this->logStatusTransition($locked, $fromStatus, BookingStatus::Cancelled, $locked->client_id);
+        });
+
+        $booking->refresh();
         BookingCancelled::dispatch($booking);
 
         return $booking;

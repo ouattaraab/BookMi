@@ -235,7 +235,15 @@ class BookingRepository {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.bookingReceipt(id),
       );
-      final url = response.data!['data']['receipt_url'] as String;
+      final url =
+          (response.data?['data'] as Map<String, dynamic>?)?['receipt_url']
+              as String?;
+      if (url == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'URL du reçu introuvable dans la réponse.',
+        );
+      }
       return ApiSuccess(url);
     } on DioException catch (e) {
       return _mapDioError(e);
@@ -248,7 +256,15 @@ class BookingRepository {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.bookingContractUrl(id),
       );
-      final url = response.data!['data']['contract_url'] as String;
+      final url =
+          (response.data?['data'] as Map<String, dynamic>?)?['contract_url']
+              as String?;
+      if (url == null) {
+        return const ApiFailure(
+          code: 'INVALID_RESPONSE',
+          message: 'URL du contrat introuvable dans la réponse.',
+        );
+      }
       return ApiSuccess(url);
     } on DioException catch (e) {
       return _mapDioError(e);

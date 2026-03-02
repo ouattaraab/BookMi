@@ -62,6 +62,13 @@ class RescheduleService
         $booking = $reschedule->booking;
 
         DB::transaction(function () use ($reschedule, $booking) {
+            // Re-acquire with lock to prevent concurrent double-accept (TOCTOU guard).
+            $locked = RescheduleRequest::where('id', $reschedule->id)->lockForUpdate()->first();
+
+            if (! $locked || $locked->status !== RescheduleStatus::Pending) {
+                throw BookingException::rescheduleNotPending();
+            }
+
             // Free the old slot
             CalendarSlot::where('talent_profile_id', $booking->talent_profile_id)
                 ->where('date', $booking->event_date->toDateString())
@@ -81,11 +88,13 @@ class RescheduleService
             $booking->update(['event_date' => $reschedule->proposed_date->toDateString()]);
 
             // Mark reschedule as accepted
-            $reschedule->update([
+            $locked->update([
                 'status'       => RescheduleStatus::Accepted,
                 'responded_at' => now(),
             ]);
         });
+
+        $reschedule->refresh();
 
         return $reschedule;
     }
