@@ -18,7 +18,8 @@ class MessagingService
 {
     public function __construct(
         private readonly ContactDetectionService $contactDetector,
-    ) {}
+    ) {
+    }
 
     /**
      * Returns all conversations for the authenticated user,
