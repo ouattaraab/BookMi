@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class MaintenancePage extends Page
 {
+    protected static ?string $slug            = 'maintenance';
     protected static ?string $navigationIcon  = 'heroicon-o-wrench-screwdriver';
     protected static ?string $navigationLabel = 'Mode maintenance';
     protected static ?string $title           = 'Mode maintenance';
@@ -28,12 +29,20 @@ class MaintenancePage extends Page
 
     public static function getNavigationBadge(): ?string
     {
-        return PlatformSetting::bool('maintenance_enabled') ? 'ACTIF' : null;
+        try {
+            return PlatformSetting::bool('maintenance_enabled') ? 'ACTIF' : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public static function getNavigationBadgeColor(): ?string
     {
-        return PlatformSetting::bool('maintenance_enabled') ? 'danger' : null;
+        try {
+            return PlatformSetting::bool('maintenance_enabled') ? 'danger' : null;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function mount(): void
