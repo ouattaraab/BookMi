@@ -205,8 +205,9 @@ class ReviewResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\BadgeColumn::make('type')
+                Tables\Columns\TextColumn::make('type')
                     ->label('Type')
+                    ->badge()
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === ReviewType::ClientToTalent || $state === 'client_to_talent' => 'Client → Talent',
                         $state === ReviewType::TalentToClient || $state === 'talent_to_client' => 'Talent → Client',
@@ -253,8 +254,7 @@ class ReviewResource extends Resource
                     ->label('Signalé')
                     ->placeholder('Tous')
                     ->trueLabel('Signalés seulement')
-                    ->falseLabel('Non signalés seulement')
-                    ->default(true),
+                    ->falseLabel('Non signalés seulement'),
 
                 Tables\Filters\SelectFilter::make('type')
                     ->label('Type')

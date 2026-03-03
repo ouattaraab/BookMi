@@ -63,7 +63,7 @@ class QualityDashboardPage extends Page
         $totalBookings  = BookingRequest::whereIn('status', ['completed', 'disputed'])->count();
         $disputeRate    = $totalBookings > 0 ? round($totalDisputed / $totalBookings * 100, 1) : 0;
 
-        $avgRating = Review::avg('overall_rating') ?? 0;
+        $avgRating = Review::avg('rating') ?? 0;
 
         $avgResponse = BookingRequest::join(
             'booking_status_logs',
@@ -91,7 +91,7 @@ class QualityDashboardPage extends Page
             ->join('reviews', 'reviews.booking_request_id', '=', 'booking_requests.id')
             ->select(
                 'categories.name as category',
-                DB::raw('ROUND(AVG(reviews.overall_rating), 2) as avg_rating'),
+                DB::raw('ROUND(AVG(reviews.rating), 2) as avg_rating'),
                 DB::raw('COUNT(reviews.id) as review_count')
             )
             ->groupBy('categories.id', 'categories.name')
@@ -163,10 +163,12 @@ class QualityDashboardPage extends Page
     /** @return array<int, array<string, mixed>> */
     private function computeMonthlyDisputes(): array
     {
-        return BookingRequest::select(
-            DB::raw("DATE_FORMAT(updated_at, '%Y-%m') as month"),
-            DB::raw('COUNT(*) as count')
-        )
+        $isMysql = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'mysql';
+        $monthExpr = $isMysql
+            ? DB::raw("DATE_FORMAT(updated_at, '%Y-%m') as month")
+            : DB::raw("strftime('%Y-%m', updated_at) as month");
+
+        return BookingRequest::select($monthExpr, DB::raw('COUNT(*) as count'))
             ->where('status', 'disputed')
             ->where('updated_at', '>=', now()->subMonths(6))
             ->groupBy('month')

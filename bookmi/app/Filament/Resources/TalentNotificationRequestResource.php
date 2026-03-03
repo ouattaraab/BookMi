@@ -8,6 +8,9 @@ use App\Models\TalentProfile;
 use App\Notifications\TalentAvailableNotification;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Section as InfolistSection;
+use Filament\Infolists\Components\TextEntry as InfolistTextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -88,8 +91,9 @@ class TalentNotificationRequestResource extends Resource
                     ->searchable()
                     ->placeholder('—'),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
+                    ->badge()
                     ->getStateUsing(fn (TalentNotificationRequest $r): string => $r->notified_at ? 'Notifié' : 'En attente')
                     ->color(fn (string $state): string => $state === 'Notifié' ? 'success' : 'warning'),
 
@@ -114,6 +118,10 @@ class TalentNotificationRequestResource extends Resource
                     ->nullable(),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Détail')
+                    ->icon('heroicon-o-eye'),
+
                 Tables\Actions\Action::make('send_notification')
                     ->label('Envoyer notification')
                     ->icon('heroicon-o-paper-airplane')
@@ -168,10 +176,49 @@ class TalentNotificationRequestResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            InfolistSection::make('Détail de la demande')
+                ->schema([
+                    InfolistTextEntry::make('search_query')
+                        ->label('Artiste / terme recherché')
+                        ->weight('bold')
+                        ->columnSpanFull(),
+
+                    InfolistTextEntry::make('email')
+                        ->label('Email du demandeur')
+                        ->copyable()
+                        ->placeholder('Non renseigné'),
+
+                    InfolistTextEntry::make('phone')
+                        ->label('Téléphone')
+                        ->copyable()
+                        ->placeholder('Non renseigné'),
+
+                    InfolistTextEntry::make('created_at')
+                        ->label('Date de la demande')
+                        ->dateTime('d/m/Y à H:i'),
+
+                    InfolistTextEntry::make('statut_detail')
+                        ->label('Statut')
+                        ->badge()
+                        ->getStateUsing(fn ($record): string => $record->notified_at ? 'Notifié' : 'En attente')
+                        ->color(fn (string $state): string => $state === 'Notifié' ? 'success' : 'warning'),
+
+                    InfolistTextEntry::make('notified_at')
+                        ->label('Notifié le')
+                        ->dateTime('d/m/Y à H:i')
+                        ->placeholder('Pas encore notifié'),
+                ])->columns(2),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTalentNotificationRequests::route('/'),
+            'view'  => Pages\ViewTalentNotificationRequest::route('/{record}'),
         ];
     }
 }

@@ -155,8 +155,9 @@ class BookingRequestResource extends Resource
                     ->limit(30)
                     ->tooltip(fn ($state) => $state),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
+                    ->badge()
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === BookingStatus::Pending || $state === 'pending'     => 'En attente',
                         $state === BookingStatus::Accepted || $state === 'accepted'   => 'Acceptée',
