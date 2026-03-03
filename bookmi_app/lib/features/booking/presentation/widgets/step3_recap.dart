@@ -117,15 +117,9 @@ class _Step3RecapState extends State<Step3Recap> {
                 const SizedBox(height: BookmiSpacing.spaceMd),
                 _RecapRow(
                   label: widget.packageName,
-                  value: TalentCard.formatCachet(widget.cachetAmount),
-                ),
-                const Divider(color: Colors.white12, height: 24),
-                _RecapRow(
-                  label: 'Commission BookMi (15%)',
-                  value: TalentCard.formatCachet(widget.commissionAmount),
-                  labelColor: Colors.white.withValues(alpha: 0.6),
-                  valueColor: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 13,
+                  value: TalentCard.formatCachet(
+                    widget.cachetAmount + widget.commissionAmount,
+                  ),
                 ),
                 if (widget.travelCost > 0) ...[
                   const SizedBox(height: BookmiSpacing.spaceSm),

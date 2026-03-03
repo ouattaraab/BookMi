@@ -200,13 +200,27 @@
 <div class="section-title">Récapitulatif financier</div>
 <table class="amount-table">
     <tr>
-        <td>Cachet artiste</td>
-        <td>{{ number_format($booking->cachet_amount, 0, ',', ' ') }} XOF</td>
+        <td>Prestation</td>
+        <td>{{ number_format($booking->cachet_amount + $booking->commission_amount, 0, ',', ' ') }} XOF</td>
     </tr>
+    @if($booking->express_fee > 0)
     <tr>
-        <td>Frais de service BookMi ({{ $commissionRate }}%)</td>
-        <td>{{ number_format($booking->commission_amount, 0, ',', ' ') }} XOF</td>
+        <td>⚡ Supplément express</td>
+        <td>{{ number_format($booking->express_fee, 0, ',', ' ') }} XOF</td>
     </tr>
+    @endif
+    @if($booking->travel_cost > 0)
+    <tr>
+        <td>Frais de déplacement</td>
+        <td>{{ number_format($booking->travel_cost, 0, ',', ' ') }} XOF</td>
+    </tr>
+    @endif
+    @if($booking->discount_amount > 0)
+    <tr>
+        <td>Réduction</td>
+        <td>-{{ number_format($booking->discount_amount, 0, ',', ' ') }} XOF</td>
+    </tr>
+    @endif
     <tr class="total">
         <td>Total payé</td>
         <td>{{ number_format($booking->total_amount, 0, ',', ' ') }} XOF</td>

@@ -265,19 +265,24 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 const SizedBox(height: BookmiSpacing.spaceSm),
                 _DevisRow(
                   label: 'Cachet',
-                  value: TalentCard.formatCachet(booking.cachetAmount),
+                  value: TalentCard.formatCachet(
+                    isTalent
+                        ? booking.cachetAmount
+                        : booking.cachetAmount + booking.commissionAmount,
+                  ),
                 ),
+                if (isTalent)
+                  _DevisRow(
+                    label: 'Commission (15%)',
+                    value: TalentCard.formatCachet(booking.commissionAmount),
+                    small: true,
+                  ),
                 if (booking.travelCost > 0)
                   _DevisRow(
                     label: 'Frais de déplacement',
                     value: TalentCard.formatCachet(booking.travelCost),
                     small: true,
                   ),
-                _DevisRow(
-                  label: 'Commission (15%)',
-                  value: TalentCard.formatCachet(booking.commissionAmount),
-                  small: true,
-                ),
                 if (booking.discountAmount > 0)
                   _DevisRow(
                     label: booking.appliedPromoCode != null

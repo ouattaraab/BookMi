@@ -162,7 +162,7 @@ main.page-content { background: #F2EFE9 !important; }
                             <div style="flex:1;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px;">
                                     <span style="font-weight:800;font-size:0.9rem;color:#1A2744;">{{ $pkg->name }}</span>
-                                    <span style="font-weight:900;font-size:0.95rem;color:#FF6B35;flex-shrink:0;">{{ number_format($pkg->cachet_amount, 0, ',', ' ') }} <span style="font-size:0.72rem;font-weight:700;color:#B0A89E;">FCFA</span></span>
+                                    <span style="font-weight:900;font-size:0.95rem;color:#FF6B35;flex-shrink:0;">{{ number_format((int) round($pkg->cachet_amount * 1.15), 0, ',', ' ') }} <span style="font-size:0.72rem;font-weight:700;color:#B0A89E;">FCFA</span></span>
                                 </div>
                                 @if($pkg->description)
                                 <p style="font-size:0.78rem;color:#8A8278;margin:0;line-height:1.5;font-weight:500;">{{ $pkg->description }}</p>
@@ -295,16 +295,10 @@ main.page-content { background: #F2EFE9 !important; }
             <div style="background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:22px 24px;">
                 <h3 style="font-size:0.88rem;font-weight:900;color:#1A2744;margin:0 0 16px 0;text-transform:uppercase;letter-spacing:0.04em;">Récapitulatif</h3>
 
-                {{-- Cachet --}}
+                {{-- Cachet (commission incluse) --}}
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EAE7E0;">
-                    <span style="font-size:0.82rem;font-weight:600;color:#6B7280;">Cachet talent</span>
-                    <span style="font-size:0.88rem;font-weight:800;color:#1A2744;" x-text="fmt(selectedAmount) + '\u202f' + 'FCFA'">{{ number_format($talent->servicePackages->isNotEmpty() ? $talent->servicePackages->first()->cachet_amount : ($talent->cachet_amount ?? 0), 0, ',', ' ') }} FCFA</span>
-                </div>
-
-                {{-- Commission --}}
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EAE7E0;">
-                    <span style="font-size:0.82rem;font-weight:600;color:#6B7280;">Commission BookMi (15%)</span>
-                    <span style="font-size:0.88rem;font-weight:800;color:#1A2744;" x-text="fmt(commission) + '\u202f' + 'FCFA'"></span>
+                    <span style="font-size:0.82rem;font-weight:600;color:#6B7280;">Prestation</span>
+                    <span style="font-size:0.88rem;font-weight:800;color:#1A2744;" x-text="fmt(selectedAmount + commission) + '\u202f' + 'FCFA'">{{ number_format((int) round(($talent->servicePackages->isNotEmpty() ? $talent->servicePackages->first()->cachet_amount : ($talent->cachet_amount ?? 0)) * 1.15), 0, ',', ' ') }} FCFA</span>
                 </div>
 
                 {{-- Express fee (dynamic) --}}
