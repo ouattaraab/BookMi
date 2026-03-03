@@ -152,7 +152,7 @@ class PayoutMethodResource extends Resource
                             ?? implode(' / ', array_filter(array_values($details)));
                     }),
 
-                Tables\Columns\BadgeColumn::make('payout_method_status')
+                Tables\Columns\TextColumn::make('payout_method_status')->badge()
                     ->label('Statut')
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'verified' => 'Validé',

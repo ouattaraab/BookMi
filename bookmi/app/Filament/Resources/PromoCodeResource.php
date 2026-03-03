@@ -102,7 +102,7 @@ class PromoCodeResource extends Resource
                     ->copyable()
                     ->weight('bold'),
 
-                Tables\Columns\BadgeColumn::make('type')
+                Tables\Columns\TextColumn::make('type')->badge()
                     ->label('Type')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'percentage' => 'Pourcentage',

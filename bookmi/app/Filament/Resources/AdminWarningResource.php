@@ -150,7 +150,7 @@ class AdminWarningResource extends Resource
                     ->limit(50)
                     ->tooltip(fn ($state) => $state),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')->badge()
                     ->label('Statut')
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === WarningStatus::Active || $state === 'active'     => 'Actif',

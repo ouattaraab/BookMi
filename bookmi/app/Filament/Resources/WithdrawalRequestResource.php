@@ -132,7 +132,7 @@ class WithdrawalRequestResource extends Resource
                         return $details['phone'] ?? $details['account_number'] ?? '—';
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')->badge()
                     ->label('Statut')
                     ->formatStateUsing(fn (WithdrawalStatus $state) => $state->label())
                     ->color(fn (WithdrawalStatus $state) => $state->color()),

@@ -187,7 +187,7 @@ class IdentityVerificationResource extends Resource
                     ->label('Type de document')
                     ->searchable(),
 
-                Tables\Columns\BadgeColumn::make('verification_status')
+                Tables\Columns\TextColumn::make('verification_status')->badge()
                     ->label('Statut')
                     ->formatStateUsing(fn ($state): string => $state instanceof VerificationStatus ? $state->label() : (string) $state)
                     ->color(fn ($state): string => match (true) {

@@ -113,7 +113,7 @@ class AdminTaskResource extends Resource
                         )
                     ),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')->badge()
                     ->label('Statut')
                     ->getStateUsing(fn (AdminTask $record): string => match ($record->status) {
                         'pending'     => 'En attente',
@@ -128,7 +128,7 @@ class AdminTaskResource extends Resource
                         default       => 'gray',
                     }),
 
-                Tables\Columns\BadgeColumn::make('priority')
+                Tables\Columns\TextColumn::make('priority')->badge()
                     ->label('Priorité')
                     ->getStateUsing(fn (AdminTask $record): string => match ($record->priority) {
                         'low'    => 'Basse',

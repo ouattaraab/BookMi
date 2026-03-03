@@ -246,6 +246,14 @@ class TalentProfile extends Model
     }
 
     /**
+     * @return HasMany<BookingRequest, $this>
+     */
+    public function bookingRequests(): HasMany
+    {
+        return $this->hasMany(BookingRequest::class);
+    }
+
+    /**
      * @return HasMany<\App\Models\TalentFollow, $this>
      */
     public function followers(): HasMany

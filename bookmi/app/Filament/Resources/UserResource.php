@@ -119,7 +119,7 @@ class UserResource extends Resource
                     ->trueColor('success')
                     ->falseColor('gray'),
 
-                Tables\Columns\BadgeColumn::make('suspended_status')
+                Tables\Columns\TextColumn::make('suspended_status')->badge()
                     ->label('Statut')
                     ->getStateUsing(fn (User $record): string => $record->is_suspended ? 'Suspendu' : 'Actif')
                     ->color(fn (string $state): string => match ($state) {

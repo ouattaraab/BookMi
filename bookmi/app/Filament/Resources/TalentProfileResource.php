@@ -157,7 +157,7 @@ class TalentProfileResource extends Resource
                     ->searchable()
                     ->default('—'),
 
-                Tables\Columns\BadgeColumn::make('talentProfile.talent_level')
+                Tables\Columns\TextColumn::make('talentProfile.talent_level')->badge()
                     ->label('Niveau')
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === TalentLevel::NOUVEAU || $state === 'nouveau'     => 'Nouveau',

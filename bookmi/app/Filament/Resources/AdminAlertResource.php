@@ -169,7 +169,7 @@ class AdminAlertResource extends Resource
                     ->searchable()
                     ->limit(50),
 
-                Tables\Columns\BadgeColumn::make('type')
+                Tables\Columns\TextColumn::make('type')->badge()
                     ->label('Type')
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === AlertType::LowRating || $state === 'low_rating'                     => 'Note basse',
@@ -184,7 +184,7 @@ class AdminAlertResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\BadgeColumn::make('severity')
+                Tables\Columns\TextColumn::make('severity')->badge()
                     ->label('Sévérité')
                     ->formatStateUsing(fn ($state): string => match (true) {
                         $state === AlertSeverity::Critical || $state === 'critical' => 'Critique',
@@ -199,7 +199,7 @@ class AdminAlertResource extends Resource
                         default => 'gray',
                     }),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')->badge()
                     ->label('Statut')
                     ->color(fn ($state): string => match ($state) {
                         'open'      => 'warning',
