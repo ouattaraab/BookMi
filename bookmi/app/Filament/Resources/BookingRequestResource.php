@@ -98,7 +98,7 @@ class BookingRequestResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('mediator_id')
                         ->label('Médiateur assigné')
-                        ->options(User::role('admin')->pluck('email', 'id'))
+                        ->options(User::where('is_admin', true)->pluck('email', 'id'))
                         ->searchable()
                         ->nullable(),
                     Forms\Components\Textarea::make('mediation_notes')
@@ -341,7 +341,7 @@ class BookingRequestResource extends Resource
                     ->form([
                         Forms\Components\Select::make('mediator_id')
                             ->label('Médiateur')
-                            ->options(User::role('admin')->pluck('email', 'id'))
+                            ->options(User::where('is_admin', true)->pluck('email', 'id'))
                             ->searchable()
                             ->required(),
                         Forms\Components\Textarea::make('mediation_notes')

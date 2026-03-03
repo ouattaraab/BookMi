@@ -147,7 +147,6 @@ class QualityDashboardPage extends Page
                 $q->where('status', 'disputed')->where('updated_at', '>=', now()->subDays(30));
             }])
             ->having('disputes_last_30d', '>=', 2)
-            ->select('id', 'user_id', 'stage_name', 'city')
             ->orderByDesc('disputes_last_30d')
             ->limit(20)
             ->get()
