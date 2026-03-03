@@ -180,7 +180,7 @@
         ))->isNotEmpty();
 @endphp
 
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:860px;"
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;"
     x-data="paymentPage({{ $isVerified ? 'true' : 'false' }})">
 
     {{-- Header --}}

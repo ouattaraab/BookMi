@@ -40,7 +40,7 @@
 @endsection
 
 @section('content')
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:1100px;">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;">
 
     {{-- Header --}}
     <div class="earn-fade" style="animation-delay:0ms;margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">

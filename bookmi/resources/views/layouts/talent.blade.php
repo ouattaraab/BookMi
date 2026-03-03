@@ -27,6 +27,8 @@
     $initials = mb_strtoupper(mb_substr($user->first_name, 0, 1) . mb_substr($user->last_name, 0, 1));
     $displayName = $user->first_name . ' ' . $user->last_name;
     $stageName = $user->talentProfile?->stage_name ?? $displayName;
+    $photoUrl = $user->talentProfile?->cover_photo_url ?? $user->avatar_url ?? null;
+    $photoTs  = $user->talentProfile?->updated_at?->timestamp ?? $user->updated_at->timestamp;
 @endphp
 
 <div
@@ -108,10 +110,16 @@
         {{-- User + Logout --}}
         <div class="p-4 space-y-3">
             <div class="flex items-center gap-3">
+                @if($photoUrl)
+                <img src="{{ $photoUrl }}?t={{ $photoTs }}" alt="{{ $initials }}"
+                     class="w-9 h-9 rounded-full flex-shrink-0 object-cover"
+                     style="border:1.5px solid rgba(255,255,255,0.4)">
+                @else
                 <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                      style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.4)">
                     {{ $initials }}
                 </div>
+                @endif
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-white truncate">{{ $stageName }}</p>
                     <p class="text-xs truncate" style="color:rgba(255,255,255,0.55)">Talent</p>
@@ -138,7 +146,7 @@
         {{-- Header --}}
         <header
             class="flex-shrink-0 px-4 md:px-8 py-4 flex items-center justify-between"
-            style="background:rgba(255,255,255,0.82);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,107,53,0.10);box-shadow:0 1px 8px rgba(255,107,53,0.06)"
+            style="position:relative;z-index:30;background:rgba(255,255,255,0.82);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,107,53,0.10);box-shadow:0 1px 8px rgba(255,107,53,0.06)"
         >
             <div class="flex items-center gap-3">
                 <button class="md:hidden text-gray-600 hover:text-gray-900 p-1" @click="sidebarOpen = true">
@@ -162,10 +170,16 @@
 
             <div class="flex items-center gap-3">
                 <livewire:shared.notification-bell accent-color="#FF6B35" />
+                @if($photoUrl)
+                <img src="{{ $photoUrl }}?t={{ $photoTs }}" alt="{{ $initials }}"
+                     class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                     style="border:1.5px solid rgba(255,107,53,0.35)">
+                @else
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
                      style="background:linear-gradient(135deg,#FF6B35,#C85A20)">
                     {{ $initials }}
                 </div>
+                @endif
             </div>
         </header>
 

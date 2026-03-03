@@ -69,7 +69,7 @@
     $maxRevenu = max(1, collect($financial['mensuels'])->max('revenus'));
 @endphp
 
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:1100px;">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;">
 
     {{-- Header --}}
     <div class="stat-fade" style="animation-delay:0ms;margin-bottom:28px;">

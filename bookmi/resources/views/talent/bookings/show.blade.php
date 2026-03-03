@@ -3,7 +3,7 @@
 @section('title', 'Détail réservation — BookMi Talent')
 
 @section('content')
-<div class="space-y-6 max-w-2xl">
+<div class="space-y-6 w-full">
 
     {{-- Flash messages --}}
     @if(session('success'))
