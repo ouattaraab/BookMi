@@ -96,7 +96,7 @@ main.page-content { background: #F2EFE9 !important; }
     };
 @endphp
 
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:780px;">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;">
 
     {{-- Flash --}}
     @if(session('success'))

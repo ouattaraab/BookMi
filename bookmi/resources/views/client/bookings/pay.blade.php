@@ -90,7 +90,7 @@ main.page-content { background: #F2EFE9 !important; }
     $methodLabel = session('payment_method_label');
 @endphp
 
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:620px;">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;">
 
     {{-- Flash errors --}}
     @if($errors->any())

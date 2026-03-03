@@ -84,7 +84,7 @@ main.page-content { background: #F2EFE9 !important; }
     $twoFaEnabled = $user->two_factor_confirmed_at !== null || $user->two_factor_type !== null;
     $twoFaType = $user->two_factor_type ?? null;
 @endphp
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:720px;">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;">
 
     {{-- Flash --}}
     @if(session('success'))
@@ -152,9 +152,9 @@ main.page-content { background: #F2EFE9 !important; }
 
                 {{-- Avatar --}}
                 <div style="display:flex;align-items:center;gap:20px;">
-                    <div style="position:relative;flex-shrink:0;">
+                    <div id="avatar-preview-container" style="position:relative;flex-shrink:0;">
                         @if($user->avatar_url)
-                            <img src="{{ $user->avatar_url }}" alt="Avatar"
+                            <img src="{{ $user->avatar_url }}?t={{ $user->updated_at->timestamp }}" alt="Avatar"
                                 style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #FF6B35;box-shadow:0 4px 12px rgba(255,107,53,0.2);">
                         @else
                             <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#FF6B35,#FF8C42);display:flex;align-items:center;justify-content:center;border:3px solid rgba(255,107,53,0.3);box-shadow:0 4px 12px rgba(255,107,53,0.2);">
@@ -236,17 +236,22 @@ main.page-content { background: #F2EFE9 !important; }
             const label = document.getElementById('avatar-filename');
             label.textContent = '📎 ' + file.name;
             label.style.display = 'block';
-            // Preview: update the avatar display
+            // Preview: update the avatar display using the dedicated container ID
             const reader = new FileReader();
             reader.onload = function(e) {
-                const avatarContainer = input.closest('[style*="position:relative"]');
-                const existing = avatarContainer.querySelector('img, div');
-                if (existing) {
-                    existing.style.display = 'none';
-                }
+                const avatarContainer = document.getElementById('avatar-preview-container');
+                if (!avatarContainer) return;
+                // Hide all existing children (img or initials div)
+                Array.from(avatarContainer.children).forEach(function(el) {
+                    el.style.display = 'none';
+                });
+                // Remove any previously created preview
+                const oldPreview = avatarContainer.querySelector('.avatar-preview-img');
+                if (oldPreview) oldPreview.remove();
                 const preview = document.createElement('img');
                 preview.src = e.target.result;
-                preview.style = 'width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #FF6B35;box-shadow:0 4px 12px rgba(255,107,53,0.2);';
+                preview.className = 'avatar-preview-img';
+                preview.style.cssText = 'width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid #FF6B35;box-shadow:0 4px 12px rgba(255,107,53,0.2);';
                 avatarContainer.prepend(preview);
             };
             reader.readAsDataURL(file);

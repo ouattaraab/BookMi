@@ -197,7 +197,7 @@
         {{-- Header --}}
         <header
             class="flex-shrink-0 px-4 md:px-8 py-4 flex items-center justify-between"
-            style="background:rgba(13,17,23,0.80);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.07);box-shadow:0 1px 16px rgba(0,0,0,0.3)"
+            style="position:relative;z-index:30;background:rgba(13,17,23,0.80);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.07);box-shadow:0 1px 16px rgba(0,0,0,0.3)"
         >
             <div class="flex items-center gap-3">
                 <button class="md:hidden p-1" style="color:rgba(255,255,255,0.65)" @click="sidebarOpen = true">

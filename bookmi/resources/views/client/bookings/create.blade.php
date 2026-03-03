@@ -85,7 +85,7 @@ main.page-content { background: #F2EFE9 !important; }
 @endsection
 
 @section('content')
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:860px;"
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;"
      x-data="{
         selectedPkg: {{ $talent->servicePackages->isNotEmpty() ? $talent->servicePackages->first()->id : 'null' }},
         selectedAmount: {{ $talent->servicePackages->isNotEmpty() ? $talent->servicePackages->first()->cachet_amount : ($talent->cachet_amount ?? 0) }},

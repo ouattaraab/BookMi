@@ -81,7 +81,7 @@ main.page-content { background: #F2EFE9 !important; }
 @endsection
 
 @section('content')
-<div style="font-family:'Nunito',sans-serif;color:#1A2744;max-width:1100px;">
+<div style="font-family:'Nunito',sans-serif;color:#1A2744;width:100%;">
 
     {{-- Flash messages --}}
     @if(session('success'))
