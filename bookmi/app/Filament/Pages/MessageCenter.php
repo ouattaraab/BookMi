@@ -23,9 +23,9 @@ class MessageCenter extends Page implements HasForms
     use InteractsWithForms;
 
     protected static ?string $navigationIcon  = 'heroicon-o-megaphone';
-    protected static ?string $navigationGroup = 'Communication';
+    protected static ?string $navigationGroup = 'Marketing';
     protected static ?string $navigationLabel = 'Centre de messagerie';
-    protected static ?int    $navigationSort  = 20;
+    protected static ?int    $navigationSort  = 2;
     protected static string  $view            = 'filament.pages.message-center';
 
     public static function canAccess(): bool
