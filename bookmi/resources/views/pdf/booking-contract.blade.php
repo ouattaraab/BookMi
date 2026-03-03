@@ -236,15 +236,15 @@
             </tr>
             <tr>
                 <td>Cachet artiste (100% reversé au prestataire)</td>
-                <td style="text-align:right;">{{ number_format($booking->cachet_amount, 0, ',', ' ') }}</td>
+                <td style="text-align:right;">{{ number_format($booking->cachet_amount, 0, ',', '.') }}</td>
             </tr>
             <tr>
                 <td>Frais de service BookMi ({{ (int) config('bookmi.commission_rate', 15) }}%)</td>
-                <td style="text-align:right;">{{ number_format($booking->commission_amount, 0, ',', ' ') }}</td>
+                <td style="text-align:right;">{{ number_format($booking->commission_amount, 0, ',', '.') }}</td>
             </tr>
             <tr class="total">
                 <td>Total dû par le client</td>
-                <td style="text-align:right;">{{ number_format($booking->total_amount, 0, ',', ' ') }}</td>
+                <td style="text-align:right;">{{ number_format($booking->total_amount, 0, ',', '.') }}</td>
             </tr>
         </table>
         <p style="font-size:10px; color:#555; margin-top:6px;">

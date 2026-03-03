@@ -88,28 +88,28 @@
                 <div class="icon-badge" style="background:#F5F3FF;border-color:rgba(124,58,237,0.20);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#7C3AED;">{{ number_format($profileViews['today'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#7C3AED;">{{ number_format($profileViews['today'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Aujourd'hui</p>
             </div>
             <div class="kpi-card">
                 <div class="icon-badge" style="background:#EFF6FF;border-color:rgba(29,78,216,0.20);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#1D4ED8;">{{ number_format($profileViews['week'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#1D4ED8;">{{ number_format($profileViews['week'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Cette semaine</p>
             </div>
             <div class="kpi-card">
                 <div class="icon-badge" style="background:#F0FDF4;border-color:rgba(21,128,61,0.22);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#15803D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#15803D;">{{ number_format($profileViews['month'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#15803D;">{{ number_format($profileViews['month'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Ce mois</p>
             </div>
             <div class="kpi-card">
                 <div class="icon-badge" style="background:#FFF4EF;border-color:rgba(255,107,53,0.25);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#FF6B35;">{{ number_format($profileViews['total'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#FF6B35;">{{ number_format($profileViews['total'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Total</p>
             </div>
         </div>
@@ -128,7 +128,7 @@
                 <div class="icon-badge" style="background:#FFF4EF;border-color:rgba(255,107,53,0.25);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#FF6B35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#FF6B35;">{{ number_format($financial['revenusMoisCourant'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#FF6B35;">{{ number_format($financial['revenusMoisCourant'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Revenus ce mois (FCFA)</p>
                 @if($financial['comparaison'] != 0)
                 <div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;font-size:0.72rem;font-weight:700;
@@ -148,7 +148,7 @@
                 <div class="icon-badge" style="background:#F0FDF4;border-color:rgba(21,128,61,0.22);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#15803D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#15803D;">{{ number_format($financial['revenusTotal'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#15803D;">{{ number_format($financial['revenusTotal'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Total revenus (FCFA)</p>
             </div>
 
@@ -157,7 +157,7 @@
                 <div class="icon-badge" style="background:#FFF3E0;border-color:rgba(180,83,9,0.20);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#B45309;">{{ number_format($financial['nombrePrestations'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#B45309;">{{ number_format($financial['nombrePrestations'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Prestations payées</p>
             </div>
 
@@ -166,7 +166,7 @@
                 <div class="icon-badge" style="background:#EFF6FF;border-color:rgba(29,78,216,0.20);">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
                 </div>
-                <p class="kpi-value" style="color:#1D4ED8;">{{ number_format($financial['cachetMoyen'], 0, ',', ' ') }}</p>
+                <p class="kpi-value" style="color:#1D4ED8;">{{ number_format($financial['cachetMoyen'], 0, ',', '.') }}</p>
                 <p class="kpi-label">Cachet moyen (FCFA)</p>
             </div>
 
@@ -227,7 +227,7 @@
                         <span style="font-size:0.82rem;font-weight:600;color:#4A4540;">{{ $bs['label'] }}</span>
                     </div>
                     <span style="font-size:1.1rem;font-weight:900;color:{{ $bs['color'] }};letter-spacing:-0.03em;flex-shrink:0;">
-                        {{ number_format($bs['value'], 0, ',', ' ') }}
+                        {{ number_format($bs['value'], 0, ',', '.') }}
                     </span>
                 </div>
                 @if(!$loop->last)
@@ -292,11 +292,11 @@
                                 <div style="width:80px;background:#EAE7E0;border-radius:9999px;height:5px;overflow:hidden;">
                                     <div style="height:5px;border-radius:9999px;background:#FF6B35;width:{{ round(($row->revenue / $maxMonthRevenue) * 100) }}%"></div>
                                 </div>
-                                <span style="font-size:0.875rem;font-weight:700;color:#FF6B35;min-width:80px;text-align:right;">{{ number_format($row->revenue, 0, ',', ' ') }}</span>
+                                <span style="font-size:0.875rem;font-weight:700;color:#FF6B35;min-width:80px;text-align:right;">{{ number_format($row->revenue, 0, ',', '.') }}</span>
                             </div>
                         </td>
                         <td style="padding:13px 24px;text-align:right;font-size:0.82rem;color:#8A8278;">
-                            {{ $row->count > 0 ? number_format($row->revenue / $row->count, 0, ',', ' ') : '—' }}
+                            {{ $row->count > 0 ? number_format($row->revenue / $row->count, 0, ',', '.') : '—' }}
                         </td>
                     </tr>
                     @endforeach

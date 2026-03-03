@@ -61,7 +61,7 @@ main.page-content { background: #F2EFE9 !important; }
                     @endif
                     @if($talent->cachet_amount)
                         <span class="flex items-center gap-1 font-semibold text-gray-700">
-                            Cachet : {{ number_format($talent->cachet_amount, 0, ',', ' ') }} XOF
+                            Cachet : {{ number_format($talent->cachet_amount, 0, ',', '.') }} XOF
                         </span>
                     @endif
                 </div>
@@ -81,7 +81,7 @@ main.page-content { background: #F2EFE9 !important; }
                 <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-800 border border-blue-100">
                     {{ $pkg->name ?? $pkg->title ?? 'Package' }}
                     @if($pkg->price)
-                        — {{ number_format($pkg->price, 0, ',', ' ') }} XOF
+                        — {{ number_format($pkg->price, 0, ',', '.') }} XOF
                     @endif
                 </span>
                 @endforeach
@@ -130,7 +130,7 @@ main.page-content { background: #F2EFE9 !important; }
                                 {{ $booking->servicePackage?->name ?? $booking->servicePackage?->title ?? '—' }}
                             </td>
                             <td class="px-6 py-4 font-semibold text-gray-800">
-                                {{ $booking->total_amount ? number_format($booking->total_amount, 0, ',', ' ') . ' XOF' : '—' }}
+                                {{ $booking->total_amount ? number_format($booking->total_amount, 0, ',', '.') . ' XOF' : '—' }}
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold text-white" style="background:{{ $sc }}">

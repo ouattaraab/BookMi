@@ -367,7 +367,7 @@
                 <div>
                     <p style="font-size:0.75rem;font-weight:700;color:rgba(255,255,255,0.70);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 5px;">Solde disponible</p>
                     <p style="font-size:2rem;font-weight:900;color:#FFFFFF;margin:0;letter-spacing:-0.04em;line-height:1.1;">
-                        {{ number_format($availableBalance, 0, ',', ' ') }}
+                        {{ number_format($availableBalance, 0, ',', '.') }}
                         <span style="font-size:0.95rem;font-weight:600;color:rgba(255,255,255,0.65);">XOF</span>
                     </p>
                 </div>
@@ -412,7 +412,7 @@
                             </td>
                             <td style="padding:13px 16px;text-align:right;">
                                 <span style="font-size:0.95rem;font-weight:900;color:#1A2744;letter-spacing:-0.02em;">
-                                    {{ number_format($req->amount, 0, ',', ' ') }}
+                                    {{ number_format($req->amount, 0, ',', '.') }}
                                 </span>
                             </td>
                             <td style="padding:13px 16px;font-size:0.82rem;color:#4A4540;white-space:nowrap;">{{ $methodLabel }}</td>
@@ -483,7 +483,7 @@
                                 value="{{ old('amount') }}">
                             @error('amount') <p style="color:#DC2626;font-size:0.78rem;margin:6px 0 0;">{{ $message }}</p> @enderror
                             <p style="font-size:0.73rem;color:#8A8278;margin:5px 0 0;">
-                                Disponible : <strong style="color:#1A2744;">{{ number_format($availableBalance, 0, ',', ' ') }} XOF</strong>
+                                Disponible : <strong style="color:#1A2744;">{{ number_format($availableBalance, 0, ',', '.') }} XOF</strong>
                                 — Minimum : 1 000 XOF
                             </p>
                         </div>

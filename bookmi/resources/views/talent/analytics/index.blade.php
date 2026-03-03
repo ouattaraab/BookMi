@@ -22,7 +22,7 @@
             <p class="text-xs text-gray-500 mt-1">Terminées</p>
         </div>
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-            <p class="text-2xl font-extrabold" style="color:#9C27B0">{{ number_format($stats['revenue'], 0, ',', ' ') }}</p>
+            <p class="text-2xl font-extrabold" style="color:#9C27B0">{{ number_format($stats['revenue'], 0, ',', '.') }}</p>
             <p class="text-xs text-gray-500 mt-1">Revenus (FCFA)</p>
         </div>
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
@@ -49,7 +49,7 @@
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
             <h3 class="text-sm font-bold text-gray-900 mb-3">Revenu moyen par prestation</h3>
             @php $avgRevenue = $stats['completed'] > 0 ? $stats['revenue'] / $stats['completed'] : 0; @endphp
-            <p class="text-2xl font-bold" style="color:#FF6B35">{{ number_format($avgRevenue, 0, ',', ' ') }} <span class="text-sm font-normal text-gray-400">FCFA</span></p>
+            <p class="text-2xl font-bold" style="color:#FF6B35">{{ number_format($avgRevenue, 0, ',', '.') }} <span class="text-sm font-normal text-gray-400">FCFA</span></p>
         </div>
     </div>
     @endif
@@ -91,11 +91,11 @@
                                     <div class="w-24 bg-gray-100 rounded-full h-1.5 overflow-hidden">
                                         <div class="h-1.5 rounded-full" style="width:{{ round(($row->revenue / $maxRevenue) * 100) }}%; background:#FF6B35"></div>
                                     </div>
-                                    <span class="text-sm font-semibold" style="color:#FF6B35">{{ number_format($row->revenue, 0, ',', ' ') }}</span>
+                                    <span class="text-sm font-semibold" style="color:#FF6B35">{{ number_format($row->revenue, 0, ',', '.') }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right text-sm text-gray-500">
-                                {{ $row->count > 0 ? number_format($row->revenue / $row->count, 0, ',', ' ') : '—' }}
+                                {{ $row->count > 0 ? number_format($row->revenue / $row->count, 0, ',', '.') : '—' }}
                             </td>
                         </tr>
                         @endforeach

@@ -296,7 +296,7 @@
                     {{-- Prix min --}}
                     @if($minPrice)
                         <span style="color:#1AB3FF; font-size:0.875rem; font-weight:800;">
-                            Dès {{ number_format($minPrice, 0, ',', ' ') }} FCFA
+                            Dès {{ number_format($minPrice, 0, ',', '.') }} FCFA
                         </span>
                     @endif
                 </div>
@@ -415,7 +415,7 @@
                                 </div>
                                 <div style="text-align:right; flex-shrink:0;">
                                     <p style="font-size:1.3rem; font-weight:900; color:#1AB3FF; margin:0; line-height:1;">
-                                        {{ number_format($pkg->cachet_amount, 0, ',', ' ') }}
+                                        {{ number_format($pkg->cachet_amount, 0, ',', '.') }}
                                     </p>
                                     <p style="color:rgba(255,255,255,0.3); font-size:0.72rem; font-weight:600; margin:2px 0 0;">FCFA</p>
                                     <p style="font-size:0.72rem;color:#B0A89E;font-weight:600;margin:4px 0 0;text-align:right;">
@@ -687,7 +687,7 @@
                     <div style="background:rgba(26,179,255,0.08); border:1px solid rgba(26,179,255,0.2); border-radius:12px; padding:12px 16px; margin-bottom:1.25rem;">
                         <p style="color:rgba(255,255,255,0.4); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 2px;">À partir de</p>
                         <p style="font-size:1.7rem; font-weight:900; color:#1AB3FF; margin:0; line-height:1.1;">
-                            {{ number_format($minPrice, 0, ',', ' ') }}
+                            {{ number_format($minPrice, 0, ',', '.') }}
                             <span style="font-size:0.85rem; font-weight:700; color:rgba(26,179,255,0.7);">FCFA</span>
                         </p>
                     </div>

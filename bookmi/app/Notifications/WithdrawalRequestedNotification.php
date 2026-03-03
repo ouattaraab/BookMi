@@ -29,7 +29,7 @@ class WithdrawalRequestedNotification extends Notification
         $talentName = $profile?->stage_name
             ?? trim(($profile?->user?->first_name ?? '') . ' ' . ($profile?->user?->last_name ?? ''))
             ?: 'Talent';
-        $amount    = number_format($request->amount, 0, ',', ' ');
+        $amount    = number_format($request->amount, 0, ',', '.');
         $method    = $request->payout_method?->value ?? '—';
         $phone     = data_get($request->payout_details, 'phone', '—');
         $adminUrl  = url('/admin/withdrawal-requests/' . $request->id);

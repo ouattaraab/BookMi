@@ -6,7 +6,7 @@
             <div>
                 <p class="text-sm text-primary-700 dark:text-primary-300 font-medium">Solde disponible</p>
                 <p class="text-2xl font-bold text-primary-900 dark:text-primary-100 mt-0.5">
-                    {{ number_format($availableBalance, 0, ',', ' ') }} XOF
+                    {{ number_format($availableBalance, 0, ',', '.') }} XOF
                 </p>
             </div>
             <x-heroicon-o-wallet class="w-10 h-10 text-primary-400" />

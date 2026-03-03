@@ -34,7 +34,7 @@ class PaymentReceiptClientNotification extends Notification
             ?: 'Talent';
         $packageName = $booking?->servicePackage?->name ?? ($booking?->package_snapshot['name'] ?? '—');
         $eventDate   = $booking?->event_date?->translatedFormat('d F Y') ?? '—';
-        $totalAmount = number_format($transaction->amount ?? 0, 0, ',', ' ');
+        $totalAmount = number_format($transaction->amount ?? 0, 0, ',', '.');
         $reference   = $transaction->idempotency_key ?? $transaction->gateway_reference ?? '—';
         $paidAt      = $transaction->completed_at?->translatedFormat('d F Y à H:i') ?? now()->translatedFormat('d F Y à H:i');
 

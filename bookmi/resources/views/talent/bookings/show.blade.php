@@ -86,14 +86,14 @@
                 {{-- Cachet --}}
                 <div class="rounded-xl p-4" style="background:#fff3e0">
                     <p class="text-xs uppercase tracking-wider mb-1" style="color:#C85A20">Cachet</p>
-                    <p class="font-bold text-lg" style="color:#FF6B35">{{ number_format($booking->cachet_amount, 0, ',', ' ') }} FCFA</p>
+                    <p class="font-bold text-lg" style="color:#FF6B35">{{ number_format($booking->cachet_amount, 0, ',', '.') }} FCFA</p>
                 </div>
 
                 {{-- Total --}}
                 @if($booking->total_amount)
                 <div class="bg-gray-50 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Total client</p>
-                    <p class="font-semibold text-gray-900">{{ number_format($booking->total_amount, 0, ',', ' ') }} FCFA</p>
+                    <p class="font-semibold text-gray-900">{{ number_format($booking->total_amount, 0, ',', '.') }} FCFA</p>
                 </div>
                 @endif
 
@@ -101,7 +101,7 @@
                 @if($booking->commission_amount)
                 <div class="bg-gray-50 rounded-xl p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Commission BookMi</p>
-                    <p class="font-semibold text-gray-900">{{ number_format($booking->commission_amount, 0, ',', ' ') }} FCFA</p>
+                    <p class="font-semibold text-gray-900">{{ number_format($booking->commission_amount, 0, ',', '.') }} FCFA</p>
                 </div>
                 @endif
             </div>

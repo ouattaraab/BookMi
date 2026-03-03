@@ -29,7 +29,7 @@ class NotifyClientOfBookingAccepted implements ShouldQueue
         $talentName  = $booking->talentProfile?->stage_name
             ?? trim(($booking->talentProfile?->user?->first_name ?? '') . ' ' . ($booking->talentProfile?->user?->last_name ?? ''))
             ?: 'Le talent';
-        $amount = number_format($booking->total_amount ?? 0, 0, ',', ' ');
+        $amount = number_format($booking->total_amount ?? 0, 0, ',', '.');
 
         SendPushNotification::dispatch(
             $client->id,

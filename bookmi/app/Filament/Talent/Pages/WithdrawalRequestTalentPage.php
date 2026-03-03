@@ -99,7 +99,7 @@ class WithdrawalRequestTalentPage extends Page implements HasForms
                             ->minValue(1000)
                             ->maxValue($max)
                             ->required()
-                            ->helperText('Solde disponible : '.number_format($max, 0, ',', ' ').' XOF'),
+                            ->helperText('Solde disponible : '.number_format($max, 0, ',', '.').' XOF'),
                     ]),
             ])
             ->statePath('data');

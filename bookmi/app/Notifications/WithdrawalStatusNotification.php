@@ -28,7 +28,7 @@ class WithdrawalStatusNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $request = $this->withdrawalRequest;
-        $amount  = number_format($request->amount, 0, ',', ' ');
+        $amount  = number_format($request->amount, 0, ',', '.');
         $status  = $request->status;
 
         $subject = match($status->value) {

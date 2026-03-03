@@ -1084,7 +1084,7 @@ nav[aria-label="Pagination"] svg { display: none; }
                         @if($price > 0)
                         <div class="tc-price">
                             à partir de
-                            <strong>{{ number_format($price, 0, ',', ' ') }} F</strong>
+                            <strong>{{ number_format($price, 0, ',', '.') }} F</strong>
                         </div>
                         @else
                         <div class="tc-price"><strong style="color:rgba(255,255,255,0.4)">Sur devis</strong></div>

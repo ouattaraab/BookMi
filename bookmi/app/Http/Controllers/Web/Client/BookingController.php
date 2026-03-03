@@ -210,8 +210,8 @@ class BookingController extends Controller
             $refund = $booking->fresh()->refund_amount ?? 0;
 
             $message = match ($policy) {
-                'full_refund'    => 'Réservation annulée. Remboursement intégral de ' . number_format($refund, 0, ',', ' ') . ' FCFA en cours.',
-                'partial_refund' => 'Réservation annulée. Remboursement partiel de ' . number_format($refund, 0, ',', ' ') . ' FCFA (50%) en cours.',
+                'full_refund'    => 'Réservation annulée. Remboursement intégral de ' . number_format($refund, 0, ',', '.') . ' FCFA en cours.',
+                'partial_refund' => 'Réservation annulée. Remboursement partiel de ' . number_format($refund, 0, ',', '.') . ' FCFA (50%) en cours.',
                 default          => 'Réservation annulée.',
             };
 

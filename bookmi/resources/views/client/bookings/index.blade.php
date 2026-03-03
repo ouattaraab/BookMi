@@ -177,7 +177,7 @@ main.page-content { background: #F2EFE9 !important; }
                 </div>
                 {{-- Amount + badge --}}
                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
-                    <span style="font-weight:900;font-size:0.9rem;color:#1A2744;">{{ number_format($booking->cachet_amount, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                    <span style="font-weight:900;font-size:0.9rem;color:#1A2744;">{{ number_format($booking->cachet_amount, 0, ',', '.') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
                     <span style="font-size:0.7rem;font-weight:800;padding:4px 12px;border-radius:9999px;background:{{ $ss['bg'] }};color:{{ $ss['text'] }};border:1.5px solid {{ $ss['border'] }};letter-spacing:0.03em;">{{ $ss['label'] }}</span>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8C3BC" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 5l7 7-7 7"/></svg>

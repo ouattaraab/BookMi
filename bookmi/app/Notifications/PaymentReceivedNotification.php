@@ -33,7 +33,7 @@ class PaymentReceivedNotification extends Notification
         $clientName  = trim(($booking?->client?->first_name ?? '') . ' ' . ($booking?->client?->last_name ?? '')) ?: 'Client';
         $packageName = $booking?->servicePackage?->name ?? '—';
         $eventDate   = $booking?->event_date?->translatedFormat('d F Y') ?? '—';
-        $amount      = number_format($transaction->amount ?? 0, 0, ',', ' ');
+        $amount      = number_format($transaction->amount ?? 0, 0, ',', '.');
         $reference   = $transaction->idempotency_key ?? $transaction->gateway_reference ?? '—';
 
         return (new MailMessage())

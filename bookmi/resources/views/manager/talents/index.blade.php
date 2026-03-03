@@ -83,7 +83,7 @@ main.page-content { background: #F2EFE9 !important; }
                 {{-- Cachet --}}
                 @if($talent->cachet_amount)
                 <div class="px-6 pb-2">
-                    <p class="text-sm text-gray-500">Cachet : <span class="font-semibold text-gray-800">{{ number_format($talent->cachet_amount, 0, ',', ' ') }} XOF</span></p>
+                    <p class="text-sm text-gray-500">Cachet : <span class="font-semibold text-gray-800">{{ number_format($talent->cachet_amount, 0, ',', '.') }} XOF</span></p>
                 </div>
                 @endif
 

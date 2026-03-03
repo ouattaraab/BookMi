@@ -71,7 +71,7 @@ class AdminNotificationService
             ?? trim(($profileUser->first_name.' '.$profileUser->last_name))
             ?: 'Talent';
 
-        $amount = number_format($request->amount, 0, ',', ' ');
+        $amount = number_format($request->amount, 0, ',', '.');
 
         try {
             $admins = User::role('admin')->get();

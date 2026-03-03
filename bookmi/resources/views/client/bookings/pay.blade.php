@@ -142,12 +142,12 @@ main.page-content { background: #F2EFE9 !important; }
             @if($booking->cachet_amount)
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">Prestation</span>
-                <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->cachet_amount + $booking->commission_amount, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->cachet_amount + $booking->commission_amount, 0, ',', '.') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
             </div>
             @endif
             <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid #E5E1DA;">
                 <span style="font-size:0.95rem;font-weight:900;color:#1A2744;">Total à payer</span>
-                <span style="font-size:1.3rem;font-weight:900;color:#FF6B35;">{{ number_format($booking->total_amount, 0, ',', ' ') }} <span style="font-size:0.8rem;font-weight:700;color:rgba(255,107,53,0.7);">FCFA</span></span>
+                <span style="font-size:1.3rem;font-weight:900;color:#FF6B35;">{{ number_format($booking->total_amount, 0, ',', '.') }} <span style="font-size:0.8rem;font-weight:700;color:rgba(255,107,53,0.7);">FCFA</span></span>
             </div>
         </div>
     </div>
@@ -166,7 +166,7 @@ main.page-content { background: #F2EFE9 !important; }
         </div>
         <div style="padding:20px 22px;">
             <div style="padding:13px 16px;border-radius:12px;font-size:0.83rem;font-weight:600;background:#FFF3E0;border:1.5px solid #FCD34D;color:#92400E;margin-bottom:18px;line-height:1.5;">
-                Vérifiez votre téléphone et entrez le code reçu de <strong>{{ $methodLabel }}</strong> pour valider le paiement de <strong>{{ number_format($booking->total_amount, 0, ',', ' ') }} FCFA</strong>.
+                Vérifiez votre téléphone et entrez le code reçu de <strong>{{ $methodLabel }}</strong> pour valider le paiement de <strong>{{ number_format($booking->total_amount, 0, ',', '.') }} FCFA</strong>.
             </div>
             <form action="{{ route('client.bookings.pay.otp', $booking->id) }}" method="POST"
                   x-data="{ otp: '', submitting: false }" @submit="submitting = true">

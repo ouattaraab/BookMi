@@ -177,7 +177,7 @@ main.page-content { background: #F2EFE9 !important; }
                 </svg>
             </div>
             <p style="font-size:2rem;font-weight:900;color:#1D4ED8;margin:0 0 5px;letter-spacing:-0.04em;line-height:1;">
-                {{ number_format($stats['revenue'] ?? 0, 0, ',', ' ') }}
+                {{ number_format($stats['revenue'] ?? 0, 0, ',', '.') }}
             </p>
             <p style="font-size:0.72rem;font-weight:700;color:#8A8278;margin:0;text-transform:uppercase;letter-spacing:0.05em;">Revenus (FCFA)</p>
         </div>

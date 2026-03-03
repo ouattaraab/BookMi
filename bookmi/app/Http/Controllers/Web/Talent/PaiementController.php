@@ -169,7 +169,7 @@ class PaiementController extends Controller
         if ($amount > ($profile->available_balance ?? 0)) {
             return back()->with('error', sprintf(
                 'Le montant demandé dépasse votre solde disponible (%s XOF).',
-                number_format($profile->available_balance ?? 0, 0, ',', ' ')
+                number_format($profile->available_balance ?? 0, 0, ',', '.')
             ));
         }
 

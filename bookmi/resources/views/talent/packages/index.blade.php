@@ -148,7 +148,7 @@
 
                     {{-- Prix + actions --}}
                     <div class="flex flex-col items-start sm:items-end gap-3">
-                        <span class="font-bold text-xl" style="color:#FF6B35">{{ number_format($package->cachet_amount, 0, ',', ' ') }} FCFA</span>
+                        <span class="font-bold text-xl" style="color:#FF6B35">{{ number_format($package->cachet_amount, 0, ',', '.') }} FCFA</span>
                         <div class="flex items-center gap-2">
                             <button
                                 @click="editId = {{ $package->id }}; editData = {

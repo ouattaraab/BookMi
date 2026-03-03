@@ -228,7 +228,7 @@ main.page-content { background: #F2EFE9 !important; }
                 <p style="font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#B0A89E;margin:0 0 14px;">Détail financier</p>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                     <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">Prestation</span>
-                    <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->cachet_amount + $booking->commission_amount, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                    <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->cachet_amount + $booking->commission_amount, 0, ',', '.') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
                 </div>
                 @if($booking->is_express)
                 <div style="display:flex;justify-content:flex-end;margin:-4px 0 8px;">
@@ -238,18 +238,18 @@ main.page-content { background: #F2EFE9 !important; }
                 @if($booking->express_fee > 0)
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                     <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">⚡ Supplément express (10%)</span>
-                    <span style="font-size:0.875rem;font-weight:800;color:#FF6B35;">{{ number_format($booking->express_fee, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                    <span style="font-size:0.875rem;font-weight:800;color:#FF6B35;">{{ number_format($booking->express_fee, 0, ',', '.') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
                 </div>
                 @endif
                 @if($booking->travel_cost > 0)
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
                     <span style="font-size:0.85rem;color:#6B7280;font-weight:600;">Frais de déplacement</span>
-                    <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->travel_cost, 0, ',', ' ') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
+                    <span style="font-size:0.875rem;font-weight:800;color:#1A2744;">{{ number_format($booking->travel_cost, 0, ',', '.') }} <span style="color:#8A8278;font-weight:600;font-size:0.75rem;">FCFA</span></span>
                 </div>
                 @endif
                 <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid #E5E1DA;">
                     <span style="font-size:0.95rem;font-weight:900;color:#1A2744;">Total</span>
-                    <span style="font-size:1.25rem;font-weight:900;color:#FF6B35;">{{ number_format($booking->total_amount ?? $booking->cachet_amount, 0, ',', ' ') }} <span style="font-size:0.8rem;font-weight:700;color:rgba(255,107,53,0.7);">FCFA</span></span>
+                    <span style="font-size:1.25rem;font-weight:900;color:#FF6B35;">{{ number_format($booking->total_amount ?? $booking->cachet_amount, 0, ',', '.') }} <span style="font-size:0.8rem;font-weight:700;color:rgba(255,107,53,0.7);">FCFA</span></span>
                 </div>
             </div>
         </div>
@@ -283,8 +283,8 @@ main.page-content { background: #F2EFE9 !important; }
             <div style="padding:12px 14px;border-radius:12px;background:{{ $cancelPolicy['bg'] }};border:1px solid {{ $cancelPolicy['border'] }};margin-bottom:10px;">
                 <p style="font-size:0.75rem;font-weight:700;color:{{ $cancelPolicy['color'] }};margin:0;">
                     Politique d'annulation : {{ $cancelPolicy['label'] }}
-                    @if($cancelPolicy['tier'] === 'full') — Remboursement : {{ number_format($refundAmount, 0, ',', ' ') }} FCFA
-                    @elseif($cancelPolicy['tier'] === 'partial') — Remboursement estimé : {{ number_format($refundAmount, 0, ',', ' ') }} FCFA (50%)
+                    @if($cancelPolicy['tier'] === 'full') — Remboursement : {{ number_format($refundAmount, 0, ',', '.') }} FCFA
+                    @elseif($cancelPolicy['tier'] === 'partial') — Remboursement estimé : {{ number_format($refundAmount, 0, ',', '.') }} FCFA (50%)
                     @elseif($cancelPolicy['tier'] === 'mediation') — L'équipe BookMi vous contactera pour médiation.
                     @endif
                 </p>
@@ -294,7 +294,7 @@ main.page-content { background: #F2EFE9 !important; }
                   onsubmit="return confirm('Annuler cette réservation ?
 
 {{ addslashes($cancelPolicy['label']) }}
-Remboursement estimé : {{ number_format($refundAmount, 0, ",", " ") }} FCFA
+Remboursement estimé : {{ number_format($refundAmount, 0, ",", ".") }} FCFA
 
 Cette action est irréversible.')">
                 @csrf

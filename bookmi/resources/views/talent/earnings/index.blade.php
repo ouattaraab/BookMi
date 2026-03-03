@@ -63,7 +63,7 @@
             <div>
                 <p style="font-size:0.78rem;font-weight:700;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 6px;">Solde disponible</p>
                 <p style="font-size:2.2rem;font-weight:900;color:#FFFFFF;margin:0;letter-spacing:-0.04em;line-height:1.1;">
-                    {{ number_format($summary['soldeCompte'], 0, ',', ' ') }}
+                    {{ number_format($summary['soldeCompte'], 0, ',', '.') }}
                     <span style="font-size:1rem;font-weight:600;color:rgba(255,255,255,0.70);">XOF</span>
                 </p>
                 <p style="font-size:0.78rem;font-weight:500;color:rgba(255,255,255,0.65);margin:8px 0 0;">Montant disponible pour reversement</p>
@@ -82,7 +82,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#15803D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             </div>
             <p style="font-size:1.65rem;font-weight:900;color:#15803D;margin:0 0 4px;letter-spacing:-0.04em;line-height:1;">
-                {{ number_format($summary['revenusLiberes'], 0, ',', ' ') }}
+                {{ number_format($summary['revenusLiberes'], 0, ',', '.') }}
             </p>
             <p style="font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;margin:0;">Revenus libérés (FCFA)</p>
             <p style="font-size:0.73rem;color:#9A9490;margin:5px 0 0;">Prestations terminées</p>
@@ -93,7 +93,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#B45309" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             </div>
             <p style="font-size:1.65rem;font-weight:900;color:#B45309;margin:0 0 4px;letter-spacing:-0.04em;line-height:1;">
-                {{ number_format($summary['totalCachetsActifs'], 0, ',', ' ') }}
+                {{ number_format($summary['totalCachetsActifs'], 0, ',', '.') }}
             </p>
             <p style="font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;margin:0;">Cachets à venir (FCFA)</p>
             <p style="font-size:0.73rem;color:#9A9490;margin:5px 0 0;">Prestations confirmées/payées</p>
@@ -104,7 +104,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="#1D4ED8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
             </div>
             <p style="font-size:1.65rem;font-weight:900;color:#1D4ED8;margin:0 0 4px;letter-spacing:-0.04em;line-height:1;">
-                {{ number_format($summary['revenusGlobaux'], 0, ',', ' ') }}
+                {{ number_format($summary['revenusGlobaux'], 0, ',', '.') }}
             </p>
             <p style="font-size:0.70rem;font-weight:700;color:#8A8278;text-transform:uppercase;letter-spacing:0.06em;margin:0;">Revenus globaux (FCFA)</p>
             <p style="font-size:0.73rem;color:#9A9490;margin:5px 0 0;">Toutes prestations acceptées</p>
@@ -165,7 +165,7 @@
                         </td>
                         <td style="padding:13px 24px;text-align:right;">
                             <span style="font-size:0.95rem;font-weight:900;color:#15803D;letter-spacing:-0.02em;">
-                                {{ number_format($booking->cachet_amount, 0, ',', ' ') }}
+                                {{ number_format($booking->cachet_amount, 0, ',', '.') }}
                             </span>
                         </td>
                     </tr>

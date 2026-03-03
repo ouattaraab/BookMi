@@ -23,7 +23,7 @@ class NotifyTalentOfPaymentReceived implements ShouldQueue
         $talent  = $booking?->talentProfile?->user;
         $client  = $booking?->client;
 
-        $amount      = number_format($transaction->amount ?? 0, 0, ',', ' ');
+        $amount      = number_format($transaction->amount ?? 0, 0, ',', '.');
         $packageName = $booking?->servicePackage?->name ?? 'prestation';
 
         // Notify talent (email + push)

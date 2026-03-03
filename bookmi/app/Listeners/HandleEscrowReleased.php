@@ -32,7 +32,7 @@ class HandleEscrowReleased
 
         // Notifier le talent
         if ($talent->user_id) {
-            $amount = number_format($escrowHold->cachet_amount, 0, ',', ' ');
+            $amount = number_format($escrowHold->cachet_amount, 0, ',', '.');
             dispatch(new SendPushNotification(
                 userId: $talent->user_id,
                 title:  'Revenus disponibles',

@@ -120,7 +120,7 @@ class PromoCodeResource extends Resource
                     ->formatStateUsing(
                         fn (PromoCode $record): string => $record->type === 'percentage'
                         ? "{$record->value} %"
-                        : number_format($record->value, 0, ',', ' ') . ' XOF'
+                        : number_format($record->value, 0, ',', '.') . ' XOF'
                     ),
 
                 Tables\Columns\TextColumn::make('usage')
@@ -135,7 +135,7 @@ class PromoCodeResource extends Resource
                     ->label('Montant min.')
                     ->formatStateUsing(
                         fn (?int $state): string => $state !== null
-                        ? number_format($state, 0, ',', ' ') . ' XOF'
+                        ? number_format($state, 0, ',', '.') . ' XOF'
                         : '—'
                     ),
 

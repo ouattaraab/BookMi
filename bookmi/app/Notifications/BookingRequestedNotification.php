@@ -32,7 +32,7 @@ class BookingRequestedNotification extends Notification
         $packageName = $booking->servicePackage?->name ?? '—';
         $eventDate   = $booking->event_date?->translatedFormat('d F Y') ?? '—';
         $eventLocation = $booking->event_location ?? '—';
-        $amount      = number_format($booking->total_amount ?? 0, 0, ',', ' ');
+        $amount      = number_format($booking->total_amount ?? 0, 0, ',', '.');
 
         return (new MailMessage())
             ->subject('Nouvelle demande de réservation — BookMi')

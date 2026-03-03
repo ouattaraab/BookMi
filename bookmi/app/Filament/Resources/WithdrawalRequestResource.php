@@ -178,7 +178,7 @@ class WithdrawalRequestResource extends Resource
                             $user->notify(new WithdrawalStatusNotification($record));
 
                             // Push in-app + FCM
-                            $amount = number_format($record->amount, 0, ',', ' ');
+                            $amount = number_format($record->amount, 0, ',', '.');
                             SendPushNotification::dispatch(
                                 $user->id,
                                 'Demande de reversement approuvée ✓',
@@ -214,7 +214,7 @@ class WithdrawalRequestResource extends Resource
                             $user->notify(new WithdrawalStatusNotification($record));
 
                             // Push in-app + FCM
-                            $amount = number_format($record->amount, 0, ',', ' ');
+                            $amount = number_format($record->amount, 0, ',', '.');
                             SendPushNotification::dispatch(
                                 $user->id,
                                 'Reversement en cours de traitement',
@@ -255,7 +255,7 @@ class WithdrawalRequestResource extends Resource
                             $user->notify(new WithdrawalStatusNotification($record));
 
                             // Push in-app + FCM
-                            $amount = number_format($record->amount, 0, ',', ' ');
+                            $amount = number_format($record->amount, 0, ',', '.');
                             SendPushNotification::dispatch(
                                 $user->id,
                                 'Reversement effectué 🎉',
@@ -307,7 +307,7 @@ class WithdrawalRequestResource extends Resource
                             $user->notify(new WithdrawalStatusNotification($record));
 
                             // Push in-app + FCM
-                            $amount = number_format($record->amount, 0, ',', ' ');
+                            $amount = number_format($record->amount, 0, ',', '.');
                             SendPushNotification::dispatch(
                                 $user->id,
                                 'Demande de reversement refusée',

@@ -5,7 +5,7 @@
         <div class="rounded-xl bg-primary-50 border border-primary-200 dark:bg-primary-900/20 dark:border-primary-800 p-4">
             <p class="text-sm text-primary-700 dark:text-primary-300 font-medium">Solde disponible</p>
             <p class="text-3xl font-bold text-primary-900 dark:text-primary-100 mt-1">
-                {{ number_format($availableBalance, 0, ',', ' ') }} <span class="text-lg font-semibold">XOF</span>
+                {{ number_format($availableBalance, 0, ',', '.') }} <span class="text-lg font-semibold">XOF</span>
             </p>
         </div>
 
@@ -67,7 +67,7 @@
                                     {{ $req->created_at->format('d/m/Y H:i') }}
                                 </td>
                                 <td class="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
-                                    {{ number_format($req->amount, 0, ',', ' ') }}
+                                    {{ number_format($req->amount, 0, ',', '.') }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $badgeClass }}">

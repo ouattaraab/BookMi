@@ -19,17 +19,17 @@ class RevenueWidget extends BaseWidget
         $totalCommission = BookingRequest::where('status', 'completed')->sum('commission_amount');
 
         return [
-            Stat::make('CA total plateforme', number_format($totalRevenue) . ' FCFA')
+            Stat::make('CA total plateforme', number_format($totalRevenue, 0, ',', '.') . ' FCFA')
                 ->description('Toutes réservations complétées')
                 ->color('success')
                 ->icon('heroicon-o-banknotes'),
 
-            Stat::make('CA ce mois', number_format($monthRevenue) . ' FCFA')
+            Stat::make('CA ce mois', number_format($monthRevenue, 0, ',', '.') . ' FCFA')
                 ->description('Réservations complétées ce mois')
                 ->color('primary')
                 ->icon('heroicon-o-arrow-trending-up'),
 
-            Stat::make('Commissions totales', number_format($totalCommission) . ' FCFA')
+            Stat::make('Commissions totales', number_format($totalCommission, 0, ',', '.') . ' FCFA')
                 ->description('Revenus BookMi')
                 ->color('warning')
                 ->icon('heroicon-o-percent-badge'),

@@ -134,7 +134,7 @@
         <h2>Récapitulatif annuel</h2>
         <div class="highlight-box">
             <div style="color:#555; font-size:11px; margin-bottom:4px;">Revenus nets perçus en {{ $year }}</div>
-            <div class="amount-large">{{ number_format($totals['net_amount_xof'], 0, ',', ' ') }} FCFA</div>
+            <div class="amount-large">{{ number_format($totals['net_amount_xof'], 0, ',', '.') }} FCFA</div>
         </div>
         <div class="field-row">
             <span class="field-label">Prestations effectuées</span>
@@ -142,15 +142,15 @@
         </div>
         <div class="field-row">
             <span class="field-label">Montant brut</span>
-            <span>{{ number_format($totals['gross_amount_xof'], 0, ',', ' ') }} FCFA</span>
+            <span>{{ number_format($totals['gross_amount_xof'], 0, ',', '.') }} FCFA</span>
         </div>
         <div class="field-row">
             <span class="field-label">Commission BookMi</span>
-            <span>{{ number_format($totals['commission_xof'], 0, ',', ' ') }} FCFA</span>
+            <span>{{ number_format($totals['commission_xof'], 0, ',', '.') }} FCFA</span>
         </div>
         <div class="field-row">
             <span class="field-label">Montant net reçu</span>
-            <span><strong>{{ number_format($totals['net_amount_xof'], 0, ',', ' ') }} FCFA</strong></span>
+            <span><strong>{{ number_format($totals['net_amount_xof'], 0, ',', '.') }} FCFA</strong></span>
         </div>
     </div>
 
@@ -180,17 +180,17 @@
                 <tr>
                     <td>{{ $monthNames[$row['month']] ?? $row['month'] }}</td>
                     <td class="amount">{{ $row['bookings_count'] }}</td>
-                    <td class="amount">{{ number_format($row['gross_amount_xof'], 0, ',', ' ') }}</td>
-                    <td class="amount">{{ number_format($row['commission_xof'], 0, ',', ' ') }}</td>
-                    <td class="amount">{{ number_format($row['net_amount_xof'], 0, ',', ' ') }}</td>
+                    <td class="amount">{{ number_format($row['gross_amount_xof'], 0, ',', '.') }}</td>
+                    <td class="amount">{{ number_format($row['commission_xof'], 0, ',', '.') }}</td>
+                    <td class="amount">{{ number_format($row['net_amount_xof'], 0, ',', '.') }}</td>
                 </tr>
                 @endforeach
                 <tr class="total-row">
                     <td>Total {{ $year }}</td>
                     <td class="amount">{{ $totals['bookings_count'] }}</td>
-                    <td class="amount">{{ number_format($totals['gross_amount_xof'], 0, ',', ' ') }}</td>
-                    <td class="amount">{{ number_format($totals['commission_xof'], 0, ',', ' ') }}</td>
-                    <td class="amount">{{ number_format($totals['net_amount_xof'], 0, ',', ' ') }}</td>
+                    <td class="amount">{{ number_format($totals['gross_amount_xof'], 0, ',', '.') }}</td>
+                    <td class="amount">{{ number_format($totals['commission_xof'], 0, ',', '.') }}</td>
+                    <td class="amount">{{ number_format($totals['net_amount_xof'], 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>

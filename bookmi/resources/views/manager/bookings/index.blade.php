@@ -119,7 +119,7 @@ main.page-content { background: #F2EFE9 !important; }
                                 {{ $booking->servicePackage?->name ?? $booking->servicePackage?->title ?? '—' }}
                             </td>
                             <td class="px-6 py-4 font-semibold text-gray-800">
-                                {{ $booking->total_amount ? number_format($booking->total_amount, 0, ',', ' ') . ' XOF' : '—' }}
+                                {{ $booking->total_amount ? number_format($booking->total_amount, 0, ',', '.') . ' XOF' : '—' }}
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold text-white" style="background:{{ $sc }}">

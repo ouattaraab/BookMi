@@ -99,7 +99,7 @@
 
                         {{-- Montant + badge --}}
                         <div class="flex flex-col items-start sm:items-end gap-1.5">
-                            <span class="font-bold text-gray-900 text-sm">{{ number_format($booking->cachet_amount, 0, ',', ' ') }} FCFA</span>
+                            <span class="font-bold text-gray-900 text-sm">{{ number_format($booking->cachet_amount, 0, ',', '.') }} FCFA</span>
                             <span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background:{{ $sc }}20; color:{{ $sc }}">{{ $sl }}</span>
                         </div>
 

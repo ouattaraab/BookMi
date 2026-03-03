@@ -33,8 +33,8 @@ class BookingAcceptedNotification extends Notification
         $eventDate   = $booking->event_date?->translatedFormat('d F Y') ?? '—';
 
         $artistFee     = number_format($booking->cachet_amount ?? ($booking->total_amount ?? 0), 0, ',', ' ');
-        $commission    = number_format($booking->commission_amount ?? 0, 0, ',', ' ');
-        $total         = number_format($booking->total_amount ?? 0, 0, ',', ' ');
+        $commission    = number_format($booking->commission_amount ?? 0, 0, ',', '.');
+        $total         = number_format($booking->total_amount ?? 0, 0, ',', '.');
         $talentComment = $booking->accept_comment ?? null;
 
         return (new MailMessage())
