@@ -7,10 +7,14 @@ use App\Http\Controllers\Web\Auth\WebRegisterController;
 use App\Http\Controllers\Web\Auth\WebResetPasswordController;
 use App\Http\Controllers\Web\Auth\WebTwoFactorController;
 use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\MaintenanceController;
 use App\Http\Controllers\Web\TalentDiscoveryController;
 use App\Http\Controllers\Web\TalentNotificationController;
 use App\Http\Controllers\Web\TalentPageController;
 use Illuminate\Support\Facades\Route;
+
+// ── Maintenance page (exempt from middleware — accessible always) ──────────────
+Route::get('/maintenance', [MaintenanceController::class, 'show'])->name('maintenance');
 
 // ── Mobile deep linking verification ─────────────────────────────────────────
 // Android App Links: autoVerify requires this file to associate bookmi.click with com.bookmi.app

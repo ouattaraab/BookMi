@@ -12,6 +12,8 @@ const publicRoutes = <String>{
   RoutePaths.register,
   RoutePaths.otp,
   RoutePaths.forgotPassword,
+  RoutePaths.appMaintenance,
+  RoutePaths.appForceUpdate,
 };
 
 /// Routes accessibles en mode invité (non connecté).

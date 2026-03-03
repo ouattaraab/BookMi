@@ -1,6 +1,7 @@
 import 'package:bookmi_app/app/routes/app_router.dart';
 import 'package:bookmi_app/core/design_system/theme/bookmi_theme.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
+import 'package:bookmi_app/features/app_update/data/repositories/app_version_repository.dart';
 import 'package:bookmi_app/core/storage/local_storage.dart';
 import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
@@ -49,8 +50,13 @@ class App extends StatelessWidget {
 
         final deps = snapshot.data!;
 
-        return RepositoryProvider<AuthRepository>.value(
-          value: deps.authRepo,
+        return MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<AuthRepository>.value(value: deps.authRepo),
+            RepositoryProvider<AppVersionRepository>.value(
+              value: deps.appVersionRepo,
+            ),
+          ],
           child: MultiBlocProvider(
             providers: [
               BlocProvider<AuthBloc>.value(value: deps.authBloc),
@@ -91,6 +97,7 @@ class _AppDependencies {
     required this.profileRepo,
     required this.notificationRepo,
     required this.payoutMethodRepo,
+    required this.appVersionRepo,
     required this.router,
   });
 
@@ -107,6 +114,7 @@ class _AppDependencies {
   final ProfileRepository profileRepo;
   final NotificationRepository notificationRepo;
   final PayoutMethodRepository payoutMethodRepo;
+  final AppVersionRepository appVersionRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -175,6 +183,7 @@ class _AppDependencies {
     final profileRepo = ProfileRepository(apiClient: apiClient);
     final notificationRepo = NotificationRepository(apiClient: apiClient);
     final payoutMethodRepo = PayoutMethodRepository(apiClient: apiClient);
+    final appVersionRepo = AppVersionRepository(apiClient: apiClient);
 
     final router = buildAppRouter(
       talentProfileRepo,
@@ -204,6 +213,7 @@ class _AppDependencies {
       profileRepo: profileRepo,
       notificationRepo: notificationRepo,
       payoutMethodRepo: payoutMethodRepo,
+      appVersionRepo: appVersionRepo,
       router: router,
     );
   }

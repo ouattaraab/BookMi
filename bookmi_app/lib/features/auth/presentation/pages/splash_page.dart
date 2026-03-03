@@ -2,12 +2,17 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:bookmi_app/app/routes/route_names.dart';
+import 'package:bookmi_app/features/app_update/data/repositories/app_version_repository.dart';
+import 'package:bookmi_app/features/app_update/presentation/cubit/app_version_cubit.dart';
+import 'package:bookmi_app/features/app_update/presentation/cubit/app_version_state.dart';
+import 'package:bookmi_app/features/app_update/presentation/widgets/optional_update_dialog.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 // ── Star model ────────────────────────────────────────────────────────────────
 
@@ -57,6 +62,10 @@ class _SplashPageState extends State<SplashPage>
   Timer? _timeoutTimer;
   late final AnimationController _ctrl;
 
+  // App version / maintenance check
+  AppVersionCubit? _versionCubit;
+  bool _versionChecked = false;
+
   // Interval map (ms → normalised 0–1 over 3 000 ms)
   //  0   –  400 ms  →  0.000 – 0.133   stars fade in
   //  400 –  900 ms  →  0.133 – 0.300   spotlight + logo reveal
@@ -78,7 +87,7 @@ class _SplashPageState extends State<SplashPage>
   void initState() {
     super.initState();
 
-    // ── Auth check (unchanged) ────────────────────────────────────────────
+    // ── Auth check ────────────────────────────────────────────────────────
     final bloc = context.read<AuthBloc>()..add(const AuthCheckRequested());
     _timeoutTimer = Timer(const Duration(seconds: _kTimeoutSeconds), () {
       final s = bloc.state;
@@ -86,6 +95,9 @@ class _SplashPageState extends State<SplashPage>
         bloc.add(const AuthSessionExpired());
       }
     });
+
+    // ── App version / maintenance check (in parallel) ─────────────────────
+    _initVersionCheck();
 
     // ── Controller ───────────────────────────────────────────────────────
     _ctrl = AnimationController(
@@ -170,10 +182,43 @@ class _SplashPageState extends State<SplashPage>
     _ctrl.forward();
   }
 
+  Future<void> _initVersionCheck() async {
+    try {
+      final repo = context.read<AppVersionRepository>();
+      _versionCubit = AppVersionCubit(repository: repo);
+      final info = await PackageInfo.fromPlatform();
+      await _versionCubit!.check(info.version);
+      if (mounted) _handleVersionState(_versionCubit!.state);
+    } catch (_) {
+      // Silently ignore — let auth flow continue
+    }
+  }
+
+  void _handleVersionState(AppVersionState state) {
+    if (_versionChecked || !mounted) return;
+    switch (state) {
+      case AppVersionMaintenance():
+        _versionChecked = true;
+        context.go(RoutePaths.appMaintenance, extra: state);
+      case AppVersionUpdateRequired():
+        _versionChecked = true;
+        if (state.updateType == 'forced') {
+          context.go(RoutePaths.appForceUpdate, extra: state);
+        } else {
+          OptionalUpdateDialog.show(context, state);
+        }
+      case AppVersionOk():
+      case AppVersionInitial():
+      case AppVersionError():
+        break;
+    }
+  }
+
   @override
   void dispose() {
     _timeoutTimer?.cancel();
     _ctrl.dispose();
+    _versionCubit?.close();
     super.dispose();
   }
 

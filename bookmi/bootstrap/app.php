@@ -24,6 +24,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'role'              => \App\Http\Middleware\EnsureRole::class,
             'paystack-webhook'  => \App\Http\Middleware\ValidatePaystackSignature::class,
         ]);
+
+        $middleware->web(append: [\App\Http\Middleware\CheckMaintenanceMode::class]);
+        $middleware->api(append: [\App\Http\Middleware\CheckMaintenanceMode::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

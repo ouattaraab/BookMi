@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AppEventController;
+use App\Http\Controllers\Api\V1\AppVersionController;
 use App\Http\Controllers\Api\V1\DownloadController;
 use App\Http\Controllers\Api\V1\AdminDisputeController;
 use App\Http\Controllers\Api\V1\AdminReviewModerationController;
@@ -42,6 +43,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/health', HealthCheckController::class)->name('health');
+
+    // ── Public: app version + maintenance status ──────────────────────────
+    Route::get('/app/version', [AppVersionController::class, 'index'])->name('app.version');
 
     Route::post('/auth/register', [AuthController::class, 'register'])
         ->middleware('throttle:auth')

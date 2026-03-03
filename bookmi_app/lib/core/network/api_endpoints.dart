@@ -1,5 +1,6 @@
 abstract final class ApiEndpoints {
   static const health = '/health';
+  static const appVersion = '/app/version';
   static const authLogin = '/auth/login';
   static const authRegister = '/auth/register';
   static const authLogout = '/auth/logout';

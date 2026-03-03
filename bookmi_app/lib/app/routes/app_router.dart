@@ -22,6 +22,9 @@ import 'package:bookmi_app/features/auth/presentation/pages/login_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/onboarding_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/otp_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/register_page.dart';
+import 'package:bookmi_app/features/app_update/presentation/cubit/app_version_state.dart';
+import 'package:bookmi_app/features/app_update/presentation/pages/force_update_page.dart';
+import 'package:bookmi_app/features/app_update/presentation/pages/maintenance_page.dart';
 import 'package:bookmi_app/features/auth/presentation/pages/splash_page.dart';
 import 'package:bookmi_app/features/discovery/presentation/pages/discovery_page.dart';
 import 'package:bookmi_app/features/discovery/presentation/pages/home_page.dart';
@@ -131,6 +134,29 @@ GoRouter buildAppRouter(
         name: RouteNames.managerDashboard,
         path: RoutePaths.managerDashboard,
         builder: (context, state) => const ManagerDashboardPage(),
+      ),
+
+      // ── Maintenance / Force update (exempt from auth guard) ─────────────
+      GoRoute(
+        path: RoutePaths.appMaintenance,
+        name: RouteNames.appMaintenance,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final data = state.extra! as AppVersionMaintenance;
+          return AppMaintenancePage(
+            message: data.message,
+            endAt: data.endAt,
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.appForceUpdate,
+        name: RouteNames.appForceUpdate,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final data = state.extra! as AppVersionUpdateRequired;
+          return ForceUpdatePage(data: data);
+        },
       ),
 
       // ── Auth routes (outside shell) ──────────────────────
