@@ -167,10 +167,16 @@
         {{-- User + Logout --}}
         <div class="p-4 space-y-3">
             <div class="flex items-center gap-3">
+                @if($user->avatar_url)
+                <img src="{{ $user->avatar_url }}?t={{ $user->updated_at->timestamp }}" alt="{{ $initials }}"
+                     class="w-9 h-9 rounded-full flex-shrink-0 object-cover"
+                     style="border:1.5px solid rgba(100,181,246,0.4)">
+                @else
                 <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
                      style="background:rgba(100,181,246,0.25);border:1.5px solid rgba(100,181,246,0.4)">
                     {{ $initials }}
                 </div>
+                @endif
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-semibold text-white truncate">{{ $displayName }}</p>
                     <p class="text-xs truncate" style="color:rgba(255,255,255,0.45)">Client</p>
@@ -221,10 +227,16 @@
 
             <div class="flex items-center gap-3">
                 <livewire:shared.notification-bell accent-color="#2196F3" />
+                @if($user->avatar_url)
+                <img src="{{ $user->avatar_url }}?t={{ $user->updated_at->timestamp }}" alt="{{ $initials }}"
+                     class="w-8 h-8 rounded-full object-cover"
+                     style="border:1.5px solid rgba(100,181,246,0.35)">
+                @else
                 <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
                      style="background:linear-gradient(135deg,#1A2744,#64B5F6)">
                     {{ $initials }}
                 </div>
+                @endif
             </div>
         </header>
 
