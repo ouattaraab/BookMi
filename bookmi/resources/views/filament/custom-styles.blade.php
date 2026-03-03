@@ -1,31 +1,74 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 
 <style>
 /* ============================================================
-   BookMi Admin Theme — iOS 26 Glassmorphism
-   Navy #1A2744 (Book) | Blue #2196F3 (Mi) | Orange #FF6B35 (CTA)
-   Font: Nunito
+   BookMi Admin — Clarté Alpine
+   Design validé : light editorial, Nunito, navy sidebar
+   Fond #EEF2FA · Cartes blanches · Ombres douces
    ============================================================ */
 
-/* ── Typography ── */
-*, body {
+/* ── Variables ── */
+:root {
+    --bm-bg:          #EEF2FA;
+    --bm-bg2:         #E4EAF8;
+    --bm-card:        #FFFFFF;
+    --bm-card2:       #F7FAFF;
+    --bm-border:      #DDE4F0;
+    --bm-sidebar:     #1A2744;
+    --bm-blue:        #2196F3;
+    --bm-blue-d:      #1565C0;
+    --bm-blue-bg:     #EBF5FE;
+    --bm-green-bg:    #F0FDF4;
+    --bm-red-bg:      #FEF2F2;
+    --bm-amber-bg:    #FFFBEB;
+    --bm-text:        #1A2744;
+    --bm-text2:       #374151;
+    --bm-muted:       #6B7280;
+    --bm-muted2:      #94A3B8;
+    --bm-shadow:      0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.04);
+    --bm-shadow2:     0 2px 8px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.06);
+    --bm-radius:      0.875rem;
+}
+
+/* ── Typographie globale — Nunito ── */
+*, body, input, button, select, textarea {
     font-family: 'Nunito', sans-serif !important;
 }
 
-/* ── Logo "Book" : navy en contexte clair, blanc dans la sidebar ── */
+/* ── Logo ── */
 .bookmi-logo-book { color: #1A2744; }
 .fi-sidebar .bookmi-logo-book { color: #ffffff !important; }
 
 /* ================================================================
-   SIDEBAR — Navy glassmorphism
+   FOND GÉNÉRAL — Bleu-gris clair
+   ================================================================ */
+
+.fi-body,
+html body {
+    background-color: var(--bm-bg) !important;
+}
+
+.fi-main,
+main.fi-main {
+    background-color: var(--bm-bg) !important;
+    background-image: none !important;
+    min-height: 100vh !important;
+}
+
+.fi-main-ctn {
+    background-color: transparent !important;
+}
+
+/* ================================================================
+   SIDEBAR — Navy raffinée
    ================================================================ */
 
 .fi-sidebar,
 nav[class*="fi-sidebar"] {
-    background: linear-gradient(180deg, #1A2744 0%, #0F1E3A 100%) !important;
-    border-right: 1px solid rgba(255,255,255,0.06) !important;
+    background: linear-gradient(180deg, #1E2E54 0%, #1A2744 40%, #131E38 100%) !important;
+    border-right: 1px solid rgba(255,255,255,0.07) !important;
     display: flex !important;
     flex-direction: column !important;
 }
@@ -33,299 +76,515 @@ nav[class*="fi-sidebar"] {
 .fi-sidebar-header,
 [class*="fi-sidebar-header"] {
     background: transparent !important;
-    border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
 }
 
-/* Navigation wrapper — doit pousser le footer vers le bas */
+/* Navigation wrapper */
 .fi-sidebar-nav,
 .fi-sidebar > nav,
 .fi-sidebar-group {
     flex: 1;
 }
 
-/* ── Textes nav — BLANC ── */
+/* ── Items nav ── */
 .fi-sidebar-item-button span,
 .fi-sidebar-item-button,
 [class*="fi-sidebar-item"] span {
-    color: rgba(255,255,255,0.88) !important;
+    color: rgba(255,255,255,0.65) !important;
+    font-weight: 500 !important;
 }
 
 .fi-sidebar-item-button {
-    border-radius: 0.5rem !important;
-    transition: all 150ms ease !important;
+    border-radius: 0 0.5rem 0.5rem 0 !important;
+    transition: all 140ms ease !important;
 }
 
 .fi-sidebar-item-button:hover {
-    background-color: rgba(255,255,255,0.08) !important;
-    color: #ffffff !important;
+    background-color: rgba(255,255,255,0.07) !important;
 }
-
 .fi-sidebar-item-button:hover span {
-    color: #ffffff !important;
+    color: rgba(255,255,255,0.92) !important;
 }
 
-/* ── Item ACTIF — Filament v3 utilise .fi-sidebar-item-active sur le LI parent ── */
+/* Item actif — border-left bleue */
 .fi-sidebar-item-active .fi-sidebar-item-button {
-    background: linear-gradient(90deg, rgba(33,150,243,0.28), rgba(33,150,243,0.10)) !important;
+    background: rgba(33,150,243,0.16) !important;
     border-left: 3px solid #2196F3 !important;
     padding-left: calc(0.75rem - 3px) !important;
+    box-shadow: none !important;
 }
-
 .fi-sidebar-item-active .fi-sidebar-item-button span {
     color: #ffffff !important;
     font-weight: 700 !important;
 }
-
-/* Icône de l'item actif uniquement */
 .fi-sidebar-item-active .fi-sidebar-item-button .fi-sidebar-item-icon {
-    color: #2196F3 !important;
+    color: #64B5F6 !important;
 }
 
-/* Icônes des items inactifs */
-.fi-sidebar-item-icon {
-    color: rgba(255,255,255,0.45) !important;
-}
-
-/* Items non-actifs — reset (y compris ceux dans un groupe actif) */
+/* Items inactifs */
 .fi-sidebar-item:not(.fi-sidebar-item-active) .fi-sidebar-item-button {
     background: transparent !important;
     border-left: none !important;
     padding-left: 0.75rem !important;
 }
-
 .fi-sidebar-item:not(.fi-sidebar-item-active) .fi-sidebar-item-button span {
-    color: rgba(255,255,255,0.88) !important;
-    font-weight: normal !important;
+    color: rgba(255,255,255,0.65) !important;
+    font-weight: 500 !important;
 }
-
 .fi-sidebar-item:not(.fi-sidebar-item-active) .fi-sidebar-item-button .fi-sidebar-item-icon {
-    color: rgba(255,255,255,0.45) !important;
+    color: rgba(255,255,255,0.4) !important;
 }
 
-/* Labels groupes — uppercase petits */
+/* Labels de groupes */
 .fi-sidebar-group-label,
 [class*="fi-sidebar-group-label"] {
-    color: rgba(255,255,255,0.38) !important;
-    font-size: 0.62rem !important;
-    font-weight: 700 !important;
-    letter-spacing: 0.1em !important;
+    color: rgba(255,255,255,0.3) !important;
+    font-size: 0.6rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.13em !important;
     text-transform: uppercase !important;
 }
 
-/* Chevrons collapse */
+/* Chevrons */
 .fi-sidebar-group-collapse-button,
 .fi-sidebar-group-collapse-button svg {
-    color: rgba(255,255,255,0.35) !important;
+    color: rgba(255,255,255,0.3) !important;
 }
 
 /* Scrollbar sidebar */
 .fi-sidebar::-webkit-scrollbar { width: 3px; }
 .fi-sidebar::-webkit-scrollbar-track { background: transparent; }
 .fi-sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.1);
     border-radius: 2px;
 }
 
+/* ── Badges nav — textes lisibles ── */
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-warning,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-warning span {
+    color: #b45309 !important;
+}
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-danger,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-danger span {
+    color: #b91c1c !important;
+}
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-success,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-success span {
+    color: #065f46 !important;
+}
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-info,
+.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-info span {
+    color: #0369a1 !important;
+}
+
 /* ================================================================
-   TOPBAR
+   TOPBAR — Blanc propre
    ================================================================ */
 
 .fi-topbar {
-    background: rgba(255,255,255,0.92) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border-bottom: 1px solid rgba(26,39,68,0.08) !important;
-    box-shadow: 0 1px 8px rgba(26,39,68,0.06) !important;
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid var(--bm-border) !important;
+    box-shadow: 0 1px 0 var(--bm-border) !important;
 }
 
 /* ================================================================
-   MAIN CONTENT — fond dégradé pour glassmorphism visible
+   EN-TÊTES DE PAGE
    ================================================================ */
 
-.fi-main,
-main.fi-main {
-    background: linear-gradient(135deg,
-        #dbeafe 0%,
-        #e8e4ff 25%,
-        #f0ebff 50%,
-        #ddf4ff 75%,
-        #d1fae5 100%
-    ) !important;
-    min-height: 100vh !important;
-}
-
-/* Page header */
 .fi-header-heading {
-    font-weight: 800 !important;
-    color: #1A2744 !important;
+    font-weight: 900 !important;
+    font-size: 1.6rem !important;
+    letter-spacing: -0.02em !important;
+    color: var(--bm-text) !important;
 }
-.fi-header-subheading { color: #6b7280 !important; }
+.fi-header-subheading {
+    color: var(--bm-muted) !important;
+    font-weight: 500 !important;
+}
 
 /* ================================================================
-   GLASSMORPHISM — Cartes iOS 26 style
+   CARTES & SECTIONS — Blanches, ombres douces
    ================================================================ */
 
-/* Cards/Sections principales */
 .fi-section,
-.fi-wi-stats-overview,
 .fi-card,
-[class*="fi-section"]:not([class*="fi-section-header"]):not([class*="fi-section-content"]) {
-    background: rgba(255,255,255,0.72) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-    border: 1px solid rgba(255,255,255,0.85) !important;
-    border-radius: 1rem !important;
-    box-shadow:
-        0 4px 24px rgba(26,39,68,0.08),
-        0 1px 4px rgba(26,39,68,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.9) !important;
+[class*="fi-section"]:not([class*="fi-section-header"]):not([class*="fi-section-content"]):not([class*="fi-section-actions"]) {
+    background: var(--bm-card) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow) !important;
 }
 
-/* Stats overview widgets */
+/* Section header */
+.fi-section-header {
+    background: var(--bm-card2) !important;
+    border-bottom: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) var(--bm-radius) 0 0 !important;
+}
+
+/* Section header label */
+.fi-section-header-heading {
+    font-weight: 700 !important;
+    color: var(--bm-text) !important;
+    font-size: 0.875rem !important;
+}
+
+/* ================================================================
+   WIDGETS STATS (KPI Cards)
+   ================================================================ */
+
 .fi-wi-stats-overview-stat {
-    background: rgba(255,255,255,0.70) !important;
-    backdrop-filter: blur(16px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-    border: 1px solid rgba(255,255,255,0.82) !important;
-    border-radius: 0.875rem !important;
-    box-shadow:
-        0 4px 20px rgba(26,39,68,0.07),
-        inset 0 1px 0 rgba(255,255,255,0.95) !important;
-    transition: transform 150ms ease, box-shadow 150ms ease !important;
+    background: var(--bm-card) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow) !important;
+    transition: box-shadow 200ms ease, transform 200ms ease !important;
 }
-
 .fi-wi-stats-overview-stat:hover {
+    box-shadow: var(--bm-shadow2) !important;
     transform: translateY(-2px) !important;
-    box-shadow:
-        0 8px 32px rgba(26,39,68,0.12),
-        inset 0 1px 0 rgba(255,255,255,0.95) !important;
 }
 
-/* Account widget (carte "Bonjour") */
-.fi-wi-account {
-    background: rgba(255,255,255,0.75) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(255,255,255,0.85) !important;
-    border-radius: 1rem !important;
+/* Valeur principale (chiffre) */
+.fi-wi-stats-overview-stat-value {
+    font-weight: 900 !important;
+    font-size: 2rem !important;
+    letter-spacing: -0.03em !important;
+    color: var(--bm-text) !important;
 }
 
-/* Tables */
+/* Label sous la valeur */
+.fi-wi-stats-overview-stat-label {
+    font-weight: 500 !important;
+    font-size: 0.8rem !important;
+    color: var(--bm-muted) !important;
+}
+
+/* Description/trend */
+.fi-wi-stats-overview-stat-description {
+    font-weight: 600 !important;
+    font-size: 0.78rem !important;
+}
+
+/* ================================================================
+   TABLES
+   ================================================================ */
+
 .fi-ta-ctn,
 .fi-ta-table-ctn {
-    background: rgba(255,255,255,0.72) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
-    border: 1px solid rgba(255,255,255,0.82) !important;
-    border-radius: 1rem !important;
+    background: var(--bm-card) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow) !important;
     overflow: hidden !important;
 }
 
 /* Header de tableau */
 .fi-ta-header {
-    background: rgba(248,250,252,0.8) !important;
-    backdrop-filter: blur(8px) !important;
+    background: var(--bm-card2) !important;
+    backdrop-filter: none !important;
+    border-bottom: 1px solid var(--bm-border) !important;
 }
 
-/* Hover sur les lignes de tableau */
+/* Colonnes header */
+.fi-ta-header-cell-label {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.07em !important;
+    text-transform: uppercase !important;
+    color: var(--bm-muted2) !important;
+}
+
+/* Lignes */
+.fi-ta-row > td,
+.fi-ta-row > th {
+    border-color: var(--bm-border) !important;
+}
 .fi-ta-row:hover > td,
 .fi-ta-row:hover > th {
-    background-color: rgba(33,150,243,0.05) !important;
+    background-color: #F8FAFE !important;
+}
+
+/* Cellules */
+.fi-ta-cell-content {
+    font-weight: 500 !important;
+    color: var(--bm-text2) !important;
+    font-size: 0.85rem !important;
+}
+
+/* Pagination */
+.fi-ta-pagination {
+    background: var(--bm-card2) !important;
+    border-top: 1px solid var(--bm-border) !important;
 }
 
 /* ================================================================
-   BOUTONS — Brand Blue #2196F3
+   BOUTONS
    ================================================================ */
 
 .fi-btn-color-primary {
     background: linear-gradient(135deg, #2196F3, #1976D2) !important;
     border-color: #2196F3 !important;
-    box-shadow: 0 2px 8px rgba(33,150,243,0.3) !important;
+    box-shadow: 0 2px 8px rgba(33,150,243,0.28) !important;
+    font-weight: 700 !important;
+    border-radius: 0.625rem !important;
 }
 .fi-btn-color-primary:hover {
     background: linear-gradient(135deg, #1976D2, #1565C0) !important;
-    box-shadow: 0 4px 16px rgba(33,150,243,0.4) !important;
+    box-shadow: 0 4px 16px rgba(33,150,243,0.38) !important;
     transform: translateY(-1px) !important;
 }
 
+/* Bouton secondaire */
+.fi-btn-color-gray {
+    background: var(--bm-card) !important;
+    border-color: var(--bm-border) !important;
+    color: var(--bm-text2) !important;
+    font-weight: 600 !important;
+    border-radius: 0.625rem !important;
+}
+.fi-btn-color-gray:hover {
+    background: var(--bm-bg2) !important;
+    border-color: #BFDBFE !important;
+    color: var(--bm-blue) !important;
+}
+
+/* Bouton danger */
+.fi-btn-color-danger {
+    border-radius: 0.625rem !important;
+    font-weight: 700 !important;
+}
+
 /* ================================================================
-   INPUTS
+   INPUTS & FORMULAIRES
    ================================================================ */
+
+.fi-input,
+[class*="fi-fo-field-wrp"] input,
+[class*="fi-fo-field-wrp"] textarea,
+[class*="fi-fo-field-wrp"] select {
+    background: var(--bm-card) !important;
+    border-color: var(--bm-border) !important;
+    border-radius: 0.625rem !important;
+    font-weight: 500 !important;
+    color: var(--bm-text) !important;
+    transition: border-color 150ms, box-shadow 150ms !important;
+}
 
 .fi-input:focus,
 [class*="fi-input"]:focus {
     border-color: #2196F3 !important;
-    --tw-ring-color: rgba(33,150,243,0.2) !important;
+    box-shadow: 0 0 0 3px rgba(33,150,243,0.1) !important;
+    --tw-ring-color: rgba(33,150,243,0.15) !important;
+}
+
+/* Label champ */
+.fi-fo-field-wrp-label label {
+    font-weight: 700 !important;
+    color: var(--bm-text) !important;
+    font-size: 0.82rem !important;
+}
+
+/* Aide champ */
+.fi-fo-field-wrp-hint {
+    color: var(--bm-muted) !important;
+    font-size: 0.78rem !important;
+}
+
+/* Toggle switch */
+.fi-toggle-input:checked + .fi-toggle-track {
+    background-color: var(--bm-blue) !important;
 }
 
 /* ================================================================
-   LOGIN PAGE — fond navy dégradé + card glassmorphism
+   DROPDOWN / MODALS
    ================================================================ */
 
-.fi-body.fi-panel-admin:has(.fi-simple-layout) {
-    background-color: #1A2744 !important;
+.fi-dropdown-panel {
+    background: var(--bm-card) !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow2) !important;
 }
 
-.fi-simple-layout {
-    background: linear-gradient(135deg, #1A2744 0%, #0F3460 100%) !important;
-    background-color: #1A2744 !important;
-    min-height: 100vh !important;
+.fi-modal-content {
+    background: var(--bm-card) !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: calc(var(--bm-radius) + 0.25rem) !important;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.12) !important;
 }
 
-.fi-simple-main-ctn { background-color: transparent !important; }
+.fi-modal-header {
+    border-bottom: 1px solid var(--bm-border) !important;
+}
+.fi-modal-header-heading {
+    font-weight: 800 !important;
+    color: var(--bm-text) !important;
+}
 
-.fi-simple-main:not([class*="fi-simple-main-ctn"]) {
-    background: rgba(255,255,255,0.95) !important;
-    backdrop-filter: blur(40px) saturate(200%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
-    border: 1px solid rgba(255,255,255,0.8) !important;
-    border-radius: 1.25rem !important;
-    box-shadow:
-        0 24px 64px rgba(0,0,0,0.3),
-        inset 0 1px 0 rgba(255,255,255,0.9) !important;
+.fi-modal-footer {
+    background: var(--bm-card2) !important;
+    border-top: 1px solid var(--bm-border) !important;
 }
 
 /* ================================================================
    BADGES
    ================================================================ */
 
-.fi-badge-color-primary {
-    background: rgba(33,150,243,0.12) !important;
-    color: #1565C0 !important;
+.fi-badge {
+    font-weight: 700 !important;
+    font-size: 0.68rem !important;
+    border-radius: 20px !important;
+    letter-spacing: 0.02em !important;
 }
 
-/* Fix: la règle ".fi-sidebar-item:not(.fi-sidebar-item-active) .fi-sidebar-item-button span"
-   a une spécificité (0,3,1) et écrase le texte des badges de navigation.
-   On la bat avec spécificité (0,4,0).
-   Chaque couleur Filament utilise un fond *-50 (clair) → texte foncé requis.
-   Ressources concernées :
-     - warning : Avertissements, Alertes disponibilité, Vérifications d'identité
-     - danger  : Alertes, Avis
-     - success : (futur usage)
-     - info    : (futur usage)
-*/
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-warning,
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-warning span {
-    color: #b45309 !important; /* amber-700 sur fond amber-50 */
-}
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-danger,
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-danger span {
-    color: #b91c1c !important; /* red-700 sur fond red-50 */
-}
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-success,
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-success span {
-    color: #065f46 !important; /* emerald-800 sur fond emerald-50 */
-}
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-info,
-.fi-sidebar-item .fi-sidebar-item-button .fi-badge.fi-color-info span {
-    color: #0369a1 !important; /* sky-700 sur fond sky-50 */
+.fi-badge-color-primary {
+    background: var(--bm-blue-bg) !important;
+    color: var(--bm-blue-d) !important;
+    border: none !important;
 }
 
 /* ================================================================
-   RESPONSIVE — Grilles adaptatives
+   NOTIFICATIONS / TOASTS
    ================================================================ */
 
-/* Widgets grid — responsive sur mobile */
+.fi-no-notification {
+    background: var(--bm-card) !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow2) !important;
+}
+
+/* ================================================================
+   INFOLIST (vue détail)
+   ================================================================ */
+
+.fi-in-section {
+    background: var(--bm-card) !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow) !important;
+}
+
+.fi-in-entry-label {
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.06em !important;
+    text-transform: uppercase !important;
+    color: var(--bm-muted2) !important;
+}
+
+.fi-in-entry-content {
+    font-weight: 600 !important;
+    color: var(--bm-text) !important;
+}
+
+/* ================================================================
+   TABS
+   ================================================================ */
+
+.fi-tabs-tab {
+    font-weight: 600 !important;
+    color: var(--bm-muted) !important;
+    border-radius: 0.5rem !important;
+    transition: all 140ms !important;
+}
+.fi-tabs-tab:hover {
+    color: var(--bm-blue) !important;
+    background: var(--bm-blue-bg) !important;
+}
+.fi-tabs-tab-active,
+.fi-tabs-tab[aria-selected="true"] {
+    color: var(--bm-blue) !important;
+    font-weight: 800 !important;
+    background: var(--bm-blue-bg) !important;
+}
+
+/* ================================================================
+   ACTION TABLE — Filtres/recherche
+   ================================================================ */
+
+.fi-ta-filters-form {
+    background: var(--bm-card2) !important;
+    border-bottom: 1px solid var(--bm-border) !important;
+}
+
+/* ================================================================
+   LOGIN PAGE — Fond navy + card blanche
+   ================================================================ */
+
+.fi-simple-layout {
+    background: linear-gradient(135deg, #1A2744 0%, #0F3460 100%) !important;
+    min-height: 100vh !important;
+}
+
+.fi-simple-main-ctn { background-color: transparent !important; }
+
+.fi-simple-main:not([class*="fi-simple-main-ctn"]) {
+    background: #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    border-radius: 1.25rem !important;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3) !important;
+}
+
+/* ================================================================
+   WIDGETS PERSO — Cohérence
+   ================================================================ */
+
+/* BookingsOverviewWidget, RevenueWidget, etc. */
+.fi-wi-chart {
+    background: var(--bm-card) !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow) !important;
+}
+
+/* AlertsWidget */
+.fi-wi-alerts-list {
+    background: var(--bm-card) !important;
+    border-radius: var(--bm-radius) !important;
+}
+
+/* ================================================================
+   BREADCRUMB & PAGE NAV
+   ================================================================ */
+
+.fi-breadcrumbs-item {
+    font-weight: 500 !important;
+    color: var(--bm-muted) !important;
+}
+.fi-breadcrumbs-item:last-child {
+    font-weight: 700 !important;
+    color: var(--bm-text) !important;
+}
+
+/* ================================================================
+   ACCOUNT WIDGET (sidebar footer via render hook)
+   ================================================================ */
+
+.fi-wi-account {
+    background: var(--bm-card) !important;
+    border: 1px solid var(--bm-border) !important;
+    border-radius: var(--bm-radius) !important;
+    box-shadow: var(--bm-shadow) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+
 @media (max-width: 640px) {
     .fi-wi-stats-overview-stats-ctn {
         grid-template-columns: 1fr !important;
@@ -349,7 +608,6 @@ main.fi-main {
     }
 }
 
-/* Sidebar responsive — s'effondre sur mobile */
 @media (max-width: 1024px) {
     .fi-sidebar {
         position: fixed !important;
@@ -359,19 +617,13 @@ main.fi-main {
     }
 }
 
-/* Tables responsive */
 .fi-ta-table-ctn {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
 }
 
-/* Formulaires responsive */
 @media (max-width: 768px) {
-    .fi-fo-section-ctn {
-        grid-template-columns: 1fr !important;
-    }
-    .fi-fo-component-ctn {
-        grid-template-columns: 1fr !important;
-    }
+    .fi-fo-section-ctn { grid-template-columns: 1fr !important; }
+    .fi-fo-component-ctn { grid-template-columns: 1fr !important; }
 }
 </style>

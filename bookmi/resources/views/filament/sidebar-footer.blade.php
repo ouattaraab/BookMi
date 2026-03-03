@@ -67,8 +67,8 @@
 
 .bookmi-user-name {
     color: #ffffff;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: 0.82rem;
+    font-weight: 800;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
