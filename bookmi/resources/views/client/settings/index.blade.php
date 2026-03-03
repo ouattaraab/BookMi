@@ -146,6 +146,14 @@ main.page-content { background: #F2EFE9 !important; }
             </div>
         </div>
 
+        {{-- Delete avatar form — MUST be OUTSIDE the profile form to avoid nested form / _method leak --}}
+        @if($user->avatar)
+        <form id="delete-avatar-form" action="{{ route('client.settings.avatar.delete') }}" method="POST" style="display:none;">
+            @csrf
+            @method('DELETE')
+        </form>
+        @endif
+
         <form action="{{ route('client.settings.profile.update') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
@@ -170,15 +178,12 @@ main.page-content { background: #F2EFE9 !important; }
                                 Changer la photo
                             </label>
                             @if($user->avatar)
-                            <form action="{{ route('client.settings.avatar.delete') }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" onclick="return confirm('Supprimer la photo de profil ?')"
-                                    style="padding:7px 14px;border-radius:9px;font-size:0.75rem;font-weight:700;background:#FEF2F2;color:#991B1B;border:1.5px solid #FCA5A5;cursor:pointer;transition:background 0.15s;"
-                                    onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
-                                    Supprimer
-                                </button>
-                            </form>
+                            <button type="button"
+                                onclick="if(confirm('Supprimer la photo de profil ?')) document.getElementById('delete-avatar-form').submit();"
+                                style="padding:7px 14px;border-radius:9px;font-size:0.75rem;font-weight:700;background:#FEF2F2;color:#991B1B;border:1.5px solid #FCA5A5;cursor:pointer;transition:background 0.15s;"
+                                onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
+                                Supprimer
+                            </button>
                             @endif
                         </div>
                         <input id="avatar-input" type="file" name="avatar" accept="image/*" style="display:none;"
