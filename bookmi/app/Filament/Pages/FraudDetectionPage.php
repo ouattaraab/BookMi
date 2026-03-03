@@ -16,9 +16,9 @@ class FraudDetectionPage extends Page
 
     protected static ?string $title = 'Détection fraude & doublons';
 
-    protected static ?string $navigationGroup = 'Sécurité';
+    protected static ?string $navigationGroup = 'Gestion des utilisateurs';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 6;
 
     protected static string $view = 'filament.pages.fraud-detection-page';
 
