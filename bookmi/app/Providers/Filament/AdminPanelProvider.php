@@ -79,12 +79,6 @@ class AdminPanelProvider extends PanelProvider
                 fn () => Blade::render("@livewire('shared.notification-bell')"),
             )
 
-            // ── Raccourcis opérationnels en haut de la sidebar ──────────────
-            ->renderHook(
-                'panels::sidebar.nav.start',
-                fn () => view('filament.sidebar-quick-links'),
-            )
-
             // ── Footer sidebar : utilisateur connecté + déconnexion ──
             ->renderHook(
                 'panels::sidebar.footer',

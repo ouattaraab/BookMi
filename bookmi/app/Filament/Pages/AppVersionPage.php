@@ -9,12 +9,13 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class AppVersionPage extends Page
 {
-    protected static ?string $slug            = 'app-version';
-    protected static ?string $navigationIcon  = 'heroicon-o-device-phone-mobile';
-    protected static ?string $navigationLabel = 'Version app mobile';
-    protected static ?string $title           = 'Version app mobile';
-    protected static ?string $navigationGroup = 'Paramètres';
-    protected static ?int $navigationSort     = 11;
+    protected static ?string $slug                  = 'app-version';
+    protected static ?string $navigationIcon        = 'heroicon-o-device-phone-mobile';
+    protected static ?string $navigationLabel       = 'Version app mobile';
+    protected static ?string $title                 = 'Version app mobile';
+    protected static ?string $navigationGroup       = 'Paramètres';
+    protected static ?int    $navigationSort        = 11;
+    protected static bool    $shouldRegisterNavigation = false;
     protected static string $view             = 'filament.pages.app-version-page';
 
     public string $version_required  = '1.0.0';

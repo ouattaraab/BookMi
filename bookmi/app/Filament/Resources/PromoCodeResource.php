@@ -23,9 +23,11 @@ class PromoCodeResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Codes promo';
 
-    protected static ?string $navigationGroup = 'Finances';
+    protected static ?string $navigationGroup       = 'Finances';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int    $navigationSort        = 20;
+
+    protected static bool    $shouldRegisterNavigation = false;
 
     protected static ?string $slug = 'promo-codes';
 

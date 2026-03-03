@@ -12,7 +12,9 @@ class PlatformSettingsPage extends Page
 
     protected static ?string $title = 'Paramètres plateforme';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?string $navigationGroup = 'Paramètres';
+
+    protected static ?int $navigationSort = 9;
 
     protected static string $view = 'filament.pages.platform-settings-page';
 

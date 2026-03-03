@@ -24,9 +24,9 @@ class AdminTaskResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Tâches';
 
-    protected static ?string $navigationGroup = 'Opérations';
+    protected static ?string $navigationGroup = 'Gestion des utilisateurs';
 
-    protected static ?int $navigationSort = 15;
+    protected static ?int $navigationSort = 2;
 
     public static function canViewAny(): bool
     {

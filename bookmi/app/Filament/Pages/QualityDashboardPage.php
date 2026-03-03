@@ -16,9 +16,9 @@ class QualityDashboardPage extends Page
 
     protected static ?string $title = 'Dashboard Qualité';
 
-    protected static ?string $navigationGroup = 'Analyse';
+    protected static ?string $navigationGroup = null;
 
-    protected static ?int $navigationSort = 12;
+    protected static ?int $navigationSort = 11;
 
     protected static string $view = 'filament.pages.quality-dashboard-page';
 

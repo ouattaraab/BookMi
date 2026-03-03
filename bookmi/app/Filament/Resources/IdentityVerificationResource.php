@@ -38,7 +38,7 @@ class IdentityVerificationResource extends Resource
 
     protected static ?string $navigationGroup = 'Gestion des utilisateurs';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     public static function getEloquentQuery(): Builder
     {

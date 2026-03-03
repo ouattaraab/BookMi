@@ -11,8 +11,8 @@ class UsageAnalyticsPage extends Page
     protected static ?string $navigationIcon  = 'heroicon-o-cursor-arrow-rays';
     protected static ?string $navigationLabel = 'Statistiques d\'usage';
     protected static ?string $title           = 'Statistiques d\'usage';
-    protected static ?string $navigationGroup = 'Analytique';
-    protected static ?int    $navigationSort  = 20;
+    protected static ?string $navigationGroup = null;
+    protected static ?int    $navigationSort  = 13;
 
     protected static string $view = 'filament.pages.usage-analytics-page';
 

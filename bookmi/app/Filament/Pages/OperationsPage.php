@@ -11,7 +11,7 @@ class OperationsPage extends Page
     protected static ?string $navigationIcon = 'heroicon-o-map-pin';
     protected static ?string $navigationLabel = 'Opérations Jour J';
     protected static ?string $title = 'Suivi Opérations — Jour J';
-    protected static ?int $navigationSort = 11;
+    protected static ?int $navigationSort = 12;
 
     protected static string $view = 'filament.pages.operations-page';
 
