@@ -5,8 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 class AppVersionRepository {
-  AppVersionRepository({required ApiClient apiClient})
-      : _dio = apiClient.dio;
+  AppVersionRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   @visibleForTesting
   AppVersionRepository.forTesting({required Dio dio}) : _dio = dio;

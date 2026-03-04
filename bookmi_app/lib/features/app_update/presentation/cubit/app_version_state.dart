@@ -1,5 +1,3 @@
-import 'package:bookmi_app/features/app_update/data/models/app_version_model.dart';
-
 sealed class AppVersionState {
   const AppVersionState();
 }

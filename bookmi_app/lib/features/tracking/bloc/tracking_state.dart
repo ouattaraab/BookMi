@@ -42,8 +42,12 @@ final class TrackingLoaded extends TrackingState {
           listEquals(events, other.events);
 
   @override
-  int get hashCode =>
-      Object.hash(bookingId, isClient, clientConfirmedAt, Object.hashAll(events));
+  int get hashCode => Object.hash(
+    bookingId,
+    isClient,
+    clientConfirmedAt,
+    Object.hashAll(events),
+  );
 }
 
 /// Sub-state: a mutation is in flight; events preserved for optimistic UI.

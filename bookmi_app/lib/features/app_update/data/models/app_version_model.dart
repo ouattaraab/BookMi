@@ -34,7 +34,8 @@ class AppVersionModel {
       versionRequired: json['version_required'] as String? ?? '1.0.0',
       updateType: json['update_type'] as String? ?? 'none',
       updateMessage: json['update_message'] as String?,
-      features: (json['features'] as List<dynamic>?)
+      features:
+          (json['features'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],

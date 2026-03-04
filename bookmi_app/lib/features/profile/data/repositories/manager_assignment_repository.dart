@@ -23,7 +23,9 @@ class PendingInvitation {
       id: json['id'] as int,
       managerEmail: (json['manager_email'] as String?) ?? '',
       status: (json['status'] as String?) ?? 'pending',
-      invitedAt: DateTime.tryParse(json['invited_at'] as String? ?? '') ?? DateTime.now(),
+      invitedAt:
+          DateTime.tryParse(json['invited_at'] as String? ?? '') ??
+          DateTime.now(),
       managerComment: json['manager_comment'] as String?,
     );
   }
@@ -63,7 +65,9 @@ class TalentManagerInvitation {
       id: json['id'] as int,
       managerEmail: (json['manager_email'] as String?) ?? '',
       status: (json['status'] as String?) ?? 'pending',
-      invitedAt: DateTime.tryParse(json['invited_at'] as String? ?? '') ?? DateTime.now(),
+      invitedAt:
+          DateTime.tryParse(json['invited_at'] as String? ?? '') ??
+          DateTime.now(),
       respondedAt: json['responded_at'] != null
           ? DateTime.tryParse(json['responded_at'] as String)
           : null,
@@ -101,14 +105,17 @@ class ManagerAssignmentRepository {
 
   final Dio _dio;
 
-  Future<ApiResult<List<TalentManagerInvitation>>> getTalentInvitations() async {
+  Future<ApiResult<List<TalentManagerInvitation>>>
+  getTalentInvitations() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.meTalentManagerInvitations,
       );
       final data = response.data!['data'] as Map<String, dynamic>;
       final invitations = (data['invitations'] as List<dynamic>? ?? [])
-          .map((e) => TalentManagerInvitation.fromJson(e as Map<String, dynamic>))
+          .map(
+            (e) => TalentManagerInvitation.fromJson(e as Map<String, dynamic>),
+          )
           .toList();
       return ApiSuccess(invitations);
     } on DioException catch (e) {

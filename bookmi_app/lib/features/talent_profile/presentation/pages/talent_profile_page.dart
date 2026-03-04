@@ -365,22 +365,22 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                                 spacing: 6,
                                 runSpacing: 4,
                                 children: allCategories.map((cat) {
-                                  final slug =
-                                      cat['slug'] as String?;
-                                  final name =
-                                      cat['name'] as String? ?? '';
+                                  final slug = cat['slug'] as String?;
+                                  final name = cat['name'] as String? ?? '';
                                   return Container(
                                     padding: const EdgeInsets.symmetric(
                                       horizontal: 8,
                                       vertical: 2,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: BookmiColors.categoryColor(slug)
-                                          .withValues(alpha: 0.2),
+                                      color: BookmiColors.categoryColor(
+                                        slug,
+                                      ).withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: BookmiColors.categoryColor(slug)
-                                            .withValues(alpha: 0.5),
+                                        color: BookmiColors.categoryColor(
+                                          slug,
+                                        ).withValues(alpha: 0.5),
                                       ),
                                     ),
                                     child: Text(

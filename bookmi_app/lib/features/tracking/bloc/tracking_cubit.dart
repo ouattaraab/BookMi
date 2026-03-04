@@ -9,10 +9,10 @@ class TrackingCubit extends Cubit<TrackingState> {
     required TrackingRepository repository,
     bool isClient = false,
     DateTime? clientConfirmedAt,
-  })  : _repository = repository,
-        _isClient = isClient,
-        _clientConfirmedAt = clientConfirmedAt,
-        super(const TrackingInitial());
+  }) : _repository = repository,
+       _isClient = isClient,
+       _clientConfirmedAt = clientConfirmedAt,
+       super(const TrackingInitial());
 
   final TrackingRepository _repository;
   final bool _isClient;
@@ -37,20 +37,24 @@ class TrackingCubit extends Cubit<TrackingState> {
 
   Future<void> postUpdate(int bookingId, String status) async {
     final currentEvents = _currentEvents();
-    emit(TrackingUpdating(
-      events: currentEvents,
-      bookingId: bookingId,
-      isClient: _isClient,
-      clientConfirmedAt: _clientConfirmedAt,
-    ));
+    emit(
+      TrackingUpdating(
+        events: currentEvents,
+        bookingId: bookingId,
+        isClient: _isClient,
+        clientConfirmedAt: _clientConfirmedAt,
+      ),
+    );
     switch (await _repository.postTrackingUpdate(bookingId, status: status)) {
       case ApiFailure(:final message):
-        emit(TrackingLoaded(
-          events: currentEvents,
-          bookingId: bookingId,
-          isClient: _isClient,
-          clientConfirmedAt: _clientConfirmedAt,
-        ));
+        emit(
+          TrackingLoaded(
+            events: currentEvents,
+            bookingId: bookingId,
+            isClient: _isClient,
+            clientConfirmedAt: _clientConfirmedAt,
+          ),
+        );
         addError(Exception(message));
       case ApiSuccess(:final data):
         emit(
@@ -70,24 +74,28 @@ class TrackingCubit extends Cubit<TrackingState> {
     required double longitude,
   }) async {
     final currentEvents = _currentEvents();
-    emit(TrackingUpdating(
-      events: currentEvents,
-      bookingId: bookingId,
-      isClient: _isClient,
-      clientConfirmedAt: _clientConfirmedAt,
-    ));
+    emit(
+      TrackingUpdating(
+        events: currentEvents,
+        bookingId: bookingId,
+        isClient: _isClient,
+        clientConfirmedAt: _clientConfirmedAt,
+      ),
+    );
     switch (await _repository.checkIn(
       bookingId,
       latitude: latitude,
       longitude: longitude,
     )) {
       case ApiFailure(:final message):
-        emit(TrackingLoaded(
-          events: currentEvents,
-          bookingId: bookingId,
-          isClient: _isClient,
-          clientConfirmedAt: _clientConfirmedAt,
-        ));
+        emit(
+          TrackingLoaded(
+            events: currentEvents,
+            bookingId: bookingId,
+            isClient: _isClient,
+            clientConfirmedAt: _clientConfirmedAt,
+          ),
+        );
         addError(Exception(message));
       case ApiSuccess(:final data):
         emit(
@@ -103,20 +111,24 @@ class TrackingCubit extends Cubit<TrackingState> {
 
   Future<void> confirmArrival(int bookingId) async {
     final currentEvents = _currentEvents();
-    emit(TrackingUpdating(
-      events: currentEvents,
-      bookingId: bookingId,
-      isClient: _isClient,
-      clientConfirmedAt: _clientConfirmedAt,
-    ));
+    emit(
+      TrackingUpdating(
+        events: currentEvents,
+        bookingId: bookingId,
+        isClient: _isClient,
+        clientConfirmedAt: _clientConfirmedAt,
+      ),
+    );
     switch (await _repository.confirmArrival(bookingId)) {
       case ApiFailure(:final message):
-        emit(TrackingLoaded(
-          events: currentEvents,
-          bookingId: bookingId,
-          isClient: _isClient,
-          clientConfirmedAt: _clientConfirmedAt,
-        ));
+        emit(
+          TrackingLoaded(
+            events: currentEvents,
+            bookingId: bookingId,
+            isClient: _isClient,
+            clientConfirmedAt: _clientConfirmedAt,
+          ),
+        );
         addError(Exception(message));
       case ApiSuccess(:final data):
         final confirmedAtStr = data['client_confirmed_arrival_at'] as String?;
@@ -129,7 +141,7 @@ class TrackingCubit extends Cubit<TrackingState> {
   }
 
   List<TrackingEventModel> _currentEvents() => switch (state) {
-        TrackingLoaded(:final events) => events,
-        _ => const [],
-      };
+    TrackingLoaded(:final events) => events,
+    _ => const [],
+  };
 }

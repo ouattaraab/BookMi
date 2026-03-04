@@ -130,7 +130,8 @@ abstract final class ApiEndpoints {
   // Talent profile (own)
   static const meTalentProfile = '/talent_profiles/me';
   static const meTalentManagers = '/talent_profiles/me/manager';
-  static const meTalentManagerInvitations = '/talent_profiles/me/manager-invitations';
+  static const meTalentManagerInvitations =
+      '/talent_profiles/me/manager-invitations';
   static const meTalentProfileInfo = '/talent_profiles/me/info';
   static const meTalentAutoReply = '/talent_profiles/me/auto_reply';
 

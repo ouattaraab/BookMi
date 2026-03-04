@@ -240,4 +240,3 @@ class _PulseRingPainter extends CustomPainter {
   @override
   bool shouldRepaint(_PulseRingPainter old) => old.value != value;
 }
-

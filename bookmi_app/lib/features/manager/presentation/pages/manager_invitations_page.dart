@@ -71,14 +71,21 @@ class _ManagerInvitationsPageState extends State<ManagerInvitationsPage> {
       case ApiSuccess():
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(accept ? 'Invitation acceptée !' : 'Invitation refusée.'),
-            backgroundColor: accept ? const Color(0xFF4CAF50) : const Color(0xFFf44336),
+            content: Text(
+              accept ? 'Invitation acceptée !' : 'Invitation refusée.',
+            ),
+            backgroundColor: accept
+                ? const Color(0xFF4CAF50)
+                : const Color(0xFFf44336),
           ),
         );
         unawaited(_load());
       case ApiFailure(:final message):
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message), backgroundColor: const Color(0xFFf44336)),
+          SnackBar(
+            content: Text(message),
+            backgroundColor: const Color(0xFFf44336),
+          ),
         );
     }
   }
@@ -142,11 +149,17 @@ class _ManagerInvitationsPageState extends State<ManagerInvitationsPage> {
                 onPressed: () {
                   if (required && controller.text.trim().isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Le commentaire est requis.')),
+                      const SnackBar(
+                        content: Text('Le commentaire est requis.'),
+                      ),
                     );
                     return;
                   }
-                  Navigator.of(ctx).pop(controller.text.trim().isEmpty ? null : controller.text.trim());
+                  Navigator.of(ctx).pop(
+                    controller.text.trim().isEmpty
+                        ? null
+                        : controller.text.trim(),
+                  );
                 },
                 child: Text(
                   'Confirmer',
@@ -188,48 +201,57 @@ class _ManagerInvitationsPageState extends State<ManagerInvitationsPage> {
         ],
       ),
       body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2196F3)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF2196F3)),
+            )
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(_error!, style: const TextStyle(color: Colors.red)),
-                      const SizedBox(height: 12),
-                      ElevatedButton(onPressed: _load, child: const Text('Réessayer')),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  const SizedBox(height: 12),
+                  ElevatedButton(
+                    onPressed: _load,
+                    child: const Text('Réessayer'),
                   ),
-                )
-              : _invitations.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.mail_outline, size: 56, color: Colors.grey.shade400),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Aucune invitation en attente',
-                            style: GoogleFonts.manrope(
-                              fontSize: 15,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _invitations.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final inv = _invitations[index];
-                        return _InvitationCard(
-                          invitation: inv,
-                          onAccept: () => _respond(inv, true),
-                          onReject: () => _respond(inv, false),
-                        );
-                      },
+                ],
+              ),
+            )
+          : _invitations.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.mail_outline,
+                    size: 56,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Aucune invitation en attente',
+                    style: GoogleFonts.manrope(
+                      fontSize: 15,
+                      color: Colors.grey.shade600,
                     ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: _invitations.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final inv = _invitations[index];
+                return _InvitationCard(
+                  invitation: inv,
+                  onAccept: () => _respond(inv, true),
+                  onReject: () => _respond(inv, false),
+                );
+              },
+            ),
     );
   }
 }
@@ -374,4 +396,3 @@ class _InvitationCard extends StatelessWidget {
     );
   }
 }
-

@@ -35,10 +35,13 @@ class ManagerInvitation {
       talentProfileId: (json['talent_profile_id'] as int?) ?? 0,
       talentName: stageName ?? '$firstName $lastName'.trim(),
       status: (json['status'] as String?) ?? 'pending',
-      invitedAt: DateTime.tryParse(json['invited_at'] as String? ?? '') ?? DateTime.now(),
+      invitedAt:
+          DateTime.tryParse(json['invited_at'] as String? ?? '') ??
+          DateTime.now(),
       managerComment: json['manager_comment'] as String?,
       talentAvatarUrl: user?['avatar_url'] as String?,
-      talentCategoryName: (profile?['category'] as Map<String, dynamic>?)?['name'] as String?,
+      talentCategoryName:
+          (profile?['category'] as Map<String, dynamic>?)?['name'] as String?,
     );
   }
 }
@@ -158,7 +161,9 @@ class ManagerRepository {
 
   Future<ApiResult<List<ManagerInvitation>>> getMyInvitations() async {
     try {
-      final response = await _dio.get<Map<String, dynamic>>('/manager/invitations');
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/manager/invitations',
+      );
       final list = (response.data!['data']['invitations'] as List<dynamic>)
           .map((e) => ManagerInvitation.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -173,7 +178,10 @@ class ManagerRepository {
     }
   }
 
-  Future<ApiResult<void>> acceptInvitation(int invitationId, {String? comment}) async {
+  Future<ApiResult<void>> acceptInvitation(
+    int invitationId, {
+    String? comment,
+  }) async {
     try {
       await _dio.post<void>(
         '/manager/invitations/$invitationId/accept',
@@ -190,7 +198,10 @@ class ManagerRepository {
     }
   }
 
-  Future<ApiResult<void>> rejectInvitation(int invitationId, String comment) async {
+  Future<ApiResult<void>> rejectInvitation(
+    int invitationId,
+    String comment,
+  ) async {
     try {
       await _dio.post<void>(
         '/manager/invitations/$invitationId/reject',

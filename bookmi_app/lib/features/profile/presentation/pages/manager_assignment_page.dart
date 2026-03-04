@@ -196,172 +196,175 @@ class _ManagerAssignmentPageState extends State<ManagerAssignmentPage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_error!, style: GoogleFonts.manrope(color: Colors.red)),
+                  const SizedBox(height: 12),
+                  TextButton(onPressed: _load, child: const Text('Réessayer')),
+                ],
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                // Info card
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6C5ECF).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF6C5ECF).withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Text(
+                    'Un manager peut voir vos demandes de réservation, les accepter ou refuser, et répondre aux clients en votre nom.',
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: const Color(0xFF6C5ECF),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Invite form
+                _SectionTitle('INVITER UN MANAGER'),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(_error!, style: GoogleFonts.manrope(color: Colors.red)),
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          hintText: 'Email du manager',
+                          hintStyle: GoogleFonts.manrope(color: Colors.grey),
+                          prefixIcon: const Icon(
+                            Icons.email_outlined,
+                            size: 20,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      TextButton(onPressed: _load, child: const Text('Réessayer')),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _submitting ? null : _invite,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6C5ECF),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: _submitting
+                              ? const SizedBox(
+                                  height: 18,
+                                  width: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : Text(
+                                  'Envoyer l\'invitation',
+                                  style: GoogleFonts.manrope(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                        ),
+                      ),
                     ],
                   ),
-                )
-              : ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    // Info card
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF6C5ECF).withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFF6C5ECF).withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: Text(
-                        'Un manager peut voir vos demandes de réservation, les accepter ou refuser, et répondre aux clients en votre nom.',
-                        style: GoogleFonts.manrope(
-                          fontSize: 12,
-                          color: const Color(0xFF6C5ECF),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Invite form
-                    _SectionTitle('INVITER UN MANAGER'),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              hintText: 'Email du manager',
-                              hintStyle: GoogleFonts.manrope(color: Colors.grey),
-                              prefixIcon: const Icon(Icons.email_outlined, size: 20),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: _submitting ? null : _invite,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6C5ECF),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                              ),
-                              child: _submitting
-                                  ? const SizedBox(
-                                      height: 18,
-                                      width: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      'Envoyer l\'invitation',
-                                      style: GoogleFonts.manrope(
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Accepted managers
-                    _SectionTitle('MANAGERS ACTIFS'),
-                    const SizedBox(height: 8),
-                    if (_accepted.isEmpty)
-                      _EmptyCard('Aucun manager actif pour l\'instant.')
-                    else
-                      ..._accepted.map(
-                        (inv) => _InvitationCard(
-                          invitation: inv,
-                          trailing: _ActionButton(
-                            label: 'Retirer',
-                            color: Colors.red,
-                            onTap: () => _remove(inv),
-                          ),
-                          statusColor: const Color(0xFF22c55e),
-                          statusBg: const Color(0xFFdcfce7),
-                          statusLabel: 'Actif',
-                          avatarColor: const Color(0xFF22c55e),
-                        ),
-                      ),
-
-                    // Pending invitations
-                    if (_pending.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      _SectionTitle('EN ATTENTE DE RÉPONSE'),
-                      const SizedBox(height: 8),
-                      ..._pending.map(
-                        (inv) => _InvitationCard(
-                          invitation: inv,
-                          trailing: _ActionButton(
-                            label: 'Annuler',
-                            color: Colors.grey.shade600,
-                            onTap: () => _cancel(inv),
-                          ),
-                          statusColor: const Color(0xFFd97706),
-                          statusBg: const Color(0xFFfef9c3),
-                          statusLabel: 'En attente',
-                          avatarColor: const Color(0xFFd97706),
-                        ),
-                      ),
-                    ],
-
-                    // Rejected invitations
-                    if (_rejected.isNotEmpty) ...[
-                      const SizedBox(height: 24),
-                      _SectionTitle('INVITATIONS REFUSÉES'),
-                      const SizedBox(height: 8),
-                      ..._rejected.map(
-                        (inv) => _InvitationCard(
-                          invitation: inv,
-                          trailing: null,
-                          statusColor: const Color(0xFFef4444),
-                          statusBg: const Color(0xFFfee2e2),
-                          statusLabel: 'Refusée',
-                          avatarColor: const Color(0xFFef4444),
-                          showComment: true,
-                          opacity: 0.65,
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 24),
-                  ],
                 ),
+
+                const SizedBox(height: 24),
+
+                // Accepted managers
+                _SectionTitle('MANAGERS ACTIFS'),
+                const SizedBox(height: 8),
+                if (_accepted.isEmpty)
+                  _EmptyCard('Aucun manager actif pour l\'instant.')
+                else
+                  ..._accepted.map(
+                    (inv) => _InvitationCard(
+                      invitation: inv,
+                      trailing: _ActionButton(
+                        label: 'Retirer',
+                        color: Colors.red,
+                        onTap: () => _remove(inv),
+                      ),
+                      statusColor: const Color(0xFF22c55e),
+                      statusBg: const Color(0xFFdcfce7),
+                      statusLabel: 'Actif',
+                      avatarColor: const Color(0xFF22c55e),
+                    ),
+                  ),
+
+                // Pending invitations
+                if (_pending.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _SectionTitle('EN ATTENTE DE RÉPONSE'),
+                  const SizedBox(height: 8),
+                  ..._pending.map(
+                    (inv) => _InvitationCard(
+                      invitation: inv,
+                      trailing: _ActionButton(
+                        label: 'Annuler',
+                        color: Colors.grey.shade600,
+                        onTap: () => _cancel(inv),
+                      ),
+                      statusColor: const Color(0xFFd97706),
+                      statusBg: const Color(0xFFfef9c3),
+                      statusLabel: 'En attente',
+                      avatarColor: const Color(0xFFd97706),
+                    ),
+                  ),
+                ],
+
+                // Rejected invitations
+                if (_rejected.isNotEmpty) ...[
+                  const SizedBox(height: 24),
+                  _SectionTitle('INVITATIONS REFUSÉES'),
+                  const SizedBox(height: 8),
+                  ..._rejected.map(
+                    (inv) => _InvitationCard(
+                      invitation: inv,
+                      trailing: null,
+                      statusColor: const Color(0xFFef4444),
+                      statusBg: const Color(0xFFfee2e2),
+                      statusLabel: 'Refusée',
+                      avatarColor: const Color(0xFFef4444),
+                      showComment: true,
+                      opacity: 0.65,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 24),
+              ],
+            ),
     );
   }
 }
@@ -425,7 +428,10 @@ class _ActionButton extends StatelessWidget {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      child: Text(label, style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w600)),
+      child: Text(
+        label,
+        style: GoogleFonts.manrope(fontSize: 12, fontWeight: FontWeight.w600),
+      ),
     );
   }
 }
@@ -499,15 +505,24 @@ class _InvitationCard extends StatelessWidget {
                   if (invitation.displayName != invitation.managerEmail)
                     Text(
                       invitation.managerEmail,
-                      style: GoogleFonts.manrope(fontSize: 11, color: Colors.grey),
+                      style: GoogleFonts.manrope(
+                        fontSize: 11,
+                        color: Colors.grey,
+                      ),
                     ),
                   Text(
                     'Invité le $dateStr',
-                    style: GoogleFonts.manrope(fontSize: 11, color: Colors.grey),
+                    style: GoogleFonts.manrope(
+                      fontSize: 11,
+                      color: Colors.grey,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: statusBg,
                       borderRadius: BorderRadius.circular(20),

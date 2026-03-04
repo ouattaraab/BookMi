@@ -19,8 +19,7 @@ class OnboardingStatusModel {
     final categories =
         (data['categories'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
         [];
-    final hasCategory =
-        categories.isNotEmpty || data['category_id'] != null;
+    final hasCategory = categories.isNotEmpty || data['category_id'] != null;
     final hasPackages =
         (data['service_packages_count'] as num?)?.toInt() != null &&
         (data['service_packages_count'] as num).toInt() > 0;

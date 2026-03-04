@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AppVersionCubit extends Cubit<AppVersionState> {
   AppVersionCubit({required AppVersionRepository repository})
-      : _repository = repository,
-        super(const AppVersionInitial());
+    : _repository = repository,
+      super(const AppVersionInitial());
 
   final AppVersionRepository _repository;
 
@@ -15,24 +15,28 @@ class AppVersionCubit extends Cubit<AppVersionState> {
 
       // 1. Maintenance takes priority over everything
       if (info.maintenance) {
-        emit(AppVersionMaintenance(
-          message: info.maintenanceMessage ?? 'Maintenance en cours.',
-          endAt: info.maintenanceEndAt,
-        ));
+        emit(
+          AppVersionMaintenance(
+            message: info.maintenanceMessage ?? 'Maintenance en cours.',
+            endAt: info.maintenanceEndAt,
+          ),
+        );
         return;
       }
 
       // 2. Check version (only if update_type != 'none')
       if (info.updateType != 'none' &&
           _isOutdated(currentVersion, info.versionRequired)) {
-        emit(AppVersionUpdateRequired(
-          updateType: info.updateType,
-          version: info.versionRequired,
-          message: info.updateMessage,
-          features: info.features,
-          androidStoreUrl: info.androidStoreUrl,
-          iosStoreUrl: info.iosStoreUrl,
-        ));
+        emit(
+          AppVersionUpdateRequired(
+            updateType: info.updateType,
+            version: info.versionRequired,
+            message: info.updateMessage,
+            features: info.features,
+            androidStoreUrl: info.androidStoreUrl,
+            iosStoreUrl: info.iosStoreUrl,
+          ),
+        );
         return;
       }
 

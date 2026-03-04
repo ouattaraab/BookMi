@@ -69,9 +69,7 @@ class _TrackingViewState extends State<_TrackingView> {
         final state = context.read<TrackingCubit>().state;
         if (state is TrackingLoaded) {
           final status = state.currentStatus;
-          if (status == null ||
-              status == 'preparing' ||
-              status == 'en_route') {
+          if (status == null || status == 'preparing' || status == 'en_route') {
             context.read<TrackingCubit>().loadEvents(widget.bookingId);
           }
         }
@@ -238,7 +236,10 @@ class _ClientTrackingView extends StatelessWidget {
         padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
         children: [
           // ── Header status icon ──
-          _ClientStatusHeader(events: events, clientConfirmedAt: clientConfirmedAt),
+          _ClientStatusHeader(
+            events: events,
+            clientConfirmedAt: clientConfirmedAt,
+          ),
           const SizedBox(height: BookmiSpacing.spaceLg),
 
           // ── Progress bar (4 steps) ──
@@ -265,9 +266,7 @@ class _ClientTrackingView extends StatelessWidget {
                       return Expanded(
                         child: Container(
                           height: 2,
-                          color: isDone
-                              ? BookmiColors.success
-                              : Colors.white12,
+                          color: isDone ? BookmiColors.success : Colors.white12,
                         ),
                       );
                     }
@@ -285,45 +284,48 @@ class _ClientTrackingView extends StatelessWidget {
                 ),
                 const SizedBox(height: BookmiSpacing.spaceMd),
                 // Timestamps for completed steps
-                ..._progressSteps.asMap().entries
+                ..._progressSteps
+                    .asMap()
+                    .entries
                     .where((e) => e.key <= currentIdx && e.key < 3)
                     .map((e) {
-                  final (status, label, _) = e.value;
-                  final event = _eventForStatus(status);
-                  if (event?.occurredAt == null) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      children: [
-                        Text(
-                          '$label : ',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white54,
-                          ),
-                        ),
-                        Text(
-                          _formatTime(event!.occurredAt!),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white70,
-                          ),
-                        ),
-                        if (event.clientNotifiedAt != null) ...[
-                          const SizedBox(width: 6),
-                          Text(
-                            '· notifié ${_formatTime(event.clientNotifiedAt!)}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white38,
+                      final (status, label, _) = e.value;
+                      final event = _eventForStatus(status);
+                      if (event?.occurredAt == null)
+                        return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Row(
+                          children: [
+                            Text(
+                              '$label : ',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white54,
+                              ),
                             ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                }),
+                            Text(
+                              _formatTime(event!.occurredAt!),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white70,
+                              ),
+                            ),
+                            if (event.clientNotifiedAt != null) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '· notifié ${_formatTime(event.clientNotifiedAt!)}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.white38,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      );
+                    }),
                 if (clientConfirmedAt != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
@@ -365,7 +367,9 @@ class _ClientTrackingView extends StatelessWidget {
           ],
 
           // ── Secondary statuses (performing, completed) ──
-          if (events.any((e) => e.status == 'performing' || e.status == 'completed')) ...[
+          if (events.any(
+            (e) => e.status == 'performing' || e.status == 'completed',
+          )) ...[
             GlassCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,7 +439,10 @@ class _ClientTrackingView extends StatelessWidget {
 }
 
 class _ClientStatusHeader extends StatelessWidget {
-  const _ClientStatusHeader({required this.events, required this.clientConfirmedAt});
+  const _ClientStatusHeader({
+    required this.events,
+    required this.clientConfirmedAt,
+  });
 
   final List<TrackingEventModel> events;
   final DateTime? clientConfirmedAt;
@@ -443,16 +450,44 @@ class _ClientStatusHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (clientConfirmedAt != null) {
-      return _headerCard(Icons.check_circle_outline, BookmiColors.success, 'Présence confirmée ✅');
+      return _headerCard(
+        Icons.check_circle_outline,
+        BookmiColors.success,
+        'Présence confirmée ✅',
+      );
     }
     final status = events.isEmpty ? null : events.last.status;
     return switch (status) {
-      'preparing'  => _headerCard(Icons.schedule_outlined, BookmiColors.brandBlue, 'Votre artiste se prépare 🎵'),
-      'en_route'   => _headerCard(Icons.directions_car_outlined, BookmiColors.brandBlueLight, 'Votre artiste est en route 🚗'),
-      'arrived'    => _headerCard(Icons.location_on_outlined, BookmiColors.success, 'Votre artiste est arrivé ! ✅'),
-      'performing' => _headerCard(Icons.music_note_outlined, const Color(0xFFAB47BC), 'La prestation est en cours 🎤'),
-      'completed'  => _headerCard(Icons.star_outline, BookmiColors.success, 'Prestation terminée ⭐'),
-      _            => _headerCard(Icons.hourglass_empty, Colors.white38, 'En attente du talent…'),
+      'preparing' => _headerCard(
+        Icons.schedule_outlined,
+        BookmiColors.brandBlue,
+        'Votre artiste se prépare 🎵',
+      ),
+      'en_route' => _headerCard(
+        Icons.directions_car_outlined,
+        BookmiColors.brandBlueLight,
+        'Votre artiste est en route 🚗',
+      ),
+      'arrived' => _headerCard(
+        Icons.location_on_outlined,
+        BookmiColors.success,
+        'Votre artiste est arrivé ! ✅',
+      ),
+      'performing' => _headerCard(
+        Icons.music_note_outlined,
+        const Color(0xFFAB47BC),
+        'La prestation est en cours 🎤',
+      ),
+      'completed' => _headerCard(
+        Icons.star_outline,
+        BookmiColors.success,
+        'Prestation terminée ⭐',
+      ),
+      _ => _headerCard(
+        Icons.hourglass_empty,
+        Colors.white38,
+        'En attente du talent…',
+      ),
     };
   }
 
@@ -590,18 +625,20 @@ class _ConfirmArrivalCard extends StatelessWidget {
             width: double.infinity,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                gradient: isUpdating ? null : const LinearGradient(
-                  colors: [BookmiColors.success, Color(0xFF15803D)],
-                ),
+                gradient: isUpdating
+                    ? null
+                    : const LinearGradient(
+                        colors: [BookmiColors.success, Color(0xFF15803D)],
+                      ),
                 color: isUpdating ? Colors.white12 : null,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextButton.icon(
                 onPressed: isUpdating
                     ? null
-                    : () => context
-                        .read<TrackingCubit>()
-                        .confirmArrival(bookingId),
+                    : () => context.read<TrackingCubit>().confirmArrival(
+                        bookingId,
+                      ),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: BookmiSpacing.spaceMd,
@@ -731,7 +768,10 @@ class _TalentTrackingView extends StatelessWidget {
 // ── Timeline Widget (talent) ──────────────────────────────────────────────────
 
 class _TrackingTimeline extends StatelessWidget {
-  const _TrackingTimeline({required this.events, required this.clientConfirmedAt});
+  const _TrackingTimeline({
+    required this.events,
+    required this.clientConfirmedAt,
+  });
 
   final List<TrackingEventModel> events;
   final DateTime? clientConfirmedAt;
