@@ -188,7 +188,7 @@
     <div class="auth-bg-orb-1"></div>
     <div class="auth-bg-orb-2"></div>
 
-    <div class="auth-wrapper" x-data="{ role: '{{ old('role', 'client') }}', showPass: false }">
+    <div class="auth-wrapper" x-data="{ role: '{{ old('role', $prefillRole ?? 'client') }}', showPass: false }">
         <div class="auth-logo">
             <a href="{{ route('home') }}">
                 <span class="logo-book">Book</span><span class="logo-mi">Mi</span>
@@ -211,34 +211,52 @@
             @endif
 
             {{-- Role selector --}}
-            <div class="role-grid">
-                <button
-                    type="button"
-                    @click="role = 'client'"
-                    :class="role === 'client' ? 'role-btn active-client' : 'role-btn'"
-                >
-                    <div class="role-icon" :style="role === 'client' ? 'background:#EFF8FF' : 'background:#F3F4F6'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            @if(($prefillRole ?? '') === 'manager')
+                {{-- Manager invitation mode: locked role badge --}}
+                <div style="display:flex;align-items:center;gap:0.875rem;padding:1rem;background:#F0FDF4;border:2px solid #86EFAC;border-radius:14px;margin-bottom:1.5rem;">
+                    <div style="width:44px;height:44px;min-width:44px;border-radius:12px;background:#DCFCE7;display:flex;align-items:center;justify-content:center;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     </div>
-                    <span class="role-name">Je suis client</span>
-                    <span class="role-desc">Je cherche des talents</span>
-                </button>
-                <button
-                    type="button"
-                    @click="role = 'talent'"
-                    :class="role === 'talent' ? 'role-btn active-talent' : 'role-btn'"
-                >
-                    <div class="role-icon" :style="role === 'talent' ? 'background:#EFF8FF' : 'background:#F3F4F6'">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <div>
+                        <div style="font-size:0.875rem;font-weight:800;color:#15803D;">Compte Manager</div>
+                        <div style="font-size:0.75rem;font-weight:600;color:#16A34A;">Vous rejoignez BookMi en tant que manager de talent</div>
                     </div>
-                    <span class="role-name">Je suis talent</span>
-                    <span class="role-desc">Je propose mes services</span>
-                </button>
-            </div>
+                </div>
+            @else
+                <div class="role-grid">
+                    <button
+                        type="button"
+                        @click="role = 'client'"
+                        :class="role === 'client' ? 'role-btn active-client' : 'role-btn'"
+                    >
+                        <div class="role-icon" :style="role === 'client' ? 'background:#EFF8FF' : 'background:#F3F4F6'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <span class="role-name">Je suis client</span>
+                        <span class="role-desc">Je cherche des talents</span>
+                    </button>
+                    <button
+                        type="button"
+                        @click="role = 'talent'"
+                        :class="role === 'talent' ? 'role-btn active-talent' : 'role-btn'"
+                    >
+                        <div class="role-icon" :style="role === 'talent' ? 'background:#EFF8FF' : 'background:#F3F4F6'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1AB3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </div>
+                        <span class="role-name">Je suis talent</span>
+                        <span class="role-desc">Je propose mes services</span>
+                    </button>
+                </div>
+            @endif
 
             <form method="POST" action="{{ route('register') }}">
                 @csrf
-                <input type="hidden" name="role" :value="role">
+                {{-- Role: fixed for manager invitation, AlpineJS-driven for client/talent --}}
+                @if(($prefillRole ?? '') === 'manager')
+                    <input type="hidden" name="role" value="manager">
+                @else
+                    <input type="hidden" name="role" :value="role">
+                @endif
 
                 <div class="form-row">
                     <div class="form-group">
@@ -253,7 +271,8 @@
 
                 <div class="form-group">
                     <label class="auth-label">Adresse email</label>
-                    <input type="email" name="email" value="{{ old('email') }}" required class="auth-input" placeholder="vous@exemple.com">
+                    <input type="email" name="email" value="{{ old('email', $prefillEmail ?? '') }}" required class="auth-input" placeholder="vous@exemple.com"
+                        {{ ($prefillRole ?? '') === 'manager' ? 'readonly style=background:#F3F4F6;color:#6B7280;' : '' }}>
                 </div>
 
                 <div class="form-group">
@@ -289,7 +308,11 @@
                 <button
                     type="submit"
                     class="auth-btn"
-                    :style="role === 'talent' ? 'background:linear-gradient(135deg,#1AB3FF 0%,#0090E8 100%)' : 'background:linear-gradient(135deg,#1A2744 0%,#2563EB 100%)'"
+                    @if(($prefillRole ?? '') === 'manager')
+                        style="background:linear-gradient(135deg,#16A34A 0%,#15803D 100%)"
+                    @else
+                        :style="role === 'talent' ? 'background:linear-gradient(135deg,#1AB3FF 0%,#0090E8 100%)' : 'background:linear-gradient(135deg,#1A2744 0%,#2563EB 100%)'"
+                    @endif
                 >
                     Créer mon compte
                 </button>

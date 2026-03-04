@@ -53,14 +53,26 @@ class ManagerInvitationWebController extends Controller
         if ($data['action'] === 'accept') {
             $this->managerService->acceptInvitation($invitation->fresh(), $data['comment'] ?? null);
 
-            // Only redirect to manager dashboard if the authenticated user IS the manager
+            // Case 1: Already authenticated as manager → go straight to dashboard
             if (auth()->check() && auth()->user()->hasRole('manager')) {
                 return redirect()->route('manager.dashboard')
                     ->with('success', 'Vous avez accepté l\'invitation. Bienvenue dans l\'équipe !');
             }
 
-            return redirect()->route('login')
-                ->with('success', 'Invitation acceptée ! Connectez-vous pour accéder à votre espace manager.');
+            // Case 2: Email already has an account on the platform → redirect to login
+            $existingUser = \App\Models\User::where('email', $invitation->manager_email)->first();
+            if ($existingUser) {
+                return redirect()->route('login')
+                    ->with('success', 'Invitation acceptée ! Connectez-vous pour accéder à votre espace manager.');
+            }
+
+            // Case 3: No account yet → store token in session, redirect to register pre-filled
+            session(['manager_invitation_token' => $invitation->token]);
+
+            return redirect()->route('register', [
+                'email' => $invitation->manager_email,
+                'role'  => 'manager',
+            ])->with('info', 'Invitation acceptée ! Créez votre compte pour accéder à votre espace manager.');
         }
 
         $this->managerService->rejectInvitation($invitation, $data['comment']);

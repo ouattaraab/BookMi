@@ -244,6 +244,16 @@ class ManagerService
     {
         $email = strtolower($email);
 
+        // Block if the email already belongs to a client or talent account
+        $existingUser = User::where('email', $email)->first();
+        if ($existingUser && $existingUser->hasAnyRole(['client', 'talent'], 'api')) {
+            throw new \App\Exceptions\BookmiException(
+                'EMAIL_BELONGS_TO_NON_MANAGER',
+                'Cet email appartient déjà à un compte client ou talent sur BookMi. Il n\'est pas possible d\'inviter cet utilisateur comme manager.',
+                422,
+            );
+        }
+
         $existing = ManagerInvitation::where('talent_profile_id', $profile->id)
             ->where('manager_email', $email)
             ->where('status', ManagerInvitationStatus::Pending->value)
