@@ -294,7 +294,7 @@ class ManagerService
             'responded_at'    => now(),
         ]);
 
-        // Attach manager to talent
+        // Attach manager to talent + ensure they have the manager role
         $profile = $invitation->talentProfile;
         if ($profile && $invitation->manager_id) {
             $alreadyAssigned = $profile->managers()
@@ -302,6 +302,11 @@ class ManagerService
                 ->exists();
             if (! $alreadyAssigned) {
                 $profile->managers()->attach($invitation->manager_id, ['assigned_at' => now()]);
+            }
+
+            $managerUser = User::find($invitation->manager_id);
+            if ($managerUser && ! $managerUser->hasRole('manager')) {
+                $managerUser->assignRole('manager');
             }
         }
 

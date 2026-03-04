@@ -53,7 +53,8 @@ class ManagerInvitationWebController extends Controller
         if ($data['action'] === 'accept') {
             $this->managerService->acceptInvitation($invitation->fresh(), $data['comment'] ?? null);
 
-            if (auth()->check()) {
+            // Only redirect to manager dashboard if the authenticated user IS the manager
+            if (auth()->check() && auth()->user()->hasRole('manager')) {
                 return redirect()->route('manager.dashboard')
                     ->with('success', 'Vous avez accepté l\'invitation. Bienvenue dans l\'équipe !');
             }
