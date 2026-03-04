@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\Talent\ReviewController;
 use App\Http\Controllers\Web\Talent\CertificateController;
 use App\Http\Controllers\Web\Talent\DashboardController;
 use App\Http\Controllers\Web\Talent\EarningsController;
+use App\Http\Controllers\Web\Talent\ManagerController;
 use App\Http\Controllers\Web\Talent\MessageController;
 use App\Http\Controllers\Web\Talent\PackageController;
 use App\Http\Controllers\Web\Talent\PaiementController;
@@ -80,6 +81,12 @@ Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('
 // Vérification
 Route::get('/verification', [VerificationController::class, 'index'])->name('verification');
 Route::post('/verification', [VerificationController::class, 'submit'])->name('verification.submit');
+
+// Managers
+Route::get('/managers', [ManagerController::class, 'index'])->name('managers');
+Route::post('/managers/invite', [ManagerController::class, 'invite'])->name('managers.invite');
+Route::delete('/managers/invitations/{id}/cancel', [ManagerController::class, 'cancel'])->name('managers.invitations.cancel');
+Route::delete('/managers/{id}/remove', [ManagerController::class, 'removeManager'])->name('managers.remove');
 
 // Paramètres (2FA)
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings');

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\ManagerInvitationStatus;
 use App\Filament\Resources\ManagerInvitationResource\Pages;
 use App\Models\ManagerInvitation;
 use Filament\Resources\Resource;
@@ -59,13 +58,15 @@ class ManagerInvitationResource extends Resource
                     ->label('Email manager')
                     ->searchable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
-                    ->colors([
-                        'warning' => ManagerInvitationStatus::Pending->value,
-                        'success' => ManagerInvitationStatus::Accepted->value,
-                        'danger'  => ManagerInvitationStatus::Rejected->value,
-                    ])
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'pending'  => 'warning',
+                        'accepted' => 'success',
+                        'rejected' => 'danger',
+                        default    => 'gray',
+                    })
                     ->formatStateUsing(fn (string $state) => match ($state) {
                         'pending'  => 'En attente',
                         'accepted' => 'Acceptée',

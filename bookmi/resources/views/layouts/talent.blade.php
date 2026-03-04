@@ -72,6 +72,7 @@
                 ['route' => 'talent.bookings',     'label' => 'Réservations',       'icon' => 'book-open'],
                 ['route' => 'talent.packages',     'label' => 'Packages',           'icon' => 'cube'],
                 ['route' => 'talent.messages',     'label' => 'Messages',           'icon' => 'chat-bubble-left'],
+                ['route' => 'talent.managers',     'label' => 'Mes managers',       'icon' => 'users'],
                 ['route' => 'talent.statistics',   'label' => 'Statistiques',       'icon' => 'chart-pie'],
                 ['route' => 'talent.earnings',     'label' => 'Mes Revenus',        'icon' => 'banknotes'],
                 ['route' => 'talent.paiement',     'label' => 'Moyens de paiement', 'icon' => 'credit-card'],

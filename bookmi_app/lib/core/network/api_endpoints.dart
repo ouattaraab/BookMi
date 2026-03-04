@@ -62,6 +62,10 @@ abstract final class ApiEndpoints {
   static String bookingCheckin(int bookingId) =>
       '/booking_requests/$bookingId/checkin';
 
+  // Confirm arrival (client)
+  static String bookingConfirmArrival(int bookingId) =>
+      '/booking_requests/$bookingId/confirm-arrival';
+
   // Stories 6.4 & 6.5 — Reviews
   static String bookingReviews(int bookingId) =>
       '/booking_requests/$bookingId/reviews';
@@ -126,6 +130,7 @@ abstract final class ApiEndpoints {
   // Talent profile (own)
   static const meTalentProfile = '/talent_profiles/me';
   static const meTalentManagers = '/talent_profiles/me/manager';
+  static const meTalentManagerInvitations = '/talent_profiles/me/manager-invitations';
   static const meTalentProfileInfo = '/talent_profiles/me/info';
   static const meTalentAutoReply = '/talent_profiles/me/auto_reply';
 
