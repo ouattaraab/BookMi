@@ -95,20 +95,27 @@
                 <p class="text-xs text-gray-400 mt-1">C'est ce nom qui sera affiché aux clients.</p>
             </div>
 
-            {{-- Catégorie --}}
+            {{-- Catégories (multi-sélection) --}}
             <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Catégorie *</label>
-                <select name="category_id" required
-                        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent bg-white">
-                    <option value="">Choisir votre catégorie artistique…</option>
+                <label class="block text-xs font-semibold text-gray-700 mb-1.5">Catégories * <span class="font-normal text-gray-400">(une ou plusieurs)</span></label>
+                @php
+                    $selectedCategoryIds = old('categories', $profile?->categories->pluck('id')->toArray() ?? ($profile?->category_id ? [$profile->category_id] : []));
+                @endphp
+                <div class="grid grid-cols-2 gap-2">
                     @foreach($categories as $cat)
-                        <option value="{{ $cat->id }}"
-                            {{ old('category_id', $profile->category_id ?? '') == $cat->id ? 'selected' : '' }}>
-                            {{ $cat->name }}
-                        </option>
+                        <label class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border cursor-pointer transition-all
+                            {{ in_array($cat->id, $selectedCategoryIds) ? 'border-orange-400 bg-orange-50' : 'border-gray-200 bg-white hover:border-gray-300' }}">
+                            <input type="checkbox" name="categories[]" value="{{ $cat->id }}"
+                                   {{ in_array($cat->id, $selectedCategoryIds) ? 'checked' : '' }}
+                                   class="w-4 h-4 accent-orange-500 flex-shrink-0">
+                            <span class="text-sm font-medium text-gray-800">{{ $cat->name }}</span>
+                        </label>
                     @endforeach
-                </select>
-                <p class="text-xs text-gray-400 mt-1">Détermine dans quelle section vous apparaissez.</p>
+                </div>
+                @error('categories')
+                    <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
+                @enderror
+                <p class="text-xs text-gray-400 mt-2">Sélectionnez toutes les catégories artistiques qui vous correspondent.</p>
             </div>
 
             {{-- Bio --}}

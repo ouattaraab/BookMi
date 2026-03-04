@@ -14,7 +14,7 @@ class ProfileController extends Controller
 {
     public function edit(): View
     {
-        $profile    = auth()->user()->talentProfile;
+        $profile    = auth()->user()->talentProfile?->load('categories');
         $user       = auth()->user();
         $categories = Category::orderBy('name')->get();
         return view('talent.profile.edit', compact('profile', 'user', 'categories'));
@@ -26,7 +26,8 @@ class ProfileController extends Controller
 
         $data = $request->validate([
             'stage_name'              => 'required|string|max:100',
-            'category_id'             => 'required|exists:categories,id',
+            'categories'              => 'required|array|min:1',
+            'categories.*'            => 'integer|exists:categories,id',
             'bio'                     => 'nullable|string|max:2000',
             'city'                    => 'nullable|string|max:100',
             'cachet_amount'           => 'nullable|integer|min:0',
@@ -41,6 +42,13 @@ class ProfileController extends Controller
             'group_size'              => 'nullable|integer|min:1|max:100',
             'collective_name'         => 'nullable|string|max:100',
         ]);
+
+        // Extract categories before filling model (not a direct column)
+        $categoryIds = $data['categories'];
+        unset($data['categories']);
+
+        // Primary category_id = first selected (for backward compat)
+        $data['category_id'] = $categoryIds[0];
 
         // Ensure cachet_amount always has a value (NOT NULL in DB)
         $data['cachet_amount'] = $data['cachet_amount'] ?? 0;
@@ -69,8 +77,11 @@ class ProfileController extends Controller
         if ($profile) {
             $profile->update($data);
         } else {
-            auth()->user()->talentProfile()->create($data);
+            $profile = auth()->user()->talentProfile()->create($data);
         }
+
+        // Sync pivot table (many-to-many categories)
+        $profile->categories()->sync($categoryIds);
 
         if ($request->filled('first_name') || $request->filled('last_name')) {
             auth()->user()->update($request->only(['first_name', 'last_name']));
