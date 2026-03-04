@@ -4,15 +4,11 @@ namespace App\Notifications;
 
 use App\Enums\ManagerInvitationStatus;
 use App\Models\ManagerInvitation;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ManagerInvitationResponseNotification extends Notification implements ShouldQueue
+class ManagerInvitationResponseNotification extends Notification
 {
-    use Queueable;
-
     public function __construct(
         private readonly ManagerInvitation $invitation,
     ) {

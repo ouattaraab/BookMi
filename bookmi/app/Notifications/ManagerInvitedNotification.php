@@ -4,15 +4,11 @@ namespace App\Notifications;
 
 use App\Models\ManagerInvitation;
 use App\Models\TalentProfile;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ManagerInvitedNotification extends Notification implements ShouldQueue
+class ManagerInvitedNotification extends Notification
 {
-    use Queueable;
-
     public function __construct(
         private readonly TalentProfile $profile,
         private readonly ManagerInvitation $invitation,
