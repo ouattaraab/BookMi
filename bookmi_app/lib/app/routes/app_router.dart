@@ -9,6 +9,7 @@ import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:bookmi_app/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:bookmi_app/features/manager/presentation/pages/manager_dashboard_page.dart';
+import 'package:bookmi_app/features/manager/presentation/pages/manager_invitations_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/booking/presentation/pages/talent_review_replies_page.dart';
 import 'package:bookmi_app/features/evaluation/data/repositories/review_repository.dart';
@@ -134,6 +135,14 @@ GoRouter buildAppRouter(
         name: RouteNames.managerDashboard,
         path: RoutePaths.managerDashboard,
         builder: (context, state) => const ManagerDashboardPage(),
+      ),
+
+      // ── Manager invitations ──────────────────────────────────────────
+      GoRoute(
+        parentNavigatorKey: rootNavigatorKey,
+        name: RouteNames.managerInvitations,
+        path: RoutePaths.managerInvitations,
+        builder: (context, state) => const ManagerInvitationsPage(),
       ),
 
       // ── Maintenance / Force update (exempt from auth guard) ─────────────
@@ -296,9 +305,18 @@ GoRouter buildAppRouter(
                                 state.pathParameters['id'] ?? '',
                               ) ??
                               0;
+                          final isClient =
+                              state.uri.queryParameters['role'] == 'client';
+                          final confirmedAtStr =
+                              state.uri.queryParameters['confirmed_at'];
+                          final clientConfirmedAt = confirmedAtStr != null
+                              ? DateTime.tryParse(confirmedAtStr)
+                              : null;
                           return TrackingPage(
                             bookingId: id,
                             repository: trackingRepo,
+                            isClient: isClient,
+                            clientConfirmedAt: clientConfirmedAt,
                           );
                         },
                       ),
@@ -507,7 +525,12 @@ GoRouter buildAppRouter(
   notificationService?.onNotificationTap = (message) {
     final type = message.data['type'];
     final bookingId = message.data['booking_id']?.toString();
-    if (bookingId != null && bookingId.isNotEmpty) {
+    if (type == 'tracking_update' &&
+        bookingId != null &&
+        bookingId.isNotEmpty) {
+      // Navigate directly to the tracking page as a client viewer.
+      router.push('/bookings/booking/$bookingId/tracking?role=client');
+    } else if (bookingId != null && bookingId.isNotEmpty) {
       router.push('/bookings/booking/$bookingId');
     } else if (type == 'talent_update' || type == 'availability_alert') {
       final talentProfileId = message.data['talent_profile_id']?.toString();
@@ -516,6 +539,10 @@ GoRouter buildAppRouter(
       } else {
         router.push(RoutePaths.notifications);
       }
+    } else if (type == 'manager_invitation') {
+      router.push(RoutePaths.managerInvitations);
+    } else if (type == 'manager_invitation_response') {
+      router.push(RoutePaths.profileManagerAssignment);
     } else if (type == 'new_message' || type == 'admin_broadcast') {
       router.go(RoutePaths.messages);
     } else if (type == 'payout_method_verified' ||

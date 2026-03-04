@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bookmi_app/core/network/api_client.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/profile/data/repositories/manager_assignment_repository.dart';
@@ -53,11 +55,11 @@ class _ManagerAssignmentPageState extends State<ManagerAssignmentPage> {
     }
   }
 
-  Future<void> _assign() async {
+  Future<void> _invite() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) return;
     setState(() => _submitting = true);
-    final result = await _repo.assignManager(email);
+    final result = await _repo.inviteManager(email);
     if (!mounted) return;
     setState(() => _submitting = false);
     switch (result) {
@@ -65,11 +67,11 @@ class _ManagerAssignmentPageState extends State<ManagerAssignmentPage> {
         _emailController.clear();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Manager assigné avec succès'),
+            content: Text('Invitation envoyée ! Le manager recevra un email.'),
             backgroundColor: Color(0xFF4CAF50),
           ),
         );
-        _load();
+        unawaited(_load());
       case ApiFailure(:final message):
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(message), backgroundColor: Colors.red),
@@ -248,9 +250,9 @@ class _ManagerAssignmentPageState extends State<ManagerAssignmentPage> {
 
           const SizedBox(height: 24),
 
-          // Assign new manager
+          // Invite new manager
           Text(
-            'ASSIGNER UN MANAGER',
+            'INVITER UN MANAGER',
             style: GoogleFonts.manrope(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -292,7 +294,7 @@ class _ManagerAssignmentPageState extends State<ManagerAssignmentPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _submitting ? null : _assign,
+                    onPressed: _submitting ? null : _invite,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF6C5ECF),
                       foregroundColor: Colors.white,
@@ -311,7 +313,7 @@ class _ManagerAssignmentPageState extends State<ManagerAssignmentPage> {
                             ),
                           )
                         : Text(
-                            'Assigner',
+                            'Envoyer l\'invitation',
                             style: GoogleFonts.manrope(
                               fontWeight: FontWeight.w700,
                               fontSize: 14,

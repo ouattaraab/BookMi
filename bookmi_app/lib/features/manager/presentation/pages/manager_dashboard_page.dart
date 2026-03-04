@@ -1,8 +1,10 @@
+import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/manager/data/repositories/manager_repository.dart';
 import 'package:bookmi_app/features/manager/presentation/pages/manager_talent_page.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ManagerDashboardPage extends StatefulWidget {
@@ -64,6 +66,11 @@ class _ManagerDashboardPageState extends State<ManagerDashboardPage> {
           ),
         ),
         actions: [
+          IconButton(
+            onPressed: () => context.pushNamed(RouteNames.managerInvitations),
+            icon: const Icon(Icons.mail_outline, color: Color(0xFF6C5ECF)),
+            tooltip: 'Invitations',
+          ),
           IconButton(
             onPressed: _load,
             icon: const Icon(Icons.refresh, color: Color(0xFF6C5ECF)),

@@ -5,11 +5,18 @@ namespace App\Http\Controllers\Web\Manager;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Models\TalentProfile;
+use App\Services\BookingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
+    public function __construct(
+        private readonly BookingService $bookingService,
+    ) {
+    }
+
     private function managedProfileIds()
     {
         return TalentProfile::whereHas('managers', fn ($q) => $q->where('users.id', auth()->id()))->pluck('id');
@@ -39,8 +46,39 @@ class BookingController extends Controller
     {
         $profileIds = $this->managedProfileIds();
         $booking = BookingRequest::whereIn('talent_profile_id', $profileIds)
-            ->with(['talentProfile.user', 'client', 'servicePackage'])
+            ->with(['talentProfile.user', 'client', 'servicePackage', 'escrowHold'])
             ->findOrFail($id);
         return view('manager.bookings.show', compact('booking'));
+    }
+
+    public function accept(int $id): RedirectResponse
+    {
+        $profileIds = $this->managedProfileIds();
+        $booking = BookingRequest::whereIn('talent_profile_id', $profileIds)->findOrFail($id);
+
+        try {
+            $this->bookingService->acceptBooking($booking);
+            return redirect()->route('manager.bookings.show', $id)
+                ->with('success', 'Réservation acceptée avec succès.');
+        } catch (\Throwable $e) {
+            return redirect()->route('manager.bookings.show', $id)
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    public function reject(Request $request, int $id): RedirectResponse
+    {
+        $request->validate(['reason' => ['required', 'string', 'max:500']]);
+        $profileIds = $this->managedProfileIds();
+        $booking = BookingRequest::whereIn('talent_profile_id', $profileIds)->findOrFail($id);
+
+        try {
+            $this->bookingService->rejectBooking($booking, $request->input('reason'));
+            return redirect()->route('manager.bookings.show', $id)
+                ->with('success', 'Réservation refusée.');
+        } catch (\Throwable $e) {
+            return redirect()->route('manager.bookings.show', $id)
+                ->with('error', $e->getMessage());
+        }
     }
 }

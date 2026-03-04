@@ -16,6 +16,8 @@ Route::get('/talents/{id}', [TalentController::class, 'show'])->name('talents.sh
 // Réservations agrégées
 Route::get('/bookings', [BookingController::class, 'index'])->name('bookings');
 Route::get('/bookings/{id}', [BookingController::class, 'show'])->name('bookings.show');
+Route::post('/bookings/{id}/accept', [BookingController::class, 'accept'])->name('bookings.accept');
+Route::post('/bookings/{id}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
 
 // Messages
 Route::get('/messages', [MessageController::class, 'index'])->name('messages');

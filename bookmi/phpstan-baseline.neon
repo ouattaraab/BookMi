@@ -1,30 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property App\\Models\\ProfileView\:\:\$date\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AnalyticsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\ProfileView\:\:\$views\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AnalyticsController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ProfileView\>::map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/AnalyticsController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\BookingRequest\:\:\$count\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/AnalyticsController.php
-
-		-
 			message: '#^Cannot call method greaterThan\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -331,8 +307,32 @@ parameters:
 			path: app/Http/Controllers/Api/V1/AdminReportController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\BookingRequest\:\:\$count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ProfileView\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ProfileView\:\:\$views\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
 			message: '#^Cannot access property \$value on string\.$#'
 			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/AnalyticsController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\ProfileView\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Api/V1/AnalyticsController.php
 
@@ -371,6 +371,18 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/CheckInController.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/ConfirmArrivalController.php
+
+		-
+			message: '#^Cannot call method toISOString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Http/Controllers/Api/V1/ConfirmArrivalController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>gateway_reference" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -483,7 +495,7 @@ parameters:
 		-
 			message: '#^Cannot call method toISOString\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 2
+			count: 4
 			path: app/Http/Controllers/Api/V1/TrackingController.php
 
 		-
@@ -567,7 +579,7 @@ parameters:
 		-
 			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 1
+			count: 2
 			path: app/Http/Resources/BookingRequestResource.php
 
 		-
@@ -1347,5 +1359,11 @@ parameters:
 		-
 			message: '#^Cannot call method canTransitionTo\(\) on string\.$#'
 			identifier: method.nonObject
+			count: 1
+			path: app/Services/TrackingService.php
+
+		-
+			message: '#^Match arm comparison between App\\Enums\\TrackingStatus\:\:Completed and App\\Enums\\TrackingStatus\:\:Completed is always true\.$#'
+			identifier: match.alwaysTrue
 			count: 1
 			path: app/Services/TrackingService.php

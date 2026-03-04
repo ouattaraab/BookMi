@@ -3,15 +3,23 @@
 namespace App\Services;
 
 use App\Enums\BookingStatus;
+use App\Enums\ManagerInvitationStatus;
 use App\Exceptions\ManagerException;
+use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
 use App\Models\CalendarSlot;
 use App\Models\Conversation;
+use App\Models\ManagerInvitation;
 use App\Models\Message;
 use App\Models\TalentProfile;
 use App\Models\User;
+use App\Notifications\ManagerInvitedNotification;
+use App\Notifications\ManagerInvitationResponseNotification;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 
 class ManagerService
 {
@@ -226,6 +234,137 @@ class ManagerService
 
             return $message;
         });
+    }
+
+    // ─────────────────────────────────────────────
+    // Invitation system
+    // ─────────────────────────────────────────────
+
+    public function inviteManager(TalentProfile $profile, string $email): ManagerInvitation
+    {
+        $email = strtolower($email);
+
+        $existing = ManagerInvitation::where('talent_profile_id', $profile->id)
+            ->where('manager_email', $email)
+            ->where('status', ManagerInvitationStatus::Pending->value)
+            ->first();
+
+        if ($existing) {
+            throw new \App\Exceptions\BookmiException(
+                'INVITATION_ALREADY_PENDING',
+                'Une invitation est déjà en attente pour cet email.',
+                409,
+            );
+        }
+
+        $invitation = ManagerInvitation::create([
+            'talent_profile_id' => $profile->id,
+            'manager_email'     => $email,
+            'status'            => ManagerInvitationStatus::Pending,
+            'token'             => Str::uuid()->toString(),
+            'invited_at'        => now(),
+        ]);
+
+        // If a manager account already exists, link it and push FCM
+        $managerUser = User::where('email', $email)->first();
+        if ($managerUser) {
+            $invitation->update(['manager_id' => $managerUser->id]);
+
+            $talentName = $profile->stage_name ?? trim($profile->user?->first_name . ' ' . $profile->user?->last_name);
+            SendPushNotification::dispatch(
+                $managerUser->id,
+                'Invitation manager',
+                "{$talentName} vous invite à gérer son profil BookMi.",
+                ['type' => 'manager_invitation', 'talent_id' => (string) $profile->id],
+            );
+        }
+
+        // Send email notification via on-demand (invitation is not a notifiable model)
+        Notification::route('mail', $invitation->manager_email)
+            ->notify(new ManagerInvitedNotification($profile, $invitation));
+
+        return $invitation;
+    }
+
+    public function acceptInvitation(ManagerInvitation $invitation, ?string $comment): void
+    {
+        $invitation->update([
+            'status'          => ManagerInvitationStatus::Accepted,
+            'manager_comment' => $comment,
+            'responded_at'    => now(),
+        ]);
+
+        // Attach manager to talent
+        $profile = $invitation->talentProfile;
+        if ($profile && $invitation->manager_id) {
+            $alreadyAssigned = $profile->managers()
+                ->where('manager_id', $invitation->manager_id)
+                ->exists();
+            if (! $alreadyAssigned) {
+                $profile->managers()->attach($invitation->manager_id, ['assigned_at' => now()]);
+            }
+        }
+
+        // Notify talent
+        if ($profile) {
+            $this->notifyTalentOfResponse($invitation, $profile);
+        }
+    }
+
+    public function rejectInvitation(ManagerInvitation $invitation, ?string $comment): void
+    {
+        $invitation->update([
+            'status'          => ManagerInvitationStatus::Rejected,
+            'manager_comment' => $comment,
+            'responded_at'    => now(),
+        ]);
+
+        $rejectProfile = $invitation->talentProfile;
+        if ($rejectProfile) {
+            $this->notifyTalentOfResponse($invitation, $rejectProfile);
+        }
+    }
+
+    /** @return Collection<int, ManagerInvitation> */
+    public function getMyInvitations(User $manager): Collection
+    {
+        return ManagerInvitation::with(['talentProfile.user'])
+            ->where('status', ManagerInvitationStatus::Pending->value)
+            ->where(function ($q) use ($manager) {
+                $q->where('manager_email', strtolower($manager->email))
+                    ->orWhere('manager_id', $manager->id);
+            })
+            ->orderByDesc('invited_at')
+            ->get();
+    }
+
+    private function notifyTalentOfResponse(ManagerInvitation $invitation, TalentProfile $profile): void
+    {
+        $talentUser = $profile->user;
+        if (! $talentUser) {
+            return;
+        }
+
+        // Email
+        $talentUser->notify(new ManagerInvitationResponseNotification($invitation));
+
+        // FCM push
+        $statusLabel = $invitation->status === ManagerInvitationStatus::Accepted ? 'accepté' : 'refusé';
+        $managerUser = $invitation->manager;
+        $managerName = $managerUser !== null
+            ? $managerUser->first_name
+            : explode('@', $invitation->manager_email)[0];
+
+        SendPushNotification::dispatch(
+            $talentUser->id,
+            'Invitation manager',
+            "Le manager {$managerName} a {$statusLabel} votre invitation.",
+            [
+                'type'      => 'manager_invitation_response',
+                'status'    => $invitation->status->value,
+                'talent_id' => (string) $profile->id,
+            ],
+        );
     }
 
     // ─────────────────────────────────────────────

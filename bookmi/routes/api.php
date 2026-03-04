@@ -7,11 +7,13 @@ use App\Http\Controllers\Api\V1\AdminDisputeController;
 use App\Http\Controllers\Api\V1\AdminReviewModerationController;
 use App\Http\Controllers\Api\V1\AnalyticsController;
 use App\Http\Controllers\Api\V1\CheckInController;
+use App\Http\Controllers\Api\V1\Manager\ManagerConversationController;
 use App\Http\Controllers\Api\V1\ManagerController;
 use App\Http\Controllers\Api\V1\PortfolioController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\ReviewController;
 use App\Http\Controllers\Api\V1\RevenueCertificateController;
+use App\Http\Controllers\Api\V1\ConfirmArrivalController;
 use App\Http\Controllers\Api\V1\TrackingController;
 use App\Http\Controllers\Api\V1\AdminRefundController;
 use App\Http\Controllers\Api\V1\MessageController;
@@ -243,6 +245,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/booking_requests/{booking}/tracking', [TrackingController::class, 'index'])->name('tracking.index');
         Route::post('/booking_requests/{booking}/tracking', [TrackingController::class, 'update'])->name('tracking.update');
         Route::post('/booking_requests/{booking}/checkin', [CheckInController::class, 'store'])->name('checkin.store');
+        Route::post('/booking_requests/{booking}/confirm-arrival', [ConfirmArrivalController::class, 'store'])->name('tracking.confirm_arrival');
 
         // Portfolio — routes "me" spécifiques AVANT les routes paramétrées (évite {talentProfile}="me")
         Route::get('/talent_profiles/me/portfolio', [PortfolioController::class, 'indexOwn'])->name('portfolio.own');
@@ -284,6 +287,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/talent_profiles/me/manager', [ManagerController::class, 'assignManager'])->name('talent.manager.assign');
         Route::delete('/talent_profiles/me/manager', [ManagerController::class, 'unassignManager'])->name('talent.manager.unassign');
 
+        // Invitation manager — talent side (role:talent handled in controller)
+        Route::post('/manager/invite', [ManagerController::class, 'inviteManager'])->name('manager.invite');
+        Route::delete('/manager/invitations/{invitation}', [ManagerController::class, 'cancelInvitation'])->name('manager.invitations.cancel');
+
         // Story 7.3 — Overload settings (talent-side)
         Route::put('/talent_profiles/me/overload_settings', [ManagerController::class, 'updateOverloadSettings'])->name('talent.overload_settings');
 
@@ -298,6 +305,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // Stories 7.2 / 7.4 / 7.5 / 7.6 — Manager interface (manager-side)
         Route::middleware('manager')->prefix('manager')->name('manager.')->group(function () {
+            // Invitations (manager-side)
+            Route::get('/invitations', [ManagerController::class, 'myInvitations'])->name('invitations.index');
+            Route::post('/invitations/{invitation}/accept', [ManagerController::class, 'acceptInvitation'])->name('invitations.accept');
+            Route::post('/invitations/{invitation}/reject', [ManagerController::class, 'rejectInvitation'])->name('invitations.reject');
             // 7.2 — Interface multi-talents
             Route::get('/talents', [ManagerController::class, 'myTalents'])->name('talents.index');
             Route::get('/talents/{talent}', [ManagerController::class, 'talentStats'])->name('talents.stats');
@@ -314,6 +325,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
             // 7.6 — Messages as talent
             Route::post('/conversations/{conversation}/messages', [ManagerController::class, 'sendMessage'])->name('conversations.send');
+
+            // Conversations des talents gérés
+            Route::get('/conversations', [ManagerConversationController::class, 'index'])->name('conversations.index');
         });
 
         // Administration

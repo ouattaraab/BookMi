@@ -6,6 +6,7 @@ use App\Http\Resources\BookingRequestResource;
 use App\Models\BookingRequest;
 use App\Models\CalendarSlot;
 use App\Models\Conversation;
+use App\Models\ManagerInvitation;
 use App\Models\TalentProfile;
 use App\Services\ManagerService;
 use Illuminate\Http\JsonResponse;
@@ -192,6 +193,107 @@ class ManagerController extends BaseController
         $this->managerService->rejectBooking($talent, $manager, $booking, $data['reason']);
 
         return $this->successResponse(['message' => 'Réservation refusée.']);
+    }
+
+    // ─────────────────────────────────────────────
+    // Invitation system
+    // ─────────────────────────────────────────────
+
+    public function inviteManager(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $talent = $user->talentProfile;
+
+        if (! $talent) {
+            return $this->errorResponse('TALENT_PROFILE_NOT_FOUND', 'Profil talent introuvable.', 404);
+        }
+
+        $invitation = $this->managerService->inviteManager($talent, $data['email']);
+
+        return $this->successResponse(['invitation' => $invitation], 201);
+    }
+
+    public function cancelInvitation(Request $request, ManagerInvitation $invitation): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $talent = $user->talentProfile;
+
+        if (! $talent || $invitation->talent_profile_id !== $talent->id) {
+            return $this->errorResponse('UNAUTHORIZED', 'Accès refusé.', 403);
+        }
+
+        if ($invitation->status->value !== 'pending') {
+            return $this->errorResponse('INVITATION_NOT_PENDING', "L'invitation n'est plus en attente.", 422);
+        }
+
+        $invitation->delete();
+
+        return $this->successResponse(['message' => 'Invitation annulée.']);
+    }
+
+    public function myInvitations(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $manager */
+        $manager = $request->user();
+
+        $invitations = $this->managerService->getMyInvitations($manager);
+
+        return $this->successResponse(['invitations' => $invitations]);
+    }
+
+    public function acceptInvitation(Request $request, ManagerInvitation $invitation): JsonResponse
+    {
+        /** @var \App\Models\User $manager */
+        $manager = $request->user();
+
+        $data = $request->validate([
+            'comment' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        if (strtolower($manager->email) !== $invitation->manager_email && $manager->id !== $invitation->manager_id) {
+            return $this->errorResponse('UNAUTHORIZED', 'Accès refusé.', 403);
+        }
+
+        if ($invitation->status->value !== 'pending') {
+            return $this->errorResponse('INVITATION_NOT_PENDING', "L'invitation n'est plus en attente.", 422);
+        }
+
+        // Link manager_id if not set yet
+        if (! $invitation->manager_id) {
+            $invitation->update(['manager_id' => $manager->id]);
+        }
+
+        $this->managerService->acceptInvitation($invitation->fresh(), $data['comment'] ?? null);
+
+        return $this->successResponse(['message' => 'Invitation acceptée.']);
+    }
+
+    public function rejectInvitation(Request $request, ManagerInvitation $invitation): JsonResponse
+    {
+        /** @var \App\Models\User $manager */
+        $manager = $request->user();
+
+        $data = $request->validate([
+            'comment' => ['required', 'string', 'max:500'],
+        ]);
+
+        if (strtolower($manager->email) !== $invitation->manager_email && $manager->id !== $invitation->manager_id) {
+            return $this->errorResponse('UNAUTHORIZED', 'Accès refusé.', 403);
+        }
+
+        if ($invitation->status->value !== 'pending') {
+            return $this->errorResponse('INVITATION_NOT_PENDING', "L'invitation n'est plus en attente.", 422);
+        }
+
+        $this->managerService->rejectInvitation($invitation, $data['comment']);
+
+        return $this->successResponse(['message' => 'Invitation refusée.']);
     }
 
     // ─────────────────────────────────────────────

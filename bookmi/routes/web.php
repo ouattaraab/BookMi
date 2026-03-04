@@ -108,6 +108,12 @@ Route::prefix('talent')->name('talent.')->middleware(['auth:web', 'role:talent']
     base_path('routes/talent.php')
 );
 
+// ── Invitation manager (sans auth — lien email token) ───────────────────────
+Route::prefix('manager')->name('manager.')->group(function () {
+    Route::get('/invitations/{token}/respond', [\App\Http\Controllers\Web\Manager\ManagerInvitationWebController::class, 'show'])->name('invitations.respond');
+    Route::post('/invitations/{token}/respond', [\App\Http\Controllers\Web\Manager\ManagerInvitationWebController::class, 'store'])->name('invitations.respond.store');
+});
+
 // ── Espace Manager ──────────────────────────────────────────────────────────
 Route::prefix('manager')->name('manager.')->middleware(['auth:web', 'role:manager'])->group(
     base_path('routes/manager.php')

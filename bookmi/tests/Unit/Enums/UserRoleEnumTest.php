@@ -27,14 +27,14 @@ class UserRoleEnumTest extends TestCase
     }
 
     #[Test]
-    public function registrable_roles_returns_only_client_and_talent(): void
+    public function registrable_roles_returns_client_talent_and_manager(): void
     {
         $registrable = UserRole::registrableRoles();
 
-        $this->assertCount(2, $registrable);
+        $this->assertCount(3, $registrable);
         $this->assertContains('client', $registrable);
         $this->assertContains('talent', $registrable);
-        $this->assertNotContains('manager', $registrable);
+        $this->assertContains('manager', $registrable);
         $this->assertNotContains('admin_ceo', $registrable);
     }
 

@@ -35,7 +35,7 @@ String? authGuard(BuildContext context, String location) {
   if (location.startsWith(RoutePaths.splash)) return null;
 
   switch (authState) {
-    case AuthAuthenticated():
+    case AuthAuthenticated(:final roles):
       // Authenticated user trying to access auth pages → redirect to home
       // (or talent onboarding when coming straight from registration).
       if (isPublicRoute) {
@@ -43,6 +43,10 @@ String? authGuard(BuildContext context, String location) {
         if (authBloc.isNewTalentRegistration) {
           authBloc.isNewTalentRegistration = false; // consume once
           return RoutePaths.talentOnboarding;
+        }
+        // Manager role → redirect to manager dashboard
+        if (roles.contains('manager')) {
+          return RoutePaths.managerDashboard;
         }
         return RoutePaths.home;
       }

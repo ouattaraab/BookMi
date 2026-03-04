@@ -38,10 +38,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String _role = 'client';
   bool _termsAccepted = false;
-  int? _categoryId;
-  int? _subcategoryId;
+  final List<int> _selectedCategoryIds = [];
   List<Map<String, dynamic>> _categories = [];
-  List<Map<String, dynamic>> _subcategories = [];
   @override
   void initState() {
     super.initState();
@@ -100,11 +98,19 @@ class _RegisterPageState extends State<RegisterPage> {
       'role': _role,
     };
 
-    if (_role == 'talent' && _categoryId != null) {
-      data['category_id'] = _categoryId;
-      if (_subcategoryId != null) {
-        data['subcategory_id'] = _subcategoryId;
+    if (_role == 'talent') {
+      if (_selectedCategoryIds.isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            const SnackBar(
+              content: Text('Veuillez sélectionner au moins une catégorie.'),
+              backgroundColor: Color(0xFFE53E3E),
+            ),
+          );
+        return;
       }
+      data['category_ids'] = _selectedCategoryIds;
     }
 
     context.read<AuthBloc>().add(AuthRegisterSubmitted(data: data));
@@ -279,18 +285,20 @@ class _RegisterPageState extends State<RegisterPage> {
                                 selected: _role == 'talent',
                                 onTap: () => setState(() => _role = 'talent'),
                               ),
+                              const SizedBox(
+                                width: BookmiSpacing.spaceMd,
+                              ),
+                              _RoleChip(
+                                label: 'Manager',
+                                selected: _role == 'manager',
+                                onTap: () => setState(() => _role = 'manager'),
+                              ),
                             ],
                           ),
-                          // Category dropdown (talent only)
+                          // Category multi-select (talent only)
                           if (_role == 'talent') ...[
                             const SizedBox(height: BookmiSpacing.spaceBase),
-                            _buildCategoryDropdown(isDark),
-                            if (_subcategories.isNotEmpty) ...[
-                              const SizedBox(
-                                height: BookmiSpacing.spaceBase,
-                              ),
-                              _buildSubcategoryDropdown(isDark),
-                            ],
+                            _buildCategoryMultiSelect(isDark),
                           ],
                           const SizedBox(height: BookmiSpacing.spaceLg),
                           _TermsCheckbox(
@@ -357,116 +365,132 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildCategoryDropdown(bool isDark) {
-    final fillColor = isDark
+  Widget _buildCategoryMultiSelect(bool isDark) {
+    final containerColor = isDark
         ? BookmiColors.glassWhite
-        : Colors.white.withValues(alpha: 0.9);
-    final textColor = isDark ? Colors.white : BookmiColors.brandNavy;
+        : Colors.white.withValues(alpha: 0.15);
 
-    return DropdownButtonFormField<int>(
-      initialValue: _categoryId,
-      decoration: InputDecoration(
-        labelText: 'Catégorie',
-        labelStyle: TextStyle(
-          color: textColor.withValues(alpha: 0.5),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(
+              Icons.category_outlined,
+              size: 16,
+              color: Colors.white70,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'Catégories artistiques',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.9),
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '(min. 1)',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.5),
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
-        filled: true,
-        fillColor: fillColor,
-        border: OutlineInputBorder(
-          borderRadius: BookmiRadius.inputBorder,
-          borderSide: const BorderSide(
-            color: BookmiColors.glassBorder,
-          ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BookmiRadius.inputBorder,
-          borderSide: const BorderSide(
-            color: BookmiColors.glassBorder,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BookmiRadius.inputBorder,
-          borderSide: const BorderSide(
-            color: BookmiColors.brandBlue,
-            width: 2,
-          ),
-        ),
-        prefixIcon: const Icon(Icons.category_outlined),
-      ),
-      dropdownColor: isDark ? BookmiColors.brandNavy : Colors.white,
-      style: TextStyle(color: textColor),
-      items: _categories.map((cat) {
-        return DropdownMenuItem<int>(
-          value: cat['id'] as int,
-          child: Text(cat['name'] as String),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _categoryId = value;
-          _subcategoryId = null;
-          final selected = _categories.firstWhere(
-            (c) => c['id'] == value,
-            orElse: () => <String, dynamic>{},
-          );
-          final subs = selected['subcategories'] as List<dynamic>?;
-          _subcategories = subs?.cast<Map<String, dynamic>>() ?? [];
-        });
-      },
-      validator: (value) {
-        if (_role == 'talent' && value == null) {
-          return 'La catégorie est requise pour un talent.';
-        }
-        return null;
-      },
-    );
-  }
+        const SizedBox(height: 8),
+        if (_categories.isEmpty)
+          Text(
+            'Chargement des catégories...',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 13,
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: containerColor,
+              borderRadius: BookmiRadius.inputBorder,
+              border: Border.all(color: BookmiColors.glassBorder),
+            ),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _categories.map((cat) {
+                final id = cat['id'] as int;
+                final name = cat['name'] as String;
+                final isSelected = _selectedCategoryIds.contains(id);
 
-  Widget _buildSubcategoryDropdown(bool isDark) {
-    final fillColor = isDark
-        ? BookmiColors.glassWhite
-        : Colors.white.withValues(alpha: 0.9);
-    final textColor = isDark ? Colors.white : BookmiColors.brandNavy;
-
-    return DropdownButtonFormField<int>(
-      initialValue: _subcategoryId,
-      decoration: InputDecoration(
-        labelText: 'Sous-catégorie (optionnel)',
-        labelStyle: TextStyle(
-          color: textColor.withValues(alpha: 0.5),
-        ),
-        filled: true,
-        fillColor: fillColor,
-        border: OutlineInputBorder(
-          borderRadius: BookmiRadius.inputBorder,
-          borderSide: const BorderSide(
-            color: BookmiColors.glassBorder,
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _selectedCategoryIds.remove(id);
+                      } else {
+                        _selectedCategoryIds.add(id);
+                      }
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? BookmiColors.brandBlue
+                          : Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isSelected
+                            ? BookmiColors.brandBlue
+                            : BookmiColors.glassBorder,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSelected) ...[
+                          const Icon(
+                            Icons.check,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 4),
+                        ],
+                        Text(
+                          name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BookmiRadius.inputBorder,
-          borderSide: const BorderSide(
-            color: BookmiColors.glassBorder,
+        if (_selectedCategoryIds.isEmpty && _categories.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              'Sélectionnez au moins une catégorie.',
+              style: TextStyle(
+                color: BookmiColors.error,
+                fontSize: 12,
+              ),
+            ),
           ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BookmiRadius.inputBorder,
-          borderSide: const BorderSide(
-            color: BookmiColors.brandBlue,
-            width: 2,
-          ),
-        ),
-        prefixIcon: const Icon(Icons.subdirectory_arrow_right),
-      ),
-      dropdownColor: isDark ? BookmiColors.brandNavy : Colors.white,
-      style: TextStyle(color: textColor),
-      items: _subcategories.map((sub) {
-        return DropdownMenuItem<int>(
-          value: sub['id'] as int,
-          child: Text(sub['name'] as String),
-        );
-      }).toList(),
-      onChanged: (value) => setState(() => _subcategoryId = value),
+      ],
     );
   }
 }

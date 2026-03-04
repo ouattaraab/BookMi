@@ -30,6 +30,6 @@ enum UserRole: string
      */
     public static function registrableRoles(): array
     {
-        return [self::CLIENT->value, self::TALENT->value];
+        return [self::CLIENT->value, self::TALENT->value, self::MANAGER->value];
     }
 }

@@ -37,6 +37,7 @@ abstract final class RouteNames {
   static const profileReferral = 'profileReferral';
   // Manager routes
   static const managerDashboard = 'managerDashboard';
+  static const managerInvitations = 'managerInvitations';
   // App update / maintenance
   static const appMaintenance = 'appMaintenance';
   static const appForceUpdate = 'appForceUpdate';
@@ -80,6 +81,7 @@ abstract final class RoutePaths {
   static const notifications = '/notifications';
   // Manager routes
   static const managerDashboard = '/manager-dashboard';
+  static const managerInvitations = '/manager-invitations';
   // App update / maintenance
   static const appMaintenance = '/app-maintenance';
   static const appForceUpdate = '/app-force-update';

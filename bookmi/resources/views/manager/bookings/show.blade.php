@@ -112,10 +112,92 @@ main.page-content { background: #F2EFE9 !important; }
         {{-- Colonne montants --}}
         <div class="space-y-5">
 
-            {{-- Récapitulatif financier — masqué pour manager (MVP #14) --}}
-            <div class="rounded-xl p-4 text-center" style="background:#f9fafb;border:1px solid #e5e7eb;">
-                <p class="text-sm text-gray-400 font-medium">Les montants financiers ne sont pas accessibles au manager.</p>
+            {{-- Récapitulatif financier --}}
+            @if($booking->cachet_amount || $booking->total_amount)
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Récapitulatif financier</h2>
+                <dl class="space-y-3">
+                    @if($booking->cachet_amount)
+                    <div class="flex justify-between items-center">
+                        <dt class="text-sm text-gray-500">Cachet artiste</dt>
+                        <dd class="text-sm font-semibold text-gray-900">{{ number_format($booking->cachet_amount, 0, ',', ' ') }} XOF</dd>
+                    </div>
+                    @endif
+                    @if($booking->commission_amount)
+                    <div class="flex justify-between items-center">
+                        <dt class="text-sm text-gray-500">Commission BookMi</dt>
+                        <dd class="text-sm font-semibold text-gray-900">{{ number_format($booking->commission_amount, 0, ',', ' ') }} XOF</dd>
+                    </div>
+                    @endif
+                    @if($booking->total_amount)
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                        <dt class="text-sm font-semibold text-gray-700">Total client</dt>
+                        <dd class="text-base font-bold text-gray-900">{{ number_format($booking->total_amount, 0, ',', ' ') }} XOF</dd>
+                    </div>
+                    @endif
+                    @if($booking->escrowHold)
+                    <div class="flex justify-between items-center pt-1">
+                        <dt class="text-sm text-gray-400">Escrow</dt>
+                        <dd class="text-xs font-medium px-2 py-0.5 rounded-full" style="background:#e8f5e9;color:#2e7d32">
+                            {{ ucfirst($booking->escrowHold->status ?? 'En attente') }}
+                        </dd>
+                    </div>
+                    @endif
+                </dl>
             </div>
+            @endif
+
+            {{-- Actions accept/reject pour réservations pending --}}
+            @if($sk === 'pending')
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Actions</h2>
+                <div class="space-y-3">
+                    <form method="POST" action="{{ route('manager.bookings.accept', $booking->id) }}">
+                        @csrf
+                        <button type="submit"
+                                class="w-full px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
+                                style="background:#4CAF50"
+                                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                            Accepter la réservation
+                        </button>
+                    </form>
+                    <button type="button"
+                            onclick="document.getElementById('reject-modal').classList.remove('hidden')"
+                            class="w-full px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+                            style="color:#f44336;border:1.5px solid #f44336;background:transparent"
+                            onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='transparent'">
+                        Refuser la réservation
+                    </button>
+                </div>
+            </div>
+
+            {{-- Reject modal --}}
+            <div id="reject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center" style="background:rgba(0,0,0,0.5)">
+                <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
+                    <h3 class="text-base font-bold text-gray-900 mb-3">Refuser la réservation</h3>
+                    <form method="POST" action="{{ route('manager.bookings.reject', $booking->id) }}">
+                        @csrf
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Motif du refus <span class="text-red-500">*</span></label>
+                            <textarea name="reason" rows="3" required maxlength="500"
+                                      class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-300"
+                                      placeholder="Expliquez pourquoi vous refusez cette réservation…"></textarea>
+                        </div>
+                        <div class="flex gap-3">
+                            <button type="button" onclick="document.getElementById('reject-modal').classList.add('hidden')"
+                                    class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 border border-gray-200 hover:bg-gray-50">
+                                Annuler
+                            </button>
+                            <button type="submit"
+                                    class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold text-white"
+                                    style="background:#f44336">
+                                Confirmer le refus
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @endif
 
             {{-- Statut card --}}
             <div class="rounded-2xl p-6" style="background:{{ $sc }}1a;border:1px solid {{ $sc }}33">
