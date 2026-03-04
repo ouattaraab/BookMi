@@ -139,7 +139,8 @@ main.page-content { background: #F2EFE9 !important; }
                     <div class="flex justify-between items-center pt-1">
                         <dt class="text-sm text-gray-400">Escrow</dt>
                         <dd class="text-xs font-medium px-2 py-0.5 rounded-full" style="background:#e8f5e9;color:#2e7d32">
-                            {{ ucfirst($booking->escrowHold->status ?? 'En attente') }}
+                            @php $escrowStatus = $booking->escrowHold->status; @endphp
+                            {{ ucfirst($escrowStatus instanceof \BackedEnum ? $escrowStatus->value : (string) ($escrowStatus ?? 'En attente')) }}
                         </dd>
                     </div>
                     @endif

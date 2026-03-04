@@ -61,17 +61,17 @@ class ManagerInvitationResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Statut')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn (mixed $state): string => match ($state instanceof \BackedEnum ? $state->value : (string) $state) {
                         'pending'  => 'warning',
                         'accepted' => 'success',
                         'rejected' => 'danger',
                         default    => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state) => match ($state) {
+                    ->formatStateUsing(fn (mixed $state): string => match ($state instanceof \BackedEnum ? $state->value : (string) $state) {
                         'pending'  => 'En attente',
                         'accepted' => 'Acceptée',
                         'rejected' => 'Refusée',
-                        default    => $state,
+                        default    => (string) $state,
                     }),
 
                 Tables\Columns\TextColumn::make('invited_at')
