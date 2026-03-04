@@ -18,13 +18,18 @@ final class TrackingLoaded extends TrackingState {
   const TrackingLoaded({
     required this.events,
     required this.bookingId,
+    this.isClient = false,
+    this.clientConfirmedAt,
   });
 
   final List<TrackingEventModel> events;
   final int bookingId;
+  final bool isClient;
+  final DateTime? clientConfirmedAt;
 
   String? get currentStatus => events.isEmpty ? null : events.last.status;
   bool get isCompleted => events.isNotEmpty && events.last.isCompleted;
+  bool get talentArrived => events.any((e) => e.status == 'arrived');
 
   @override
   bool operator ==(Object other) =>
@@ -32,10 +37,13 @@ final class TrackingLoaded extends TrackingState {
       runtimeType == other.runtimeType &&
           other is TrackingLoaded &&
           bookingId == other.bookingId &&
+          isClient == other.isClient &&
+          clientConfirmedAt == other.clientConfirmedAt &&
           listEquals(events, other.events);
 
   @override
-  int get hashCode => Object.hash(bookingId, Object.hashAll(events));
+  int get hashCode =>
+      Object.hash(bookingId, isClient, clientConfirmedAt, Object.hashAll(events));
 }
 
 /// Sub-state: a mutation is in flight; events preserved for optimistic UI.
@@ -43,6 +51,8 @@ final class TrackingUpdating extends TrackingLoaded {
   const TrackingUpdating({
     required super.events,
     required super.bookingId,
+    super.isClient,
+    super.clientConfirmedAt,
   });
 }
 

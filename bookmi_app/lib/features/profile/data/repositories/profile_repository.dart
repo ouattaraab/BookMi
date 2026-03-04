@@ -262,6 +262,23 @@ class ProfileRepository {
     }
   }
 
+  Future<ApiResult<List<Map<String, dynamic>>>> fetchCategories() async {
+    try {
+      final res = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.categories,
+      );
+      final data = (res.data?['data'] as List<dynamic>?) ?? [];
+      return ApiSuccess(data.cast<Map<String, dynamic>>());
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
+
   Future<ApiResult<Map<String, dynamic>>> getTalentProfile() async {
     try {
       final res = await _dio.get<Map<String, dynamic>>(
@@ -284,6 +301,7 @@ class ProfileRepository {
     bool? isGroup,
     int? groupSize,
     String? collectiveName,
+    List<int>? categoryIds,
   }) async {
     try {
       final data = <String, dynamic>{};
@@ -292,6 +310,9 @@ class ProfileRepository {
       if (isGroup != null) data['is_group'] = isGroup;
       if (groupSize != null) data['group_size'] = groupSize;
       if (collectiveName != null) data['collective_name'] = collectiveName;
+      if (categoryIds != null && categoryIds.isNotEmpty) {
+        data['category_ids'] = categoryIds;
+      }
       final res = await _dio.patch<Map<String, dynamic>>(
         ApiEndpoints.meTalentProfileInfo,
         data: data,

@@ -13,36 +13,77 @@ import 'package:geolocator/geolocator.dart';
 
 /// Shows the real-time status timeline for a booking.
 ///
-/// Accessed by both client (read-only) and talent (can advance status).
+/// Accessed by both client (read-only + confirm arrival CTA) and talent (can advance status).
 class TrackingPage extends StatelessWidget {
   const TrackingPage({
     required this.bookingId,
     required this.repository,
+    this.isClient = false,
+    this.clientConfirmedAt,
     super.key,
   });
 
   final int bookingId;
   final TrackingRepository repository;
+  final bool isClient;
+  final DateTime? clientConfirmedAt;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) {
-        final cubit = TrackingCubit(repository: repository);
+        final cubit = TrackingCubit(
+          repository: repository,
+          isClient: isClient,
+          clientConfirmedAt: clientConfirmedAt,
+        );
         cubit.loadEvents(bookingId); // ignore: discarded_futures
         return cubit;
       },
-      child: _TrackingView(bookingId: bookingId),
+      child: _TrackingView(bookingId: bookingId, isClient: isClient),
     );
   }
 }
 
 // ── View ─────────────────────────────────────────────────────────────────────
 
-class _TrackingView extends StatelessWidget {
-  const _TrackingView({required this.bookingId});
+class _TrackingView extends StatefulWidget {
+  const _TrackingView({required this.bookingId, required this.isClient});
 
   final int bookingId;
+  final bool isClient;
+
+  @override
+  State<_TrackingView> createState() => _TrackingViewState();
+}
+
+class _TrackingViewState extends State<_TrackingView> {
+  Timer? _refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-refresh every 30s for client when status < arrived
+    if (widget.isClient) {
+      _refreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+        final state = context.read<TrackingCubit>().state;
+        if (state is TrackingLoaded) {
+          final status = state.currentStatus;
+          if (status == null ||
+              status == 'preparing' ||
+              status == 'en_route') {
+            context.read<TrackingCubit>().loadEvents(widget.bookingId);
+          }
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +95,9 @@ class _TrackingView extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           foregroundColor: Colors.white,
-          title: const Text(
-            'Suivi Jour J',
-            style: TextStyle(
+          title: Text(
+            widget.isClient ? 'Suivi en temps réel' : 'Suivi Jour J',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w600,
@@ -67,7 +108,7 @@ class _TrackingView extends StatelessWidget {
               builder: (context, state) => IconButton(
                 icon: const Icon(Icons.refresh, color: Colors.white70),
                 onPressed: () =>
-                    context.read<TrackingCubit>().loadEvents(bookingId),
+                    context.read<TrackingCubit>().loadEvents(widget.bookingId),
               ),
             ),
           ],
@@ -91,12 +132,7 @@ class _TrackingView extends StatelessWidget {
               ),
             ),
             TrackingError(:final message) => _buildError(context, message),
-            TrackingLoaded(:final events, :final isCompleted) => Stack(
-              children: [
-                _buildContent(context, events),
-                if (isCompleted) const _CelebrationOverlay(),
-              ],
-            ),
+            TrackingLoaded() => _buildContent(context, state),
           },
         ),
       ),
@@ -120,7 +156,7 @@ class _TrackingView extends StatelessWidget {
             const SizedBox(height: BookmiSpacing.spaceLg),
             TextButton(
               onPressed: () =>
-                  context.read<TrackingCubit>().loadEvents(bookingId),
+                  context.read<TrackingCubit>().loadEvents(widget.bookingId),
               child: const Text(
                 'Réessayer',
                 style: TextStyle(color: BookmiColors.brandBlueLight),
@@ -132,14 +168,558 @@ class _TrackingView extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(
-    BuildContext context,
-    List<TrackingEventModel> events,
-  ) {
+  Widget _buildContent(BuildContext context, TrackingLoaded state) {
+    if (state.isClient) {
+      return _ClientTrackingView(
+        events: state.events,
+        bookingId: widget.bookingId,
+        clientConfirmedAt: state.clientConfirmedAt,
+        isUpdating: state is TrackingUpdating,
+      );
+    }
+    return Stack(
+      children: [
+        _TalentTrackingView(
+          events: state.events,
+          bookingId: widget.bookingId,
+          clientConfirmedAt: state.clientConfirmedAt,
+        ),
+        if (state.isCompleted) const _CelebrationOverlay(),
+      ],
+    );
+  }
+}
+
+// ── CLIENT VIEW (taxi-style) ──────────────────────────────────────────────────
+
+class _ClientTrackingView extends StatelessWidget {
+  const _ClientTrackingView({
+    required this.events,
+    required this.bookingId,
+    required this.clientConfirmedAt,
+    required this.isUpdating,
+  });
+
+  final List<TrackingEventModel> events;
+  final int bookingId;
+  final DateTime? clientConfirmedAt;
+  final bool isUpdating;
+
+  // 4-step progress bar (performing/completed shown as text below)
+  static const _progressSteps = [
+    ('preparing', 'Préparation', Icons.schedule_outlined),
+    ('en_route', 'En route', Icons.directions_car_outlined),
+    ('arrived', 'Arrivé', Icons.location_on_outlined),
+    ('confirmed', 'Confirmé', Icons.check_circle_outline),
+  ];
+
+  int get _progressIndex {
+    if (clientConfirmedAt != null) return 3;
+    final statuses = events.map((e) => e.status).toSet();
+    if (statuses.contains('arrived')) return 2;
+    if (statuses.contains('en_route')) return 1;
+    if (statuses.contains('preparing')) return 0;
+    return -1;
+  }
+
+  bool get _talentArrived => events.any((e) => e.status == 'arrived');
+
+  TrackingEventModel? _eventForStatus(String status) =>
+      events.where((e) => e.status == status).lastOrNull;
+
+  @override
+  Widget build(BuildContext context) {
+    final currentIdx = _progressIndex;
+
+    return RefreshIndicator(
+      color: BookmiColors.brandBlue,
+      onRefresh: () => context.read<TrackingCubit>().loadEvents(bookingId),
+      child: ListView(
+        padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
+        children: [
+          // ── Header status icon ──
+          _ClientStatusHeader(events: events, clientConfirmedAt: clientConfirmedAt),
+          const SizedBox(height: BookmiSpacing.spaceLg),
+
+          // ── Progress bar (4 steps) ──
+          GlassCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Progression',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: BookmiSpacing.spaceMd),
+                // Horizontal step indicator
+                Row(
+                  children: List.generate(_progressSteps.length * 2 - 1, (i) {
+                    if (i.isOdd) {
+                      // Connector line
+                      final stepIdx = i ~/ 2;
+                      final isDone = currentIdx > stepIdx;
+                      return Expanded(
+                        child: Container(
+                          height: 2,
+                          color: isDone
+                              ? BookmiColors.success
+                              : Colors.white12,
+                        ),
+                      );
+                    }
+                    final stepIdx = i ~/ 2;
+                    final isDone = currentIdx >= stepIdx;
+                    final isCurrent = currentIdx == stepIdx;
+                    final (_, label, icon) = _progressSteps[stepIdx];
+                    return _StepNode(
+                      icon: icon,
+                      label: label,
+                      isDone: isDone,
+                      isCurrent: isCurrent,
+                    );
+                  }),
+                ),
+                const SizedBox(height: BookmiSpacing.spaceMd),
+                // Timestamps for completed steps
+                ..._progressSteps.asMap().entries
+                    .where((e) => e.key <= currentIdx && e.key < 3)
+                    .map((e) {
+                  final (status, label, _) = e.value;
+                  final event = _eventForStatus(status);
+                  if (event?.occurredAt == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        Text(
+                          '$label : ',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white54,
+                          ),
+                        ),
+                        Text(
+                          _formatTime(event!.occurredAt!),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white70,
+                          ),
+                        ),
+                        if (event.clientNotifiedAt != null) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '· notifié ${_formatTime(event.clientNotifiedAt!)}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white38,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+                if (clientConfirmedAt != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Confirmation : ',
+                          style: TextStyle(fontSize: 12, color: Colors.white54),
+                        ),
+                        Text(
+                          _formatTime(clientConfirmedAt!),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: BookmiColors.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: BookmiSpacing.spaceMd),
+
+          // ── Confirm arrival CTA ──
+          if (_talentArrived && clientConfirmedAt == null) ...[
+            _ConfirmArrivalCard(
+              bookingId: bookingId,
+              isUpdating: isUpdating,
+            ),
+            const SizedBox(height: BookmiSpacing.spaceMd),
+          ],
+
+          // ── Confirmation done banner ──
+          if (clientConfirmedAt != null) ...[
+            _ConfirmationDoneBanner(confirmedAt: clientConfirmedAt!),
+            const SizedBox(height: BookmiSpacing.spaceMd),
+          ],
+
+          // ── Secondary statuses (performing, completed) ──
+          if (events.any((e) => e.status == 'performing' || e.status == 'completed')) ...[
+            GlassCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Prestation',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: BookmiSpacing.spaceSm),
+                  for (final e in events.where(
+                    (e) => e.status == 'performing' || e.status == 'completed',
+                  ))
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            e.status == 'completed'
+                                ? Icons.star_outline
+                                : Icons.music_note_outlined,
+                            size: 14,
+                            color: Colors.white54,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            e.statusLabel,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                          ),
+                          if (e.occurredAt != null) ...[
+                            const SizedBox(width: 8),
+                            Text(
+                              _formatTime(e.occurredAt!),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Colors.white38,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(height: BookmiSpacing.spaceMd),
+          ],
+
+          const SizedBox(height: BookmiSpacing.spaceXl),
+        ],
+      ),
+    );
+  }
+
+  static String _formatTime(DateTime dt) {
+    final local = dt.toLocal();
+    final h = local.hour.toString().padLeft(2, '0');
+    final m = local.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+}
+
+class _ClientStatusHeader extends StatelessWidget {
+  const _ClientStatusHeader({required this.events, required this.clientConfirmedAt});
+
+  final List<TrackingEventModel> events;
+  final DateTime? clientConfirmedAt;
+
+  @override
+  Widget build(BuildContext context) {
+    if (clientConfirmedAt != null) {
+      return _headerCard(Icons.check_circle_outline, BookmiColors.success, 'Présence confirmée ✅');
+    }
+    final status = events.isEmpty ? null : events.last.status;
+    return switch (status) {
+      'preparing'  => _headerCard(Icons.schedule_outlined, BookmiColors.brandBlue, 'Votre artiste se prépare 🎵'),
+      'en_route'   => _headerCard(Icons.directions_car_outlined, BookmiColors.brandBlueLight, 'Votre artiste est en route 🚗'),
+      'arrived'    => _headerCard(Icons.location_on_outlined, BookmiColors.success, 'Votre artiste est arrivé ! ✅'),
+      'performing' => _headerCard(Icons.music_note_outlined, const Color(0xFFAB47BC), 'La prestation est en cours 🎤'),
+      'completed'  => _headerCard(Icons.star_outline, BookmiColors.success, 'Prestation terminée ⭐'),
+      _            => _headerCard(Icons.hourglass_empty, Colors.white38, 'En attente du talent…'),
+    };
+  }
+
+  Widget _headerCard(IconData icon, Color color, String label) {
+    return GlassCard(
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: color.withValues(alpha: 0.15),
+              border: Border.all(color: color, width: 2),
+            ),
+            child: Icon(icon, size: 26, color: color),
+          ),
+          const SizedBox(width: BookmiSpacing.spaceMd),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepNode extends StatelessWidget {
+  const _StepNode({
+    required this.icon,
+    required this.label,
+    required this.isDone,
+    required this.isCurrent,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isDone;
+  final bool isCurrent;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isDone
+        ? BookmiColors.success
+        : isCurrent
+        ? BookmiColors.brandBlue
+        : Colors.white24;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.15),
+            border: Border.all(color: color, width: 2),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: isDone || isCurrent ? Colors.white70 : Colors.white24,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Confirm Arrival CTA Card ──────────────────────────────────────────────────
+
+class _ConfirmArrivalCard extends StatelessWidget {
+  const _ConfirmArrivalCard({
+    required this.bookingId,
+    required this.isUpdating,
+  });
+
+  final int bookingId;
+  final bool isUpdating;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(BookmiSpacing.spaceMd),
+      decoration: BoxDecoration(
+        color: BookmiColors.success.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: BookmiColors.success.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.location_on,
+                color: BookmiColors.success,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'L\'artiste est arrivé !',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Confirmez sa présence pour libérer le paiement',
+            style: TextStyle(fontSize: 13, color: Colors.white70),
+          ),
+          const SizedBox(height: BookmiSpacing.spaceMd),
+          SizedBox(
+            width: double.infinity,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: isUpdating ? null : const LinearGradient(
+                  colors: [BookmiColors.success, Color(0xFF15803D)],
+                ),
+                color: isUpdating ? Colors.white12 : null,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextButton.icon(
+                onPressed: isUpdating
+                    ? null
+                    : () => context
+                        .read<TrackingCubit>()
+                        .confirmArrival(bookingId),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: BookmiSpacing.spaceMd,
+                  ),
+                  foregroundColor: Colors.white,
+                  disabledForegroundColor: Colors.white38,
+                ),
+                icon: isUpdating
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white38,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.check_circle_outline,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                label: isUpdating
+                    ? const SizedBox.shrink()
+                    : const Text(
+                        'Confirmer la présence',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConfirmationDoneBanner extends StatelessWidget {
+  const _ConfirmationDoneBanner({required this.confirmedAt});
+
+  final DateTime confirmedAt;
+
+  static String _formatTime(DateTime dt) {
+    final local = dt.toLocal();
+    final h = local.hour.toString().padLeft(2, '0');
+    final m = local.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(BookmiSpacing.spaceMd),
+      decoration: BoxDecoration(
+        color: BookmiColors.success.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: BookmiColors.success.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.check_circle,
+            color: BookmiColors.success,
+            size: 24,
+          ),
+          const SizedBox(width: BookmiSpacing.spaceSm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Présence confirmée ✅',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: BookmiColors.success,
+                  ),
+                ),
+                Text(
+                  'Confirmée à ${_formatTime(confirmedAt)} · Paiement libéré',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── TALENT VIEW (existing, enriched) ─────────────────────────────────────────
+
+class _TalentTrackingView extends StatelessWidget {
+  const _TalentTrackingView({
+    required this.events,
+    required this.bookingId,
+    required this.clientConfirmedAt,
+  });
+
+  final List<TrackingEventModel> events;
+  final int bookingId;
+  final DateTime? clientConfirmedAt;
+
+  @override
+  Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
       children: [
-        _TrackingTimeline(events: events),
+        _TrackingTimeline(events: events, clientConfirmedAt: clientConfirmedAt),
         const SizedBox(height: BookmiSpacing.spaceLg),
         _NextStepButton(events: events, bookingId: bookingId),
         const SizedBox(height: BookmiSpacing.spaceXl),
@@ -148,12 +728,13 @@ class _TrackingView extends StatelessWidget {
   }
 }
 
-// ── Timeline Widget ───────────────────────────────────────────────────────────
+// ── Timeline Widget (talent) ──────────────────────────────────────────────────
 
 class _TrackingTimeline extends StatelessWidget {
-  const _TrackingTimeline({required this.events});
+  const _TrackingTimeline({required this.events, required this.clientConfirmedAt});
 
   final List<TrackingEventModel> events;
+  final DateTime? clientConfirmedAt;
 
   static const _steps = [
     ('preparing', 'En préparation', Icons.schedule_outlined),
@@ -167,6 +748,7 @@ class _TrackingTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final completedStatuses = events.map((e) => e.status).toSet();
     final currentStatus = events.isEmpty ? null : events.last.status;
+    final talentArrived = completedStatuses.contains('arrived');
 
     return GlassCard(
       child: Column(
@@ -200,8 +782,22 @@ class _TrackingTimeline extends StatelessWidget {
                         .lastOrNull
                         ?.occurredAt
                   : null,
+              clientNotifiedAt: isDone
+                  ? events
+                        .where((e) => e.status == status)
+                        .lastOrNull
+                        ?.clientNotifiedAt
+                  : null,
             );
           }),
+          // ── Client confirmation badge ──
+          if (talentArrived) ...[
+            const SizedBox(height: BookmiSpacing.spaceSm),
+            if (clientConfirmedAt != null)
+              _ClientConfirmedBadge(confirmedAt: clientConfirmedAt!)
+            else
+              _AwaitingConfirmationBadge(),
+          ],
         ],
       ),
     );
@@ -216,6 +812,7 @@ class _TimelineStep extends StatelessWidget {
     required this.isCurrent,
     required this.isLast,
     this.occurredAt,
+    this.clientNotifiedAt,
   });
 
   final IconData icon;
@@ -224,6 +821,7 @@ class _TimelineStep extends StatelessWidget {
   final bool isCurrent;
   final bool isLast;
   final DateTime? occurredAt;
+  final DateTime? clientNotifiedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -296,6 +894,26 @@ class _TimelineStep extends StatelessWidget {
                       ),
                     ),
                   ],
+                  if (clientNotifiedAt != null) ...[
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.smartphone,
+                          size: 10,
+                          color: Color(0xFFAB47BC),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Client notifié ${_formatTime(clientNotifiedAt!)}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFFAB47BC),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -310,6 +928,89 @@ class _TimelineStep extends StatelessWidget {
     final h = local.hour.toString().padLeft(2, '0');
     final m = local.minute.toString().padLeft(2, '0');
     return '$h:$m';
+  }
+}
+
+class _ClientConfirmedBadge extends StatelessWidget {
+  const _ClientConfirmedBadge({required this.confirmedAt});
+
+  final DateTime confirmedAt;
+
+  static String _formatTime(DateTime dt) {
+    final local = dt.toLocal();
+    final h = local.hour.toString().padLeft(2, '0');
+    final m = local.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: BookmiSpacing.spaceSm,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: BookmiColors.success.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: BookmiColors.success.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.check_circle,
+            color: BookmiColors.success,
+            size: 14,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            'Client a confirmé ✅ à ${_formatTime(confirmedAt)}',
+            style: const TextStyle(
+              fontSize: 12,
+              color: BookmiColors.success,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AwaitingConfirmationBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: BookmiSpacing.spaceSm,
+        vertical: 8,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.orange.withValues(alpha: 0.3),
+        ),
+      ),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.hourglass_empty, color: Colors.orange, size: 14),
+          SizedBox(width: 6),
+          Text(
+            'En attente de confirmation client',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.orange,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -15,7 +15,12 @@ class OnboardingStatusModel {
     // Map profile_completion_percentage to steps
     final pct = (data['profile_completion_percentage'] as num?)?.toInt() ?? 0;
     final hasProfile = data['stage_name'] != null && data['bio'] != null;
-    final hasCategory = data['category_id'] != null;
+    // Check multi-category array (new API) or legacy category_id
+    final categories =
+        (data['categories'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
+        [];
+    final hasCategory =
+        categories.isNotEmpty || data['category_id'] != null;
     final hasPackages =
         (data['service_packages_count'] as num?)?.toInt() != null &&
         (data['service_packages_count'] as num).toInt() > 0;

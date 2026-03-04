@@ -7,6 +7,7 @@ class TrackingEventModel {
     this.latitude,
     this.longitude,
     this.occurredAt,
+    this.clientNotifiedAt,
   });
 
   factory TrackingEventModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,9 @@ class TrackingEventModel {
       occurredAt: json['occurred_at'] != null
           ? DateTime.tryParse(json['occurred_at'] as String)
           : null,
+      clientNotifiedAt: json['client_notified_at'] != null
+          ? DateTime.tryParse(json['client_notified_at'] as String)
+          : null,
     );
   }
 
@@ -30,6 +34,7 @@ class TrackingEventModel {
   final double? latitude;
   final double? longitude;
   final DateTime? occurredAt;
+  final DateTime? clientNotifiedAt;
 
   bool get isCompleted => status == 'completed';
   bool get isArrived => status == 'arrived';

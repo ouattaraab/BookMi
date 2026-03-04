@@ -297,6 +297,28 @@ class ManagerController extends BaseController
     }
 
     // ─────────────────────────────────────────────
+    // Talent : liste toutes ses invitations manager
+    // ─────────────────────────────────────────────
+
+    public function talentInvitations(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = $request->user();
+        $talent = $user->talentProfile;
+
+        if (! $talent) {
+            return $this->errorResponse('TALENT_PROFILE_NOT_FOUND', 'Profil talent introuvable.', 404);
+        }
+
+        $invitations = ManagerInvitation::with('manager:id,first_name,last_name,email')
+            ->where('talent_profile_id', $talent->id)
+            ->orderByDesc('invited_at')
+            ->get();
+
+        return $this->successResponse(['invitations' => $invitations]);
+    }
+
+    // ─────────────────────────────────────────────
     // Story 7.6 — Messages manager au nom du talent
     // ─────────────────────────────────────────────
 

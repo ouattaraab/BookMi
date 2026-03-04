@@ -401,7 +401,19 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
               booking.status == 'paid' &&
               !_isEventPast24h(booking.eventDate)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
-            _TrackingButton(bookingId: booking.id),
+            _TrackingButton(bookingId: booking.id, isClient: false),
+          ],
+
+          // Client: follow tracking (status=paid or confirmed, before 24h deadline)
+          if (!isTalent &&
+              (booking.status == 'paid' || booking.status == 'confirmed') &&
+              !_isEventPast24h(booking.eventDate)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _TrackingButton(
+              bookingId: booking.id,
+              isClient: true,
+              clientConfirmedArrivalAt: booking.clientConfirmedArrivalAt,
+            ),
           ],
 
           // Talent: fallback confirm delivery (≥ 24h after event, client hasn't confirmed)
@@ -1268,20 +1280,37 @@ class _CompleteBookingButtonState extends State<_CompleteBookingButton> {
   }
 }
 
-// ── Tracking button (talent only, status=paid) ───────────────────────────────
+// ── Tracking button (talent & client, status=paid/confirmed) ─────────────────
 
 class _TrackingButton extends StatelessWidget {
-  const _TrackingButton({required this.bookingId});
+  const _TrackingButton({
+    required this.bookingId,
+    required this.isClient,
+    this.clientConfirmedArrivalAt,
+  });
   final int bookingId;
+  final bool isClient;
+  final DateTime? clientConfirmedArrivalAt;
 
   @override
   Widget build(BuildContext context) {
+    const accentColor = Color(0xFFFF6B35);
+    const clientColor = Color(0xFF4CAF50);
+    final color = isClient ? clientColor : accentColor;
+
+    final queryParams = <String, String>{
+      if (isClient) 'role': 'client',
+      if (clientConfirmedArrivalAt != null)
+        'confirmed_at': clientConfirmedArrivalAt!.toIso8601String(),
+    };
+
     return GlassCard(
       onTap: () => context.pushNamed(
         RouteNames.tracking,
         pathParameters: {'id': bookingId.toString()},
+        queryParameters: queryParams,
       ),
-      borderColor: const Color(0xFFFF6B35).withValues(alpha: 0.4),
+      borderColor: color.withValues(alpha: 0.4),
       child: Row(
         children: [
           Container(
@@ -1289,33 +1318,32 @@ class _TrackingButton extends StatelessWidget {
             height: 40,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFFFF6B35).withValues(alpha: 0.15),
+              color: color.withValues(alpha: 0.15),
             ),
-            child: const Icon(
-              Icons.location_on_rounded,
-              color: Color(0xFFFF6B35),
+            child: Icon(
+              isClient ? Icons.radar_rounded : Icons.location_on_rounded,
+              color: color,
               size: 20,
             ),
           ),
           const SizedBox(width: BookmiSpacing.spaceSm),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Suivre la prestation',
-                  style: TextStyle(
+                  isClient ? 'Suivre l\'artiste' : 'Suivre la prestation',
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
                 ),
                 Text(
-                  'Mettez à jour le suivi jour-J',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFFFF6B35),
-                  ),
+                  isClient
+                      ? 'Voir où en est votre artiste'
+                      : 'Mettez à jour le suivi jour-J',
+                  style: TextStyle(fontSize: 12, color: color),
                 ),
               ],
             ),

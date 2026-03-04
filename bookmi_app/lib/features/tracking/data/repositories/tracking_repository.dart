@@ -73,6 +73,17 @@ class TrackingRepository {
     }
   }
 
+  Future<ApiResult<Map<String, dynamic>>> confirmArrival(int bookingId) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        ApiEndpoints.bookingConfirmArrival(bookingId),
+      );
+      return ApiSuccess(response.data!['data'] as Map<String, dynamic>);
+    } on DioException catch (e) {
+      return _mapError(e);
+    }
+  }
+
   ApiFailure<T> _mapError<T>(DioException e) {
     final errorData = e.response?.data as Map<String, dynamic>?;
     final error = errorData?['error'] as Map<String, dynamic>?;

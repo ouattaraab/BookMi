@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:flutter/material.dart';
@@ -38,10 +40,14 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
   int _groupSize = 1;
   final _collectiveNameCtrl = TextEditingController();
 
+  // Multi-category management
+  List<Map<String, dynamic>> _allCategories = [];
+  final List<int> _selectedCategoryIds = [];
+
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    unawaited(_loadAll());
   }
 
   @override
@@ -56,14 +62,28 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
     super.dispose();
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadAll() async {
     setState(() {
       _loading = true;
       _error = null;
     });
-    final result = await widget.repository.getTalentProfile();
+
+    // Load categories and profile in parallel
+    final results = await Future.wait([
+      widget.repository.fetchCategories(),
+      widget.repository.getTalentProfile(),
+    ]);
+
     if (!mounted) return;
-    switch (result) {
+
+    final catResult = results[0] as ApiResult<List<Map<String, dynamic>>>;
+    final profileResult = results[1] as ApiResult<Map<String, dynamic>>;
+
+    if (catResult case ApiSuccess(:final data)) {
+      _allCategories = data;
+    }
+
+    switch (profileResult) {
       case ApiSuccess(:final data):
         final attrs = data['attributes'] as Map<String, dynamic>? ?? {};
         final social = attrs['social_links'] as Map<String, dynamic>? ?? {};
@@ -76,6 +96,25 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
         _isGroup = (attrs['is_group'] as bool?) ?? false;
         _groupSize = (attrs['group_size'] as int?) ?? 1;
         _collectiveNameCtrl.text = attrs['collective_name'] as String? ?? '';
+
+        // Load current categories from the `categories` array (new API)
+        _selectedCategoryIds.clear();
+        final cats =
+            (attrs['categories'] as List<dynamic>?)
+                ?.cast<Map<String, dynamic>>() ??
+            [];
+        if (cats.isNotEmpty) {
+          for (final c in cats) {
+            final id = c['id'] as int?;
+            if (id != null) _selectedCategoryIds.add(id);
+          }
+        } else {
+          // Fallback: use primary category_id
+          final primaryCat = attrs['category'] as Map<String, dynamic>?;
+          final primaryId = primaryCat?['id'] as int?;
+          if (primaryId != null) _selectedCategoryIds.add(primaryId);
+        }
+
         setState(() => _loading = false);
       case ApiFailure(:final message):
         setState(() {
@@ -87,6 +126,17 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedCategoryIds.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez sélectionner au moins une catégorie.'),
+          backgroundColor: _destructive,
+        ),
+      );
+      return;
+    }
+
     setState(() => _saving = true);
 
     final socialLinks = <String, String?>{
@@ -115,6 +165,7 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
       collectiveName: _isGroup && _collectiveNameCtrl.text.trim().isNotEmpty
           ? _collectiveNameCtrl.text.trim()
           : null,
+      categoryIds: _selectedCategoryIds,
     );
     if (!mounted) return;
     setState(() => _saving = false);
@@ -139,7 +190,7 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
         backgroundColor: _cardBg,
         elevation: 0,
         title: Text(
-          'Description & Réseaux sociaux',
+          'Profil & Catégories',
           style: GoogleFonts.plusJakartaSans(
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -185,6 +236,20 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
               child: ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  // ── Catégories ────────────────────────────────────
+                  _SectionHeader(
+                    icon: Icons.category_outlined,
+                    title: 'Catégories artistiques',
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Sélectionnez toutes vos catégories (min. 1)',
+                    style: GoogleFonts.manrope(fontSize: 12, color: _muted),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildCategoryChips(),
+                  const SizedBox(height: 24),
+
                   // ── Description ──────────────────────────────────
                   _SectionHeader(
                     icon: Icons.description_outlined,
@@ -413,6 +478,66 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
     );
   }
 
+  Widget _buildCategoryChips() {
+    if (_allCategories.isEmpty) {
+      return Text(
+        'Chargement des catégories...',
+        style: GoogleFonts.manrope(fontSize: 13, color: _muted),
+      );
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _allCategories.map((cat) {
+        final id = cat['id'] as int;
+        final name = cat['name'] as String;
+        final isSelected = _selectedCategoryIds.contains(id);
+
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              if (isSelected) {
+                _selectedCategoryIds.remove(id);
+              } else {
+                _selectedCategoryIds.add(id);
+              }
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: isSelected ? _primary : _inputBg,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? _primary : _border,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected) ...[
+                  const Icon(Icons.check, size: 14, color: Colors.white),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  name,
+                  style: GoogleFonts.manrope(
+                    fontSize: 13,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? Colors.white : _secondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
   Widget _buildError() {
     return Center(
       child: Padding(
@@ -429,7 +554,7 @@ class _TalentProfileInfoPageState extends State<TalentProfileInfoPage> {
             ),
             const SizedBox(height: 16),
             TextButton(
-              onPressed: _loadProfile,
+              onPressed: _loadAll,
               child: const Text(
                 'Réessayer',
                 style: TextStyle(color: _primary),

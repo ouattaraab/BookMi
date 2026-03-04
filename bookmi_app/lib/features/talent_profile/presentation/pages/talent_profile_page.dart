@@ -182,7 +182,13 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
         widget.initialData?['id'] as int? ?? profile['id'] as int? ?? 0;
     final category = profile['category'] as Map<String, dynamic>?;
     final categoryName = category?['name'] as String? ?? '';
-    final categorySlug = category?['slug'] as String?;
+    // Multi-category: use 'categories' array if available, fallback to primary
+    final allCategories =
+        (profile['categories'] as List<dynamic>?)
+            ?.cast<Map<String, dynamic>>()
+            .where((c) => c['name'] != null)
+            .toList() ??
+        (categoryName.isNotEmpty ? [category!] : []);
     final city = profile['city'] as String? ?? '';
     final isVerified = profile['is_verified'] as bool? ?? false;
     final cachetAmount = profile['cachet_amount'] as int? ?? 0;
@@ -353,17 +359,42 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            if (categoryName.isNotEmpty)
-                              Text(
-                                categoryName,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: BookmiColors.categoryColor(
-                                    categorySlug,
-                                  ),
-                                ),
+                            if (allCategories.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 4,
+                                children: allCategories.map((cat) {
+                                  final slug =
+                                      cat['slug'] as String?;
+                                  final name =
+                                      cat['name'] as String? ?? '';
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: BookmiColors.categoryColor(slug)
+                                          .withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: BookmiColors.categoryColor(slug)
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      name,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: BookmiColors.categoryColor(slug),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
+                            ],
                             if (city.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Row(
