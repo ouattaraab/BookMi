@@ -149,6 +149,17 @@ class TalentProfile extends Model
     }
 
     /**
+     * All categories assigned to this talent (many-to-many).
+     *
+     * @return BelongsToMany<Category, $this>
+     */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'talent_profile_categories')
+            ->withTimestamps();
+    }
+
+    /**
      * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      * @return \Illuminate\Database\Eloquent\Builder<self>
      */
@@ -158,12 +169,15 @@ class TalentProfile extends Model
     }
 
     /**
+     * Filter by category using the pivot table so that talents with multiple
+     * categories appear in all their respective category filters.
+     *
      * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
      * @return \Illuminate\Database\Eloquent\Builder<self>
      */
     public function scopeByCategory(\Illuminate\Database\Eloquent\Builder $query, int $categoryId): \Illuminate\Database\Eloquent\Builder
     {
-        return $query->where('category_id', $categoryId);
+        return $query->whereHas('categories', fn ($q) => $q->where('categories.id', $categoryId));
     }
 
     /**

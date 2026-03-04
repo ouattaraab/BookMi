@@ -30,27 +30,16 @@ class UpdateTalentProfileRequest extends FormRequest
         $categoryId = $this->input('category_id', $profile->category_id);
 
         return [
-            'stage_name' => ['sometimes', 'string', 'max:100', Rule::unique('talent_profiles', 'stage_name')->ignore($profile->id)],
-            'category_id' => ['sometimes', 'integer', 'exists:categories,id'],
-            'subcategory_id' => [
-                'nullable',
-                'integer',
-                'exists:categories,id',
-                function (string $attribute, mixed $value, \Closure $fail) use ($categoryId): void {
-                    if ($value && $categoryId) {
-                        $isChild = Category::where('id', $value)
-                            ->where('parent_id', $categoryId)
-                            ->exists();
-                        if (! $isChild) {
-                            $fail('La sous-catégorie doit appartenir à la catégorie sélectionnée.');
-                        }
-                    }
-                },
-            ],
-            'city' => ['sometimes', 'string', 'max:100'],
-            'cachet_amount' => ['sometimes', 'integer', 'min:1000'],
-            'bio' => ['nullable', 'string', 'max:1000'],
-            'social_links' => ['nullable', 'array'],
+            'stage_name'     => ['sometimes', 'string', 'max:100', Rule::unique('talent_profiles', 'stage_name')->ignore($profile->id)],
+            'category_ids'   => ['sometimes', 'array', 'min:1'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
+            // Legacy single-category support (backward compat)
+            'category_id'    => ['sometimes', 'integer', 'exists:categories,id'],
+            'subcategory_id' => ['nullable', 'integer', 'exists:categories,id'],
+            'city'           => ['sometimes', 'string', 'max:100'],
+            'cachet_amount'  => ['sometimes', 'integer', 'min:1000'],
+            'bio'            => ['nullable', 'string', 'max:1000'],
+            'social_links'   => ['nullable', 'array'],
             'social_links.*' => ['nullable', 'url'],
         ];
     }
@@ -80,7 +69,8 @@ class UpdateTalentProfileRequest extends FormRequest
         return [
             'stage_name.max' => 'Le nom de scène ne doit pas dépasser 100 caractères.',
             'stage_name.unique' => 'Ce nom de scène est déjà utilisé.',
-            'category_id.exists' => 'La catégorie sélectionnée est invalide.',
+            'category_ids.min' => 'Au moins une catégorie est obligatoire.',
+            'category_ids.*.exists' => 'Une des catégories sélectionnées est invalide.',
             'subcategory_id.exists' => 'La sous-catégorie sélectionnée est invalide.',
             'city.max' => 'La ville ne doit pas dépasser 100 caractères.',
             'cachet_amount.integer' => 'Le montant du cachet doit être un nombre entier (en centimes).',

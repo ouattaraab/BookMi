@@ -110,6 +110,24 @@ class ViewBookingRequest extends ViewRecord
                 ->modalSubmitAction(false)
                 ->modalCancelActionLabel('Fermer'),
 
+            Actions\Action::make('view_tracking')
+                ->label('Suivi Jour-J')
+                ->icon('heroicon-o-map-pin')
+                ->color('success')
+                ->slideOver()
+                ->modalContent(function (): View {
+                    /** @var BookingRequest $booking */
+                    $booking = $this->record;
+                    $trackingEvents = $booking->trackingEvents()->get();
+
+                    return view('filament.booking-tracking', [
+                        'booking'        => $booking,
+                        'trackingEvents' => $trackingEvents,
+                    ]);
+                })
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Fermer'),
+
             Actions\EditAction::make()
                 ->label('Modifier / uploader contrat'),
         ];

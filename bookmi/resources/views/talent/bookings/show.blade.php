@@ -131,7 +131,10 @@
             <div style="background:#f9fafb;border-radius:14px;padding:16px 20px;">
                 <p class="text-xs text-gray-400 uppercase tracking-wider mb-4">Suivi de la prestation</p>
                 @foreach($booking->trackingEvents as $event)
-                @php $isLast = $loop->last; @endphp
+                @php
+                    $isLast = $loop->last && !$booking->client_confirmed_arrival_at;
+                    $evStatus = $event->status instanceof \App\Enums\TrackingStatus ? $event->status->value : (string) $event->status;
+                @endphp
                 <div style="display:flex;gap:12px;{{ $isLast ? '' : 'margin-bottom:4px;' }}">
                     <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
                         <div style="width:10px;height:10px;border-radius:50%;background:{{ $isLast ? '#15803D' : '#FF6B35' }};flex-shrink:0;"></div>
@@ -144,9 +147,29 @@
                             {{ $event->status instanceof \App\Enums\TrackingStatus ? $event->status->label() : (string) $event->status }}
                         </p>
                         <p class="text-xs text-gray-400" style="margin:0;">{{ $event->occurred_at->format('d/m H:i') }}</p>
+                        @if($event->client_notified_at)
+                        <p class="text-xs" style="margin:2px 0 0;color:#7c3aed;">📱 Client notifié à {{ $event->client_notified_at->format('H:i') }}</p>
+                        @endif
                     </div>
                 </div>
                 @endforeach
+
+                {{-- Client confirmation line --}}
+                @if($booking->client_confirmed_arrival_at)
+                <div style="display:flex;gap:12px;margin-top:0;">
+                    <div style="flex-shrink:0;">
+                        <div style="width:10px;height:10px;border-radius:50%;background:#15803D;flex-shrink:0;"></div>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold" style="margin:0 0 2px;color:#15803D;">✅ Client a confirmé votre présence</p>
+                        <p class="text-xs text-gray-400" style="margin:0;">{{ \Carbon\Carbon::parse($booking->client_confirmed_arrival_at)->format('d/m H:i') }}</p>
+                    </div>
+                </div>
+                @elseif($booking->trackingEvents->contains(fn($e) => ($e->status instanceof \App\Enums\TrackingStatus ? $e->status->value : (string)$e->status) === 'arrived'))
+                <div style="margin-top:10px;padding:10px 12px;border-radius:10px;background:#FFF3E0;border:1px solid #FCD34D;">
+                    <p class="text-xs font-semibold" style="color:#B45309;margin:0;">⏳ En attente de confirmation du client</p>
+                </div>
+                @endif
             </div>
         </div>
         @endif

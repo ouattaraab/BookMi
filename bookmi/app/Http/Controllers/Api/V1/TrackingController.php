@@ -53,13 +53,14 @@ class TrackingController extends Controller
 
         return response()->json([
             'data' => [
-                'id'                 => $event->id,
-                'booking_request_id' => $event->booking_request_id,
-                'status'             => $event->status->value,
-                'status_label'       => $event->status->label(),
-                'latitude'           => $event->latitude,
-                'longitude'          => $event->longitude,
-                'occurred_at'        => $event->occurred_at?->toISOString(),
+                'id'                  => $event->id,
+                'booking_request_id'  => $event->booking_request_id,
+                'status'              => $event->status->value,
+                'status_label'        => $event->status->label(),
+                'latitude'            => $event->latitude,
+                'longitude'           => $event->longitude,
+                'occurred_at'         => $event->occurred_at?->toISOString(),
+                'client_notified_at'  => $event->client_notified_at?->toISOString(),
             ],
         ], 201);
     }
@@ -85,12 +86,13 @@ class TrackingController extends Controller
         $events = $booking->trackingEvents()
             ->get()
             ->map(fn ($e) => [
-                'id'           => $e->id,
-                'status'       => $e->status->value,
-                'status_label' => $e->status->label(),
-                'latitude'     => $e->latitude,
-                'longitude'    => $e->longitude,
-                'occurred_at'  => $e->occurred_at?->toISOString(),
+                'id'                 => $e->id,
+                'status'             => $e->status->value,
+                'status_label'       => $e->status->label(),
+                'latitude'           => $e->latitude,
+                'longitude'          => $e->longitude,
+                'occurred_at'        => $e->occurred_at?->toISOString(),
+                'client_notified_at' => $e->client_notified_at?->toISOString(),
             ]);
 
         return response()->json(['data' => $events]);

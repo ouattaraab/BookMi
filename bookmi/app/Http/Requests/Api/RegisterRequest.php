@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api;
 
 use App\Enums\UserRole;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class RegisterRequest extends FormRequest
@@ -25,7 +26,19 @@ class RegisterRequest extends FormRequest
             'phone' => ['required', 'string', 'regex:/^\+225[0-9]{10}$/', 'unique:users,phone'],
             'password' => ['required', 'string', Password::min(8), 'confirmed'],
             'role' => ['required', 'string', 'in:' . implode(',', UserRole::registrableRoles())],
-            'category_id' => ['required_if:role,talent', 'nullable', 'integer', 'exists:categories,id'],
+            // category_ids (new multi-select) or legacy category_id — both validated but not stored.
+            // At least one is required for talent role. The talent associates categories
+            // when creating their TalentProfile (POST /talent_profiles).
+            'category_ids'   => ['nullable', 'array'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
+            // Required when role=talent AND category_ids is not provided (backward compat)
+            'category_id' => [
+                Rule::requiredIf(
+                    fn () => $this->input('role') === 'talent'
+                        && empty($this->input('category_ids')),
+                ),
+                'nullable', 'integer', 'exists:categories,id',
+            ],
             'subcategory_id' => ['nullable', 'integer', 'exists:categories,id'],
             'referral_code' => ['nullable', 'string', 'max:20'],
         ];
@@ -52,9 +65,10 @@ class RegisterRequest extends FormRequest
             'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
             'role.required' => 'Le rôle est obligatoire.',
             'role.in' => 'Le rôle doit être client ou talent.',
-            'category_id.required_if' => 'La catégorie est obligatoire pour un talent.',
-            'category_id.exists' => 'La catégorie sélectionnée est invalide.',
-            'subcategory_id.exists' => 'La sous-catégorie sélectionnée est invalide.',
+            'category_id.required'    => 'La catégorie est obligatoire pour un talent.',
+            'category_id.exists'      => 'La catégorie sélectionnée est invalide.',
+            'category_ids.*.exists'   => 'Une des catégories sélectionnées est invalide.',
+            'subcategory_id.exists'   => 'La sous-catégorie sélectionnée est invalide.',
         ];
     }
 }

@@ -186,6 +186,8 @@ class TrackingControllerTest extends TestCase
         $response->assertOk();
         $this->assertCount(3, $response->json('data'));
         $this->assertEquals('preparing', $response->json('data.0.status'));
+        // Each event must expose client_notified_at (null or ISO string)
+        $this->assertArrayHasKey('client_notified_at', $response->json('data.0'));
     }
 
     public function test_client_can_list_tracking_events(): void

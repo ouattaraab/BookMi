@@ -21,7 +21,7 @@ class TalentProfileFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'user_id'     => User::factory(),
             'category_id' => Category::factory(),
             'stage_name' => fake()->unique()->name(),
             'bio' => fake()->paragraph(),
@@ -38,6 +38,19 @@ class TalentProfileFactory extends Factory
             'total_bookings' => 0,
             'profile_completion_percentage' => 20,
         ];
+    }
+
+    /**
+     * Automatically sync the primary category_id to the pivot table after every factory creation.
+     * This ensures that the many-to-many pivot is always consistent with category_id.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (TalentProfile $profile): void {
+            if ($profile->category_id) {
+                $profile->categories()->syncWithoutDetaching([$profile->category_id]);
+            }
+        });
     }
 
     public function verified(): static

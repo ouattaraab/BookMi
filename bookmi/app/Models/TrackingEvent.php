@@ -19,6 +19,7 @@ class TrackingEvent extends Model
         'latitude',
         'longitude',
         'occurred_at',
+        'client_notified_at',
     ];
 
     /**
@@ -27,10 +28,11 @@ class TrackingEvent extends Model
     protected function casts(): array
     {
         return [
-            'status'      => TrackingStatus::class,
-            'latitude'    => 'float',
-            'longitude'   => 'float',
-            'occurred_at' => 'datetime',
+            'status'              => TrackingStatus::class,
+            'latitude'            => 'float',
+            'longitude'           => 'float',
+            'occurred_at'         => 'datetime',
+            'client_notified_at'  => 'datetime',
         ];
     }
 

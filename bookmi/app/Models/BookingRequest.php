@@ -40,6 +40,7 @@ class BookingRequest extends Model
         'accept_comment',
         'mediator_id',
         'mediation_notes',
+        'client_confirmed_arrival_at',
     ];
 
     /**
@@ -58,8 +59,9 @@ class BookingRequest extends Model
             'commission_amount' => 'integer',
             'total_amount'      => 'integer',
             'refund_amount'     => 'integer',
-            'discount_amount'   => 'integer',
-            'package_snapshot'  => 'array',
+            'discount_amount'              => 'integer',
+            'package_snapshot'             => 'array',
+            'client_confirmed_arrival_at'  => 'datetime',
         ];
     }
 

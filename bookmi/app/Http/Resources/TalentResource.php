@@ -41,6 +41,19 @@ class TalentResource extends JsonResource
                     'name' => $this->subcategory?->name,
                     'slug' => $this->subcategory?->slug,
                 ]),
+                'categories' => $this->when(
+                    $this->relationLoaded('categories'),
+                    fn () => $this->categories
+                        ->map(fn ($cat) => [
+                            'id'        => $cat->id,
+                            'name'      => $cat->name,
+                            'slug'      => $cat->slug,
+                            'color_hex' => $cat->color_hex,
+                        ])
+                        ->values()
+                        ->toArray(),
+                    [],
+                ),
                 'distance_km' => $this->when(
                     $this->resource->getAttribute('distance_km') !== null,
                     fn () => round((float) $this->resource->getAttribute('distance_km'), 2),

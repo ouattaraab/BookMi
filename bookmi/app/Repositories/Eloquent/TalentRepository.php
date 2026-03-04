@@ -23,7 +23,7 @@ class TalentRepository implements TalentRepositoryInterface
     ): CursorPaginator|LengthAwarePaginator {
         $query = TalentProfile::query()
             ->verified()
-            ->with(['category', 'subcategory'])
+            ->with(['category', 'subcategory', 'categories'])
             ->when(
                 isset($filters['q']) && $filters['q'] !== '',
                 fn ($q) => $q->where('stage_name', 'LIKE', '%' . $filters['q'] . '%'),
@@ -143,10 +143,10 @@ class TalentRepository implements TalentRepositoryInterface
     {
         return TalentProfile::query()
             ->verified()
-            ->where('category_id', $profile->category_id)
+            ->byCategory($profile->category_id)
             ->where('city', $profile->city)
             ->where('id', '!=', $profile->id)
-            ->with(['category', 'subcategory'])
+            ->with(['category', 'subcategory', 'categories'])
             ->orderBy('average_rating', 'desc')
             ->limit($limit)
             ->get();

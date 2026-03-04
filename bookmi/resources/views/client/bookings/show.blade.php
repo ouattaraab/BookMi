@@ -369,38 +369,84 @@ Cette action est irréversible.')">
     </div>
     @endif
 
-    {{-- Timeline suivi jour-J (lecture seule) --}}
-    @if(in_array($sk, ['paid', 'confirmed', 'completed']) && $booking->trackingEvents->isNotEmpty())
+    {{-- Timeline suivi jour-J enrichie + confirmation d'arrivée --}}
+    @if(in_array($sk, ['paid', 'confirmed', 'completed']))
+    @php
+        $hasTrackingEvents = $booking->trackingEvents->isNotEmpty();
+        $lastTrackingStatus = $booking->trackingEvents->last()?->status;
+        $talentArrived = $booking->trackingEvents->contains(fn($e) => ($e->status instanceof \App\Enums\TrackingStatus ? $e->status->value : (string)$e->status) === 'arrived');
+        $alreadyConfirmed = $booking->client_confirmed_arrival_at !== null;
+    @endphp
+    @if($hasTrackingEvents || $alreadyConfirmed)
     <div class="dash-fade" style="animation-delay:180ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;">
         <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
             <div style="width:8px;height:8px;border-radius:50%;background:#FF6B35;flex-shrink:0;"></div>
             <h3 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0;">Suivi de la prestation</h3>
         </div>
         <div style="padding:20px 24px;">
-            @foreach($booking->trackingEvents as $index => $event)
+
+            {{-- Tracking events list --}}
+            @foreach($booking->trackingEvents as $event)
             @php
-                $isLast = $loop->last;
+                $isLast = $loop->last && !$alreadyConfirmed;
                 $dotColor = $isLast ? '#15803D' : '#FF6B35';
+                $evStatus = $event->status instanceof \App\Enums\TrackingStatus ? $event->status->value : (string) $event->status;
             @endphp
-            <div style="display:flex;gap:14px;{{ $isLast ? '' : 'margin-bottom:4px;' }}">
+            <div style="display:flex;gap:14px;{{ ($loop->last && !$alreadyConfirmed) ? '' : 'margin-bottom:4px;' }}">
                 <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
                     <div style="width:12px;height:12px;border-radius:50%;background:{{ $dotColor }};border:2px solid white;box-shadow:0 0 0 2px {{ $dotColor }};flex-shrink:0;"></div>
-                    @if(!$isLast)
+                    @if(!($loop->last && !$alreadyConfirmed))
                     <div style="width:2px;flex:1;background:#EAE7E0;margin:4px 0;min-height:28px;"></div>
                     @endif
                 </div>
-                <div style="padding-bottom:{{ $isLast ? '0' : '20px' }};">
+                <div style="padding-bottom:{{ ($loop->last && !$alreadyConfirmed) ? '0' : '20px' }};">
                     <p style="font-size:0.875rem;font-weight:800;color:#1A2744;margin:0 0 2px;">
                         {{ $event->status instanceof \App\Enums\TrackingStatus ? $event->status->label() : (string) $event->status }}
                     </p>
                     <p style="font-size:0.75rem;color:#8A8278;font-weight:500;margin:0;">
                         {{ $event->occurred_at->format('d/m H:i') }}
+                        @if($event->client_notified_at)
+                            <span style="color:#7C3AED;font-weight:600;"> · Notifié à {{ $event->client_notified_at->format('H:i') }}</span>
+                        @endif
                     </p>
                 </div>
             </div>
             @endforeach
+
+            {{-- Confirmation client step --}}
+            @if($alreadyConfirmed)
+            <div style="display:flex;gap:14px;">
+                <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+                    <div style="width:12px;height:12px;border-radius:50%;background:#15803D;border:2px solid white;box-shadow:0 0 0 2px #15803D;flex-shrink:0;"></div>
+                </div>
+                <div>
+                    <p style="font-size:0.875rem;font-weight:800;color:#15803D;margin:0 0 2px;">✅ Présence confirmée par vous</p>
+                    <p style="font-size:0.75rem;color:#8A8278;font-weight:500;margin:0;">
+                        {{ \Carbon\Carbon::parse($booking->client_confirmed_arrival_at)->format('d/m H:i') }}
+                    </p>
+                </div>
+            </div>
+            @elseif($talentArrived && in_array($sk, ['paid', 'confirmed']))
+            {{-- CTA confirm arrival --}}
+            <div style="margin-top:16px;padding:18px 20px;border-radius:14px;background:linear-gradient(135deg,#ECFDF5,#F0FDF4);border:1.5px solid #6EE7B7;">
+                <p style="font-size:0.95rem;font-weight:900;color:#065F46;margin:0 0 6px;">🎵 {{ $talentName }} est arrivé !</p>
+                <p style="font-size:0.8rem;color:#047857;font-weight:500;margin:0 0 14px;">Confirmez sa présence pour libérer le paiement et valider la prestation.</p>
+                <form action="{{ route('client.bookings.confirm-arrival', $booking->id) }}" method="POST"
+                      onsubmit="return confirm('Confirmer la présence de {{ addslashes($talentName) }} sur place ?')">
+                    @csrf
+                    <button type="submit"
+                            style="padding:12px 24px;border-radius:12px;font-size:0.875rem;font-weight:800;color:white;background:linear-gradient(135deg,#16A34A,#15803D);border:none;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 14px rgba(22,163,74,0.30);transition:transform 0.2s;"
+                            onmouseover="this.style.transform='translateY(-2px)'"
+                            onmouseout="this.style.transform=''">
+                        ✅ Confirmer la présence
+                    </button>
+                </form>
+            </div>
+            @endif
+
         </div>
     </div>
+    @endif
     @endif
 
     {{-- ── Chronologie des statuts ── --}}

@@ -30,7 +30,7 @@ class TalentProfileController extends BaseController
             $profile = $this->service->createProfile($user->id, $request->validated());
 
             return $this->successResponse(
-                new TalentProfileResource($profile->load('category', 'subcategory')),
+                new TalentProfileResource($profile->load('category', 'subcategory', 'categories')),
                 201,
             );
         } catch (BookmiException $e) {
@@ -58,7 +58,7 @@ class TalentProfileController extends BaseController
         }
 
         return $this->successResponse(
-            new TalentProfileResource($profile->load('category', 'subcategory', 'managers:id,first_name,last_name,email')),
+            new TalentProfileResource($profile->load('category', 'subcategory', 'categories', 'managers:id,first_name,last_name,email')),
         );
     }
 
@@ -76,7 +76,7 @@ class TalentProfileController extends BaseController
         }
 
         return $this->successResponse(
-            new TalentProfileResource($profile->load('category', 'subcategory')),
+            new TalentProfileResource($profile->load('category', 'subcategory', 'categories')),
         );
     }
 
@@ -181,9 +181,25 @@ class TalentProfileController extends BaseController
             'is_group' => ['nullable', 'boolean'],
             'group_size' => ['nullable', 'integer', 'min:1', 'max:100'],
             'collective_name' => ['nullable', 'string', 'max:100'],
+            'category_ids' => ['sometimes', 'array', 'min:1'],
+            'category_ids.*' => ['integer', 'exists:categories,id'],
         ]);
 
+        // Sync categories when provided
+        $categoryIds = isset($validated['category_ids']) && is_array($validated['category_ids'])
+            ? array_values(array_map('intval', $validated['category_ids']))
+            : null;
+        unset($validated['category_ids']);
+
+        if ($categoryIds !== null) {
+            $validated['category_id'] = $categoryIds[0];
+        }
+
         $profile->update($validated);
+
+        if ($categoryIds !== null) {
+            $profile->categories()->sync($categoryIds);
+        }
 
         if ($profile->followers()->exists()) {
             NotifyTalentFollowers::dispatch(
@@ -195,7 +211,7 @@ class TalentProfileController extends BaseController
         }
 
         return $this->successResponse(
-            new TalentProfileResource($profile->fresh()->load('category', 'subcategory')),
+            new TalentProfileResource($profile->fresh()->load('category', 'subcategory', 'categories')),
         );
     }
 

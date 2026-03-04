@@ -29,10 +29,24 @@ class TalentProfileService
             );
         }
 
+        // Resolve category_ids → set primary category_id on the profile row
+        $categoryIds = $this->extractCategoryIds($data);
+        unset($data['category_ids']);
+        if ($categoryIds !== null) {
+            $data['category_id'] = $categoryIds[0];
+        }
+
         $data['user_id'] = $userId;
         $data['profile_completion_percentage'] = $this->calculateCompletionFromData($data);
 
-        return $this->repository->create($data);
+        $profile = $this->repository->create($data);
+
+        // Sync all selected categories in pivot table
+        if ($categoryIds !== null) {
+            $profile->categories()->sync($categoryIds);
+        }
+
+        return $profile;
     }
 
     /**
@@ -40,15 +54,63 @@ class TalentProfileService
      */
     public function updateProfile(TalentProfile $profile, array $data): TalentProfile
     {
+        // Resolve category_ids → update primary category_id on the profile row
+        $categoryIds = $this->extractCategoryIds($data);
+        unset($data['category_ids']);
+        if ($categoryIds !== null) {
+            $data['category_id'] = $categoryIds[0];
+        }
+
         $merged = array_merge($profile->only(['bio', 'is_verified']), $data);
         $data['profile_completion_percentage'] = $this->calculateCompletionFromData($merged);
 
         $updated = $this->repository->update($profile, $data);
 
+        // Sync categories in pivot table
+        if ($categoryIds !== null) {
+            $updated->categories()->sync($categoryIds);
+        }
+
         // Invalider le cache public du profil après modification
         Cache::forget('talents.profile.' . $profile->slug);
 
         return $updated;
+    }
+
+    /**
+     * Sync categories for a profile from a raw category_ids list.
+     * Updates both the pivot table and the primary category_id column.
+     *
+     * @param  array<int, int>  $categoryIds
+     */
+    public function syncCategories(TalentProfile $profile, array $categoryIds): TalentProfile
+    {
+        $profile->update(['category_id' => $categoryIds[0]]);
+        $profile->categories()->sync($categoryIds);
+        Cache::forget('talents.profile.' . $profile->slug);
+
+        return $profile->fresh(['category', 'categories']) ?? $profile;
+    }
+
+    /**
+     * Extract and normalise category_ids from request data.
+     * Supports both `category_ids` (new) and legacy `category_id` (single int).
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<int, int>|null
+     */
+    private function extractCategoryIds(array $data): ?array
+    {
+        if (isset($data['category_ids']) && is_array($data['category_ids']) && count($data['category_ids']) > 0) {
+            return array_values(array_map('intval', $data['category_ids']));
+        }
+
+        // Backward compat: single category_id passed (old clients / old tests)
+        if (isset($data['category_id']) && ! isset($data['category_ids'])) {
+            return [(int) $data['category_id']];
+        }
+
+        return null;
     }
 
     public function getBySlug(string $slug): ?TalentProfile
@@ -70,6 +132,7 @@ class TalentProfileService
         $profile->load([
             'category',
             'subcategory',
+            'categories',
             'servicePackages'  => fn ($q) => $q->active()->ordered(),
             'portfolioItems'   => fn ($q) => $q->where('is_approved', true)->latest(),
             'receivedReviews'  => fn ($q) => $q->with('reviewer')->where('is_reported', false)->latest(),

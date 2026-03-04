@@ -288,6 +288,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::delete('/talent_profiles/me/manager', [ManagerController::class, 'unassignManager'])->name('talent.manager.unassign');
 
         // Invitation manager — talent side (role:talent handled in controller)
+        Route::get('/talent_profiles/me/manager-invitations', [ManagerController::class, 'talentInvitations'])->name('talent.manager.invitations');
         Route::post('/manager/invite', [ManagerController::class, 'inviteManager'])->name('manager.invite');
         Route::delete('/manager/invitations/{invitation}', [ManagerController::class, 'cancelInvitation'])->name('manager.invitations.cancel');
 

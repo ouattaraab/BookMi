@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Web\Client;
 
 use App\Enums\BookingStatus;
+use App\Enums\EscrowStatus;
 use App\Enums\PaymentMethod;
 use App\Events\BookingCreated;
 use App\Exceptions\BookingException;
 use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
+use App\Models\EscrowHold;
 use App\Models\TalentProfile;
 use App\Models\Transaction;
 use App\Services\BookingService;
 use App\Services\CalendarService;
+use App\Services\EscrowService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +32,7 @@ class BookingController extends Controller
         private readonly PaymentService $paymentService,
         private readonly CalendarService $calendarService,
         private readonly BookingService $bookingService,
+        private readonly EscrowService $escrowService,
     ) {
     }
 
@@ -367,6 +371,48 @@ class BookingController extends Controller
             default     => redirect()->route('client.bookings.show', $bookingId)
                 ->with('info', 'Paiement en cours de traitement, votre réservation sera mise à jour.'),
         };
+    }
+
+    /**
+     * POST /client/bookings/{id}/confirm-arrival
+     *
+     * Client confirms the talent has arrived on site (web wrapper).
+     */
+    public function confirmArrival(int $id): RedirectResponse
+    {
+        $booking = BookingRequest::where('client_id', auth()->id())
+            ->whereIn('status', [BookingStatus::Paid->value, BookingStatus::Confirmed->value])
+            ->with('trackingEvents')
+            ->findOrFail($id);
+
+        if ($booking->client_confirmed_arrival_at !== null) {
+            return back()->with('info', 'Vous avez déjà confirmé la présence du talent.');
+        }
+
+        $hasArrived = $booking->trackingEvents->contains(
+            fn ($e) => ($e->status instanceof \App\Enums\TrackingStatus
+                ? $e->status->value
+                : (string) $e->status) === 'arrived',
+        );
+
+        if (! $hasArrived) {
+            return back()->with('error', "Le talent n'a pas encore signalé son arrivée.");
+        }
+
+        $booking->update(['client_confirmed_arrival_at' => now()]);
+
+        // Release escrow if still held
+        if ($booking->status === BookingStatus::Paid) {
+            $hold = EscrowHold::where('booking_request_id', $booking->id)
+                ->where('status', EscrowStatus::Held->value)
+                ->first();
+
+            if ($hold) {
+                $this->escrowService->releaseEscrow($hold);
+            }
+        }
+
+        return back()->with('success', 'Présence confirmée ! Le paiement a été libéré en faveur du talent.');
     }
 
     private function methodLabel(PaymentMethod $method): string

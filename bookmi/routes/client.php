@@ -27,6 +27,7 @@ Route::get('/bookings/payment/callback', [BookingController::class, 'paymentCall
 Route::get('/bookings/{id}/receipt', [BookingController::class, 'receipt'])->name('bookings.receipt');
 Route::get('/bookings/{id}/contract', [BookingController::class, 'contract'])->name('bookings.contract');
 Route::post('/bookings/{id}/review', [ReviewController::class, 'store'])->name('bookings.review.store');
+Route::post('/bookings/{id}/confirm-arrival', [BookingController::class, 'confirmArrival'])->name('bookings.confirm-arrival');
 
 // Favoris
 Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites');

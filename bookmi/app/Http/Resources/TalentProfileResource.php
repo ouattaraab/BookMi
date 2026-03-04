@@ -50,6 +50,19 @@ class TalentProfileResource extends JsonResource
                     'name' => $this->subcategory?->name,
                     'slug' => $this->subcategory?->slug,
                 ]),
+                'categories' => $this->when(
+                    $this->relationLoaded('categories'),
+                    fn () => $this->categories
+                        ->map(fn ($cat) => [
+                            'id'        => $cat->id,
+                            'name'      => $cat->name,
+                            'slug'      => $cat->slug,
+                            'color_hex' => $cat->color_hex,
+                        ])
+                        ->values()
+                        ->toArray(),
+                    [],
+                ),
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at,
             ],

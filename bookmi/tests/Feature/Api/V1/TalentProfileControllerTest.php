@@ -27,11 +27,11 @@ class TalentProfileControllerTest extends TestCase
     public function test_authenticated_user_can_create_talent_profile(): void
     {
         $data = [
-            'stage_name' => 'DJ Kerozen',
-            'category_id' => $this->category->id,
-            'city' => 'Abidjan',
+            'stage_name'   => 'DJ Kerozen',
+            'category_ids' => [$this->category->id],
+            'city'         => 'Abidjan',
             'cachet_amount' => 15000000,
-            'bio' => 'Meilleur DJ de Côte d\'Ivoire',
+            'bio'          => 'Meilleur DJ de Côte d\'Ivoire',
         ];
 
         $response = $this->actingAs($this->user, 'sanctum')
@@ -82,15 +82,15 @@ class TalentProfileControllerTest extends TestCase
     public function test_cannot_create_duplicate_profile(): void
     {
         TalentProfile::factory()->create([
-            'user_id' => $this->user->id,
+            'user_id'     => $this->user->id,
             'category_id' => $this->category->id,
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->postJson('/api/v1/talent_profiles', [
-                'stage_name' => 'Another Name',
-                'category_id' => $this->category->id,
-                'city' => 'Bouaké',
+                'stage_name'   => 'Another Name',
+                'category_ids' => [$this->category->id],
+                'city'         => 'Bouaké',
                 'cachet_amount' => 5000,
             ]);
 
@@ -111,7 +111,7 @@ class TalentProfileControllerTest extends TestCase
                     'message',
                     'status',
                     'details' => [
-                        'errors' => ['stage_name', 'category_id', 'city', 'cachet_amount'],
+                        'errors' => ['stage_name', 'category_ids', 'city', 'cachet_amount'],
                     ],
                 ],
             ]);
@@ -121,9 +121,9 @@ class TalentProfileControllerTest extends TestCase
     {
         $response = $this->actingAs($this->user, 'sanctum')
             ->postJson('/api/v1/talent_profiles', [
-                'stage_name' => 'DJ Test',
-                'category_id' => $this->category->id,
-                'city' => 'Abidjan',
+                'stage_name'   => 'DJ Test',
+                'category_ids' => [$this->category->id],
+                'city'         => 'Abidjan',
                 'cachet_amount' => 500,
             ]);
 
@@ -142,9 +142,9 @@ class TalentProfileControllerTest extends TestCase
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->postJson('/api/v1/talent_profiles', [
-                'stage_name' => 'DJ Kerozen',
-                'category_id' => $this->category->id,
-                'city' => 'Abidjan',
+                'stage_name'   => 'DJ Kerozen',
+                'category_ids' => [$this->category->id],
+                'city'         => 'Abidjan',
                 'cachet_amount' => 5000,
             ]);
 
@@ -249,6 +249,68 @@ class TalentProfileControllerTest extends TestCase
         $this->assertDatabaseHas('talent_profiles', ['id' => $profile->id, 'deleted_at' => null]);
     }
 
+    public function test_talent_can_select_multiple_categories(): void
+    {
+        $cat2 = Category::factory()->create(['name' => 'Chanteur']);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/api/v1/talent_profiles', [
+                'stage_name'   => 'DJ Multi',
+                'category_ids' => [$this->category->id, $cat2->id],
+                'city'         => 'Abidjan',
+                'cachet_amount' => 10000,
+            ]);
+
+        $response->assertStatus(201);
+
+        $profileId = $response->json('data.id');
+
+        // Both categories must exist in the pivot table
+        $this->assertDatabaseHas('talent_profile_categories', [
+            'talent_profile_id' => $profileId,
+            'category_id'       => $this->category->id,
+        ]);
+        $this->assertDatabaseHas('talent_profile_categories', [
+            'talent_profile_id' => $profileId,
+            'category_id'       => $cat2->id,
+        ]);
+
+        // Primary category_id must be the first one
+        $this->assertDatabaseHas('talent_profiles', [
+            'id'          => $profileId,
+            'category_id' => $this->category->id,
+        ]);
+
+        // API response must include categories array
+        $categories = $response->json('data.attributes.categories');
+        $this->assertCount(2, $categories);
+    }
+
+    public function test_talent_appears_in_filter_for_all_selected_categories(): void
+    {
+        $cat2 = Category::factory()->create(['name' => 'Danseur']);
+
+        // Create a talent with 2 categories
+        $profile = TalentProfile::factory()->verified()->create([
+            'user_id'     => $this->user->id,
+            'category_id' => $this->category->id,
+        ]);
+        // Add the second category to the pivot
+        $profile->categories()->syncWithoutDetaching([$cat2->id]);
+
+        // Filter by first category
+        $r1 = $this->getJson('/api/v1/talents?category_id=' . $this->category->id);
+        $r1->assertStatus(200);
+        $ids1 = collect($r1->json('data'))->pluck('id')->toArray();
+        $this->assertContains($profile->id, $ids1);
+
+        // Filter by second category
+        $r2 = $this->getJson('/api/v1/talents?category_id=' . $cat2->id);
+        $r2->assertStatus(200);
+        $ids2 = collect($r2->json('data'))->pluck('id')->toArray();
+        $this->assertContains($profile->id, $ids2);
+    }
+
     public function test_social_links_stored_as_json(): void
     {
         $socialLinks = [
@@ -258,9 +320,9 @@ class TalentProfileControllerTest extends TestCase
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->postJson('/api/v1/talent_profiles', [
-                'stage_name' => 'DJ Social',
-                'category_id' => $this->category->id,
-                'city' => 'Abidjan',
+                'stage_name'   => 'DJ Social',
+                'category_ids' => [$this->category->id],
+                'city'         => 'Abidjan',
                 'cachet_amount' => 5000,
                 'social_links' => $socialLinks,
             ]);

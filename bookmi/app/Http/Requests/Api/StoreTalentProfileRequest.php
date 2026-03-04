@@ -20,28 +20,17 @@ class StoreTalentProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'stage_name' => ['required', 'string', 'max:100', 'unique:talent_profiles,stage_name'],
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
-            'subcategory_id' => [
-                'nullable',
-                'integer',
-                'exists:categories,id',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    if ($value && $this->input('category_id')) {
-                        $isChild = Category::where('id', $value)
-                            ->where('parent_id', $this->input('category_id'))
-                            ->exists();
-                        if (! $isChild) {
-                            $fail('La sous-catégorie doit appartenir à la catégorie sélectionnée.');
-                        }
-                    }
-                },
-            ],
-            'city' => ['required', 'string', 'max:100'],
-            'cachet_amount' => ['required', 'integer', 'min:1000'],
-            'bio' => ['nullable', 'string', 'max:1000'],
-            'social_links' => ['nullable', 'array'],
-            'social_links.*' => ['nullable', 'url'],
+            'stage_name'      => ['required', 'string', 'max:100', 'unique:talent_profiles,stage_name'],
+            'category_ids'    => ['required', 'array', 'min:1'],
+            'category_ids.*'  => ['integer', 'exists:categories,id'],
+            // Legacy single-category support (backward compat for old clients)
+            'category_id'     => ['sometimes', 'integer', 'exists:categories,id'],
+            'subcategory_id'  => ['nullable', 'integer', 'exists:categories,id'],
+            'city'            => ['required', 'string', 'max:100'],
+            'cachet_amount'   => ['required', 'integer', 'min:1000'],
+            'bio'             => ['nullable', 'string', 'max:1000'],
+            'social_links'    => ['nullable', 'array'],
+            'social_links.*'  => ['nullable', 'url'],
         ];
     }
 
@@ -71,8 +60,9 @@ class StoreTalentProfileRequest extends FormRequest
             'stage_name.required' => 'Le nom de scène est obligatoire.',
             'stage_name.max' => 'Le nom de scène ne doit pas dépasser 100 caractères.',
             'stage_name.unique' => 'Ce nom de scène est déjà utilisé.',
-            'category_id.required' => 'La catégorie est obligatoire.',
-            'category_id.exists' => 'La catégorie sélectionnée est invalide.',
+            'category_ids.required' => 'Au moins une catégorie est obligatoire.',
+            'category_ids.min' => 'Au moins une catégorie est obligatoire.',
+            'category_ids.*.exists' => 'Une des catégories sélectionnées est invalide.',
             'subcategory_id.exists' => 'La sous-catégorie sélectionnée est invalide.',
             'city.required' => 'La ville est obligatoire.',
             'city.max' => 'La ville ne doit pas dépasser 100 caractères.',
