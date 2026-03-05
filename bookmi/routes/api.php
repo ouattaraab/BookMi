@@ -1,5 +1,6 @@
 <?php
 
+// v2026-03-05 — consent system (loi 2013-450, RGPD)
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\AppEventController;
 use App\Http\Controllers\Api\V1\AppVersionController;
