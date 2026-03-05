@@ -34,7 +34,9 @@ class OfflineCache {
 
   // ── Conversations ────────────────────────────────────────────────
 
-  Future<void> saveConversations(List<Map<String, dynamic>> conversations) async {
+  Future<void> saveConversations(
+    List<Map<String, dynamic>> conversations,
+  ) async {
     await _box.put(_conversationsKey, jsonEncode(conversations));
     await _box.put('${_conversationsKey}_ts', DateTime.now().toIso8601String());
   }

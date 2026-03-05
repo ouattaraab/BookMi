@@ -947,7 +947,11 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
     final available = await _biometricService.isAvailable();
     if (!available) return;
     final enabled = await _secureStorage.isBiometricEnabled();
-    if (mounted) setState(() { _available = available; _enabled = enabled; });
+    if (mounted)
+      setState(() {
+        _available = available;
+        _enabled = enabled;
+      });
   }
 
   Future<void> _toggle(bool value) async {

@@ -105,7 +105,8 @@ class _BookingsViewState extends State<_BookingsView>
           StreamBuilder<List<ConnectivityResult>>(
             stream: Connectivity().onConnectivityChanged,
             builder: (context, snapshot) {
-              final isOffline = snapshot.hasData &&
+              final isOffline =
+                  snapshot.hasData &&
                   snapshot.data!.every((r) => r == ConnectivityResult.none);
               if (!isOffline) return const SizedBox.shrink();
               return Container(

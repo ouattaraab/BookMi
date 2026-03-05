@@ -889,9 +889,7 @@ class _ChatBubble extends StatelessWidget {
                   Icon(
                     message.readAt != null ? Icons.done_all : Icons.done,
                     size: 12,
-                    color: message.readAt != null
-                        ? _primary
-                        : _mutedFg,
+                    color: message.readAt != null ? _primary : _mutedFg,
                   ),
                 ],
               ],

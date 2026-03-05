@@ -32,7 +32,10 @@ class SecureStorage {
     String? email,
     String? password,
   }) async {
-    await _storage.write(key: _biometricEnabledKey, value: enabled ? 'true' : 'false');
+    await _storage.write(
+      key: _biometricEnabledKey,
+      value: enabled ? 'true' : 'false',
+    );
     if (enabled && email != null && password != null) {
       await _storage.write(key: _biometricEmailKey, value: email);
       await _storage.write(key: _biometricPasswordKey, value: password);

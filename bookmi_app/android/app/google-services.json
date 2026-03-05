@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "372395527538",
+    "project_id": "bookmi-ea7a9",
+    "storage_bucket": "bookmi-ea7a9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:372395527538:android:172168f969077b86b661eb",
+        "android_client_info": {
+          "package_name": "com.bookmi.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJaH4j0E2UE9QtHcVxmpFYJsbfS66MD6A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

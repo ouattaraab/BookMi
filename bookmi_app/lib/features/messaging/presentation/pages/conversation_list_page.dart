@@ -159,8 +159,9 @@ class _ConversationsList extends StatelessWidget {
     if (conversations.isEmpty && broadcasts.isEmpty) return _buildEmpty();
 
     final authState = context.read<AuthBloc>().state;
-    final currentUserId =
-        authState is AuthAuthenticated ? authState.user.id : -1;
+    final currentUserId = authState is AuthAuthenticated
+        ? authState.user.id
+        : -1;
 
     // Build tagged entries: (DateTime, Widget)
     final entries = <(DateTime, Widget)>[];
@@ -358,9 +359,7 @@ class _ConversationTile extends StatelessWidget {
   String get _initials {
     final parts = _otherPartyName.split(' ');
     if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return _otherPartyName.isNotEmpty
-        ? _otherPartyName[0].toUpperCase()
-        : '?';
+    return _otherPartyName.isNotEmpty ? _otherPartyName[0].toUpperCase() : '?';
   }
 
   @override
@@ -646,7 +645,8 @@ class _OfflineBanner extends StatelessWidget {
     return StreamBuilder<List<ConnectivityResult>>(
       stream: Connectivity().onConnectivityChanged,
       builder: (context, snapshot) {
-        final isOffline = snapshot.hasData &&
+        final isOffline =
+            snapshot.hasData &&
             snapshot.data!.every((r) => r == ConnectivityResult.none);
         if (!isOffline) return const SizedBox.shrink();
         return Container(
