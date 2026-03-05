@@ -1,6 +1,6 @@
 <?php
 
-// v2026-03-05 — consent system (loi 2013-450, RGPD)
+// consent system — loi 2013-450 CI + RGPD (deploy fix: bookmi_app/bookmi/)
 use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\AppEventController;
 use App\Http\Controllers\Api\V1\AppVersionController;
