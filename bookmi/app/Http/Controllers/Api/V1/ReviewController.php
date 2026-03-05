@@ -152,15 +152,18 @@ class ReviewController extends Controller
             ], 422);
         }
 
+        $replyText = strip_tags($request->string('reply')->trim()->value());
+        $repliedAt = now();
+
         $review->update([
-            'reply'    => strip_tags($request->string('reply')->trim()->value()),
-            'reply_at' => now(),
+            'reply'    => $replyText,
+            'reply_at' => $repliedAt,
         ]);
 
         return response()->json([
             'data' => [
-                'reply'    => $review->reply !== null ? strip_tags($review->reply) : null,
-                'reply_at' => $review->reply_at instanceof \Carbon\Carbon ? $review->reply_at->toISOString() : null,
+                'reply'    => $replyText,
+                'reply_at' => $repliedAt->toISOString(),
             ],
         ]);
     }
