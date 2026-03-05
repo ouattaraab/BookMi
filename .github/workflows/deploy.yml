@@ -74,6 +74,12 @@ jobs:
 
             # 5. Create storage symlink — exec() disabled on shared hosting so skip gracefully
             php artisan storage:link --force 2>/dev/null || true
+
+            # 6. Verify consent routes are registered in cache
+            echo "--- Registered consent routes ---"
+            php artisan route:list --path=consents 2>&1 | head -20 || echo "route:list unavailable"
+            echo "--- End routes ---"
+
             echo "PHP deploy OK"
           '
 
@@ -93,3 +99,15 @@ jobs:
                /home/u726808002/bookmi_app/public/build/manifest.json
             echo "Manifest synced OK"
           '
+
+      # ── Réinitialiser l'OPcache du serveur web ─────────────────────────
+      - name: Reset OPcache
+        run: |
+          sleep 3
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bookmi.click/opcache_reset.php)
+          echo "OPcache reset HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "OPcache reset OK"
+          else
+            echo "OPcache reset may have failed (status $HTTP_STATUS) — continuing anyway"
+          fi
