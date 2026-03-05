@@ -111,7 +111,7 @@
                                 wire:click="retry('{{ $jobId }}')"
                                 wire:loading.attr="disabled"
                                 wire:target="retry('{{ $jobId }}')"
-                                @disabled($status === 'running')
+                                :disabled="$status === 'running'"
                                 color="primary"
                                 size="sm"
                                 icon="heroicon-m-arrow-path">
