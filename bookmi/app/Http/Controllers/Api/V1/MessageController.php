@@ -14,6 +14,7 @@ use App\Services\MessagingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class MessageController extends BaseController
@@ -127,6 +128,16 @@ class MessageController extends BaseController
 
         $paginated = $this->messagingService->getMessages($conversation);
 
+        // Determine if the other participant is currently typing
+        $userId = $request->user()->id;
+        $conversation->loadMissing('talentProfile');
+        $otherUserId = $conversation->client_id === $userId
+            ? optional($conversation->talentProfile)->user_id
+            : $conversation->client_id;
+
+        $isOtherTyping = $otherUserId !== null
+            && Cache::has("typing:{$conversation->id}:{$otherUserId}");
+
         return response()->json([
             'data' => MessageResource::collection($paginated->items()),
             'meta' => [
@@ -135,7 +146,26 @@ class MessageController extends BaseController
                 'per_page'     => $paginated->perPage(),
                 'total'        => $paginated->total(),
             ],
+            'is_other_typing' => $isOtherTyping,
         ]);
+    }
+
+    /**
+     * PATCH /api/v1/conversations/{conversation}/typing
+     * Signal that the authenticated user is currently typing.
+     * The typing status expires automatically after 5 seconds.
+     */
+    public function typing(Request $request, Conversation $conversation): JsonResponse
+    {
+        $this->authorizeParticipant($conversation, $request);
+
+        Cache::put(
+            "typing:{$conversation->id}:{$request->user()->id}",
+            true,
+            now()->addSeconds(5),
+        );
+
+        return response()->json(null, 204);
     }
 
     /**

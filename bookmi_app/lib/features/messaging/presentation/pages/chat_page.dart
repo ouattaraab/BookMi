@@ -57,6 +57,13 @@ class _ChatPageState extends State<ChatPage> {
   void initState() {
     super.initState();
     context.read<MessagingCubit>().loadMessages(widget.conversationId);
+    _controller.addListener(_onTextChanged);
+  }
+
+  void _onTextChanged() {
+    if (_controller.text.isNotEmpty) {
+      context.read<MessagingCubit>().notifyTyping(widget.conversationId);
+    }
   }
 
   @override
@@ -415,6 +422,15 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 }
 
+                if (state is MessagesLoaded && state.isOtherTyping) {
+                  return Column(
+                    children: [
+                      Expanded(child: listView),
+                      _TypingIndicator(name: widget.otherPartyName),
+                    ],
+                  );
+                }
+
                 return listView;
               },
             ),
@@ -720,6 +736,28 @@ class _ContactBlockedBanner extends StatelessWidget {
   }
 }
 
+// ── Typing indicator ──────────────────────────────────────────────
+class _TypingIndicator extends StatelessWidget {
+  const _TypingIndicator({required this.name});
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: _muted,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Text(
+        '$name est en train d\'écrire…',
+        style: GoogleFonts.manrope(
+          fontSize: 12,
+          color: _mutedFg,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
+}
+
 // ── Date separator ────────────────────────────────────────────────
 class _DateSeparator extends StatelessWidget {
   const _DateSeparator({required this.label});
@@ -839,9 +877,24 @@ class _ChatBubble extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 3),
-            Text(
-              _formatTime(message.createdAt),
-              style: GoogleFonts.manrope(fontSize: 10, color: _mutedFg),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _formatTime(message.createdAt),
+                  style: GoogleFonts.manrope(fontSize: 10, color: _mutedFg),
+                ),
+                if (isMine) ...[
+                  const SizedBox(width: 3),
+                  Icon(
+                    message.readAt != null ? Icons.done_all : Icons.done,
+                    size: 12,
+                    color: message.readAt != null
+                        ? _primary
+                        : _mutedFg,
+                  ),
+                ],
+              ],
             ),
           ],
         ),

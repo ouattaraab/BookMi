@@ -83,4 +83,11 @@ return [
         'disk' => 'identity_documents',
         'document_types' => ['cni', 'passport'],
     ],
+
+    'sms' => [
+        'enabled'   => env('AT_SMS_ENABLED', false),
+        'username'  => env('AT_USERNAME', ''),
+        'api_key'   => env('AT_API_KEY', ''),
+        'sender_id' => env('AT_SENDER_ID', 'BookMi'),
+    ],
 ];

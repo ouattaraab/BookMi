@@ -3,9 +3,11 @@
 namespace Tests;
 
 use App\Services\FcmService;
+use App\Services\SmsService;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\DB;
 use Tests\Fakes\FakeFcmService;
+use Tests\Fakes\FakeSmsService;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -27,6 +29,8 @@ abstract class TestCase extends BaseTestCase
         // FakeFcmService extends FcmService so it satisfies the type-hint in
         // SendPushNotification::handle(FcmService $fcm) (method injection).
         $this->app->bind(FcmService::class, FakeFcmService::class);
+        // FakeSmsService extends SmsService — no-op so SMS are never sent in tests.
+        $this->app->bind(SmsService::class, FakeSmsService::class);
     }
 
     private function registerSqliteMathFunctions(): void

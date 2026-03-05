@@ -6,6 +6,7 @@ import 'package:bookmi_app/core/services/notification_service.dart';
 import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
 import 'package:bookmi_app/features/notifications/data/repositories/notification_repository.dart';
 import 'package:flutter/material.dart';
+import 'package:bookmi_app/features/notifications/presentation/widgets/notification_card_skeleton.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -323,15 +324,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       itemCount: 6,
-      itemBuilder: (_, __) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _border),
-        ),
-      ),
+      itemBuilder: (_, __) => const NotificationCardSkeleton(),
     );
   }
 

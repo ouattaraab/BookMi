@@ -27,9 +27,11 @@ final class MessagesLoaded extends MessagingState {
   const MessagesLoaded({
     required this.conversationId,
     required this.messages,
+    this.isOtherTyping = false,
   });
   final int conversationId;
   final List<MessageModel> messages;
+  final bool isOtherTyping;
 }
 
 final class MessageSending extends MessagingState {

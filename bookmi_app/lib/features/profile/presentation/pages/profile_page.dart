@@ -1,5 +1,7 @@
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
+import 'package:bookmi_app/core/services/biometric_service.dart';
+import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/guest_profile_page.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
@@ -900,6 +902,8 @@ class _GeneralSection extends StatelessWidget {
             onTap: () => context.pushNamed(RouteNames.profileTwoFactor),
           ),
           _Divider(),
+          const _BiometricToggleItem(),
+          _Divider(),
           if (isManager)
             _MenuItem(
               icon: Icons.manage_accounts_outlined,
@@ -913,6 +917,129 @@ class _GeneralSection extends StatelessWidget {
             onTap: () => context.pushNamed(RouteNames.profileSupport),
           ),
           const SizedBox(height: 8),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Biometric toggle ──────────────────────────────────────────────
+class _BiometricToggleItem extends StatefulWidget {
+  const _BiometricToggleItem();
+
+  @override
+  State<_BiometricToggleItem> createState() => _BiometricToggleItemState();
+}
+
+class _BiometricToggleItemState extends State<_BiometricToggleItem> {
+  bool _enabled = false;
+  bool _available = false;
+  final _biometricService = BiometricService();
+  final _secureStorage = SecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  Future<void> _init() async {
+    final available = await _biometricService.isAvailable();
+    if (!available) return;
+    final enabled = await _secureStorage.isBiometricEnabled();
+    if (mounted) setState(() { _available = available; _enabled = enabled; });
+  }
+
+  Future<void> _toggle(bool value) async {
+    if (value) {
+      final authenticated = await _biometricService.authenticate(
+        reason: 'Activez la connexion biométrique pour BookMi',
+      );
+      if (!authenticated || !mounted) return;
+      final password = await _showPasswordDialog();
+      if (password == null || password.isEmpty || !mounted) return;
+      final authState = context.read<AuthBloc>().state;
+      if (authState is! AuthAuthenticated) return;
+      await _secureStorage.setBiometricEnabled(
+        enabled: true,
+        email: authState.user.email,
+        password: password,
+      );
+      setState(() => _enabled = true);
+    } else {
+      await _secureStorage.setBiometricEnabled(enabled: false);
+      setState(() => _enabled = false);
+    }
+  }
+
+  Future<String?> _showPasswordDialog() {
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: const Color(0xFF0D1B38),
+        title: const Text(
+          'Confirmer votre mot de passe',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            labelText: 'Mot de passe',
+            labelStyle: TextStyle(color: _mutedFg),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: _mutedFg),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler', style: TextStyle(color: _mutedFg)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(controller.text),
+            child: Text('Confirmer', style: TextStyle(color: _primary)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_available) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _primary.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.fingerprint, size: 18, color: _primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              'Connexion biométrique',
+              style: GoogleFonts.manrope(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: _secondary,
+              ),
+            ),
+          ),
+          Switch(
+            value: _enabled,
+            onChanged: _toggle,
+            activeColor: _primary,
+          ),
         ],
       ),
     );

@@ -2,6 +2,8 @@ import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/core/services/biometric_service.dart';
+import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/core/validators/form_validators.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
@@ -26,6 +28,34 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _termsAccepted = false;
+  bool _biometricAvailable = false;
+  final _biometricService = BiometricService();
+  final _secureStorage = SecureStorage();
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometricAvailability();
+  }
+
+  Future<void> _checkBiometricAvailability() async {
+    final enabled = await _secureStorage.isBiometricEnabled();
+    if (!enabled) return;
+    final available = await _biometricService.isAvailable();
+    if (mounted) setState(() => _biometricAvailable = available);
+  }
+
+  Future<void> _onBiometricLogin() async {
+    final authenticated = await _biometricService.authenticate(
+      reason: 'Connectez-vous à BookMi avec votre empreinte digitale',
+    );
+    if (!authenticated || !mounted) return;
+    final creds = await _secureStorage.getBiometricCredentials();
+    if (creds == null || !mounted) return;
+    context.read<AuthBloc>().add(
+      AuthLoginSubmitted(email: creds.email, password: creds.password),
+    );
+  }
 
   @override
   void dispose() {
@@ -182,6 +212,31 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                     const SizedBox(height: BookmiSpacing.spaceLg),
+                    // Biometric login
+                    if (_biometricAvailable) ...[
+                      const _OrDivider(),
+                      const SizedBox(height: BookmiSpacing.spaceBase),
+                      OutlinedButton.icon(
+                        onPressed: _onBiometricLogin,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(
+                            color: BookmiColors.glassBorder,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                        icon: const Icon(
+                          Icons.fingerprint,
+                          color: BookmiColors.brandBlueLight,
+                        ),
+                        label: const Text('Connexion biométrique'),
+                      ),
+                      const SizedBox(height: BookmiSpacing.spaceLg),
+                    ],
                     // Register link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -225,6 +280,38 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text(
+            'ou',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.45),
+              fontSize: 12,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Divider(
+            color: Colors.white.withValues(alpha: 0.2),
+          ),
+        ),
+      ],
     );
   }
 }

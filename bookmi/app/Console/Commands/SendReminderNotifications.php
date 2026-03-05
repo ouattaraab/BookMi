@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\BookingStatus;
 use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
+use App\Notifications\ReminderNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -43,7 +44,7 @@ class SendReminderNotifications extends Command
                         $location    = $booking->event_location;
                         $data        = ['booking_id' => (string) $booking->id];
 
-                        // — Notify client —
+                        // — Notify client (push + email) —
                         $clientTitle = "Rappel {$label} — Prestation à venir";
                         $clientBody  = "Votre prestation avec {$talentName} est prévue le {$eventDate}.";
 
@@ -54,12 +55,13 @@ class SendReminderNotifications extends Command
                                 body: $clientBody,
                                 data: $data,
                             );
+                            $booking->client?->notify(new ReminderNotification($booking, $label, 'client'));
                         }
 
                         $this->line("[{$label}] Booking #{$booking->id} → client #{$booking->client_id} ({$eventDate})"
                             . ($isDryRun ? ' [DRY-RUN]' : ''));
 
-                        // — Notify talent —
+                        // — Notify talent (push + email) —
                         $talentUserId = $booking->talentProfile?->user?->id;
                         $talentTitle  = "Rappel prestation {$label}";
                         $talentBody   = "Vous avez une prestation le {$eventDate} à {$location}.";
@@ -71,6 +73,7 @@ class SendReminderNotifications extends Command
                                 body: $talentBody,
                                 data: $data,
                             );
+                            $booking->talentProfile?->user?->notify(new ReminderNotification($booking, $label, 'talent'));
                         }
 
                         $this->line("[{$label}] Booking #{$booking->id} → talent #{$talentUserId} ({$eventDate})"

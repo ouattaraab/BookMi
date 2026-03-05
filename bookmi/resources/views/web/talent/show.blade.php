@@ -4,19 +4,45 @@
 @section('meta_description'){{ Str::limit($profile->bio ?? 'Talent sur BookMi', 160) }}@endsection
 
 @section('head')
+{{-- Canonical --}}
+<link rel="canonical" href="{{ route('talent.show', $profile->slug) }}">
 {{-- Open Graph --}}
 <meta property="og:title" content="{{ $profile->stage_name }} — BookMi">
 <meta property="og:description" content="{{ Str::limit($profile->bio ?? 'Talent sur BookMi', 160) }}">
 <meta property="og:url" content="{{ route('talent.show', $profile->slug) }}">
-<meta property="og:type" content="website">
+<meta property="og:type" content="profile">
 <meta property="og:site_name" content="BookMi">
+@if($profile->profile_photo)
+<meta property="og:image" content="{{ \Illuminate\Support\Facades\Storage::url($profile->profile_photo) }}">
+@else
+<meta property="og:image" content="{{ asset('images/og-default.png') }}">
+@endif
+{{-- Twitter Card --}}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ $profile->stage_name }} — BookMi">
+<meta name="twitter:description" content="{{ Str::limit($profile->bio ?? 'Talent sur BookMi', 160) }}">
 {{-- Schema.org JSON-LD --}}
-<script type="application/ld+json">{!! json_encode([
+<script type="application/ld+json">{!! json_encode(array_filter([
     '@context' => 'https://schema.org',
     '@type' => 'Person',
     'name' => $profile->stage_name,
     'url' => route('talent.show', $profile->slug),
-], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
+    'description' => $profile->bio ?? null,
+    'image' => $profile->profile_photo ? \Illuminate\Support\Facades\Storage::url($profile->profile_photo) : null,
+    'aggregateRating' => $profile->average_rating > 0 ? [
+        '@type' => 'AggregateRating',
+        'ratingValue' => round((float) $profile->average_rating, 1),
+        'ratingCount' => (int) $profile->reviews_count,
+        'bestRating' => 5,
+        'worstRating' => 1,
+    ] : null,
+    'makesOffer' => $profile->cachet_amount > 0 ? [
+        '@type' => 'Offer',
+        'price' => $profile->cachet_amount,
+        'priceCurrency' => 'XOF',
+        'availability' => 'https://schema.org/InStock',
+    ] : null,
+]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
 <style>
 /* ── Hero ── */
 .tp-hero {

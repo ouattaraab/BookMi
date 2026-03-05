@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
@@ -17,6 +18,9 @@ class MessagingCubit extends Cubit<MessagingState> {
   /// Cache the last successful conversations load so we can restore it
   /// instantly when returning from ChatPage (which emits MessagesLoaded).
   ConversationsLoaded? _conversationsCache;
+
+  /// Debounce timer for the typing indicator.
+  Timer? _typingDebounce;
 
   /// Load conversations + admin broadcasts in parallel, merge and emit.
   Future<void> loadConversations() async {
@@ -172,6 +176,20 @@ class MessagingCubit extends Cubit<MessagingState> {
     final updated = _currentMessages().where((m) => m.id != messageId).toList();
     emit(MessagesLoaded(conversationId: conversationId, messages: updated));
     unawaited(_repository.deleteMessage(conversationId, messageId));
+  }
+
+  /// Signal to the server that the user is typing. Debounced to 300 ms.
+  void notifyTyping(int conversationId) {
+    _typingDebounce?.cancel();
+    _typingDebounce = Timer(const Duration(milliseconds: 300), () {
+      unawaited(_repository.sendTyping(conversationId));
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _typingDebounce?.cancel();
+    return super.close();
   }
 
   List<MessageModel> _currentMessages() {

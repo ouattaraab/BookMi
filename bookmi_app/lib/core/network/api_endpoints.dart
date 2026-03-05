@@ -20,6 +20,7 @@ abstract final class ApiEndpoints {
   static const conversations = '/conversations';
   static String conversationMessages(int id) => '/conversations/$id/messages';
   static String conversationRead(int id) => '/conversations/$id/read';
+  static String conversationTyping(int id) => '/conversations/$id/typing';
   static const meUpdateFcmToken = '/me/fcm_token';
   static const notifications = '/notifications';
   static const notificationsReadAll = '/notifications/read-all';

@@ -1,11 +1,13 @@
 <?php
 
 use App\Console\Commands\AutoCompleteBookings;
+use App\Console\Commands\CleanupExpiredData;
 use App\Console\Commands\DetectEmptyCalendar;
 use App\Console\Commands\DetectSuspiciousActivity;
 use App\Console\Commands\DetectTalentOverload;
 use App\Console\Commands\FlagLowRatingTalents;
 use App\Console\Commands\GenerateAnnualCertificates;
+use App\Console\Commands\GenerateSitemap;
 use App\Console\Commands\NotifyAvailabilityAlerts;
 use App\Console\Commands\RecalculateTalentLevels;
 use App\Console\Commands\ReleaseExpiredEscrows;
@@ -61,3 +63,9 @@ Schedule::command(AutoCompleteBookings::class)->dailyAt('03:00');
 // Notify users when a talent slot they requested becomes available (AA — alertes disponibilité)
 // withoutOverlapping: prevents duplicate notifications if a run takes > 30 minutes.
 Schedule::command(NotifyAvailabilityAlerts::class)->everyThirtyMinutes()->withoutOverlapping();
+
+// Delete old read push notifications and booking status logs (plan 1C)
+Schedule::command(CleanupExpiredData::class)->dailyAt('01:00');
+
+// Regenerate public sitemap weekly (plan 2B)
+Schedule::command(GenerateSitemap::class)->weekly();

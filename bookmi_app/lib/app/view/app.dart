@@ -167,6 +167,9 @@ class _AppDependencies {
       localStorage: bookingLocalStorage,
     );
 
+    final messagingBox = await Hive.openBox<dynamic>('messaging_cache');
+    final messagingLocalStorage = LocalStorage(box: messagingBox);
+
     // Analytics d'usage
     final packageInfo = await PackageInfo.fromPlatform();
     final platform = Platform.isAndroid ? 'android' : 'ios';
@@ -179,7 +182,10 @@ class _AppDependencies {
     final trackingRepo = TrackingRepository(apiClient: apiClient);
     final reviewRepo = ReviewRepository(apiClient: apiClient);
     final onboardingRepo = OnboardingRepository(apiClient: apiClient);
-    final messagingRepo = MessagingRepository(apiClient: apiClient);
+    final messagingRepo = MessagingRepository(
+      apiClient: apiClient,
+      localStorage: messagingLocalStorage,
+    );
     final profileRepo = ProfileRepository(apiClient: apiClient);
     final notificationRepo = NotificationRepository(apiClient: apiClient);
     final payoutMethodRepo = PayoutMethodRepository(apiClient: apiClient);

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:bookmi_app/core/services/analytics_service.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
@@ -100,6 +101,29 @@ class _BookingsViewState extends State<_BookingsView>
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Offline banner
+          StreamBuilder<List<ConnectivityResult>>(
+            stream: Connectivity().onConnectivityChanged,
+            builder: (context, snapshot) {
+              final isOffline = snapshot.hasData &&
+                  snapshot.data!.every((r) => r == ConnectivityResult.none);
+              if (!isOffline) return const SizedBox.shrink();
+              return Container(
+                width: double.infinity,
+                color: const Color(0xFFF59E0B),
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: const Text(
+                  'Hors ligne — données peuvent être obsolètes',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
+          ),
           // Page title + export button
           Padding(
             padding: EdgeInsets.fromLTRB(

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/services/analytics_service.dart';
@@ -365,6 +366,16 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             _ReceiptButton(bookingId: booking.id),
           ],
 
+          // Add to calendar (paid or confirmed with future event date)
+          if (['paid', 'confirmed'].contains(booking.status)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _CalendarButton(
+              eventDate: booking.eventDate,
+              talentName: booking.talentStageName,
+              location: booking.eventLocation,
+            ),
+          ],
+
           // ── Action buttons ──────────────────────────────────────────────
 
           // Reschedule (proposed or accepted)
@@ -569,6 +580,50 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
 }
 
 // ── Private widgets ─────────────────────────────────────────────────────────
+
+class _CalendarButton extends StatelessWidget {
+  const _CalendarButton({
+    required this.eventDate,
+    required this.talentName,
+    required this.location,
+  });
+
+  final String eventDate;
+  final String talentName;
+  final String location;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () {
+          final dt = DateTime.tryParse(eventDate);
+          if (dt == null) return;
+          Add2Calendar.addEvent2Cal(
+            Event(
+              title: 'Prestation $talentName — BookMi',
+              location: location,
+              startDate: dt,
+              endDate: dt.add(const Duration(hours: 3)),
+              description: 'Réservation BookMi',
+            ),
+          );
+        },
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.white70,
+          side: const BorderSide(color: Colors.white24),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        icon: const Icon(Icons.calendar_today_outlined, size: 18),
+        label: const Text('Ajouter au calendrier'),
+      ),
+    );
+  }
+}
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.text);

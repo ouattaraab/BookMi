@@ -247,6 +247,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
             ->middleware('throttle:messaging')
             ->name('conversations.send');
         Route::post('/conversations/{conversation}/read', [MessageController::class, 'read'])->name('conversations.read');
+        Route::patch('/conversations/{conversation}/typing', [MessageController::class, 'typing'])->name('conversations.typing');
         Route::delete('/conversations/{conversation}', [MessageController::class, 'destroyConversation'])->name('conversations.destroy');
         Route::delete('/conversations/{conversation}/messages/{message}', [MessageController::class, 'destroyMessage'])->name('conversations.messages.destroy');
 

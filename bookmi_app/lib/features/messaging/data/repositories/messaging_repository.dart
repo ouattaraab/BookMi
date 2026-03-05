@@ -3,18 +3,27 @@ import 'dart:io';
 import 'package:bookmi_app/core/network/api_client.dart';
 import 'package:bookmi_app/core/network/api_endpoints.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
+import 'package:bookmi_app/core/storage/local_storage.dart';
 import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/data/models/message_model.dart';
 import 'package:bookmi_app/features/notifications/data/models/push_notification_model.dart';
 import 'package:dio/dio.dart';
 
 class MessagingRepository {
-  MessagingRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
+  MessagingRepository({
+    required ApiClient apiClient,
+    LocalStorage? localStorage,
+  }) : _dio = apiClient.dio,
+       _localStorage = localStorage;
 
   /// Test-only constructor.
-  MessagingRepository.forTesting({required Dio dio}) : _dio = dio;
+  MessagingRepository.forTesting({required Dio dio})
+    : _dio = dio,
+      _localStorage = null;
 
   final Dio _dio;
+  final LocalStorage? _localStorage;
+  static const _convCacheKey = 'conversations';
 
   /// Returns the list of conversations for the authenticated user.
   Future<ApiResult<List<ConversationModel>>> getConversations() async {
@@ -22,13 +31,28 @@ class MessagingRepository {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.conversations,
       );
+      // Cache raw response for offline support
+      await _localStorage?.put(_convCacheKey, response.data);
       final items = ((response.data?['data'] as List<dynamic>?) ?? [])
           .cast<Map<String, dynamic>>();
       return ApiSuccess(items.map(ConversationModel.fromJson).toList());
     } on DioException catch (e) {
+      if (_isNetworkError(e)) {
+        final cached = _localStorage?.get<Map<dynamic, dynamic>>(_convCacheKey);
+        if (cached != null) {
+          final data = Map<String, dynamic>.from(cached);
+          final items = ((data['data'] as List<dynamic>?) ?? [])
+              .cast<Map<String, dynamic>>();
+          return ApiSuccess(items.map(ConversationModel.fromJson).toList());
+        }
+      }
       return _mapDioError(e);
     }
   }
+
+  bool _isNetworkError(DioException e) =>
+      e.type == DioExceptionType.connectionError ||
+      e.type == DioExceptionType.connectionTimeout;
 
   /// Returns the latest admin broadcast notifications.
   Future<ApiResult<List<PushNotificationModel>>> getAdminBroadcasts() async {
@@ -168,6 +192,16 @@ class MessagingRepository {
       return const ApiSuccess(null);
     } on DioException catch (e) {
       return _mapDioError(e);
+    }
+  }
+
+  /// Signals to the backend that the current user is typing.
+  /// Fire-and-forget — errors are silently swallowed.
+  Future<void> sendTyping(int conversationId) async {
+    try {
+      await _dio.patch<void>(ApiEndpoints.conversationTyping(conversationId));
+    } catch (_) {
+      // Ignore — typing signals are best-effort
     }
   }
 

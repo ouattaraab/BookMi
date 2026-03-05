@@ -41,6 +41,9 @@ dependencies:
   record: ^6.2.0
   just_audio: ^0.10.5
   geolocator: ^13.0.2
+  local_auth: ^2.3.0
+  add_2_calendar: ^3.0.0
+  connectivity_plus: ^6.0.0
 
 dev_dependencies:
   bloc_lint: ">=0.3.3 <0.3.6"

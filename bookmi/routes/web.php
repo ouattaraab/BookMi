@@ -16,6 +16,16 @@ use Illuminate\Support\Facades\Route;
 // ── Maintenance page (exempt from middleware — accessible always) ──────────────
 Route::get('/maintenance', [MaintenanceController::class, 'show'])->name('maintenance');
 
+// ── Sitemap (public, no auth) ─────────────────────────────────────────────────
+Route::get('/sitemap.xml', function () {
+    $path = public_path('sitemap.xml');
+    if (! file_exists($path)) {
+        abort(404);
+    }
+
+    return response()->file($path, ['Content-Type' => 'application/xml']);
+})->name('sitemap');
+
 // ── Mobile deep linking verification ─────────────────────────────────────────
 // Android App Links: autoVerify requires this file to associate bookmi.click with com.bookmi.app
 // SHA-256 fingerprint: set ANDROID_SHA256_FINGERPRINT in .env (from keystore)

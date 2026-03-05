@@ -1,4 +1,6 @@
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
+import 'package:bookmi_app/features/messaging/presentation/widgets/conversation_card_skeleton.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_state.dart';
 import 'package:bookmi_app/features/messaging/data/models/conversation_model.dart';
 import 'package:bookmi_app/features/messaging/presentation/pages/admin_broadcast_page.dart';
@@ -37,6 +39,7 @@ class _ConversationListPageState extends State<ConversationListPage> {
       body: Column(
         children: [
           const _MessagesHeader(),
+          const _OfflineBanner(),
           Expanded(child: _ConversationsList()),
         ],
       ),
@@ -192,45 +195,10 @@ class _ConversationsList extends StatelessWidget {
   }
 
   Widget _buildLoading() {
-    return ListView.separated(
+    return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      itemCount: 5,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Color(0x0DFFFFFF), height: 1),
-      itemBuilder: (_, __) => Container(
-        height: 82,
-        margin: const EdgeInsets.symmetric(vertical: 0),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: Color(0x0DFFFFFF))),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 12),
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: _border,
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(height: 12, width: 130, color: _border),
-                  const SizedBox(height: 6),
-                  Container(height: 10, width: 180, color: _border),
-                  const SizedBox(height: 6),
-                  Container(height: 10, width: 110, color: _border),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+      itemCount: 6,
+      itemBuilder: (_, __) => const ConversationCardSkeleton(),
     );
   }
 
@@ -636,6 +604,37 @@ class _ConversationTile extends StatelessWidget {
       'Déc',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+  }
+}
+
+// ── Offline banner ─────────────────────────────────────────────────
+class _OfflineBanner extends StatelessWidget {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<ConnectivityResult>>(
+      stream: Connectivity().onConnectivityChanged,
+      builder: (context, snapshot) {
+        final isOffline = snapshot.hasData &&
+            snapshot.data!.every((r) => r == ConnectivityResult.none);
+        if (!isOffline) return const SizedBox.shrink();
+        return Container(
+          width: double.infinity,
+          color: const Color(0xFFF59E0B),
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: const Text(
+            'Hors ligne — données peuvent être obsolètes',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        );
+      },
+    );
   }
 }
 
