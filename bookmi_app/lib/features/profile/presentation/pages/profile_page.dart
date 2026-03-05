@@ -980,7 +980,7 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
     final controller = TextEditingController();
     return showDialog<String>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFF0D1B38),
         title: const Text(
           'Confirmer votre mot de passe',
@@ -989,6 +989,7 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
         content: TextField(
           controller: controller,
           obscureText: true,
+          autofocus: true,
           style: const TextStyle(color: Colors.white),
           decoration: const InputDecoration(
             labelText: 'Mot de passe',
@@ -997,19 +998,21 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
               borderSide: BorderSide(color: _mutedFg),
             ),
           ),
+          onSubmitted: (value) =>
+              Navigator.of(dialogContext).pop(controller.text),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Annuler', style: TextStyle(color: _mutedFg)),
           ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(controller.text),
+            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
             child: Text('Confirmer', style: TextStyle(color: _primary)),
           ),
         ],
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   @override
