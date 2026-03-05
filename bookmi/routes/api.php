@@ -306,7 +306,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::put('/talent_profiles/me/overload_settings', [ManagerController::class, 'updateOverloadSettings'])->name('talent.overload_settings');
 
         // Story 7.8 — Analytics talent
-        Route::get('/me/analytics', [AnalyticsController::class, 'dashboard'])->name('me.analytics');
+        Route::get('/me/analytics', [AnalyticsController::class, 'dashboard'])
+            ->middleware('throttle:analytics')
+            ->name('me.analytics');
 
         // Analytics d'usage app mobile
         Route::post('analytics/events', [AppEventController::class, 'store'])->name('analytics.events');

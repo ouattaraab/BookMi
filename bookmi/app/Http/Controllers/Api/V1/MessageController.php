@@ -219,7 +219,7 @@ class MessageController extends BaseController
     public function destroyConversation(Request $request, Conversation $conversation): JsonResponse
     {
         $this->authorizeParticipant($conversation, $request);
-        $conversation->messages()->delete();
+        $conversation->messages()->forceDelete();
         $conversation->delete();
 
         return response()->json(['data' => ['deleted' => true]]);

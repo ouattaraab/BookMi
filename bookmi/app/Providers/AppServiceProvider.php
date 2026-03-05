@@ -44,6 +44,15 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // ── Assertions de configuration critique en production ────────────
+        if ($this->app->isProduction()
+            && str_contains((string) config('bookmi.auth.password_reset_url', ''), 'localhost')
+        ) {
+            \Illuminate\Support\Facades\Log::critical(
+                'PASSWORD_RESET_URL is not configured — password reset emails will be broken.'
+            );
+        }
+
         // ── Super-admin bypass : les utilisateurs is_admin ont accès complet
         // au panel Filament (canViewAny, canAccess, canCreate, canEdit, canDelete…).
         // Ce Gate::before n'affecte pas les utilisateurs API normaux (qui n'ont pas is_admin).
@@ -99,6 +108,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('messaging', function (Request $request) {
             // 60 messages par minute par utilisateur
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('analytics', function (Request $request) {
+            // 20 requêtes analytics par minute par utilisateur
+            return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
         });
     }
 }

@@ -28,6 +28,9 @@ class TalentController extends BaseController
 
         $hasGeo = isset($validated['lat'], $validated['lng']);
 
+        // Version incrémentée à chaque changement de disponibilité (acceptation de réservation, etc.)
+        $cacheVersion = (int) Cache::get('search.cache_version', 0);
+
         if ($hasGeo) {
             // Cache géo : arrondi à 2 décimales (~1 km) pour regrouper les recherches proches
             // On inclut le numéro de page dans la clé (page non validée mais gérée par le paginator)
@@ -35,7 +38,7 @@ class TalentController extends BaseController
             $geoParams['lat'] = round((float) $validated['lat'], 2);
             $geoParams['lng'] = round((float) $validated['lng'], 2);
             $geoParams['_page'] = $request->integer('page', 1);
-            $cacheKey = 'talents.search.geo.' . md5(serialize($geoParams));
+            $cacheKey = 'talents.search.geo.' . md5(serialize($geoParams)) . '.v' . $cacheVersion;
             $paginator = Cache::remember($cacheKey, 30, function () use ($validated) {
                 return $this->searchService->searchTalents(
                     params: $validated,
@@ -47,7 +50,7 @@ class TalentController extends BaseController
         } else {
             $params = $validated;
             $params['_page'] = $request->integer('page', 1);
-            $cacheKey = 'talents.search.' . md5(serialize($params));
+            $cacheKey = 'talents.search.' . md5(serialize($params)) . '.v' . $cacheVersion;
             $paginator = Cache::remember($cacheKey, 30, function () use ($validated) {
                 return $this->searchService->searchTalents(
                     params: $validated,

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\BookingRequest;
 use App\Services\ActivityLogger;
+use Illuminate\Support\Facades\Cache;
 
 class BookingRequestObserver
 {
@@ -30,5 +31,16 @@ class BookingRequestObserver
             'new_status'        => $booking->status,
             'talent_profile_id' => $booking->talent_profile_id,
         ]);
+
+        // Invalider le cache de recherche géographique quand la disponibilité change
+        // (reservation acceptée → talent potentiellement indisponible sur cette date)
+        $statusesAffectingAvailability = ['accepted', 'paid', 'confirmed', 'cancelled', 'rejected'];
+        $newStatus = $booking->status instanceof \App\Enums\BookingStatus
+            ? $booking->status->value
+            : (string) $booking->status;
+
+        if (in_array($newStatus, $statusesAffectingAvailability, strict: true)) {
+            Cache::increment('search.cache_version');
+        }
     }
 }

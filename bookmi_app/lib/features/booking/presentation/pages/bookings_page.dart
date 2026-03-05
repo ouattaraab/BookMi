@@ -266,7 +266,7 @@ class _BookingsViewState extends State<_BookingsView>
   }
 }
 
-class _BookingsTab extends StatelessWidget {
+class _BookingsTab extends StatefulWidget {
   const _BookingsTab({
     required this.status,
     required this.tabController,
@@ -278,6 +278,13 @@ class _BookingsTab extends StatelessWidget {
   final TabController tabController;
   final int tabIndex;
   final bool isTalent;
+
+  @override
+  State<_BookingsTab> createState() => _BookingsTabState();
+}
+
+class _BookingsTabState extends State<_BookingsTab> {
+  bool _isSubmitting = false;
 
   @override
   Widget build(BuildContext context) {
@@ -300,7 +307,7 @@ class _BookingsTab extends StatelessWidget {
               final future = bloc.stream.firstWhere(
                 (s) => s is BookingsListLoaded || s is BookingsListFailure,
               );
-              bloc.add(BookingsListFetched(status: status));
+              bloc.add(BookingsListFetched(status: widget.status));
               await future;
             },
             child: NotificationListener<ScrollNotification>(
@@ -346,19 +353,19 @@ class _BookingsTab extends StatelessWidget {
                         extra: booking,
                       );
                     },
-                    onAccept: isTalent && isPending
+                    onAccept: widget.isTalent && isPending && !_isSubmitting
                         ? () {
                             AnalyticsService.instance.trackTap('btn_accept');
                             _handleAccept(context, booking.id);
                           }
                         : null,
-                    onReject: isTalent && isPending
+                    onReject: widget.isTalent && isPending && !_isSubmitting
                         ? () {
                             AnalyticsService.instance.trackTap('btn_reject');
                             _handleReject(context, booking.id);
                           }
                         : null,
-                    onPay: !isTalent && isAccepted
+                    onPay: !widget.isTalent && isAccepted && !_isSubmitting
                         ? () => _handlePay(context, booking.id)
                         : null,
                   );
@@ -373,32 +380,38 @@ class _BookingsTab extends StatelessWidget {
   }
 
   Future<void> _handleAccept(BuildContext context, int bookingId) async {
-    final repo = context.read<BookingRepository>();
-    final result = await repo.acceptBooking(bookingId);
-    if (!context.mounted) return;
-    switch (result) {
-      case ApiSuccess():
-        // Refresh current tab
-        context.read<BookingsListBloc>().add(
-          BookingsListFetched(status: status),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Réservation acceptée avec succès'),
-            backgroundColor: Color(0xFF14B8A6),
-          ),
-        );
-      case ApiFailure(:final message):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
+    try {
+      final repo = context.read<BookingRepository>();
+      final result = await repo.acceptBooking(bookingId);
+      if (!context.mounted) return;
+      switch (result) {
+        case ApiSuccess():
+          context.read<BookingsListBloc>().add(
+            BookingsListFetched(status: widget.status),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Réservation acceptée avec succès'),
+              backgroundColor: Color(0xFF14B8A6),
+            ),
+          );
+        case ApiFailure(:final message):
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
   Future<void> _handleReject(BuildContext context, int bookingId) async {
+    if (_isSubmitting) return;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -429,30 +442,37 @@ class _BookingsTab extends StatelessWidget {
     );
     if (confirmed != true || !context.mounted) return;
 
-    final repo = context.read<BookingRepository>();
-    final result = await repo.rejectBooking(bookingId);
-    if (!context.mounted) return;
-    switch (result) {
-      case ApiSuccess():
-        context.read<BookingsListBloc>().add(
-          BookingsListFetched(status: status),
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Réservation refusée'),
-          ),
-        );
-      case ApiFailure(:final message):
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
+    setState(() => _isSubmitting = true);
+    try {
+      final repo = context.read<BookingRepository>();
+      final result = await repo.rejectBooking(bookingId);
+      if (!context.mounted) return;
+      switch (result) {
+        case ApiSuccess():
+          context.read<BookingsListBloc>().add(
+            BookingsListFetched(status: widget.status),
+          );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Réservation refusée'),
+            ),
+          );
+        case ApiFailure(:final message):
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: const Color(0xFFEF4444),
+            ),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
   Future<void> _handlePay(BuildContext context, int bookingId) async {
+    if (_isSubmitting) return;
+    setState(() => _isSubmitting = true);
     // Show loading while we create the Paystack transaction on the backend.
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -519,7 +539,7 @@ class _BookingsTab extends StatelessWidget {
         // Payment completed — webhook will update the booking status
         // asynchronously. Refresh the list so the user sees the change.
         context.read<BookingsListBloc>().add(
-          BookingsListFetched(status: status),
+          BookingsListFetched(status: widget.status),
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -536,6 +556,7 @@ class _BookingsTab extends StatelessWidget {
           ),
         );
     }
+    if (mounted) setState(() => _isSubmitting = false);
   }
 
   Widget _buildSkeletons() {
@@ -595,7 +616,7 @@ class _BookingsTab extends StatelessWidget {
             const SizedBox(height: BookmiSpacing.spaceLg),
             TextButton(
               onPressed: () => context.read<BookingsListBloc>().add(
-                BookingsListFetched(status: status),
+                BookingsListFetched(status: widget.status),
               ),
               child: const Text(
                 'Réessayer',

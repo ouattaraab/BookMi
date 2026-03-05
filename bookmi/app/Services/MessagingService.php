@@ -22,7 +22,7 @@ class MessagingService
     }
 
     /**
-     * Returns all conversations for the authenticated user,
+     * Returns conversations for the authenticated user (capped at 100),
      * with the latest message eager-loaded, sorted by most recent activity.
      *
      * @return \Illuminate\Database\Eloquent\Collection<int, Conversation>
@@ -49,6 +49,7 @@ class MessagingService
                 }
             })
             ->orderByDesc('last_message_at')
+            ->limit(100)
             ->get();
 
         return $conversations;

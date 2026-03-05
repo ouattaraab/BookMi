@@ -40,6 +40,19 @@ class HandlePaymentWebhook implements ShouldQueue
         $this->onQueue('payments');
     }
 
+    /**
+     * Called when the job has exhausted all retry attempts.
+     * Logs a critical error so ops teams can investigate.
+     */
+    public function failed(\Throwable $e): void
+    {
+        \Illuminate\Support\Facades\Log::critical('HandlePaymentWebhook: job exhausted all retries', [
+            'event'   => $this->event,
+            'data'    => $this->data,
+            'error'   => $e->getMessage(),
+        ]);
+    }
+
     public function handle(): void
     {
         match ($this->event) {
