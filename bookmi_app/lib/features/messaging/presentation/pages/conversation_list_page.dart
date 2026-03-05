@@ -1,3 +1,5 @@
+import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_state.dart';
 import 'package:bookmi_app/features/messaging/bloc/messaging_cubit.dart';
 import 'package:bookmi_app/features/messaging/presentation/widgets/conversation_card_skeleton.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -156,6 +158,10 @@ class _ConversationsList extends StatelessWidget {
   ) {
     if (conversations.isEmpty && broadcasts.isEmpty) return _buildEmpty();
 
+    final authState = context.read<AuthBloc>().state;
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : -1;
+
     // Build tagged entries: (DateTime, Widget)
     final entries = <(DateTime, Widget)>[];
 
@@ -166,7 +172,10 @@ class _ConversationsList extends StatelessWidget {
           key: ValueKey('conv_${c.id}'),
           onDismissed: () =>
               context.read<MessagingCubit>().deleteConversation(c.id),
-          child: _ConversationTile(conversation: c),
+          child: _ConversationTile(
+            conversation: c,
+            currentUserId: currentUserId,
+          ),
         ),
       ));
     }
@@ -300,11 +309,30 @@ class _DismissibleTile extends StatelessWidget {
 
 // ── Booking conversation tile ──────────────────────────────────────
 class _ConversationTile extends StatelessWidget {
-  const _ConversationTile({required this.conversation});
+  const _ConversationTile({
+    required this.conversation,
+    required this.currentUserId,
+  });
   final ConversationModel conversation;
+  final int currentUserId;
 
-  String get _talentName =>
-      conversation.talentName ?? conversation.clientName ?? 'Inconnu';
+  /// Returns the name of the OTHER party (not the current user).
+  /// - Current user is the client  → show talent name
+  /// - Current user is the talent  → show client name
+  String get _otherPartyName {
+    final isClient = conversation.clientId == currentUserId;
+    if (isClient) {
+      return conversation.talentName ?? 'Inconnu';
+    }
+    return conversation.clientName ?? 'Inconnu';
+  }
+
+  String get _otherPartyAvatarUrl {
+    final isClient = conversation.clientId == currentUserId;
+    return isClient
+        ? (conversation.talentAvatarUrl ?? '')
+        : (conversation.clientAvatarUrl ?? '');
+  }
 
   String get _preview {
     final msg = conversation.latestMessage;
@@ -328,9 +356,11 @@ class _ConversationTile extends StatelessWidget {
   }
 
   String get _initials {
-    final parts = _talentName.split(' ');
+    final parts = _otherPartyName.split(' ');
     if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    return _talentName.isNotEmpty ? _talentName[0].toUpperCase() : '?';
+    return _otherPartyName.isNotEmpty
+        ? _otherPartyName[0].toUpperCase()
+        : '?';
   }
 
   @override
@@ -338,7 +368,7 @@ class _ConversationTile extends StatelessWidget {
     final booking = conversation.booking;
     final unread = conversation.unreadCount;
     final isClosed = conversation.isClosed;
-    final avatarUrl = conversation.talentAvatarUrl;
+    final avatarUrl = _otherPartyAvatarUrl;
 
     return GestureDetector(
       onTap: () {
@@ -350,7 +380,7 @@ class _ConversationTile extends StatelessWidget {
                   value: cubit,
                   child: ChatPage(
                     conversationId: conversation.id,
-                    otherPartyName: _talentName,
+                    otherPartyName: _otherPartyName,
                     talentAvatarUrl: avatarUrl,
                     booking: booking,
                   ),
@@ -383,7 +413,7 @@ class _ConversationTile extends StatelessWidget {
                     color: _border,
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: avatarUrl != null && avatarUrl.isNotEmpty
+                  child: avatarUrl.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: avatarUrl,
                           fit: BoxFit.cover,
@@ -448,7 +478,7 @@ class _ConversationTile extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          _talentName,
+                          _otherPartyName,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
