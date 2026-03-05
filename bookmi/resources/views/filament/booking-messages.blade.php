@@ -95,7 +95,17 @@
                             @if($message->type?->value === 'text' || $message->type === null)
                                 <p class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words">{{ $message->content }}</p>
                             @elseif($message->type?->value === 'image')
-                                <p class="text-xs text-gray-400 italic">📷 Image partagée</p>
+                                @if($message->media_path)
+                                    <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($message->media_path) }}" target="_blank" rel="noopener">
+                                        <img
+                                            src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($message->media_path) }}"
+                                            alt="Image partagée"
+                                            class="mt-1 max-h-64 max-w-xs rounded-lg border border-gray-200 dark:border-white/10 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                                        >
+                                    </a>
+                                @else
+                                    <p class="text-xs text-gray-400 italic">📷 Image partagée</p>
+                                @endif
                                 @if($message->content)
                                     <p class="text-sm text-gray-700 dark:text-gray-200 mt-1 whitespace-pre-wrap break-words">{{ $message->content }}</p>
                                 @endif
