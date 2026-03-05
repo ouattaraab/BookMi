@@ -227,6 +227,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         $this->notify(new ResetPasswordNotification($token));
     }
 
+    public function getNameAttribute(): string
+    {
+        return trim("{$this->first_name} {$this->last_name}");
+    }
+
     public function getAvatarUrlAttribute(): ?string
     {
         return $this->avatar ? Storage::disk('public')->url($this->avatar) : null;
