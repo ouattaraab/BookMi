@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Web\Auth;
 
+use App\Exceptions\AuthException;
 use App\Http\Controllers\Controller;
 use App\Services\ActivityLogger;
+use App\Services\AuthService;
 use App\Services\TwoFactorService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -12,8 +14,10 @@ use Illuminate\View\View;
 
 class WebLoginController extends Controller
 {
-    public function __construct(private readonly TwoFactorService $twoFactorService)
-    {
+    public function __construct(
+        private readonly TwoFactorService $twoFactorService,
+        private readonly AuthService $authService,
+    ) {
     }
 
     public function showForm(): View|RedirectResponse
@@ -32,11 +36,31 @@ class WebLoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        $email = strtolower($credentials['email']);
+
+        // Check shared lockout (same cache key as the API path)
+        try {
+            $this->authService->checkLockout($email);
+        } catch (AuthException) {
+            return back()->withErrors([
+                'email' => 'Ce compte est temporairement bloqué suite à trop de tentatives incorrectes. Réessayez dans quelques minutes.',
+            ])->onlyInput('email');
+        }
+
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+            $this->authService->trackFailedAttempt($email, [
+                'client_type' => 'web',
+                'ip'          => $request->ip(),
+                'user_agent'  => $request->userAgent(),
+            ]);
+
             return back()->withErrors([
                 'email' => 'Ces identifiants ne correspondent à aucun compte.',
             ])->onlyInput('email');
         }
+
+        // Successful login — clear lockout counters
+        $this->authService->clearLockout($email);
 
         /** @var \App\Models\User $user */
         $user = Auth::user();

@@ -6,8 +6,10 @@ use App\Events\PasswordReset;
 use App\Events\UserLoggedIn;
 use App\Events\UserLoggedOut;
 use App\Exceptions\AuthException;
+use App\Models\LoginLockoutLog;
 use App\Models\User;
 use App\Notifications\WelcomeNotification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -159,10 +161,11 @@ class AuthService
      *
      * Returns either a full auth response OR a 2FA challenge if 2FA is enabled.
      *
+     * @param  array{client_type?: string, ip?: string|null, user_agent?: string|null}|null  $context
      * @return array{token: string, user: array<string, mixed>, roles: array<int, string>}
      *       | array{two_factor_required: true, challenge_token: string, method: string}
      */
-    public function login(string $email, string $password): array
+    public function login(string $email, string $password, ?array $context = null): array
     {
         $email = strtolower($email);
         $lockoutKey = "login_lockout:{$email}";
@@ -170,7 +173,7 @@ class AuthService
         // 1. Check lockout (atomic — no Cache::has)
         $lockedUntilIso = Cache::get($lockoutKey);
         if ($lockedUntilIso !== null) {
-            $lockedUntil = \Carbon\Carbon::parse($lockedUntilIso);
+            $lockedUntil = Carbon::parse($lockedUntilIso);
             $remainingSeconds = (int) max(0, now()->diffInSeconds($lockedUntil, false));
 
             throw AuthException::accountLocked($lockedUntilIso, $remainingSeconds);
@@ -179,12 +182,12 @@ class AuthService
         // 2. Find user by email (same error for not found and wrong password — prevents enumeration)
         $user = User::where('email', $email)->first();
         if (! $user) {
-            $this->handleFailedLoginAttempt($email);
+            $this->handleFailedLoginAttempt($email, $context);
         }
 
         // 3. Verify password
         if (! Hash::check($password, $user->password)) {
-            $this->handleFailedLoginAttempt($email);
+            $this->handleFailedLoginAttempt($email, $context);
         }
 
         // 4. Check phone verified
@@ -276,16 +279,122 @@ class AuthService
     }
 
     /**
+     * Verify if the given email is currently locked out and throw if so.
+     * Used by external callers (e.g. WebLoginController) to check the shared lockout.
+     *
+     * @throws AuthException if the account is locked
+     */
+    public function checkLockout(string $email): void
+    {
+        $lockoutKey = 'login_lockout:' . strtolower($email);
+        $lockedUntilIso = Cache::get($lockoutKey);
+
+        if ($lockedUntilIso !== null) {
+            $lockedUntil = Carbon::parse($lockedUntilIso);
+            $remainingSeconds = (int) max(0, now()->diffInSeconds($lockedUntil, false));
+            throw AuthException::accountLocked($lockedUntilIso, $remainingSeconds);
+        }
+    }
+
+    /**
+     * Record a failed login attempt and trigger a lockout when the threshold is reached.
+     * Does NOT throw — caller is responsible for its own response logic.
+     *
+     * @param  array{client_type?: string, ip?: string|null, user_agent?: string|null}  $context
+     */
+    public function trackFailedAttempt(string $email, array $context = []): void
+    {
+        $email = strtolower($email);
+        $attemptsKey = "login_attempts:{$email}";
+        $lockoutKey = "login_lockout:{$email}";
+        $lockoutMinutes = (int) config('bookmi.auth.lockout_minutes', 15);
+        $maxAttempts = (int) config('bookmi.auth.max_login_attempts', 5);
+
+        $attempts = (int) Cache::increment($attemptsKey);
+
+        if ($attempts === 1) {
+            Cache::put($attemptsKey, $attempts, now()->addMinutes($lockoutMinutes));
+        }
+
+        if ($attempts >= $maxAttempts) {
+            $lockedUntil = now()->addMinutes($lockoutMinutes);
+            Cache::put($lockoutKey, $lockedUntil->toIso8601String(), $lockedUntil);
+            Cache::forget($attemptsKey);
+            $this->persistLockout($email, $maxAttempts, $lockedUntil, $context);
+        }
+    }
+
+    /**
+     * Clear the lockout counters for the given email and mark any active log as manually unlocked.
+     * Called by the admin "Déverrouiller" action.
+     */
+    public function unlockAccount(string $email, int $adminUserId): void
+    {
+        $email = strtolower($email);
+        Cache::forget("login_lockout:{$email}");
+        Cache::forget("login_attempts:{$email}");
+
+        LoginLockoutLog::where('email', $email)
+            ->whereNull('unlocked_at')
+            ->where('locked_until', '>', now())
+            ->update([
+                'unlocked_at' => now(),
+                'unlocked_by' => $adminUserId,
+            ]);
+    }
+
+    /**
+     * Clear lockout cache counters after a successful login.
+     * Cache-only — does not update any DB record.
+     */
+    public function clearLockout(string $email): void
+    {
+        $email = strtolower($email);
+        Cache::forget("login_lockout:{$email}");
+        Cache::forget("login_attempts:{$email}");
+    }
+
+    /**
+     * Persist a lockout event to the database for admin visibility.
+     * Non-fatal: a write failure does not prevent the lockout from being enforced via cache.
+     *
+     * @param  array{client_type?: string, ip?: string|null, user_agent?: string|null}  $context
+     */
+    private function persistLockout(string $email, int $attempts, Carbon $lockedUntil, array $context): void
+    {
+        try {
+            $user = User::where('email', $email)->first();
+            LoginLockoutLog::create([
+                'email'          => $email,
+                'user_id'        => $user?->id,
+                'client_type'    => $context['client_type'] ?? 'api',
+                'ip_address'     => $context['ip'] ?? null,
+                'user_agent'     => mb_substr($context['user_agent'] ?? '', 0, 500),
+                'attempts_count' => $attempts,
+                'locked_at'      => now(),
+                'locked_until'   => $lockedUntil,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('LoginLockoutLog persist failed', [
+                'email' => $email,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Handle a failed login attempt: increment counter, trigger lockout if threshold reached.
+     *
+     * @param  array{client_type?: string, ip?: string|null, user_agent?: string|null}|null  $context
      *
      * @throws AuthException Always throws — either AUTH_ACCOUNT_LOCKED or AUTH_INVALID_CREDENTIALS
      */
-    private function handleFailedLoginAttempt(string $email): never
+    private function handleFailedLoginAttempt(string $email, ?array $context = null): never
     {
         $attemptsKey = "login_attempts:{$email}";
         $lockoutKey = "login_lockout:{$email}";
 
-        $attempts = Cache::increment($attemptsKey);
+        $attempts = (int) Cache::increment($attemptsKey);
 
         // Set TTL on first attempt
         if ($attempts === 1) {
@@ -300,6 +409,7 @@ class AuthService
             $lockedUntil = now()->addMinutes($lockoutMinutes);
             Cache::put($lockoutKey, $lockedUntil->toIso8601String(), $lockedUntil);
             Cache::forget($attemptsKey);
+            $this->persistLockout($email, $maxAttempts, $lockedUntil, $context ?? []);
 
             throw AuthException::accountLocked($lockedUntil->toIso8601String(), $lockoutMinutes * 60);
         }

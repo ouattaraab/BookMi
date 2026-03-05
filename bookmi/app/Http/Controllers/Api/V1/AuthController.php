@@ -51,9 +51,13 @@ class AuthController extends BaseController
 
     public function login(LoginRequest $request): JsonResponse
     {
+        $userAgent = $request->userAgent() ?? '';
+        $clientType = str_contains($userAgent, 'Dart/') ? 'mobile' : 'api';
+
         $result = $this->authService->login(
             $request->validated('email'),
             $request->validated('password'),
+            ['client_type' => $clientType, 'ip' => $request->ip(), 'user_agent' => $userAgent],
         );
 
         // 2FA challenge: return 200 with two_factor_required flag (not a full token)
