@@ -57,15 +57,15 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => $token,
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(200)
             ->assertJsonPath('data.message', 'Votre mot de passe a été réinitialisé avec succès.');
 
         $user->refresh();
-        $this->assertTrue(Hash::check('newpassword123', $user->password));
+        $this->assertTrue(Hash::check('NewPassword1', $user->password));
     }
 
     #[Test]
@@ -82,8 +82,8 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => $token,
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(200);
@@ -101,8 +101,8 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => $token,
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(200);
@@ -122,8 +122,8 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => 'invalid-token',
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(422)
@@ -144,8 +144,8 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => $token,
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(422)
@@ -158,8 +158,8 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => 'some-token',
             'email' => 'nonexistent@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(422)
@@ -172,7 +172,7 @@ class ResetPasswordTest extends TestCase
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => 'some-token',
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
+            'password' => 'NewPassword1',
             'password_confirmation' => 'different-password',
         ]);
 
@@ -189,8 +189,8 @@ class ResetPasswordTest extends TestCase
     {
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'test@example.com',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(422)
@@ -204,8 +204,8 @@ class ResetPasswordTest extends TestCase
     {
         $response = $this->postJson('/api/v1/auth/reset-password', [
             'token' => 'some-token',
-            'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123',
+            'password' => 'NewPassword1',
+            'password_confirmation' => 'NewPassword1',
         ]);
 
         $response->assertStatus(422)

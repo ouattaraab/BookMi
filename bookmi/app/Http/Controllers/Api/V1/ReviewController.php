@@ -97,8 +97,8 @@ class ReviewController extends Controller
                 'quality_score'          => $r->quality_score,
                 'professionalism_score'  => $r->professionalism_score,
                 'contract_respect_score' => $r->contract_respect_score,
-                'comment'                => $r->comment,
-                'reply'                  => $r->reply,
+                'comment'                => $r->comment !== null ? strip_tags($r->comment) : null,
+                'reply'                  => $r->reply !== null ? strip_tags($r->reply) : null,
                 'reply_at'               => $r->reply_at instanceof \Carbon\Carbon ? $r->reply_at->toISOString() : null,
                 'reviewer_id'            => $r->reviewer_id,
                 'reviewee_id' => $r->reviewee_id,
@@ -153,13 +153,13 @@ class ReviewController extends Controller
         }
 
         $review->update([
-            'reply'    => $request->string('reply')->trim()->value(),
+            'reply'    => strip_tags($request->string('reply')->trim()->value()),
             'reply_at' => now(),
         ]);
 
         return response()->json([
             'data' => [
-                'reply'    => $review->reply,
+                'reply'    => $review->reply !== null ? strip_tags($review->reply) : null,
                 'reply_at' => $review->reply_at instanceof \Carbon\Carbon ? $review->reply_at->toISOString() : null,
             ],
         ]);

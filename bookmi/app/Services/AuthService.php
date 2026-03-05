@@ -138,6 +138,11 @@ class AuthService
      */
     public function resendOtp(string $phone): void
     {
+        // [H3] Silently no-op for unknown numbers — same response as success to prevent enumeration.
+        if (! User::where('phone', $phone)->exists()) {
+            return;
+        }
+
         $resendKey = "otp_resend_count:{$phone}";
         $maxResend = (int) config('bookmi.auth.otp_max_resend_per_hour', 3);
 

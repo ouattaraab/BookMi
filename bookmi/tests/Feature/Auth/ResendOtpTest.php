@@ -101,16 +101,14 @@ class ResendOtpTest extends TestCase
     }
 
     #[Test]
-    public function resend_otp_phone_not_registered_returns_422(): void
+    public function resend_otp_phone_not_registered_returns_200(): void
     {
+        // [H3] Unknown phones return 200 silently to prevent account enumeration.
         $response = $this->postJson('/api/v1/auth/resend-otp', [
             'phone' => '+2250700099999',
         ]);
 
-        $response->assertStatus(422)
-            ->assertJsonPath('error.code', 'VALIDATION_FAILED');
-
-        $this->assertArrayHasKey('phone', $response->json('error.details.errors'));
+        $response->assertStatus(200);
     }
 
     // ── Validation Failures ─────────────────────────────────

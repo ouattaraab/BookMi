@@ -30,7 +30,12 @@ class StoreTalentProfileRequest extends FormRequest
             'cachet_amount'   => ['required', 'integer', 'min:1000'],
             'bio'             => ['nullable', 'string', 'max:1000'],
             'social_links'    => ['nullable', 'array'],
-            'social_links.*'  => ['nullable', 'url'],
+            'social_links.*'  => ['nullable', 'url', function (string $attribute, mixed $value, \Closure $fail): void {
+                // [H2] Block javascript: protocol to prevent XSS via social links.
+                if (is_string($value) && stripos($value, 'javascript:') === 0) {
+                    $fail('URL de lien social invalide.');
+                }
+            }],
         ];
     }
 

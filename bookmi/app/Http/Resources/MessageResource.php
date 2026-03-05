@@ -19,7 +19,7 @@ class MessageResource extends JsonResource
             'conversation_id' => $this->conversation_id,
             'sender_id'       => $this->sender_id,
             'sender_name'     => $this->whenLoaded('sender', fn () => $this->sender->name),
-            'content'         => $this->content,
+            'content'         => $this->content !== null ? strip_tags($this->content) : null,
             'type'            => $this->type->value,
             'media_url'       => $this->media_path
                                     ? Storage::disk('public')->url($this->media_path)

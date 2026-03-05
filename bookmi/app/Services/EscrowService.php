@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\BookingStatus;
 use App\Enums\EscrowStatus;
+use App\Enums\TransactionStatus;
 use App\Events\EscrowReleased;
 use App\Exceptions\EscrowException;
 use App\Models\BookingRequest;
@@ -73,6 +74,15 @@ class EscrowService
 
         if ($booking->status !== BookingStatus::Paid) {
             throw EscrowException::bookingNotConfirmable($booking->status->value);
+        }
+
+        // [C4] Guard: require a succeeded transaction before releasing funds.
+        $hasSucceededTransaction = $booking->transactions()
+            ->where('status', TransactionStatus::Succeeded->value)
+            ->exists();
+
+        if (! $hasSucceededTransaction) {
+            throw EscrowException::escrowNotHeld('no_succeeded_transaction');
         }
 
         $hold = EscrowHold::where('booking_request_id', $booking->id)

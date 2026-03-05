@@ -317,8 +317,17 @@ class BookingRequestController extends BaseController
             fwrite($out, "\xEF\xBB\xBF");
             fputcsv($out, ['ID', 'Date création', 'Statut', 'Talent', 'Package', 'Date événement', 'Lieu', 'Total (FCFA)']);
 
+            // [M2] Sanitize against CSV formula injection (=, +, -, @ as first char).
+            $sanitize = static function (mixed $value): mixed {
+                if (is_string($value) && $value !== '' && in_array($value[0], ['=', '+', '-', '@'], true)) {
+                    return "'" . $value;
+                }
+
+                return $value;
+            };
+
             foreach ($rows as $row) {
-                fputcsv($out, $row);
+                fputcsv($out, array_map($sanitize, $row));
             }
 
             fclose($out);

@@ -93,7 +93,18 @@ class DownloadController extends BaseController
             abort(404, 'Le contrat n\'est pas encore disponible. Veuillez réessayer dans quelques instants.');
         }
 
-        $content  = Storage::disk('local')->get($booking->contract_path);
+        // [H5] Guard against path traversal: reject any path with traversal sequences or absolute prefix.
+        $contractPath = $booking->contract_path;
+
+        if (
+            str_contains($contractPath, '..')
+            || str_starts_with($contractPath, '/')
+            || str_starts_with($contractPath, '\\')
+        ) {
+            abort(400, 'Chemin de document invalide.');
+        }
+
+        $content  = Storage::disk('local')->get($contractPath);
         $filename = 'contrat-bookmi-' . str_pad((string) $bookingId, 6, '0', STR_PAD_LEFT) . '.pdf';
 
         return response($content, 200, [

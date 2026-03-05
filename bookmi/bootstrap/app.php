@@ -26,8 +26,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'check.cgu'         => \App\Http\Middleware\Api\CheckCguVersion::class,
         ]);
 
-        $middleware->web(append: [\App\Http\Middleware\CheckMaintenanceMode::class]);
-        $middleware->api(append: [\App\Http\Middleware\CheckMaintenanceMode::class]);
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
+        $middleware->api(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+            \App\Http\Middleware\CheckMaintenanceMode::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {

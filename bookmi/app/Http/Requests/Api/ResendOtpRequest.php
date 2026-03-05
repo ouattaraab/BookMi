@@ -17,7 +17,9 @@ class ResendOtpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone' => ['required', 'string', 'regex:/^\+225[0-9]{10}$/', 'exists:users,phone'],
+            // [H3] Removed `exists:users,phone` — would reveal whether a number is registered.
+            // AuthService::resendOtp() silently no-ops for unknown numbers.
+            'phone' => ['required', 'string', 'regex:/^\+225[0-9]{10}$/'],
         ];
     }
 
@@ -28,8 +30,7 @@ class ResendOtpRequest extends FormRequest
     {
         return [
             'phone.required' => 'Le numéro de téléphone est obligatoire.',
-            'phone.regex' => 'Le numéro de téléphone doit être au format +225 suivi de 10 chiffres.',
-            'phone.exists' => 'Aucun compte associé à ce numéro de téléphone.',
+            'phone.regex'    => 'Le numéro de téléphone doit être au format +225 suivi de 10 chiffres.',
         ];
     }
 }

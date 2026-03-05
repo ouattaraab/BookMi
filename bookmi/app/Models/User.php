@@ -33,13 +33,22 @@ class User extends Authenticatable implements FilamentUser, HasName
      *
      * @var list<string>
      */
+    /**
+     * Fields that must NOT be mass-assignable (privilege escalation protection).
+     * Use forceFill() or DB::table() for admin-only writes.
+     *
+     * @var list<string>
+     */
+    protected $guarded = [
+        'is_admin',
+    ];
+
     protected $fillable = [
         'first_name',
         'last_name',
         'email',
         'phone',
         'password',
-        'is_admin',
         'is_active',
         'is_client_verified',
         'client_verified_at',

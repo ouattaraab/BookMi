@@ -216,9 +216,11 @@ class AdminService
                 'email'      => $data['email'],
                 'phone'      => $data['phone'],
                 'password'   => bcrypt($data['password']),
-                'is_admin'   => true,
                 'is_active'  => true,
             ]);
+            // [C6] is_admin is guarded against mass-assignment; set via property assignment.
+            $user->is_admin = true;
+            $user->save();
 
             $user->assignRole($data['role']);
 
@@ -264,7 +266,10 @@ class AdminService
 
         DB::transaction(function () use ($ceo, $collaborator) {
             $collaborator->syncRoles([]);
-            $collaborator->update(['is_admin' => false, 'is_active' => false]);
+            // [C6] is_admin is guarded against mass-assignment; set via property assignment.
+            $collaborator->is_admin = false;
+            $collaborator->is_active = false;
+            $collaborator->save();
             $collaborator->tokens()->delete();
             $this->audit->log('team.access_revoked', $collaborator, ['revoked_by' => $ceo->id]);
         });

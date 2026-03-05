@@ -52,7 +52,7 @@ return [
         'authenticated' => 60,
         'unauthenticated' => 30,
         'payment' => 10,
-        'auth_endpoints' => 10,
+        'auth_endpoints' => 5, // [H6] Reduced from 10 to 5/min per security audit
     ],
 
     'media' => [
