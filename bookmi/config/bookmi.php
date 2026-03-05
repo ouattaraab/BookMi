@@ -85,9 +85,12 @@ return [
     ],
 
     'sms' => [
-        'enabled'   => env('AT_SMS_ENABLED', false),
-        'username'  => env('AT_USERNAME', ''),
-        'api_key'   => env('AT_API_KEY', ''),
-        'sender_id' => env('AT_SENDER_ID', 'BookMi'),
+        'enabled'       => env('ORANGE_SMS_ENABLED', false),
+        'client_id'     => env('ORANGE_CLIENT_ID', ''),
+        'client_secret' => env('ORANGE_CLIENT_SECRET', ''),
+        // country_sender_number sans + ni 00 (ex. 2250000 pour Côte d'Ivoire)
+        'sender_number' => env('ORANGE_SENDER_NUMBER', '2250000'),
+        // Sender name approuvé par Orange (max 11 caractères alphanumériques)
+        'sender_name'   => env('ORANGE_SENDER_NAME', 'BookMi'),
     ],
 ];
