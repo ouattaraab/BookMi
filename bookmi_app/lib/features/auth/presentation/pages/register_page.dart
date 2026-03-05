@@ -573,9 +573,8 @@ class _ConsentSection extends StatelessWidget {
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () => launchUrl(
-                          Uri.parse(
-                              'https://bookmi.click/conditions-utilisation'),
-                        ),
+                      Uri.parse('https://bookmi.click/conditions-utilisation'),
+                    ),
                 ),
                 const TextSpan(text: ' et la '),
                 TextSpan(
@@ -586,9 +585,10 @@ class _ConsentSection extends StatelessWidget {
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () => launchUrl(
-                          Uri.parse(
-                              'https://bookmi.click/politique-confidentialite'),
-                        ),
+                      Uri.parse(
+                        'https://bookmi.click/politique-confidentialite',
+                      ),
+                    ),
                 ),
                 const TextSpan(text: '.'),
               ],
@@ -703,8 +703,7 @@ class _ConsentSection extends StatelessWidget {
             consentKey: 'cancellation_policy',
             value: consents['cancellation_policy'] ?? false,
             onChanged: onConsentChanged,
-            label:
-                "J'accepte la politique d'annulation et les frais associés.",
+            label: "J'accepte la politique d'annulation et les frais associés.",
           ),
         ],
         if (role == 'manager') ...[
@@ -818,7 +817,8 @@ class _ConsentRow extends StatelessWidget {
               onTap: () => onChanged(consentKey, !value),
               child: Padding(
                 padding: const EdgeInsets.only(top: 5),
-                child: child ??
+                child:
+                    child ??
                     Text(
                       label ?? '',
                       style: TextStyle(

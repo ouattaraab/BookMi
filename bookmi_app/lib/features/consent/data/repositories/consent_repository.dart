@@ -10,8 +10,9 @@ class ConsentRepository {
 
   Future<ApiResult<Map<String, dynamic>>> fetchConsents() async {
     try {
-      final response =
-          await _dio.get<Map<String, dynamic>>(ApiEndpoints.consents);
+      final response = await _dio.get<Map<String, dynamic>>(
+        ApiEndpoints.consents,
+      );
       final data = response.data?['data'] as Map<String, dynamic>? ?? {};
       return ApiSuccess(data);
     } on DioException catch (e) {

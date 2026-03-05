@@ -143,9 +143,9 @@ class ConsentSettingsPage extends StatelessWidget {
                       consentMap[item.key]?['status'] as bool? ?? false,
                   isLoading: state is ConsentUpdating,
                   onChanged: (value) {
-                    context
-                        .read<ConsentCubit>()
-                        .updateOptIns({item.key: value});
+                    context.read<ConsentCubit>().updateOptIns({
+                      item.key: value,
+                    });
                   },
                 ),
               ),
@@ -249,7 +249,8 @@ class _ReadOnlyConsentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final status = consent['status'] as bool? ?? false;
-    final label = consent['label'] as String? ?? consent['type'] as String? ?? '';
+    final label =
+        consent['label'] as String? ?? consent['type'] as String? ?? '';
     final date = consent['consented_at'] as String?;
 
     return Container(
@@ -323,9 +324,7 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
       decoration: BoxDecoration(
-        color: (upToDate
-                ? BookmiColors.success
-                : BookmiColors.error)
+        color: (upToDate ? BookmiColors.success : BookmiColors.error)
             .withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(

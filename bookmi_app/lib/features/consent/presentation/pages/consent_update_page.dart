@@ -72,8 +72,7 @@ class _ConsentUpdateViewState extends State<_ConsentUpdateView> {
       },
       child: Scaffold(
         body: DecoratedBox(
-          decoration:
-              const BoxDecoration(gradient: BookmiColors.gradientHero),
+          decoration: const BoxDecoration(gradient: BookmiColors.gradientHero),
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
@@ -126,9 +125,8 @@ class _ConsentUpdateViewState extends State<_ConsentUpdateView> {
                             ),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () => launchUrl(
-                                    Uri.parse(
-                                        'https://bookmi.click/terms'),
-                                  ),
+                                Uri.parse('https://bookmi.click/terms'),
+                              ),
                           ),
                           const TextSpan(text: '.'),
                         ],
@@ -154,8 +152,9 @@ class _ConsentUpdateViewState extends State<_ConsentUpdateView> {
                         onPressed: (_canSubmit && !isLoading) ? _submit : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: BookmiColors.brandBlue,
-                          disabledBackgroundColor:
-                              Colors.white.withValues(alpha: 0.15),
+                          disabledBackgroundColor: Colors.white.withValues(
+                            alpha: 0.15,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -222,7 +221,9 @@ class _ConsentCheckbox extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(child: Padding(padding: const EdgeInsets.only(top: 12), child: label)),
+        Expanded(
+          child: Padding(padding: const EdgeInsets.only(top: 12), child: label),
+        ),
       ],
     );
   }

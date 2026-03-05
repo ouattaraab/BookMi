@@ -400,7 +400,8 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                 Step3Recap(
                   packageName: (() {
                     final attrs =
-                        _selectedPackage?['attributes'] as Map<String, dynamic>? ??
+                        _selectedPackage?['attributes']
+                            as Map<String, dynamic>? ??
                         _selectedPackage ??
                         {};
                     return attrs['name'] as String? ?? '';
@@ -410,8 +411,9 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                   totalAmount: _totalAmount,
                   travelCost: _travelCost,
                   eventDate: _formattedDate,
-                  eventLocation:
-                      _isMicroPackage ? 'Livraison digitale' : _location,
+                  eventLocation: _isMicroPackage
+                      ? 'Livraison digitale'
+                      : _location,
                   enableExpress: widget.enableExpress,
                   isExpress: _isExpress,
                   message: _message,
@@ -425,11 +427,11 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                   onApplyPromo: _promoCodeInput.trim().isEmpty
                       ? null
                       : () => context.read<BookingFlowBloc>().add(
-                            PromoCodeValidationRequested(
-                              code: _promoCodeInput.trim(),
-                              bookingAmount: _totalAmount,
-                            ),
+                          PromoCodeValidationRequested(
+                            code: _promoCodeInput.trim(),
+                            bookingAmount: _totalAmount,
                           ),
+                        ),
                   onClearPromo: () => setState(() {
                     _appliedPromoCode = null;
                     _discountAmount = 0;
@@ -440,8 +442,7 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                 _TransactionalConsents(
                   paymentAccepted: _consentPayment,
                   cancellationAccepted: _consentCancellation,
-                  onPaymentChanged: (v) =>
-                      setState(() => _consentPayment = v),
+                  onPaymentChanged: (v) => setState(() => _consentPayment = v),
                   onCancellationChanged: (v) =>
                       setState(() => _consentCancellation = v),
                 ),
@@ -670,8 +671,7 @@ class _TransactionalConsents extends StatelessWidget {
           _ConsentCheckTile(
             value: cancellationAccepted,
             onChanged: onCancellationChanged,
-            label:
-                "J'accepte la politique d'annulation et les frais associés.",
+            label: "J'accepte la politique d'annulation et les frais associés.",
           ),
         ],
       ),

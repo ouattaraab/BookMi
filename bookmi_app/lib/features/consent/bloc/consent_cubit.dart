@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ConsentCubit extends Cubit<ConsentState> {
   ConsentCubit({required ConsentRepository repository})
-      : _repository = repository,
-        super(const ConsentInitial());
+    : _repository = repository,
+      super(const ConsentInitial());
 
   final ConsentRepository _repository;
 
@@ -23,8 +23,7 @@ class ConsentCubit extends Cubit<ConsentState> {
           ConsentLoaded(
             consents: consents,
             cguVersionAccepted: data['cgu_version_accepted'] as String?,
-            currentCguVersion:
-                data['current_cgu_version'] as String? ?? '1.0',
+            currentCguVersion: data['current_cgu_version'] as String? ?? '1.0',
           ),
         );
       case ApiFailure(:final message):
