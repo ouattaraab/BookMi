@@ -48,92 +48,39 @@ jobs:
           ssh-keyscan -p 65002 bookmi.click >> ~/.ssh/known_hosts
 
       # ── Déployer le code PHP ───────────────────────────────────────────
-      # Stratégie :
-      #   1. bookmi_app/ = repo git + build complet (composer, migrations)
-      #   2. rsync bookmi_app/ → domains/bookmi.click/ (web server root)
-      #   3. Régénérer le cache de routes SUR domains/bookmi.click/ pour
-      #      que base_path() soit correct lors de l'exécution web
+      # Structure confirmée : public_html/index.php charge depuis
+      #   $appPath = '/home/u726808002/bookmi_app/bookmi'
+      # → Le Laravel app root est bookmi_app/bookmi/ (sous-dossier git)
+      # → composer, artisan, migrate, optimize doivent tourner là
       - name: Deploy PHP code
         run: |
           ssh -p 65002 u726808002@bookmi.click '
             set -e
-            cd /home/u726808002/bookmi_app
 
-            # 1. Pull latest code (updates bookmi/ subdirectory)
+            # 1. Pull latest code (met à jour bookmi_app/bookmi/ — app root réel)
+            cd /home/u726808002/bookmi_app
             git pull origin main
 
-            # 2. Sync bookmi/ app files into bookmi_app/ (build environment)
-            rsync -a --exclude="vendor/" --exclude="storage/" --exclude=".env" \
-              --exclude="node_modules/" --exclude=".git/" \
-              bookmi/ ./
+            # 2. Travailler dans le vrai app root (celui que le web server utilise)
+            cd /home/u726808002/bookmi_app/bookmi
 
-            # 3. Install/update PHP dependencies at bookmi_app/
+            # 3. Install/update PHP dependencies
             composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-sodium --quiet
 
-            # 4. Run migrations at bookmi_app/ (needs .env — only here)
+            # 4. Run migrations
             php artisan migrate --force
 
-            # 5. Clear ALL caches — do NOT rebuild yet (will rebuild at web root)
+            # 5. Rebuild caches (route cache généré avec le bon base_path)
             php artisan optimize:clear
+            php artisan optimize
 
-            # 6. Create storage symlink at bookmi_app/
+            # 6. Create storage symlink
             php artisan storage:link --force 2>/dev/null || true
 
-            # 7. Sync the fully-built app to the actual web-served directory
-            #    Preserve: .env and storage/ at destination; exclude git source
-            rsync -a \
-              --exclude="bookmi/" \
-              --exclude="storage/" \
-              --exclude=".env" \
-              --exclude=".git/" \
-              --exclude="node_modules/" \
-              /home/u726808002/bookmi_app/ \
-              /home/u726808002/domains/bookmi.click/
-
-            # 8. Diagnostic — comprendre la structure réelle du serveur web
-            echo "=== DIAGNOSTIC SERVER STRUCTURE ==="
-            echo "-- domains/bookmi.click/ (top) --"
-            ls /home/u726808002/domains/bookmi.click/ 2>/dev/null | head -15 || echo "NOT FOUND"
-            echo "-- public_html/ --"
-            ls /home/u726808002/domains/bookmi.click/public_html/ 2>/dev/null | head -20 || echo "NOT FOUND"
-            echo "-- public_html/index.php (first 20 lines) --"
-            head -20 /home/u726808002/domains/bookmi.click/public_html/index.php 2>/dev/null || echo "NOT FOUND"
-            echo "-- .env present at bookmi_app : $([ -f /home/u726808002/bookmi_app/.env ] && echo YES || echo NO)"
-            echo "-- .env present at domains    : $([ -f /home/u726808002/domains/bookmi.click/.env ] && echo YES || echo NO)"
-            echo "-- .env present at public_html: $([ -f /home/u726808002/domains/bookmi.click/public_html/.env ] && echo YES || echo NO)"
-            echo "-- routes-v7 at bookmi_app    : $([ -f /home/u726808002/bookmi_app/bootstrap/cache/routes-v7.php ] && echo YES || echo NO)"
-            echo "-- routes-v7 at domains       : $([ -f /home/u726808002/domains/bookmi.click/bootstrap/cache/routes-v7.php ] && echo YES || echo NO)"
-            echo "-- routes-v7 at public_html   : $([ -f /home/u726808002/domains/bookmi.click/public_html/bootstrap/cache/routes-v7.php ] && echo YES || echo NO)"
-            echo "-- public_html/bootstrap/ exists: $([ -d /home/u726808002/domains/bookmi.click/public_html/bootstrap ] && echo YES || echo NO)"
-            echo "=== END DIAGNOSTIC ==="
-
-            # 9. Régénérer le cache sur domains/bookmi.click/ si .env présent
-            if [ -f /home/u726808002/domains/bookmi.click/.env ]; then
-              echo "Re-generating caches at domains/bookmi.click/ (web server base path)..."
-              cd /home/u726808002/domains/bookmi.click
-              php artisan optimize:clear 2>/dev/null || true
-              php artisan optimize
-              php artisan storage:link --force 2>/dev/null || true
-              echo "--- Consent routes at domains/ ---"
-              php artisan route:list --path=consents 2>&1 | head -20 || echo "unavailable"
-              cd /home/u726808002/bookmi_app
-            else
-              echo ".env NOT found at domains/bookmi.click/ — regenerating cache at bookmi_app/ only"
-              php artisan optimize
-              echo "--- Consent routes at bookmi_app/ ---"
-              php artisan route:list --path=consents 2>&1 | head -20 || echo "unavailable"
-            fi
-
-            # 10. Si le Laravel complet est dans public_html/ (app root = public_html/)
-            if [ -f /home/u726808002/domains/bookmi.click/public_html/artisan ]; then
-              echo "Laravel app detected inside public_html/ — re-generating caches there too"
-              cd /home/u726808002/domains/bookmi.click/public_html
-              php artisan optimize:clear 2>/dev/null || true
-              php artisan optimize 2>/dev/null || true
-              echo "--- Consent routes at public_html/ ---"
-              php artisan route:list --path=consents 2>&1 | head -20 || echo "unavailable"
-              cd /home/u726808002/bookmi_app
-            fi
+            # 7. Verify consent routes
+            echo "--- Registered routes (consent) ---"
+            php artisan route:list --path=consents 2>&1 | head -20 || echo "unavailable"
+            echo "--- End routes ---"
 
             echo "PHP deploy OK"
           '
@@ -146,17 +93,16 @@ jobs:
             bookmi/public/build/ \
             u726808002@bookmi.click:/home/u726808002/domains/bookmi.click/public_html/build/
 
-      # ── Synchroniser le manifest vers les deux emplacements publics ────
-      - name: Sync manifest to public paths
+      # ── Synchroniser le manifest vers le vrai app root ─────────────────
+      # public_html/index.php → app root = bookmi_app/bookmi/
+      # → le manifest doit être dans bookmi_app/bookmi/public/build/
+      - name: Sync manifest to app public path
         run: |
           ssh -p 65002 u726808002@bookmi.click '
             SRC=/home/u726808002/domains/bookmi.click/public_html/build/manifest.json
-            # Copier vers bookmi_app/public/build/ (référence CLI)
-            mkdir -p /home/u726808002/bookmi_app/public/build/
-            cp "$SRC" /home/u726808002/bookmi_app/public/build/manifest.json 2>/dev/null || true
-            # Copier vers domains/bookmi.click/public/build/ (si public/ existe)
-            mkdir -p /home/u726808002/domains/bookmi.click/public/build/ 2>/dev/null || true
-            cp "$SRC" /home/u726808002/domains/bookmi.click/public/build/manifest.json 2>/dev/null || true
+            # Copier vers bookmi_app/bookmi/public/build/ (vrai app root)
+            mkdir -p /home/u726808002/bookmi_app/bookmi/public/build/
+            cp "$SRC" /home/u726808002/bookmi_app/bookmi/public/build/manifest.json 2>/dev/null || true
             echo "Manifest synced OK"
           '
 
