@@ -147,6 +147,16 @@ class BookingRequest extends Model
     }
 
     /**
+     * Conversations directement liées à cette réservation.
+     *
+     * @return HasMany<Conversation, $this>
+     */
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
+
+    /**
      * Paystack transactions linked to this booking.
      *
      * @return HasMany<Transaction, $this>

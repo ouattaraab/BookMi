@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Filament\Resources\BookingRequestResource;
 use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
+use App\Models\Conversation;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Support\Facades\Storage;
@@ -91,6 +92,37 @@ class ViewBookingRequest extends ViewRecord
                     $this->refreshFormData(['contract_path']);
                 })
                 ->successNotificationTitle('Génération lancée — le PDF sera disponible dans quelques secondes.'),
+
+            Actions\Action::make('view_messages')
+                ->label('Échanges')
+                ->icon('heroicon-o-chat-bubble-left-right')
+                ->color('gray')
+                ->slideOver()
+                ->modalContent(function (): View {
+                    /** @var BookingRequest $booking */
+                    $booking = $this->record;
+
+                    // Conversations liées à cette réservation (booking_request_id)
+                    $conversations = Conversation::with(['messages.sender'])
+                        ->where(function ($q) use ($booking) {
+                            $q->where('booking_request_id', $booking->id)
+                                ->orWhere(function ($q2) use ($booking) {
+                                    $q2->where('client_id', $booking->client_id)
+                                        ->where('talent_profile_id', $booking->talent_profile_id)
+                                        ->whereNull('booking_request_id');
+                                });
+                        })
+                        ->orderBy('created_at')
+                        ->get();
+
+                    return view('filament.booking-messages', [
+                        'booking'       => $booking,
+                        'conversations' => $conversations,
+                        'clientId'      => $booking->client_id,
+                    ]);
+                })
+                ->modalSubmitAction(false)
+                ->modalCancelActionLabel('Fermer'),
 
             Actions\Action::make('view_timeline')
                 ->label('Chronologie')
