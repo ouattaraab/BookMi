@@ -11,29 +11,31 @@
                 <div class="flex gap-2">
 
                     {{-- Relancer tout (max 10) --}}
-                    <button
+                    <x-filament::button
                         wire:click="retryAll"
                         wire:loading.attr="disabled"
                         wire:target="retryAll"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                        <span wire:loading.remove wire:target="retryAll" class="inline-flex items-center gap-1">
-                            <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
+                        color="info"
+                        size="sm"
+                        icon="heroicon-m-arrow-path">
+                        <span wire:loading.remove wire:target="retryAll">
                             Relancer tout (max 10)
                         </span>
                         <span wire:loading wire:target="retryAll" class="inline-flex items-center gap-1">
                             <x-heroicon-m-arrow-path class="w-3.5 h-3.5 animate-spin" />
                             Exécution…
                         </span>
-                    </button>
+                    </x-filament::button>
 
                     {{-- Vider tout --}}
-                    <button
+                    <x-filament::button
                         wire:click="flushAll"
                         wire:confirm="Supprimer définitivement tous les jobs échoués ?"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">
-                        <x-heroicon-m-trash class="w-3.5 h-3.5" />
+                        color="danger"
+                        size="sm"
+                        icon="heroicon-m-trash">
                         Vider tout
-                    </button>
+                    </x-filament::button>
 
                 </div>
             @endif
@@ -46,14 +48,14 @@
                 $status = $this->retryStatuses[$jobId] ?? null;
 
                 $borderClass = match($status) {
-                    'success' => 'border-green-300 dark:border-green-700',
-                    'failed'  => 'border-red-400 dark:border-red-700',
-                    'running' => 'border-blue-300 dark:border-blue-700',
+                    'success' => 'border-green-400 dark:border-green-600',
+                    'failed'  => 'border-red-400 dark:border-red-600',
+                    'running' => 'border-blue-400 dark:border-blue-600',
                     default   => 'border-gray-200 dark:border-gray-700',
                 };
             @endphp
 
-            <div class="rounded-xl border {{ $borderClass }} bg-white dark:bg-gray-900 p-4 space-y-2 transition-colors duration-300">
+            <div class="rounded-xl border-2 {{ $borderClass }} bg-white dark:bg-gray-900 p-4 space-y-2 transition-all duration-300">
                 <div class="flex justify-between items-start gap-4">
 
                     <div class="flex-1 min-w-0">
@@ -62,12 +64,12 @@
                         <div class="flex flex-wrap items-center gap-2 mb-2">
 
                             {{-- Queue --}}
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                                 {{ $job['queue'] }}
                             </span>
 
                             {{-- Job class (basename only) --}}
-                            <span class="text-xs font-mono text-gray-500 dark:text-gray-400 truncate max-w-[260px]" title="{{ $job['job_class'] }}">
+                            <span class="text-xs font-mono text-gray-600 dark:text-gray-400 truncate max-w-[260px]" title="{{ $job['job_class'] }}">
                                 {{ class_basename($job['job_class']) }}
                             </span>
 
@@ -78,52 +80,51 @@
 
                             {{-- Status badge --}}
                             @if($status === 'running')
-                                <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
-                                    <x-heroicon-m-arrow-path class="w-3 h-3 animate-spin" />
+                                <x-filament::badge color="info" icon="heroicon-m-arrow-path">
                                     Exécution…
-                                </span>
+                                </x-filament::badge>
                             @elseif($status === 'success')
-                                <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400">
-                                    <x-heroicon-m-check-circle class="w-3 h-3" />
+                                <x-filament::badge color="success" icon="heroicon-m-check-circle">
                                     Succès
-                                </span>
+                                </x-filament::badge>
                             @elseif($status === 'failed')
-                                <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400">
-                                    <x-heroicon-m-x-circle class="w-3 h-3" />
+                                <x-filament::badge color="danger" icon="heroicon-m-x-circle">
                                     Échec
-                                </span>
+                                </x-filament::badge>
                             @endif
 
                         </div>
 
                         {{-- Exception --}}
-                        <pre class="text-xs text-red-500 dark:text-red-400 whitespace-pre-wrap break-all font-mono leading-relaxed">{{ $job['exception'] }}</pre>
+                        <pre class="text-xs text-red-600 dark:text-red-400 whitespace-pre-wrap break-all font-mono leading-relaxed bg-red-50 dark:bg-red-950/20 rounded-lg p-3">{{ $job['exception'] }}</pre>
 
                     </div>
 
                     {{-- Action button --}}
-                    @if($status === 'success')
-                        <div class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20">
-                            <x-heroicon-m-check-circle class="w-3.5 h-3.5" />
-                            OK
-                        </div>
-                    @else
-                        <button
-                            wire:click="retry('{{ $jobId }}')"
-                            wire:loading.attr="disabled"
-                            wire:target="retry('{{ $jobId }}')"
-                            @disabled($status === 'running')
-                            class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors">
-                            <span wire:loading.remove wire:target="retry('{{ $jobId }}')" class="inline-flex items-center gap-1">
-                                <x-heroicon-m-arrow-path class="w-3.5 h-3.5" />
-                                Relancer
-                            </span>
-                            <span wire:loading wire:target="retry('{{ $jobId }}')" class="inline-flex items-center gap-1">
-                                <x-heroicon-m-arrow-path class="w-3.5 h-3.5 animate-spin" />
-                                …
-                            </span>
-                        </button>
-                    @endif
+                    <div class="shrink-0">
+                        @if($status === 'success')
+                            <x-filament::badge color="success" icon="heroicon-m-check-circle" size="lg">
+                                OK
+                            </x-filament::badge>
+                        @else
+                            <x-filament::button
+                                wire:click="retry('{{ $jobId }}')"
+                                wire:loading.attr="disabled"
+                                wire:target="retry('{{ $jobId }}')"
+                                @disabled($status === 'running')
+                                color="primary"
+                                size="sm"
+                                icon="heroicon-m-arrow-path">
+                                <span wire:loading.remove wire:target="retry('{{ $jobId }}')">
+                                    Relancer
+                                </span>
+                                <span wire:loading wire:target="retry('{{ $jobId }}')" class="inline-flex items-center gap-1">
+                                    <x-heroicon-m-arrow-path class="w-3.5 h-3.5 animate-spin" />
+                                    …
+                                </span>
+                            </x-filament::button>
+                        @endif
+                    </div>
 
                 </div>
             </div>
