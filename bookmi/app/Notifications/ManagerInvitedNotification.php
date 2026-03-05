@@ -28,7 +28,7 @@ class ManagerInvitedNotification extends Notification
             ?? trim(($profileUser->first_name ?? '') . ' ' . ($profileUser->last_name ?? ''))
             ?: 'Un talent';
 
-        $respondUrl = route('manager.invitations.respond', ['token' => $this->invitation->token]);
+        $respondUrl = route('invitations.respond', ['token' => $this->invitation->token]);
 
         return (new MailMessage())
             ->subject("Invitation manager BookMi — {$talentName}")
