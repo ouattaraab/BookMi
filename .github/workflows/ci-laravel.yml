@@ -1,6 +1,7 @@
 name: CI Laravel
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'bookmi/**'
