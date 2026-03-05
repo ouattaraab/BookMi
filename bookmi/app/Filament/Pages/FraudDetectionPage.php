@@ -2,8 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\LoginLockoutLog;
 use App\Models\TalentProfile;
 use App\Models\User;
+use App\Services\AuthService;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +35,9 @@ class FraudDetectionPage extends Page
 
     /** @var array<int, array<string, mixed>> */
     public array $suspectTalents = [];
+
+    /** @var array<int, \App\Models\LoginLockoutLog> */
+    public array $activeLockouts = [];
 
     public function mount(): void
     {
@@ -71,6 +76,30 @@ class FraudDetectionPage extends Page
             ->limit(50)
             ->get()
             ->toArray();
+
+        // Comptes bloqués (brute-force) — actifs uniquement
+        $this->activeLockouts = LoginLockoutLog::with('user:id,first_name,last_name')
+            ->whereNull('unlocked_at')
+            ->where('locked_until', '>', now())
+            ->orderByDesc('locked_at')
+            ->limit(100)
+            ->get()
+            ->all();
+    }
+
+    public function unlockAccount(int $lockoutId): void
+    {
+        $log = LoginLockoutLog::find($lockoutId);
+        if (! $log) {
+            return;
+        }
+
+        /** @var \App\Models\User $admin */
+        $admin = auth()->user();
+        app(AuthService::class)->unlockAccount($log->email, $admin->id);
+        $this->loadData();
+
+        Notification::make()->title("Compte {$log->email} déverrouillé.")->success()->send();
     }
 
     public function suspendUser(int $userId): void
