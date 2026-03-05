@@ -4,6 +4,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\User;
 use App\Services\AuthService;
+use App\Services\ConsentService;
 use App\Services\ReferralService;
 use App\Services\SmsService;
 use App\Services\TwoFactorService;
@@ -32,7 +33,9 @@ class AuthServiceTest extends TestCase
         $referralService = $this->mock(ReferralService::class);
         $referralService->shouldReceive('ensureCodeFor')->andReturn(new \App\Models\ReferralCode());
         $referralService->shouldReceive('applyCode')->andReturnNull();
-        $this->authService = new AuthService($this->smsService, $twoFactorService, $referralService);
+        $consentService = $this->mock(ConsentService::class);
+        $consentService->shouldReceive('recordConsents')->andReturnNull();
+        $this->authService = new AuthService($this->smsService, $twoFactorService, $referralService, $consentService);
     }
 
     #[Test]

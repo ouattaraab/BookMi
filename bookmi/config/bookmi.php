@@ -3,6 +3,11 @@
 return [
     'commission_rate' => 15, // Pourcentage frais BookMi (plateforme Côte d'Ivoire)
 
+    'consent' => [
+        'cgu_version'     => '2026-03-05',
+        'privacy_version' => '2026-03-05',
+    ],
+
     'escrow' => [
         'auto_confirm_hours' => 48, // Heures avant confirmation auto
         'payout_delay_hours' => 24, // Délai versement talent

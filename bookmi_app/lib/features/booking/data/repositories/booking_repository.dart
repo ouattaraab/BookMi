@@ -89,6 +89,7 @@ class BookingRepository {
     bool isExpress = false,
     int? travelCost,
     String? promoCode,
+    Map<String, bool>? consents,
   }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
@@ -107,6 +108,7 @@ class BookingRepository {
           if (travelCost != null && travelCost > 0) 'travel_cost': travelCost,
           if (promoCode != null && promoCode.isNotEmpty)
             'promo_code': promoCode,
+          if (consents != null && consents.isNotEmpty) 'consents': consents,
         },
       );
 

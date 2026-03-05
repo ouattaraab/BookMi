@@ -47,6 +47,8 @@ import 'package:bookmi_app/features/profile/presentation/pages/talent_profile_in
 import 'package:bookmi_app/features/profile/presentation/pages/portfolio_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/package_manager_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/two_factor_page.dart';
+import 'package:bookmi_app/features/consent/presentation/pages/consent_settings_page.dart';
+import 'package:bookmi_app/features/consent/presentation/pages/consent_update_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/auto_reply_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/referral_page.dart';
 import 'package:bookmi_app/features/profile/presentation/pages/notification_preferences_page.dart';
@@ -143,6 +145,14 @@ GoRouter buildAppRouter(
         name: RouteNames.managerInvitations,
         path: RoutePaths.managerInvitations,
         builder: (context, state) => const ManagerInvitationsPage(),
+      ),
+
+      // ── Consent update (re-consentement forcé) ───────────────────────────
+      GoRoute(
+        path: RoutePaths.consentUpdate,
+        name: RouteNames.consentUpdate,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) => ConsentUpdatePage.wrapped(context),
       ),
 
       // ── Maintenance / Force update (exempt from auth guard) ─────────────
@@ -506,6 +516,13 @@ GoRouter buildAppRouter(
                     name: RouteNames.profileReferral,
                     path: RoutePaths.profileReferral,
                     builder: (context, state) => const ReferralPage(),
+                  ),
+                  GoRoute(
+                    parentNavigatorKey: rootNavigatorKey,
+                    name: RouteNames.profileConsents,
+                    path: RoutePaths.profileConsents,
+                    builder: (context, state) =>
+                        ConsentSettingsPage.wrapped(context),
                   ),
                 ],
               ),

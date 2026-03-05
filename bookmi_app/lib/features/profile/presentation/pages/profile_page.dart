@@ -889,6 +889,12 @@ class _GeneralSection extends StatelessWidget {
           ],
           _Divider(),
           _MenuItem(
+            icon: Icons.verified_user_outlined,
+            label: 'Mes consentements',
+            onTap: () => context.pushNamed(RouteNames.profileConsents),
+          ),
+          _Divider(),
+          _MenuItem(
             icon: Icons.lock_outline,
             label: 'Double authentification',
             onTap: () => context.pushNamed(RouteNames.profileTwoFactor),

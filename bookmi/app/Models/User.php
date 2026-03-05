@@ -56,6 +56,11 @@ class User extends Authenticatable implements FilamentUser, HasName
         'avatar',
         'notification_preferences',
         'referred_by_code',
+        'cgu_version_accepted',
+        'marketing_opt_in',
+        'image_rights_opt_in',
+        'survey_opt_in',
+        'geolocation_opt_in',
     ];
 
     /**
@@ -90,6 +95,10 @@ class User extends Authenticatable implements FilamentUser, HasName
             'two_factor_enabled'      => 'boolean',
             'two_factor_confirmed_at' => 'datetime',
             'notification_preferences' => 'array',
+            'marketing_opt_in'         => 'boolean',
+            'image_rights_opt_in'      => 'boolean',
+            'survey_opt_in'            => 'boolean',
+            'geolocation_opt_in'       => 'boolean',
         ];
     }
 
@@ -177,6 +186,14 @@ class User extends Authenticatable implements FilamentUser, HasName
     public function referrals(): HasMany
     {
         return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
+    /**
+     * @return HasMany<\App\Models\UserConsent, $this>
+     */
+    public function consents(): HasMany
+    {
+        return $this->hasMany(UserConsent::class);
     }
 
     public function canAccessPanel(Panel $panel): bool

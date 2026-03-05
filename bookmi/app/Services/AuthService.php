@@ -8,6 +8,7 @@ use App\Events\UserLoggedOut;
 use App\Exceptions\AuthException;
 use App\Models\User;
 use App\Notifications\WelcomeNotification;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +20,7 @@ class AuthService
         private readonly SmsService $smsService,
         private readonly TwoFactorService $twoFactorService,
         private readonly ReferralService $referralService,
+        private readonly ConsentService $consentService,
     ) {
     }
 
@@ -30,9 +32,9 @@ class AuthService
      * creating their TalentProfile (POST /talent_profiles). The validation
      * at registration ensures the talent selects a valid category upfront.
      */
-    public function register(array $data): User
+    public function register(array $data, ?Request $request = null): User
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $request) {
             $user = User::create([
                 'first_name'        => $data['first_name'],
                 'last_name'         => $data['last_name'],
@@ -44,6 +46,11 @@ class AuthService
             ]);
 
             $user->assignRole($data['role']);
+
+            // Record consents provided at registration
+            if (! empty($data['consents']) && is_array($data['consents'])) {
+                $this->consentService->recordConsents($user, $data['consents'], $request);
+            }
 
             // Auto-generate a referral code for every new user
             $this->referralService->ensureCodeFor($user);

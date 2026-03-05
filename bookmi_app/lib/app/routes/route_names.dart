@@ -41,6 +41,9 @@ abstract final class RouteNames {
   // App update / maintenance
   static const appMaintenance = 'appMaintenance';
   static const appForceUpdate = 'appForceUpdate';
+  // Consentements
+  static const consentUpdate = 'consentUpdate';
+  static const profileConsents = 'profileConsents';
 }
 
 abstract final class RoutePaths {
@@ -85,4 +88,7 @@ abstract final class RoutePaths {
   // App update / maintenance
   static const appMaintenance = '/app-maintenance';
   static const appForceUpdate = '/app-force-update';
+  // Consentements
+  static const consentUpdate = '/consent/update';
+  static const profileConsents = 'consents';
 }

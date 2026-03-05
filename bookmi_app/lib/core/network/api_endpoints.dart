@@ -155,6 +155,11 @@ abstract final class ApiEndpoints {
   // Revenue certificate (talent)
   static const meRevenueCertificate = '/me/revenue_certificate';
 
+  // Consentements
+  static const consents = '/consents';
+  static const consentsUpdate = '/consents/update';
+  static const consentsReconsent = '/consents/reconsent';
+
   // 2FA
   static const auth2faStatus = '/auth/2fa/status';
   static const auth2faSetupTotp = '/auth/2fa/setup/totp';

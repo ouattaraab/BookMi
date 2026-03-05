@@ -58,6 +58,10 @@ class StoreBookingRequestRequest extends FormRequest
             'travel_cost'    => ['nullable', 'integer', 'min:0'],
             'is_express'     => ['nullable', 'boolean'],
             'promo_code'     => ['nullable', 'string', 'max:50'],
+            // Consentements transactionnels (optionnels — enregistrés si présents)
+            'consents'                                                      => ['nullable', 'array'],
+            'consents.' . \App\Enums\ConsentType::TransactionPayment->value      => ['nullable', 'boolean'],
+            'consents.' . \App\Enums\ConsentType::TransactionCancellation->value => ['nullable', 'boolean'],
         ];
     }
 

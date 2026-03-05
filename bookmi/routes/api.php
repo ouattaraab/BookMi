@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ConsentController;
 use App\Http\Controllers\Api\V1\AppEventController;
 use App\Http\Controllers\Api\V1\AppVersionController;
 use App\Http\Controllers\Api\V1\DownloadController;
@@ -97,6 +98,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/talents/{talent}/calendar', [CalendarSlotController::class, 'index'])->name('calendar.index');
 
     Route::middleware('auth:sanctum')->group(function () {
+        // Consentements — reconsent exclu du middleware CheckCguVersion
+        Route::get('/consents', [ConsentController::class, 'index'])->middleware('check.cgu')->name('consents.index');
+        Route::patch('/consents/update', [ConsentController::class, 'update'])->middleware('check.cgu')->name('consents.update');
+        Route::post('/consents/reconsent', [ConsentController::class, 'reconsent'])->name('consents.reconsent');
+
         Route::post('/auth/logout', [AuthController::class, 'logout'])
             ->middleware('throttle:auth')
             ->name('auth.logout');

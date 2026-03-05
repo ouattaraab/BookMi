@@ -10,6 +10,7 @@ use App\Http\Resources\BookingRequestResource;
 use App\Jobs\GenerateContractPdf;
 use App\Models\BookingRequest;
 use App\Services\BookingService;
+use App\Services\ConsentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -21,6 +22,7 @@ class BookingRequestController extends BaseController
 {
     public function __construct(
         private readonly BookingService $bookingService,
+        private readonly ConsentService $consentService,
     ) {
     }
 
@@ -62,9 +64,17 @@ class BookingRequestController extends BaseController
      */
     public function store(StoreBookingRequestRequest $request): JsonResponse
     {
+        $validated = $request->validated();
+
+        // Record transactional consents if provided
+        $transactionalConsents = $validated['consents'] ?? null;
+        if (is_array($transactionalConsents) && ! empty($transactionalConsents)) {
+            $this->consentService->recordConsents($request->user(), $transactionalConsents, $request);
+        }
+
         $booking = $this->bookingService->createBookingRequest(
             $request->user(),
-            $request->validated(),
+            $validated,
         );
 
         $booking->load($this->bookingRelations());

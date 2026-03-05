@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'manager'           => \App\Http\Middleware\EnsureUserIsManager::class,
             'role'              => \App\Http\Middleware\EnsureRole::class,
             'paystack-webhook'  => \App\Http\Middleware\ValidatePaystackSignature::class,
+            'check.cgu'         => \App\Http\Middleware\Api\CheckCguVersion::class,
         ]);
 
         $middleware->web(append: [\App\Http\Middleware\CheckMaintenanceMode::class]);

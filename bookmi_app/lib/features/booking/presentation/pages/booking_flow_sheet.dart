@@ -63,6 +63,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   int _currentStep = 0;
   static const int _totalSteps = 3;
 
+  // Transactional consents (step 3)
+  bool _consentPayment = false;
+  bool _consentCancellation = false;
+
   // Step 1
   int? _selectedPackageId;
   Map<String, dynamic>? _selectedPackage;
@@ -147,7 +151,8 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             (_selectedDate != null &&
                 _selectedTime != null &&
                 _location.trim().isNotEmpty),
-      2 => true,
+      // Step 2 (recap): require transactional consents
+      2 => _consentPayment && _consentCancellation,
       _ => false,
     };
   }
@@ -199,6 +204,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
         isExpress: _isExpress,
         travelCost: _travelCost > 0 ? _travelCost : null,
         promoCode: _appliedPromoCode,
+        consents: {
+          'transaction_payment': _consentPayment,
+          'transaction_cancellation': _consentCancellation,
+        },
       ),
     );
   }
@@ -384,42 +393,60 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
               ),
       2 => BlocBuilder<BookingFlowBloc, BookingFlowState>(
         builder: (context, state) {
-          return Step3Recap(
-            packageName: (() {
-              final attrs =
-                  _selectedPackage?['attributes'] as Map<String, dynamic>? ??
-                  _selectedPackage ??
-                  {};
-              return attrs['name'] as String? ?? '';
-            })(),
-            cachetAmount: _cachetAmount,
-            commissionAmount: _commissionAmount,
-            totalAmount: _totalAmount,
-            travelCost: _travelCost,
-            eventDate: _formattedDate,
-            eventLocation: _isMicroPackage ? 'Livraison digitale' : _location,
-            enableExpress: widget.enableExpress,
-            isExpress: _isExpress,
-            message: _message,
-            onExpressChanged: (v) => setState(() => _isExpress = v),
-            onMessageChanged: (v) => setState(() => _message = v),
-            appliedPromoCode: _appliedPromoCode,
-            discountAmount: _discountAmount,
-            promoLoading: state is BookingFlowPromoValidating,
-            onPromoCodeChanged: (v) => setState(() => _promoCodeInput = v),
-            onApplyPromo: _promoCodeInput.trim().isEmpty
-                ? null
-                : () => context.read<BookingFlowBloc>().add(
-                    PromoCodeValidationRequested(
-                      code: _promoCodeInput.trim(),
-                      bookingAmount: _totalAmount,
-                    ),
-                  ),
-            onClearPromo: () => setState(() {
-              _appliedPromoCode = null;
-              _discountAmount = 0;
-              _promoCodeInput = '';
-            }),
+          return SingleChildScrollView(
+            padding: EdgeInsets.zero,
+            child: Column(
+              children: [
+                Step3Recap(
+                  packageName: (() {
+                    final attrs =
+                        _selectedPackage?['attributes'] as Map<String, dynamic>? ??
+                        _selectedPackage ??
+                        {};
+                    return attrs['name'] as String? ?? '';
+                  })(),
+                  cachetAmount: _cachetAmount,
+                  commissionAmount: _commissionAmount,
+                  totalAmount: _totalAmount,
+                  travelCost: _travelCost,
+                  eventDate: _formattedDate,
+                  eventLocation:
+                      _isMicroPackage ? 'Livraison digitale' : _location,
+                  enableExpress: widget.enableExpress,
+                  isExpress: _isExpress,
+                  message: _message,
+                  onExpressChanged: (v) => setState(() => _isExpress = v),
+                  onMessageChanged: (v) => setState(() => _message = v),
+                  appliedPromoCode: _appliedPromoCode,
+                  discountAmount: _discountAmount,
+                  promoLoading: state is BookingFlowPromoValidating,
+                  onPromoCodeChanged: (v) =>
+                      setState(() => _promoCodeInput = v),
+                  onApplyPromo: _promoCodeInput.trim().isEmpty
+                      ? null
+                      : () => context.read<BookingFlowBloc>().add(
+                            PromoCodeValidationRequested(
+                              code: _promoCodeInput.trim(),
+                              bookingAmount: _totalAmount,
+                            ),
+                          ),
+                  onClearPromo: () => setState(() {
+                    _appliedPromoCode = null;
+                    _discountAmount = 0;
+                    _promoCodeInput = '';
+                  }),
+                ),
+                // ── Consentements transactionnels ──────────────────────────
+                _TransactionalConsents(
+                  paymentAccepted: _consentPayment,
+                  cancellationAccepted: _consentCancellation,
+                  onPaymentChanged: (v) =>
+                      setState(() => _consentPayment = v),
+                  onCancellationChanged: (v) =>
+                      setState(() => _consentCancellation = v),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -584,6 +611,119 @@ class _MicroDeliveryStep extends StatelessWidget {
             title: 'Paiement sécurisé',
             subtitle:
                 'Le cachet est versé au talent uniquement après votre confirmation de réception.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Transactional consent checkboxes shown in step 3 (recap) before submission.
+class _TransactionalConsents extends StatelessWidget {
+  const _TransactionalConsents({
+    required this.paymentAccepted,
+    required this.cancellationAccepted,
+    required this.onPaymentChanged,
+    required this.onCancellationChanged,
+  });
+
+  final bool paymentAccepted;
+  final bool cancellationAccepted;
+  final ValueChanged<bool> onPaymentChanged;
+  final ValueChanged<bool> onCancellationChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(
+        BookmiSpacing.spaceBase,
+        0,
+        BookmiSpacing.spaceBase,
+        BookmiSpacing.spaceBase,
+      ),
+      padding: const EdgeInsets.all(BookmiSpacing.spaceMd),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Consentements requis *',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _ConsentCheckTile(
+            value: paymentAccepted,
+            onChanged: onPaymentChanged,
+            label:
+                "J'accepte d'être débité du montant total indiqué ci-dessus.",
+          ),
+          const SizedBox(height: 4),
+          _ConsentCheckTile(
+            value: cancellationAccepted,
+            onChanged: onCancellationChanged,
+            label:
+                "J'accepte la politique d'annulation et les frais associés.",
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConsentCheckTile extends StatelessWidget {
+  const _ConsentCheckTile({
+    required this.value,
+    required this.onChanged,
+    required this.label,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: Checkbox(
+              value: value,
+              onChanged: (v) => onChanged(v ?? false),
+              activeColor: BookmiColors.brandBlue,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              side: BorderSide(
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  fontSize: 12,
+                  height: 1.4,
+                ),
+              ),
+            ),
           ),
         ],
       ),

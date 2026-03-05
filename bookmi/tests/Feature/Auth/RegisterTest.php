@@ -22,6 +22,22 @@ class RegisterTest extends TestCase
         $this->seed(RoleAndPermissionSeeder::class);
     }
 
+    /** @return array<string, bool> */
+    private function baseConsents(): array
+    {
+        return [
+            'cgu_privacy'             => true,
+            'data_processing'         => true,
+            'age_minimum'             => true,
+            'surveillance_moderation' => true,
+            'platform_communication'  => true,
+            'dispute_resolution'      => true,
+            'liability_disclaimer'    => true,
+            'indemnification'         => true,
+            'collective_waiver'       => true,
+        ];
+    }
+
     private function validClientData(array $overrides = []): array
     {
         return array_merge([
@@ -32,6 +48,10 @@ class RegisterTest extends TestCase
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => 'client',
+            'consents' => array_merge($this->baseConsents(), [
+                'non_client_liability' => true,
+                'cancellation_policy'  => true,
+            ]),
         ], $overrides);
     }
 
@@ -48,6 +68,12 @@ class RegisterTest extends TestCase
             'password_confirmation' => 'password123',
             'role' => 'talent',
             'category_id' => $category->id,
+            'consents' => array_merge($this->baseConsents(), [
+                'profile_publication'    => true,
+                'commission_escrow'      => true,
+                'fiscal_obligations'     => true,
+                'reservation_engagement' => true,
+            ]),
         ], $overrides);
     }
 

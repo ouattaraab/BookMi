@@ -17,6 +17,7 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     this.isExpress = false,
     this.travelCost,
     this.promoCode,
+    this.consents,
   });
 
   final int talentProfileId;
@@ -40,6 +41,9 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
 
   /// Applied promo code (uppercase), or null if none.
   final String? promoCode;
+
+  /// Transactional consents recorded at booking time.
+  final Map<String, bool>? consents;
 
   @override
   bool operator ==(Object other) =>

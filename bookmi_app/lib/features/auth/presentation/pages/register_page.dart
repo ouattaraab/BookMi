@@ -37,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _confirmPasswordController = TextEditingController();
 
   String _role = 'client';
-  bool _termsAccepted = false;
+  final Map<String, bool> _consents = {};
   final List<int> _selectedCategoryIds = [];
   List<Map<String, dynamic>> _categories = [];
   @override
@@ -70,15 +70,50 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
+  // Required consents for all roles
+  static const _requiredKeys = [
+    'cgu_privacy',
+    'data_processing',
+    'age_minimum',
+    'surveillance_moderation',
+    'platform_communication',
+    'dispute_resolution',
+    'liability_disclaimer',
+    'indemnification',
+    'collective_waiver',
+  ];
+
+  // Role-specific required consents
+  static const _requiredByRole = {
+    'talent': [
+      'profile_publication',
+      'commission_escrow',
+      'fiscal_obligations',
+      'reservation_engagement',
+    ],
+    'client': ['non_client_liability', 'cancellation_policy'],
+    'manager': ['manager_mandate'],
+  };
+
+  bool get _allRequiredAccepted {
+    for (final key in _requiredKeys) {
+      if (_consents[key] != true) return false;
+    }
+    for (final key in _requiredByRole[_role] ?? []) {
+      if (_consents[key] != true) return false;
+    }
+    return true;
+  }
+
   void _onSubmit() {
     if (!_formKey.currentState!.validate()) return;
-    if (!_termsAccepted) {
+    if (!_allRequiredAccepted) {
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
           const SnackBar(
             content: Text(
-              "Veuillez accepter les conditions d'utilisation pour continuer.",
+              'Veuillez accepter tous les consentements obligatoires.',
             ),
             backgroundColor: Color(0xFFE53E3E),
           ),
@@ -96,6 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
       'password': _passwordController.text,
       'password_confirmation': _confirmPasswordController.text,
       'role': _role,
+      'consents': Map<String, dynamic>.from(_consents),
     };
 
     if (_role == 'talent') {
@@ -301,10 +337,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             _buildCategoryMultiSelect(isDark),
                           ],
                           const SizedBox(height: BookmiSpacing.spaceLg),
-                          _TermsCheckbox(
-                            value: _termsAccepted,
-                            onChanged: (v) =>
-                                setState(() => _termsAccepted = v ?? false),
+                          _ConsentSection(
+                            role: _role,
+                            consents: _consents,
+                            onConsentChanged: (key, value) =>
+                                setState(() => _consents[key] = value),
                           ),
                           const SizedBox(height: BookmiSpacing.spaceBase),
                           BlocBuilder<AuthBloc, AuthState>(
@@ -495,75 +532,308 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 }
 
-class _TermsCheckbox extends StatelessWidget {
-  const _TermsCheckbox({required this.value, required this.onChanged});
+/// Grouped consent checkboxes for registration.
+class _ConsentSection extends StatelessWidget {
+  const _ConsentSection({
+    required this.role,
+    required this.consents,
+    required this.onConsentChanged,
+  });
 
-  final bool value;
-  final ValueChanged<bool?> onChanged;
+  final String role;
+  final Map<String, bool> consents;
+  final void Function(String key, bool value) onConsentChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: BookmiColors.brandBlue,
-          side: const BorderSide(color: BookmiColors.glassBorder, width: 1.5),
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: VisualDensity.compact,
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: GestureDetector(
-            onTap: () => onChanged(!value),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: RichText(
-                text: TextSpan(
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                  ),
-                  children: [
-                    const TextSpan(text: "J'accepte les "),
-                    TextSpan(
-                      text: "Conditions d'utilisation",
-                      style: const TextStyle(
-                        color: BookmiColors.brandBlueLight,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => launchUrl(
-                          Uri.parse(
-                            'https://bookmi.click/conditions-utilisation',
-                          ),
-                        ),
-                    ),
-                    const TextSpan(text: ' et la '),
-                    TextSpan(
-                      text: 'Politique de confidentialité',
-                      style: const TextStyle(
-                        color: BookmiColors.brandBlueLight,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () => launchUrl(
-                          Uri.parse(
-                            'https://bookmi.click/politique-confidentialite',
-                          ),
-                        ),
-                    ),
-                  ],
-                ),
+        // ── Section 1: Obligatoires (tous) ──
+        _sectionTitle('Consentements obligatoires *'),
+        const SizedBox(height: 6),
+        _ConsentRow(
+          consentKey: 'cgu_privacy',
+          value: consents['cgu_privacy'] ?? false,
+          onChanged: onConsentChanged,
+          child: RichText(
+            text: TextSpan(
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 12.5,
+                height: 1.4,
               ),
+              children: [
+                const TextSpan(text: "J'accepte les "),
+                TextSpan(
+                  text: "CGU",
+                  style: const TextStyle(
+                    color: BookmiColors.brandBlueLight,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => launchUrl(
+                          Uri.parse(
+                              'https://bookmi.click/conditions-utilisation'),
+                        ),
+                ),
+                const TextSpan(text: ' et la '),
+                TextSpan(
+                  text: 'politique de confidentialité',
+                  style: const TextStyle(
+                    color: BookmiColors.brandBlueLight,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () => launchUrl(
+                          Uri.parse(
+                              'https://bookmi.click/politique-confidentialite'),
+                        ),
+                ),
+                const TextSpan(text: '.'),
+              ],
             ),
           ),
         ),
+        _ConsentRow(
+          consentKey: 'data_processing',
+          value: consents['data_processing'] ?? false,
+          onChanged: onConsentChanged,
+          label:
+              "J'accepte le traitement de mes données personnelles (loi n°2013-450).",
+        ),
+        _ConsentRow(
+          consentKey: 'age_minimum',
+          value: consents['age_minimum'] ?? false,
+          onChanged: onConsentChanged,
+          label: 'Je certifie avoir au moins 18 ans.',
+        ),
+        // ── Section 2: Règles de la plateforme ──
+        const SizedBox(height: 10),
+        _sectionTitle('Règles de la plateforme *'),
+        const SizedBox(height: 6),
+        _ConsentRow(
+          consentKey: 'surveillance_moderation',
+          value: consents['surveillance_moderation'] ?? false,
+          onChanged: onConsentChanged,
+          label:
+              "J'accepte la surveillance et la modération du contenu par BookMi.",
+        ),
+        _ConsentRow(
+          consentKey: 'platform_communication',
+          value: consents['platform_communication'] ?? false,
+          onChanged: onConsentChanged,
+          label:
+              "J'accepte de recevoir des communications liées à la plateforme.",
+        ),
+        _ConsentRow(
+          consentKey: 'dispute_resolution',
+          value: consents['dispute_resolution'] ?? false,
+          onChanged: onConsentChanged,
+          label:
+              "J'accepte la clause compromissoire de résolution des litiges.",
+        ),
+        _ConsentRow(
+          consentKey: 'liability_disclaimer',
+          value: consents['liability_disclaimer'] ?? false,
+          onChanged: onConsentChanged,
+          label: "J'accepte la limitation de responsabilité de BookMi.",
+        ),
+        _ConsentRow(
+          consentKey: 'indemnification',
+          value: consents['indemnification'] ?? false,
+          onChanged: onConsentChanged,
+          label:
+              "J'accepte la clause d'indemnisation en cas de réclamation de tiers.",
+        ),
+        _ConsentRow(
+          consentKey: 'collective_waiver',
+          value: consents['collective_waiver'] ?? false,
+          onChanged: onConsentChanged,
+          label:
+              "J'accepte la renonciation aux actions collectives contre BookMi.",
+        ),
+
+        // ── Section 3: Rôle-spécifique ──
+        if (role == 'talent') ...[
+          const SizedBox(height: 10),
+          _sectionTitle('Consentements Talent *'),
+          const SizedBox(height: 6),
+          _ConsentRow(
+            consentKey: 'profile_publication',
+            value: consents['profile_publication'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "J'autorise la publication de mon profil sur la plateforme BookMi.",
+          ),
+          _ConsentRow(
+            consentKey: 'commission_escrow',
+            value: consents['commission_escrow'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "J'accepte le système de commission (15%) et de séquestre des paiements.",
+          ),
+          _ConsentRow(
+            consentKey: 'fiscal_obligations',
+            value: consents['fiscal_obligations'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "Je reconnais mes obligations fiscales liées aux revenus perçus via BookMi.",
+          ),
+          _ConsentRow(
+            consentKey: 'reservation_engagement',
+            value: consents['reservation_engagement'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "Je m'engage à honorer les réservations confirmées sur la plateforme.",
+          ),
+        ],
+        if (role == 'client') ...[
+          const SizedBox(height: 10),
+          _sectionTitle('Consentements Client *'),
+          const SizedBox(height: 6),
+          _ConsentRow(
+            consentKey: 'non_client_liability',
+            value: consents['non_client_liability'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "J'accepte que BookMi ne soit pas responsable des prestations réalisées par les talents.",
+          ),
+          _ConsentRow(
+            consentKey: 'cancellation_policy',
+            value: consents['cancellation_policy'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "J'accepte la politique d'annulation et les frais associés.",
+          ),
+        ],
+        if (role == 'manager') ...[
+          const SizedBox(height: 10),
+          _sectionTitle('Consentements Manager *'),
+          const SizedBox(height: 6),
+          _ConsentRow(
+            consentKey: 'manager_mandate',
+            value: consents['manager_mandate'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "J'accepte les conditions du mandat de gestion pour les talents que je représente.",
+          ),
+        ],
+
+        // ── Section 4: Opt-in ──
+        const SizedBox(height: 10),
+        _sectionTitle('Communications (facultatif)'),
+        const SizedBox(height: 6),
+        _ConsentRow(
+          consentKey: 'push_notifications',
+          value: consents['push_notifications'] ?? false,
+          onChanged: onConsentChanged,
+          label: 'Recevoir des notifications push pour mes réservations.',
+          required: false,
+        ),
+        _ConsentRow(
+          consentKey: 'marketing',
+          value: consents['marketing'] ?? false,
+          onChanged: onConsentChanged,
+          label: 'Recevoir des offres et actualités BookMi.',
+          required: false,
+        ),
+        if (role == 'talent')
+          _ConsentRow(
+            consentKey: 'image_rights',
+            value: consents['image_rights'] ?? false,
+            onChanged: onConsentChanged,
+            label:
+                "Autoriser BookMi à utiliser mes photos à des fins promotionnelles.",
+            required: false,
+          ),
+        _ConsentRow(
+          consentKey: 'satisfaction_surveys',
+          value: consents['satisfaction_surveys'] ?? false,
+          onChanged: onConsentChanged,
+          label: 'Participer aux enquêtes de satisfaction BookMi.',
+          required: false,
+        ),
       ],
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.7),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.3,
+      ),
+    );
+  }
+}
+
+class _ConsentRow extends StatelessWidget {
+  const _ConsentRow({
+    required this.consentKey,
+    required this.value,
+    required this.onChanged,
+    this.label,
+    this.child,
+    this.required = true,
+  });
+
+  final String consentKey;
+  final bool value;
+  final void Function(String key, bool value) onChanged;
+  final String? label;
+  final Widget? child;
+  final bool required;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: Checkbox(
+              value: value,
+              onChanged: (v) => onChanged(consentKey, v ?? false),
+              activeColor: BookmiColors.brandBlue,
+              side: BorderSide(
+                color: required
+                    ? Colors.white.withValues(alpha: 0.5)
+                    : Colors.white.withValues(alpha: 0.25),
+                width: 1.5,
+              ),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => onChanged(consentKey, !value),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 5),
+                child: child ??
+                    Text(
+                      label ?? '',
+                      style: TextStyle(
+                        color: Colors.white.withValues(
+                          alpha: required ? 0.85 : 0.6,
+                        ),
+                        fontSize: 12.5,
+                        height: 1.4,
+                      ),
+                    ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

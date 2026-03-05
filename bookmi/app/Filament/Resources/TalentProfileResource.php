@@ -400,7 +400,9 @@ class TalentProfileResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            \App\Filament\Resources\UserResource\RelationManagers\ConsentsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
