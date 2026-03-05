@@ -45,6 +45,7 @@ use App\Http\Controllers\Api\V1\WithdrawalRequestController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->group(function () {
+    // ── Santé + version ──────────────────────────────────────────────────
     Route::get('/health', HealthCheckController::class)->name('health');
 
     // ── Public: app version + maintenance status ──────────────────────────

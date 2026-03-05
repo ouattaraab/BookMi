@@ -48,39 +48,50 @@ jobs:
           ssh-keyscan -p 65002 bookmi.click >> ~/.ssh/known_hosts
 
       # ── Déployer le code PHP ───────────────────────────────────────────
-      # La racine de l'app Laravel est à /home/u726808002/domains/bookmi.click/
-      # Le git repo sert uniquement de source (bookmi_app/bookmi/ → domains/bookmi.click/)
+      # Stratégie :
+      #   1. bookmi_app/ = repo git + build complet (composer, artisan)
+      #   2. domains/bookmi.click/ = répertoire servi par le web server
+      #   On synchronise bookmi_app/ → domains/bookmi.click/ après le build
       - name: Deploy PHP code
         run: |
           ssh -p 65002 u726808002@bookmi.click '
             set -e
-
-            # 1. Pull latest code in git repo
             cd /home/u726808002/bookmi_app
+
+            # 1. Pull latest code (updates bookmi/ subdirectory)
             git pull origin main
 
-            # 2. Sync bookmi/ app files to the actual web app directory
-            #    Exclude: vendor (managed by composer), storage (runtime data),
-            #    .env (server config), node_modules, .git
+            # 2. Sync bookmi/ app files into bookmi_app/ (build environment)
             rsync -a --exclude="vendor/" --exclude="storage/" --exclude=".env" \
               --exclude="node_modules/" --exclude=".git/" \
-              bookmi/ /home/u726808002/domains/bookmi.click/
+              bookmi/ ./
 
-            # 3. Install/update PHP dependencies in web app directory
-            cd /home/u726808002/domains/bookmi.click
+            # 3. Install/update PHP dependencies at bookmi_app/
             composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-sodium --quiet
 
-            # 4. Run migrations & clear caches
+            # 4. Run migrations & clear caches at bookmi_app/
             php artisan migrate --force
             php artisan optimize:clear
             php artisan optimize
 
-            # 5. Create storage symlink — exec() disabled on shared hosting so skip gracefully
+            # 5. Create storage symlink
             php artisan storage:link --force 2>/dev/null || true
 
-            # 6. Verify consent routes are registered in cache
+            # 6. Sync the fully-built app to the actual web-served directory
+            #    (domains/bookmi.click/ is where the web server loads PHP from)
+            #    Preserve: .env and storage/ at destination; exclude git source
+            rsync -a \
+              --exclude="bookmi/" \
+              --exclude="storage/" \
+              --exclude=".env" \
+              --exclude=".git/" \
+              --exclude="node_modules/" \
+              /home/u726808002/bookmi_app/ \
+              /home/u726808002/domains/bookmi.click/
+
+            # 7. Verify consent routes in the build environment
             echo "--- Registered routes (consent) ---"
-            php artisan route:list --path=consents 2>&1 | head -20 || echo "route:list unavailable"
+            php artisan route:list --path=consents 2>&1 | head -20 || echo "unavailable"
             echo "--- End routes ---"
 
             echo "PHP deploy OK"
@@ -94,15 +105,17 @@ jobs:
             bookmi/public/build/ \
             u726808002@bookmi.click:/home/u726808002/domains/bookmi.click/public_html/build/
 
-      # ── Synchroniser le manifest vers le répertoire public Laravel ─────
-      - name: Sync manifest to Laravel public path
+      # ── Synchroniser le manifest vers les deux emplacements publics ────
+      - name: Sync manifest to public paths
         run: |
           ssh -p 65002 u726808002@bookmi.click '
-            # Le manifest Vite est dans public_html/build/ (web root)
-            # Il doit aussi être accessible depuis le dossier public/ de Laravel
-            mkdir -p /home/u726808002/domains/bookmi.click/public/build/
-            cp /home/u726808002/domains/bookmi.click/public_html/build/manifest.json \
-               /home/u726808002/domains/bookmi.click/public/build/manifest.json 2>/dev/null || true
+            SRC=/home/u726808002/domains/bookmi.click/public_html/build/manifest.json
+            # Copier vers bookmi_app/public/build/ (référence CLI)
+            mkdir -p /home/u726808002/bookmi_app/public/build/
+            cp "$SRC" /home/u726808002/bookmi_app/public/build/manifest.json 2>/dev/null || true
+            # Copier vers domains/bookmi.click/public/build/ (si public/ existe)
+            mkdir -p /home/u726808002/domains/bookmi.click/public/build/ 2>/dev/null || true
+            cp "$SRC" /home/u726808002/domains/bookmi.click/public/build/manifest.json 2>/dev/null || true
             echo "Manifest synced OK"
           '
 
