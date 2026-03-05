@@ -48,23 +48,26 @@ jobs:
           ssh-keyscan -p 65002 bookmi.click >> ~/.ssh/known_hosts
 
       # ── Déployer le code PHP ───────────────────────────────────────────
+      # La racine de l'app Laravel est à /home/u726808002/domains/bookmi.click/
+      # Le git repo sert uniquement de source (bookmi_app/bookmi/ → domains/bookmi.click/)
       - name: Deploy PHP code
         run: |
           ssh -p 65002 u726808002@bookmi.click '
             set -e
-            cd /home/u726808002/bookmi_app
 
-            # 1. Pull latest code (updates bookmi/ subdirectory)
+            # 1. Pull latest code in git repo
+            cd /home/u726808002/bookmi_app
             git pull origin main
 
-            # 2. Sync bookmi/ app files to root (where webserver looks)
+            # 2. Sync bookmi/ app files to the actual web app directory
             #    Exclude: vendor (managed by composer), storage (runtime data),
             #    .env (server config), node_modules, .git
             rsync -a --exclude="vendor/" --exclude="storage/" --exclude=".env" \
               --exclude="node_modules/" --exclude=".git/" \
-              bookmi/ ./
+              bookmi/ /home/u726808002/domains/bookmi.click/
 
-            # 3. Install/update PHP dependencies at root
+            # 3. Install/update PHP dependencies in web app directory
+            cd /home/u726808002/domains/bookmi.click
             composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-sodium --quiet
 
             # 4. Run migrations & clear caches
@@ -76,7 +79,7 @@ jobs:
             php artisan storage:link --force 2>/dev/null || true
 
             # 6. Verify consent routes are registered in cache
-            echo "--- Registered consent routes ---"
+            echo "--- Registered routes (consent) ---"
             php artisan route:list --path=consents 2>&1 | head -20 || echo "route:list unavailable"
             echo "--- End routes ---"
 
@@ -91,12 +94,15 @@ jobs:
             bookmi/public/build/ \
             u726808002@bookmi.click:/home/u726808002/domains/bookmi.click/public_html/build/
 
-      # ── Synchroniser le manifest vers le chemin public Laravel ────────
-      - name: Sync manifest to app public path
+      # ── Synchroniser le manifest vers le répertoire public Laravel ─────
+      - name: Sync manifest to Laravel public path
         run: |
           ssh -p 65002 u726808002@bookmi.click '
+            # Le manifest Vite est dans public_html/build/ (web root)
+            # Il doit aussi être accessible depuis le dossier public/ de Laravel
+            mkdir -p /home/u726808002/domains/bookmi.click/public/build/
             cp /home/u726808002/domains/bookmi.click/public_html/build/manifest.json \
-               /home/u726808002/bookmi_app/public/build/manifest.json
+               /home/u726808002/domains/bookmi.click/public/build/manifest.json 2>/dev/null || true
             echo "Manifest synced OK"
           '
 

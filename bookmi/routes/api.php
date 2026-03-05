@@ -47,18 +47,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/health', HealthCheckController::class)->name('health');
 
-    // ── DEBUG TEMP — À SUPPRIMER ──────────────────────────────────────────
-    Route::get('/debug/env', function () {
-        $cachedPath = app()->getCachedRoutesPath();
-
-        return response()->json([
-            'base_path'          => base_path(),
-            'routes_cache_path'  => $cachedPath,
-            'routes_cache_exists' => file_exists($cachedPath),
-            'php_version'        => PHP_VERSION,
-        ]);
-    });
-
     // ── Public: app version + maintenance status ──────────────────────────
     Route::get('/app/version', [AppVersionController::class, 'index'])->name('app.version');
 
