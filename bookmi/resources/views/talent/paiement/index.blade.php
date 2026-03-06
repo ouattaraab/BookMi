@@ -375,6 +375,9 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
                 </div>
             </div>
+            <p style="font-size:0.70rem;color:#8A8278;font-style:italic;margin:8px 0 0;padding:0 4px;">
+                Paiements gérés par Paystack, prestataire de paiement agréé. BookMi ne conserve pas vos fonds.
+            </p>
         </div>
 
         {{-- ── Historique EN PREMIER (quand il existe) ── --}}

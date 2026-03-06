@@ -9,7 +9,7 @@
                     {{ number_format($availableBalance, 0, ',', '.') }} XOF
                 </p>
             </div>
-            <x-heroicon-o-wallet class="w-10 h-10 text-primary-400" />
+            <x-heroicon-o-building-library class="w-10 h-10 text-primary-400" />
         </div>
     @endif
 

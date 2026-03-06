@@ -298,7 +298,7 @@ class _SummaryGrid extends StatelessWidget {
         _HighlightCard(
           icon: Icons.account_balance_wallet_rounded,
           label: 'Solde disponible',
-          subtitle: 'Montant retirable',
+          subtitle: 'Disponible pour virement',
           amount: soldeCompte,
           color: BookmiColors.success,
         ),

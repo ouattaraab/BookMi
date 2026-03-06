@@ -1125,6 +1125,15 @@ class _BalanceCard extends StatelessWidget {
               fontSize: 28,
             ),
           ),
+          const SizedBox(height: 10),
+          Text(
+            'Paiements gérés par Paystack, prestataire agréé. BookMi ne conserve pas vos fonds.',
+            style: GoogleFonts.manrope(
+              color: Colors.white.withValues(alpha: 0.55),
+              fontSize: 10,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
         ],
       ),
     );
