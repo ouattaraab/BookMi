@@ -8,7 +8,8 @@ class EnvProduction implements Env {
   String get paystackPublicKey => 'pk_live_xxx';
 
   @override
-  String get sentryDsn => '';
+  String get sentryDsn =>
+      'https://6381d60ab6163984665fe5fb7fe95da9@o4510991032975360.ingest.de.sentry.io/4510996942618704';
 
   @override
   String get appName => 'BookMi';
