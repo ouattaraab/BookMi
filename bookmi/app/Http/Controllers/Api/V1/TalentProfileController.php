@@ -9,6 +9,7 @@ use App\Http\Requests\Api\UpdatePayoutMethodRequest;
 use App\Http\Requests\Api\UpdateTalentProfileRequest;
 use App\Http\Resources\TalentProfileResource;
 use App\Jobs\NotifyTalentFollowers;
+use App\Models\BookingRequest;
 use App\Models\TalentProfile;
 use App\Services\AdminNotificationService;
 use App\Services\TalentProfileService;
@@ -56,6 +57,11 @@ class TalentProfileController extends BaseController
                 404,
             );
         }
+
+        // Dynamic count: exclude only cancelled/rejected so accepted/paid/confirmed count too
+        $profile->total_bookings = BookingRequest::where('talent_profile_id', $profile->id)
+            ->whereNotIn('status', ['cancelled', 'rejected'])
+            ->count();
 
         return $this->successResponse(
             new TalentProfileResource($profile->load('category', 'subcategory', 'categories', 'managers:id,first_name,last_name,email')),

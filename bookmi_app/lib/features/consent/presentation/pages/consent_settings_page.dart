@@ -1,3 +1,4 @@
+import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
@@ -6,6 +7,8 @@ import 'package:bookmi_app/features/consent/bloc/consent_state.dart';
 import 'package:bookmi_app/features/consent/data/repositories/consent_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Page de gestion des consentements opt-in (/profile/consents).
 class ConsentSettingsPage extends StatelessWidget {
@@ -23,12 +26,17 @@ class ConsentSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1117),
+      backgroundColor: BookmiColors.backgroundDeep,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D1117),
-        title: const Text(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
           'Mes consentements',
-          style: TextStyle(color: Colors.white),
+          style: GoogleFonts.manrope(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 17,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -37,19 +45,38 @@ class ConsentSettingsPage extends StatelessWidget {
           if (state is ConsentSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(
+                  state.message,
+                  style: GoogleFonts.manrope(color: Colors.white),
+                ),
                 backgroundColor: BookmiColors.success,
               ),
             );
             // Refresh
             context.read<ConsentCubit>().fetchConsents();
           } else if (state is ConsentFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: BookmiColors.error,
-              ),
-            );
+            if (state.code == 'CGU_REQUIRED') {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Veuillez accepter les nouvelles CGU pour modifier vos préférences.',
+                    style: GoogleFonts.manrope(color: Colors.white),
+                  ),
+                  backgroundColor: BookmiColors.warning,
+                ),
+              );
+              context.go(RoutePaths.consentUpdate);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    state.message,
+                    style: GoogleFonts.manrope(color: Colors.white),
+                  ),
+                  backgroundColor: BookmiColors.error,
+                ),
+              );
+            }
           }
         },
         builder: (context, state) {
@@ -59,21 +86,24 @@ class ConsentSettingsPage extends StatelessWidget {
             );
           }
 
-          if (state is ConsentFailure) {
+          if (state is ConsentFailure && state.code != 'CGU_REQUIRED') {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     state.message,
-                    style: const TextStyle(color: Colors.white70),
+                    style: GoogleFonts.manrope(color: Colors.white70),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: BookmiSpacing.spaceBase),
                   ElevatedButton(
                     onPressed: () =>
                         context.read<ConsentCubit>().fetchConsents(),
-                    child: const Text('Réessayer'),
+                    child: Text(
+                      'Réessayer',
+                      style: GoogleFonts.manrope(),
+                    ),
                   ),
                 ],
               ),
@@ -90,7 +120,7 @@ class ConsentSettingsPage extends StatelessWidget {
             consentMap[type] = c;
           }
 
-          final optIns = [
+          const optIns = [
             _OptInItem(
               key: 'marketing',
               label: 'Communications marketing',
@@ -105,7 +135,7 @@ class ConsentSettingsPage extends StatelessWidget {
             ),
             _OptInItem(
               key: 'image_rights',
-              label: 'Droit à l\'image',
+              label: "Droit à l'image",
               subtitle:
                   'Autoriser BookMi à utiliser vos photos pour promouvoir la plateforme.',
               icon: Icons.photo_camera_outlined,
@@ -127,9 +157,9 @@ class ConsentSettingsPage extends StatelessWidget {
                 currentCguVersion: loaded?.currentCguVersion ?? '1.0',
               ),
               const SizedBox(height: BookmiSpacing.spaceBase),
-              const Text(
+              Text(
                 'Préférences opt-in',
-                style: TextStyle(
+                style: GoogleFonts.manrope(
                   color: Colors.white,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -152,9 +182,9 @@ class ConsentSettingsPage extends StatelessWidget {
               const SizedBox(height: BookmiSpacing.spaceLg),
               // Obligatory consents — read only
               if (allConsents.isNotEmpty) ...[
-                const Text(
+                Text(
                   'Consentements obligatoires',
-                  style: TextStyle(
+                  style: GoogleFonts.manrope(
                     color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -212,30 +242,46 @@ class _OptInTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: BookmiColors.backgroundCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: BookmiColors.glassBorder),
       ),
-      child: SwitchListTile(
-        secondary: Icon(item.icon, color: BookmiColors.brandBlueLight),
-        title: Text(
-          item.label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
+      child: Row(
+        children: [
+          Icon(item.icon, color: BookmiColors.brandBlueLight, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.label,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  item.subtitle,
+                  style: GoogleFonts.manrope(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        subtitle: Text(
-          item.subtitle,
-          style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 12,
+          Switch.adaptive(
+            value: currentValue,
+            onChanged: isLoading ? null : onChanged,
+            activeThumbColor: BookmiColors.brandBlue,
+            activeTrackColor: BookmiColors.brandBlue.withValues(alpha: 0.5),
           ),
-        ),
-        value: currentValue,
-        onChanged: isLoading ? null : onChanged,
-        activeColor: BookmiColors.brandBlue,
+        ],
       ),
     );
   }
@@ -260,9 +306,9 @@ class _ReadOnlyConsentTile extends StatelessWidget {
         vertical: 10,
       ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: BookmiColors.backgroundCard,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
+        border: Border.all(color: BookmiColors.glassBorder),
       ),
       child: Row(
         children: [
@@ -278,13 +324,17 @@ class _ReadOnlyConsentTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: GoogleFonts.manrope(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 if (date != null)
                   Text(
                     _formatDate(date),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
+                    style: GoogleFonts.manrope(
+                      color: Colors.white38,
                       fontSize: 11,
                     ),
                   ),
@@ -303,7 +353,7 @@ class _ReadOnlyConsentTile extends StatelessWidget {
           '${dt.month.toString().padLeft(2, '0')}/'
           '${dt.year} ${dt.hour.toString().padLeft(2, '0')}:'
           '${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
+    } on FormatException {
       return iso;
     }
   }
@@ -345,15 +395,15 @@ class _InfoCard extends StatelessWidget {
               children: [
                 Text(
                   upToDate ? 'CGU à jour' : 'CGU non acceptées',
-                  style: const TextStyle(
+                  style: GoogleFonts.manrope(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 Text(
                   'Version acceptée : ${cguVersionAccepted ?? 'aucune'} · Actuelle : $currentCguVersion',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
+                  style: GoogleFonts.manrope(
+                    color: Colors.white60,
                     fontSize: 12,
                   ),
                 ),

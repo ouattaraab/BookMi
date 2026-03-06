@@ -32,6 +32,7 @@ class ConsentSuccess extends ConsentState {
 }
 
 class ConsentFailure extends ConsentState {
-  const ConsentFailure({required this.message});
+  const ConsentFailure({required this.message, this.code});
   final String message;
+  final String? code;
 }

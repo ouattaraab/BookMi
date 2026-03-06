@@ -45,6 +45,16 @@ class ConsentRepository {
   }
 
   ApiResult<T> _handleError<T>(DioException e) {
+    // Detect CGU_REQUIRED 403 from CheckCguVersion middleware
+    if (e.response?.statusCode == 403) {
+      final d = e.response?.data;
+      if (d is Map && d['requires_reconsent'] == true) {
+        return const ApiFailure(
+          code: 'CGU_REQUIRED',
+          message: 'Vous devez accepter les nouvelles CGU.',
+        );
+      }
+    }
     final data = e.response?.data;
     if (data is Map) {
       final error = data['error'] as Map?;

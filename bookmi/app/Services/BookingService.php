@@ -276,7 +276,7 @@ class BookingService
             $fresh->update(['status' => BookingStatus::Completed]);
 
             $count = BookingRequest::where('talent_profile_id', $fresh->talent_profile_id)
-                ->where('status', BookingStatus::Completed->value)
+                ->whereNotIn('status', [BookingStatus::Cancelled->value, BookingStatus::Rejected->value])
                 ->count();
 
             TalentProfile::where('id', $fresh->talent_profile_id)

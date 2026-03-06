@@ -26,8 +26,8 @@ class ConsentCubit extends Cubit<ConsentState> {
             currentCguVersion: data['current_cgu_version'] as String? ?? '1.0',
           ),
         );
-      case ApiFailure(:final message):
-        emit(ConsentFailure(message: message));
+      case ApiFailure(:final code, :final message):
+        emit(ConsentFailure(message: message, code: code));
     }
   }
 
@@ -37,8 +37,8 @@ class ConsentCubit extends Cubit<ConsentState> {
     switch (result) {
       case ApiSuccess():
         emit(const ConsentSuccess(message: 'Préférences mises à jour.'));
-      case ApiFailure(:final message):
-        emit(ConsentFailure(message: message));
+      case ApiFailure(:final code, :final message):
+        emit(ConsentFailure(message: message, code: code));
     }
   }
 
@@ -48,8 +48,8 @@ class ConsentCubit extends Cubit<ConsentState> {
     switch (result) {
       case ApiSuccess():
         emit(const ConsentSuccess(message: 'CGU acceptées avec succès.'));
-      case ApiFailure(:final message):
-        emit(ConsentFailure(message: message));
+      case ApiFailure(:final code, :final message):
+        emit(ConsentFailure(message: message, code: code));
     }
   }
 }

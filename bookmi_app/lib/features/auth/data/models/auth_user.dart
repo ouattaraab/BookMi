@@ -12,6 +12,9 @@ class AuthUser {
     required this.isClientVerified,
     this.phoneVerifiedAt,
     this.avatarUrl,
+    this.requiresReconsent = false,
+    this.cguVersionAccepted,
+    this.currentCguVersion,
   });
 
   factory AuthUser.fromJson(Map<String, dynamic> json) {
@@ -25,6 +28,9 @@ class AuthUser {
       isActive: json['is_active'] as bool,
       isClientVerified: (json['is_client_verified'] as bool?) ?? false,
       avatarUrl: json['avatar_url'] as String?,
+      requiresReconsent: (json['requires_reconsent'] as bool?) ?? false,
+      cguVersionAccepted: json['cgu_version_accepted'] as String?,
+      currentCguVersion: json['current_cgu_version'] as String?,
     );
   }
 
@@ -37,6 +43,9 @@ class AuthUser {
   final bool isActive;
   final bool isClientVerified;
   final String? avatarUrl;
+  final bool requiresReconsent;
+  final String? cguVersionAccepted;
+  final String? currentCguVersion;
 
   Map<String, dynamic> toJson() {
     return {
@@ -49,6 +58,9 @@ class AuthUser {
       'is_active': isActive,
       'is_client_verified': isClientVerified,
       'avatar_url': avatarUrl,
+      'requires_reconsent': requiresReconsent,
+      'cgu_version_accepted': cguVersionAccepted,
+      'current_cgu_version': currentCguVersion,
     };
   }
 
@@ -62,6 +74,9 @@ class AuthUser {
     bool? isActive,
     bool? isClientVerified,
     String? avatarUrl,
+    bool? requiresReconsent,
+    String? cguVersionAccepted,
+    String? currentCguVersion,
   }) {
     return AuthUser(
       id: id ?? this.id,
@@ -73,6 +88,9 @@ class AuthUser {
       isActive: isActive ?? this.isActive,
       isClientVerified: isClientVerified ?? this.isClientVerified,
       avatarUrl: avatarUrl ?? this.avatarUrl,
+      requiresReconsent: requiresReconsent ?? this.requiresReconsent,
+      cguVersionAccepted: cguVersionAccepted ?? this.cguVersionAccepted,
+      currentCguVersion: currentCguVersion ?? this.currentCguVersion,
     );
   }
 
@@ -88,7 +106,10 @@ class AuthUser {
           phoneVerifiedAt == other.phoneVerifiedAt &&
           isActive == other.isActive &&
           isClientVerified == other.isClientVerified &&
-          avatarUrl == other.avatarUrl;
+          avatarUrl == other.avatarUrl &&
+          requiresReconsent == other.requiresReconsent &&
+          cguVersionAccepted == other.cguVersionAccepted &&
+          currentCguVersion == other.currentCguVersion;
 
   @override
   int get hashCode => Object.hash(
@@ -101,5 +122,8 @@ class AuthUser {
     isActive,
     isClientVerified,
     avatarUrl,
+    requiresReconsent,
+    cguVersionAccepted,
+    currentCguVersion,
   );
 }

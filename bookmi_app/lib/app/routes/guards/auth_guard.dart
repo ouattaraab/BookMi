@@ -35,7 +35,11 @@ String? authGuard(BuildContext context, String location) {
   if (location.startsWith(RoutePaths.splash)) return null;
 
   switch (authState) {
-    case AuthAuthenticated(:final roles):
+    case AuthAuthenticated(:final user, :final roles):
+      // Force CGU reconsent before any navigation
+      if (user.requiresReconsent && location != RoutePaths.consentUpdate) {
+        return RoutePaths.consentUpdate;
+      }
       // Authenticated user trying to access auth pages → redirect to home
       // (or talent onboarding when coming straight from registration).
       if (isPublicRoute) {

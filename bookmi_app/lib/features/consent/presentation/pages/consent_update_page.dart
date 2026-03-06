@@ -1,6 +1,8 @@
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
+import 'package:bookmi_app/features/auth/bloc/auth_event.dart';
 import 'package:bookmi_app/features/consent/bloc/consent_cubit.dart';
 import 'package:bookmi_app/features/consent/bloc/consent_state.dart';
 import 'package:bookmi_app/features/consent/data/repositories/consent_repository.dart';
@@ -60,6 +62,8 @@ class _ConsentUpdateViewState extends State<_ConsentUpdateView> {
               backgroundColor: BookmiColors.success,
             ),
           );
+          // Refresh auth profile so requiresReconsent becomes false
+          context.read<AuthBloc>().add(const AuthCheckRequested());
           context.go('/home');
         } else if (state is ConsentFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
