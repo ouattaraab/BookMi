@@ -109,18 +109,18 @@ class _ProfilePageState extends State<ProfilePage> {
                           RouteNames.bookings,
                         ),
                         onManagerTap: isTalent
-                            ? () {
-                                // Manager access — placeholder
-                              }
+                            ? () => context.pushNamed(
+                                RouteNames.managerDashboard,
+                              )
                             : null,
                       ),
                     ),
-                    if (isTalent &&
-                        stats != null &&
-                        stats.talentLevel.isNotEmpty)
+                    if (isTalent && stats != null)
                       SliverToBoxAdapter(
                         child: _TalentLevelCard(
-                          talentLevel: stats.talentLevel,
+                          talentLevel: stats.talentLevel.isNotEmpty
+                              ? stats.talentLevel
+                              : 'nouveau',
                           totalBookings: stats.totalBookings > 0
                               ? stats.totalBookings
                               : stats.nombrePrestations,

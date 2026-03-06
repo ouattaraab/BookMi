@@ -178,16 +178,30 @@ class ConsentControllerTest extends TestCase
         $this->assertFalse($user->fresh()->marketing_opt_in);
     }
 
-    // ── Point 7 — Middleware → 403 si cgu_version_accepted obsolète ───────
+    // ── Point 7 — GET /consents accessible même si CGU obsolètes ───────────
+    // Le middleware check.cgu a été retiré de GET /consents pour permettre
+    // la lecture des consentements même si les CGU ne sont pas à jour.
+    // Le middleware est toujours actif sur PATCH /consents/update.
 
-    public function test_middleware_returns_403_when_cgu_version_outdated(): void
+    public function test_get_consents_accessible_even_when_cgu_outdated(): void
+    {
+        $user = User::factory()->create(['cgu_version_accepted' => '2020-01-01']);
+        $user->assignRole('client');
+
+        $this->actingAs($user)
+            ->getJson('/api/v1/consents')
+            ->assertOk()
+            ->assertJsonStructure(['data' => ['consents', 'cgu_version_accepted', 'current_cgu_version']]);
+    }
+
+    public function test_update_consents_returns_403_when_cgu_outdated(): void
     {
         $user = User::factory()->create(['cgu_version_accepted' => '2020-01-01']);
         $user->assignRole('client');
 
         $this->actingAs($user)
             ->withMiddleware(\App\Http\Middleware\Api\CheckCguVersion::class)
-            ->getJson('/api/v1/consents')
+            ->patchJson('/api/v1/consents/update', ['consents' => ['marketing' => true]])
             ->assertForbidden()
             ->assertJsonPath('requires_reconsent', true);
     }

@@ -101,8 +101,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         // ── Consentements RGPD/CI (loi 2013-450 + RGPD) ──────────────────────
-        // reconsent exclu du middleware CheckCguVersion (sinon boucle infinie)
-        Route::get('/consents', [ConsentController::class, 'index'])->middleware('check.cgu')->name('consents.index');
+        // GET /consents sans check.cgu pour permettre la lecture même si CGU non à jour
+        // PATCH /consents/update avec check.cgu (l'utilisateur doit accepter les CGU avant de modifier)
+        // POST /consents/reconsent exclu du middleware CheckCguVersion (sinon boucle infinie)
+        Route::get('/consents', [ConsentController::class, 'index'])->name('consents.index');
         Route::patch('/consents/update', [ConsentController::class, 'update'])->middleware('check.cgu')->name('consents.update');
         Route::post('/consents/reconsent', [ConsentController::class, 'reconsent'])->name('consents.reconsent');
 
