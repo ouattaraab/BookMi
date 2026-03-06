@@ -45,5 +45,8 @@ bookmi_app/.pub/
 bookmi_app/.fvm/
 bookmi_app/coverage/
 
+# Android App Bundles (generated artifacts, ne pas versionner)
+*.aab
+
 # Logs
 *.log

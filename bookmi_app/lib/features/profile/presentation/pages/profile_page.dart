@@ -1045,7 +1045,7 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
           Switch(
             value: _enabled,
             onChanged: _toggle,
-            activeColor: _primary,
+            activeThumbColor: _primary,
           ),
         ],
       ),
