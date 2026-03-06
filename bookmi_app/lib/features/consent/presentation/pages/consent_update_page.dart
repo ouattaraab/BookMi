@@ -19,7 +19,7 @@ class ConsentUpdatePage extends StatelessWidget {
   static Widget wrapped(BuildContext context) {
     return BlocProvider(
       create: (_) => ConsentCubit(
-        repository: ConsentRepository(apiClient: context.read<ApiClient>()),
+        repository: ConsentRepository(apiClient: ApiClient.instance),
       ),
       child: const ConsentUpdatePage(),
     );

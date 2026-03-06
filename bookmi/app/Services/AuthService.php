@@ -271,6 +271,10 @@ class AuthService
                 'is_admin' => (bool) $user->is_admin,
                 'is_client_verified' => (bool) $user->is_client_verified,
                 'avatar_url' => $user->avatar_url,
+                'requires_reconsent'   => $user->cgu_version_accepted === null
+                    || version_compare((string) $user->cgu_version_accepted, (string) config('bookmi.consent.cgu_version'), '<'),
+                'cgu_version_accepted' => $user->cgu_version_accepted,
+                'current_cgu_version'  => config('bookmi.consent.cgu_version'),
                 'talentProfile' => $tp ? [
                     'id' => $tp->id,
                     'stage_name' => $tp->stage_name,
