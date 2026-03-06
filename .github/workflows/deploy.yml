@@ -59,6 +59,7 @@ jobs:
 
             # 1. Pull latest code (met à jour bookmi_app/bookmi/ — app root réel)
             cd /home/u726808002/bookmi_app
+            git stash || true
             git pull origin main
 
             # 2. Travailler dans le vrai app root (celui que le web server utilise)
