@@ -978,9 +978,14 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
 
   Future<String?> _showPasswordDialog() {
     final controller = TextEditingController();
+    // Capture the root navigator BEFORE opening the dialog to avoid any
+    // GoRouter/ShellRoute context confusion in asynchronous callbacks.
+    final nav = Navigator.of(context, rootNavigator: true);
     return showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
+      useRootNavigator: true,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
         backgroundColor: const Color(0xFF0D1B38),
         title: const Text(
           'Confirmer votre mot de passe',
@@ -998,16 +1003,15 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
               borderSide: BorderSide(color: _mutedFg),
             ),
           ),
-          onSubmitted: (value) =>
-              Navigator.of(dialogContext).pop(controller.text),
+          onSubmitted: (_) => nav.pop(controller.text),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
+            onPressed: () => nav.pop(),
             child: const Text('Annuler', style: TextStyle(color: _mutedFg)),
           ),
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(controller.text),
+            onPressed: () => nav.pop(controller.text),
             child: Text('Confirmer', style: TextStyle(color: _primary)),
           ),
         ],
