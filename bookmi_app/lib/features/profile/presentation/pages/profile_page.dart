@@ -985,37 +985,58 @@ class _BiometricToggleItemState extends State<_BiometricToggleItem> {
       context: context,
       useRootNavigator: true,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF0D1B38),
-        title: const Text(
-          'Confirmer votre mot de passe',
-          style: TextStyle(color: Colors.white, fontSize: 16),
-        ),
-        content: TextField(
-          controller: controller,
-          obscureText: true,
-          autofocus: true,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
-            labelText: 'Mot de passe',
-            labelStyle: TextStyle(color: _mutedFg),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: _mutedFg),
+      builder: (_) {
+        var obscure = true;
+        return StatefulBuilder(
+          builder: (ctx, setState) => AlertDialog(
+            backgroundColor: const Color(0xFF0D1B38),
+            title: const Text(
+              'Confirmer votre mot de passe',
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
+            content: TextField(
+              controller: controller,
+              obscureText: obscure,
+              autofocus: true,
+              cursorColor: _primary,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: 'Mot de passe',
+                labelStyle: const TextStyle(color: _mutedFg),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.08),
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: _mutedFg),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(color: _primary),
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscure ? Icons.visibility_off : Icons.visibility,
+                    color: _mutedFg,
+                    size: 20,
+                  ),
+                  onPressed: () => setState(() => obscure = !obscure),
+                ),
+              ),
+              onSubmitted: (_) => nav.pop(controller.text),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => nav.pop(),
+                child: const Text('Annuler', style: TextStyle(color: _mutedFg)),
+              ),
+              TextButton(
+                onPressed: () => nav.pop(controller.text),
+                child: Text('Confirmer', style: TextStyle(color: _primary)),
+              ),
+            ],
           ),
-          onSubmitted: (_) => nav.pop(controller.text),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => nav.pop(),
-            child: const Text('Annuler', style: TextStyle(color: _mutedFg)),
-          ),
-          TextButton(
-            onPressed: () => nav.pop(controller.text),
-            child: Text('Confirmer', style: TextStyle(color: _primary)),
-          ),
-        ],
-      ),
+        );
+      },
     ).whenComplete(controller.dispose);
   }
 
