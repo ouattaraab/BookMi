@@ -8,6 +8,7 @@ use App\Jobs\GenerateContractPdf;
 use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
 use App\Models\User;
+use App\Services\AdminService;
 use App\Services\RefundService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -95,7 +96,13 @@ class BookingRequestResource extends Resource
             Forms\Components\Section::make('Médiation')
                 ->icon('heroicon-o-scale')
                 ->visible(fn (?BookingRequest $record): bool => $record !== null
-                    && ($record->status === BookingStatus::Disputed || $record->status === 'disputed'))
+                    && (
+                        $record->status === BookingStatus::Disputed
+                        || $record->status === 'disputed'
+                        || $record->dispute_reason !== null
+                        || $record->dispute_admin_response !== null
+                        || $record->mediator_id !== null
+                    ))
                 ->schema([
                     Forms\Components\Select::make('mediator_id')
                         ->label('Médiateur assigné')
@@ -339,11 +346,14 @@ class BookingRequestResource extends Resource
                     }),
 
                 Tables\Actions\Action::make('reply_dispute')
-                    ->label('Répondre')
+                    ->label('Répondre au litige')
                     ->icon('heroicon-o-chat-bubble-left-right')
                     ->color('info')
                     ->visible(fn (BookingRequest $record): bool =>
-                        $record->status === BookingStatus::Disputed || $record->status === 'disputed')
+                        $record->status === BookingStatus::Disputed
+                        || $record->status === 'disputed'
+                        || $record->dispute_reason !== null
+                        || $record->dispute_admin_response !== null)
                     ->modalHeading('Envoyer une réponse au litige')
                     ->modalDescription('Ce message sera affiché dans le détail de la réservation côté client et talent.')
                     ->form([
@@ -384,6 +394,37 @@ class BookingRequestResource extends Resource
                         }
 
                         Notification::make()->title('Réponse envoyée.')->success()->send();
+                    }),
+
+                Tables\Actions\Action::make('close_dispute')
+                    ->label('Clôturer le litige')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('gray')
+                    ->visible(fn (BookingRequest $record): bool =>
+                        $record->status === BookingStatus::Disputed || $record->status === 'disputed')
+                    ->requiresConfirmation()
+                    ->modalHeading('Clôturer le litige sans remboursement')
+                    ->modalDescription('Les preuves sont insuffisantes ou non avérées. Le litige sera fermé et la réservation marquée comme terminée (le talent est payé).')
+                    ->form([
+                        Forms\Components\Textarea::make('note')
+                            ->label('Motif de clôture (visible par le client et le talent)')
+                            ->required()
+                            ->minLength(10)
+                            ->maxLength(1000)
+                            ->placeholder('Ex : Les preuves fournies sont insuffisantes. La réservation est considérée comme terminée.'),
+                    ])
+                    ->action(function (BookingRequest $record, array $data): void {
+                        try {
+                            app(AdminService::class)->resolveDispute(
+                                auth()->user(),
+                                $record,
+                                'pay_talent',
+                                $data['note'],
+                            );
+                            Notification::make()->title('Litige clôturé — réservation marquée terminée.')->success()->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()->title('Erreur : ' . $e->getMessage())->danger()->send();
+                        }
                     }),
 
                 Tables\Actions\Action::make('assign_mediator')
