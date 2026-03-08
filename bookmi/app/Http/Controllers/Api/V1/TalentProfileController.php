@@ -63,6 +63,14 @@ class TalentProfileController extends BaseController
             ->whereNotIn('status', ['cancelled', 'rejected'])
             ->count();
 
+        // Recalculate talent_level dynamically from the dynamic count
+        $profile->talent_level = match (true) {
+            $profile->total_bookings >= 51 => 'elite',
+            $profile->total_bookings >= 21 => 'populaire',
+            $profile->total_bookings >= 6  => 'confirme',
+            default                         => 'nouveau',
+        };
+
         return $this->successResponse(
             new TalentProfileResource($profile->load('category', 'subcategory', 'categories', 'managers:id,first_name,last_name,email')),
         );

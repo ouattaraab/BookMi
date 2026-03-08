@@ -75,8 +75,9 @@ jobs:
             php artisan optimize:clear
             php artisan optimize
 
-            # 6. Create storage symlink
-            php artisan storage:link --force 2>/dev/null || true
+            # 6. Create storage symlink (symlink() et exec() désactivés sur Hostinger)
+            ln -sf /home/u726808002/bookmi_app/bookmi/storage/app/public \
+              /home/u726808002/bookmi_app/bookmi/public/storage 2>/dev/null || true
 
             # 7. Verify consent routes
             echo "--- Registered routes (consent) ---"
