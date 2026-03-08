@@ -506,8 +506,12 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
 
           // Client: signal a problem (pending, accepted, paid, confirmed)
           if (!isTalent &&
-              ['pending', 'accepted', 'paid', 'confirmed']
-                  .contains(booking.status)) ...[
+              [
+                'pending',
+                'accepted',
+                'paid',
+                'confirmed',
+              ].contains(booking.status)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _DisputeButton(
               bookingId: booking.id,
@@ -1959,12 +1963,13 @@ class _DisputeButtonState extends State<_DisputeButton> {
   bool _loading = false;
 
   Future<void> _openDisputeSheet() async {
-    final result = await showModalBottomSheet<({String reason, String? comment})>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => const _DisputeSheet(),
-    );
+    final result =
+        await showModalBottomSheet<({String reason, String? comment})>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (_) => const _DisputeSheet(),
+        );
 
     if (result == null || !mounted) return;
 
@@ -2244,13 +2249,15 @@ class _DisputeSheetState extends State<_DisputeSheet> {
               fillColor: Colors.white.withValues(alpha: 0.06),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.15),
+                ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                borderSide: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.15),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -2258,8 +2265,9 @@ class _DisputeSheetState extends State<_DisputeSheet> {
                   color: Colors.amber.withValues(alpha: 0.6),
                 ),
               ),
-              counterStyle:
-                  TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+              counterStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
               contentPadding: const EdgeInsets.all(12),
             ),
           ),

@@ -49,10 +49,17 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
   bool _loadingGps = false;
   Timer? _debounce;
   bool _showSuggestions = false;
+  // Prevents tap-through from the button that opened the parent sheet
+  bool _interactive = false;
 
   @override
   void initState() {
     super.initState();
+    // Small delay so a residual touch-up event from opening the sheet
+    // doesn't accidentally trigger the GPS button.
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) setState(() => _interactive = true);
+    });
     _controller = TextEditingController(text: widget.initialValue);
     _dio = Dio(
       BaseOptions(
@@ -97,16 +104,14 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
 
       if (!mounted) return;
 
-      final results = (response.data ?? [])
-          .map((e) {
-            final m = e as Map<String, dynamic>;
-            return LocationSuggestion(
-              displayName: m['display_name'] as String,
-              latitude: double.parse(m['lat'] as String),
-              longitude: double.parse(m['lon'] as String),
-            );
-          })
-          .toList();
+      final results = (response.data ?? []).map((e) {
+        final m = e as Map<String, dynamic>;
+        return LocationSuggestion(
+          displayName: m['display_name'] as String,
+          latitude: double.parse(m['lat'] as String),
+          longitude: double.parse(m['lon'] as String),
+        );
+      }).toList();
 
       setState(() {
         _suggestions = results;
@@ -162,7 +167,8 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
 
       if (!mounted) return;
 
-      final displayName = response.data?['display_name'] as String? ??
+      final displayName =
+          response.data?['display_name'] as String? ??
           '${position.latitude.toStringAsFixed(5)}, '
               '${position.longitude.toStringAsFixed(5)}';
 
@@ -274,7 +280,9 @@ class _LocationPickerFieldState extends State<LocationPickerField> {
                 borderRadius: BookmiRadius.inputBorder,
                 child: InkWell(
                   borderRadius: BookmiRadius.inputBorder,
-                  onTap: _loadingGps ? null : _useCurrentLocation,
+                  onTap: (_loadingGps || !_interactive)
+                      ? null
+                      : _useCurrentLocation,
                   child: Center(
                     child: _loadingGps
                         ? const SizedBox(

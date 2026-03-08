@@ -219,8 +219,8 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
                 LocationPickerField(
                   initialValue: widget.location,
                   onLocationChanged: widget.onLocationChanged,
-                  onCoordinatesSelected: widget.onCoordinatesSelected ??
-                      (lat, lng) {},
+                  onCoordinatesSelected:
+                      widget.onCoordinatesSelected ?? (lat, lng) {},
                 ),
               ],
             ),
