@@ -528,12 +528,17 @@ class _RecapRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: BookmiSpacing.spaceSm),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: fontSize,
-            color: valueColor ?? Colors.white,
-            fontWeight: fontWeight,
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: fontSize,
+              color: valueColor ?? Colors.white,
+              fontWeight: fontWeight,
+            ),
+            textAlign: TextAlign.end,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
