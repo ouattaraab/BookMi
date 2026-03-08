@@ -81,7 +81,45 @@ main.page-content { background: #F2EFE9 !important; }
     text-transform: uppercase;
     margin-bottom: 8px;
 }
+
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
+<script>
+function locationPicker() {
+    return {
+        query: {{ json_encode(old('event_location', '')) }},
+        suggestions: [],
+        loading: false,
+        lat: {{ json_encode(old('event_latitude', '')) }},
+        lng: {{ json_encode(old('event_longitude', '')) }},
+        _timer: null,
+        search() {
+            clearTimeout(this._timer);
+            if (this.query.trim().length < 3) { this.suggestions = []; return; }
+            this.loading = true;
+            this._timer = setTimeout(async () => {
+                try {
+                    const resp = await fetch(
+                        'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(this.query) +
+                        '&format=json&limit=5&addressdetails=0',
+                        { headers: { 'Accept': 'application/json', 'User-Agent': 'BookMiApp/1.0 (contact@bookmi.click)' } }
+                    );
+                    this.suggestions = await resp.json();
+                } catch(e) { this.suggestions = []; }
+                this.loading = false;
+            }, 0);
+        },
+        pick(s) {
+            this.query = s.display_name;
+            this.lat = s.lat;
+            this.lng = s.lon;
+            this.suggestions = [];
+            // sync the native input value for form validation
+            document.getElementById('event_location').value = s.display_name;
+        }
+    };
+}
+</script>
 @endsection
 
 @section('content')
@@ -210,12 +248,37 @@ main.page-content { background: #F2EFE9 !important; }
                         </div>
                     </div>
 
-                    <div style="margin-bottom:16px;">
+                    <div style="margin-bottom:16px;" x-data="locationPicker()">
                         <label class="form-label" for="event_location">Lieu</label>
-                        <input type="text" id="event_location" name="event_location"
-                               placeholder="Abidjan, Cocody…"
-                               value="{{ old('event_location') }}"
-                               class="booking-input" required>
+                        <div style="position:relative;">
+                            <input type="text" id="event_location" name="event_location"
+                                   placeholder="Abidjan, Cocody…"
+                                   value="{{ old('event_location') }}"
+                                   class="booking-input" required
+                                   autocomplete="off"
+                                   x-model="query"
+                                   @input.debounce.500ms="search()"
+                                   @keydown.escape="suggestions = []">
+                            <div x-show="loading" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);">
+                                <svg style="animation:spin 0.8s linear infinite;width:16px;height:16px;color:#8A8278;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle style="opacity:0.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path style="opacity:0.75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                            </div>
+                        </div>
+                        <!-- Suggestions dropdown -->
+                        <div x-show="suggestions.length > 0"
+                             style="border:1.5px solid #E5E1DA;border-radius:12px;background:#FDFCFA;margin-top:4px;overflow:hidden;box-shadow:0 4px 16px rgba(26,39,68,0.10);">
+                            <template x-for="s in suggestions" :key="s.place_id">
+                                <button type="button"
+                                        @click="pick(s)"
+                                        style="display:flex;align-items:flex-start;gap:10px;width:100%;padding:10px 14px;border:none;background:transparent;cursor:pointer;text-align:left;border-bottom:1px solid #EAE7E0;font-family:'Nunito',sans-serif;"
+                                        onmouseover="this.style.background='#F2EFE9'" onmouseout="this.style.background='transparent'">
+                                    <svg style="flex-shrink:0;margin-top:2px;color:#FF6B35;" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>
+                                    <span style="font-size:0.82rem;font-weight:600;color:#1A2744;line-height:1.4;" x-text="s.display_name"></span>
+                                </button>
+                            </template>
+                        </div>
+                        <!-- Hidden GPS fields -->
+                        <input type="hidden" name="event_latitude" :value="lat">
+                        <input type="hidden" name="event_longitude" :value="lng">
                         @error('event_location')
                         <p style="color:#EF4444;font-size:0.75rem;font-weight:600;margin:6px 0 0;">{{ $message }}</p>
                         @enderror
@@ -275,6 +338,26 @@ main.page-content { background: #F2EFE9 !important; }
                 {{-- Mobile: récapitulatif before submit --}}
                 <div class="dash-fade" style="animation-delay:200ms;display:none;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:20px 24px;margin-bottom:20px;">
                     {{-- Mobile récap is handled by sidebar on desktop --}}
+                </div>
+
+                {{-- Consentements --}}
+                <div class="dash-fade" style="animation-delay:230ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:20px 24px;margin-bottom:20px;"
+                     x-data="{ paymentOk: false, cancellationOk: false }">
+                    <h2 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0 0 14px 0;">Consentements requis</h2>
+                    <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin-bottom:12px;">
+                        <input type="checkbox" name="consent_payment" value="1" x-model="paymentOk" required
+                               style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#FF6B35;">
+                        <span style="font-size:0.83rem;font-weight:600;color:#4A5568;line-height:1.5;">
+                            J'accepte d'être débité du montant total indiqué ci-dessus.
+                        </span>
+                    </label>
+                    <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;">
+                        <input type="checkbox" name="consent_cancellation" value="1" x-model="cancellationOk" required
+                               style="width:18px;height:18px;flex-shrink:0;margin-top:2px;accent-color:#FF6B35;">
+                        <span style="font-size:0.83rem;font-weight:600;color:#4A5568;line-height:1.5;">
+                            J'accepte la <a href="{{ route('legal.conditions') }}" target="_blank" style="color:#FF6B35;text-decoration:underline;">politique d'annulation</a> et les <a href="{{ route('legal.conditions') }}" target="_blank" style="color:#FF6B35;text-decoration:underline;">frais associés</a>.
+                        </span>
+                    </label>
                 </div>
 
                 {{-- Submit --}}

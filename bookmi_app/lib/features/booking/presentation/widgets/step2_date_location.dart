@@ -2,6 +2,7 @@ import 'package:bookmi_app/core/design_system/components/glass_card.dart';
 import 'package:bookmi_app/core/design_system/tokens/colors.dart';
 import 'package:bookmi_app/core/design_system/tokens/radius.dart';
 import 'package:bookmi_app/core/design_system/tokens/spacing.dart';
+import 'package:bookmi_app/features/booking/presentation/widgets/location_picker_field.dart';
 import 'package:flutter/material.dart';
 
 /// Step 2 of the booking flow — pick event date, time, location, and optional
@@ -14,6 +15,7 @@ class Step2DateLocation extends StatefulWidget {
     required this.onDateSelected,
     required this.onTimeSelected,
     required this.onLocationChanged,
+    this.onCoordinatesSelected,
     this.travelCost = 0,
     this.onTravelCostChanged,
     this.showTravelCost = true,
@@ -27,6 +29,9 @@ class Step2DateLocation extends StatefulWidget {
   final ValueChanged<DateTime> onDateSelected;
   final ValueChanged<TimeOfDay> onTimeSelected;
   final ValueChanged<String> onLocationChanged;
+
+  /// Called when the user picks a location from the map suggestions or GPS.
+  final void Function(double lat, double lng)? onCoordinatesSelected;
 
   /// Current travel cost in XOF (0 = none).
   final int travelCost;
@@ -44,14 +49,12 @@ class Step2DateLocation extends StatefulWidget {
 }
 
 class _Step2DateLocationState extends State<Step2DateLocation> {
-  late final TextEditingController _locationController;
   late final TextEditingController _travelCostController;
   late DateTime _focusedMonth;
 
   @override
   void initState() {
     super.initState();
-    _locationController = TextEditingController(text: widget.location);
     _travelCostController = TextEditingController(
       text: widget.travelCost > 0 ? widget.travelCost.toString() : '',
     );
@@ -60,7 +63,6 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
 
   @override
   void dispose() {
-    _locationController.dispose();
     _travelCostController.dispose();
     super.dispose();
   }
@@ -214,42 +216,11 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
                   ),
                 ),
                 const SizedBox(height: BookmiSpacing.spaceSm),
-                TextField(
-                  controller: _locationController,
-                  onChanged: widget.onLocationChanged,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
-                  decoration: InputDecoration(
-                    hintText: 'Ex: Salle des fêtes, Abidjan',
-                    hintStyle: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 14,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.location_on_outlined,
-                      color: Colors.white.withValues(alpha: 0.5),
-                      size: 20,
-                    ),
-                    filled: true,
-                    fillColor: BookmiColors.glassDarkMedium,
-                    border: OutlineInputBorder(
-                      borderRadius: BookmiRadius.inputBorder,
-                      borderSide: BorderSide(color: BookmiColors.glassBorder),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BookmiRadius.inputBorder,
-                      borderSide: BorderSide(color: BookmiColors.glassBorder),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BookmiRadius.inputBorder,
-                      borderSide: const BorderSide(
-                        color: BookmiColors.brandBlue,
-                      ),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: BookmiSpacing.spaceBase,
-                      vertical: BookmiSpacing.spaceSm,
-                    ),
-                  ),
+                LocationPickerField(
+                  initialValue: widget.location,
+                  onLocationChanged: widget.onLocationChanged,
+                  onCoordinatesSelected: widget.onCoordinatesSelected ??
+                      (lat, lng) {},
                 ),
               ],
             ),

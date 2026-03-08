@@ -13,6 +13,8 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     this.eventDate,
     this.startTime,
     this.eventLocation,
+    this.eventLatitude,
+    this.eventLongitude,
     this.message,
     this.isExpress = false,
     this.travelCost,
@@ -33,6 +35,10 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
 
   /// Event location. Null for micro packages (defaults to "Livraison digitale").
   final String? eventLocation;
+
+  /// GPS coordinates of the event location, null if not provided.
+  final double? eventLatitude;
+  final double? eventLongitude;
   final String? message;
   final bool isExpress;
 
@@ -54,6 +60,8 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
           eventDate == other.eventDate &&
           startTime == other.startTime &&
           eventLocation == other.eventLocation &&
+          eventLatitude == other.eventLatitude &&
+          eventLongitude == other.eventLongitude &&
           message == other.message &&
           isExpress == other.isExpress &&
           travelCost == other.travelCost &&
@@ -66,6 +74,8 @@ final class BookingFlowSubmitted extends BookingFlowEvent {
     eventDate,
     startTime,
     eventLocation,
+    eventLatitude,
+    eventLongitude,
     message,
     isExpress,
     travelCost,

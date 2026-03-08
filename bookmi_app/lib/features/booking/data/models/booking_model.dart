@@ -70,6 +70,8 @@ class BookingModel {
     required this.packageType,
     required this.eventDate,
     required this.eventLocation,
+    this.eventLatitude,
+    this.eventLongitude,
     required this.cachetAmount,
     required this.travelCost,
     required this.commissionAmount,
@@ -108,6 +110,8 @@ class BookingModel {
   final String eventDate;
   final String? startTime;
   final String eventLocation;
+  final double? eventLatitude;
+  final double? eventLongitude;
   final int cachetAmount;
   final int travelCost;
   final int commissionAmount;
@@ -153,6 +157,8 @@ class BookingModel {
       eventDate: json['event_date'] as String,
       startTime: json['start_time'] as String?,
       eventLocation: json['event_location'] as String,
+      eventLatitude: (json['event_latitude'] as num?)?.toDouble(),
+      eventLongitude: (json['event_longitude'] as num?)?.toDouble(),
       cachetAmount: (devis?['cachet_amount'] as int?) ?? 0,
       travelCost: (devis?['travel_cost'] as int?) ?? 0,
       commissionAmount: (devis?['commission_amount'] as int?) ?? 0,
@@ -199,6 +205,8 @@ class BookingModel {
     String? eventDate,
     String? startTime,
     String? eventLocation,
+    double? eventLatitude,
+    double? eventLongitude,
     int? cachetAmount,
     int? travelCost,
     int? commissionAmount,
@@ -233,6 +241,8 @@ class BookingModel {
       eventDate: eventDate ?? this.eventDate,
       startTime: startTime ?? this.startTime,
       eventLocation: eventLocation ?? this.eventLocation,
+      eventLatitude: eventLatitude ?? this.eventLatitude,
+      eventLongitude: eventLongitude ?? this.eventLongitude,
       cachetAmount: cachetAmount ?? this.cachetAmount,
       travelCost: travelCost ?? this.travelCost,
       commissionAmount: commissionAmount ?? this.commissionAmount,

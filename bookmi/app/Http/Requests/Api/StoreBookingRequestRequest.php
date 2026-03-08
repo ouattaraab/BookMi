@@ -59,6 +59,8 @@ class StoreBookingRequestRequest extends FormRequest
             'is_express'     => ['nullable', 'boolean'],
             'promo_code'     => ['nullable', 'string', 'max:50'],
             // Consentements transactionnels (optionnels — enregistrés si présents)
+            'event_latitude'  => ['nullable', 'numeric', 'between:-90,90'],
+            'event_longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'consents'                                                      => ['nullable', 'array'],
             'consents.' . \App\Enums\ConsentType::TransactionPayment->value      => ['nullable', 'boolean'],
             'consents.' . \App\Enums\ConsentType::TransactionCancellation->value => ['nullable', 'boolean'],

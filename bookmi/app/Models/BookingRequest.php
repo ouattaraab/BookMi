@@ -41,6 +41,8 @@ class BookingRequest extends Model
         'mediator_id',
         'mediation_notes',
         'client_confirmed_arrival_at',
+        'event_latitude',
+        'event_longitude',
     ];
 
     /**
@@ -62,6 +64,8 @@ class BookingRequest extends Model
             'discount_amount'              => 'integer',
             'package_snapshot'             => 'array',
             'client_confirmed_arrival_at'  => 'datetime',
+            'event_latitude'               => 'float',
+            'event_longitude'              => 'float',
         ];
     }
 

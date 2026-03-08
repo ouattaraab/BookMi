@@ -130,6 +130,8 @@ class BookingService
                 'event_date'         => $data['event_date'],
                 'start_time'         => $startTime,
                 'event_location'     => $data['event_location'],
+                'event_latitude'     => $data['event_latitude'] ?? null,
+                'event_longitude'    => $data['event_longitude'] ?? null,
                 'message'            => $data['message'] ?? null,
                 'is_express'         => $isExpress,
                 'status'             => BookingStatus::Pending,

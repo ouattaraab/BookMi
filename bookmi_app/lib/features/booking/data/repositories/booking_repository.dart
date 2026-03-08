@@ -85,6 +85,8 @@ class BookingRepository {
     String? eventDate,
     String? startTime,
     String? eventLocation,
+    double? eventLatitude,
+    double? eventLongitude,
     String? message,
     bool isExpress = false,
     int? travelCost,
@@ -103,6 +105,8 @@ class BookingRepository {
             'start_time': startTime,
           if (eventLocation != null && eventLocation.isNotEmpty)
             'event_location': eventLocation,
+          if (eventLatitude != null) 'event_latitude': eventLatitude,
+          if (eventLongitude != null) 'event_longitude': eventLongitude,
           if (message != null && message.isNotEmpty) 'message': message,
           'is_express': isExpress,
           if (travelCost != null && travelCost > 0) 'travel_cost': travelCost,

@@ -10,8 +10,10 @@ import 'package:bookmi_app/features/booking/presentation/widgets/step1_package_s
 import 'package:bookmi_app/features/booking/presentation/widgets/step2_date_location.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/step3_recap.dart';
 import 'package:bookmi_app/features/booking/presentation/widgets/stepper_progress.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Opens the booking flow as a modal bottom sheet.
 ///
@@ -75,6 +77,8 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
   String _location = '';
+  double? _eventLatitude;
+  double? _eventLongitude;
   int _travelCost = 0;
 
   // Step 3
@@ -200,6 +204,8 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
             : '${_selectedTime!.hour.toString().padLeft(2, '0')}:'
                   '${_selectedTime!.minute.toString().padLeft(2, '0')}',
         eventLocation: isMicro ? null : _location.trim(),
+        eventLatitude: isMicro ? null : _eventLatitude,
+        eventLongitude: isMicro ? null : _eventLongitude,
         message: _message.trim().isEmpty ? null : _message.trim(),
         isExpress: _isExpress,
         travelCost: _travelCost > 0 ? _travelCost : null,
@@ -389,6 +395,10 @@ class _BookingFlowSheetState extends State<BookingFlowSheet> {
                 onDateSelected: (d) => setState(() => _selectedDate = d),
                 onTimeSelected: (t) => setState(() => _selectedTime = t),
                 onLocationChanged: (v) => setState(() => _location = v),
+                onCoordinatesSelected: (lat, lng) => setState(() {
+                  _eventLatitude = lat;
+                  _eventLongitude = lng;
+                }),
                 onTravelCostChanged: (v) => setState(() => _travelCost = v),
               ),
       2 => BlocBuilder<BookingFlowBloc, BookingFlowState>(
@@ -668,10 +678,9 @@ class _TransactionalConsents extends StatelessWidget {
                 "J'accepte d'être débité du montant total indiqué ci-dessus.",
           ),
           const SizedBox(height: 4),
-          _ConsentCheckTile(
+          _CancellationConsentTile(
             value: cancellationAccepted,
             onChanged: onCancellationChanged,
-            label: "J'accepte la politique d'annulation et les frais associés.",
           ),
         ],
       ),
@@ -721,6 +730,109 @@ class _ConsentCheckTile extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.75),
                   fontSize: 12,
                   height: 1.4,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CancellationConsentTile extends StatefulWidget {
+  const _CancellationConsentTile({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  State<_CancellationConsentTile> createState() =>
+      _CancellationConsentTileState();
+}
+
+class _CancellationConsentTileState extends State<_CancellationConsentTile> {
+  late final TapGestureRecognizer _recognizer;
+
+  static final _policyUrl = Uri.parse(
+    'https://bookmi.click/conditions-utilisation',
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _recognizer = TapGestureRecognizer()..onTap = _openPolicy;
+  }
+
+  @override
+  void dispose() {
+    _recognizer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _openPolicy() async {
+    if (await canLaunchUrl(_policyUrl)) {
+      await launchUrl(_policyUrl, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const linkStyle = TextStyle(
+      color: BookmiColors.brandBlue,
+      decoration: TextDecoration.underline,
+      decorationColor: BookmiColors.brandBlue,
+      fontSize: 12,
+      height: 1.4,
+    );
+    return GestureDetector(
+      onTap: () => widget.onChanged(!widget.value),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 22,
+            height: 22,
+            child: Checkbox(
+              value: widget.value,
+              onChanged: (v) => widget.onChanged(v ?? false),
+              activeColor: BookmiColors.brandBlue,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              side: BorderSide(
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 12,
+                    height: 1.4,
+                  ),
+                  children: [
+                    const TextSpan(text: "J'accepte la "),
+                    TextSpan(
+                      text: 'politique d\'annulation',
+                      style: linkStyle,
+                      recognizer: _recognizer,
+                    ),
+                    const TextSpan(text: ' et les '),
+                    TextSpan(
+                      text: 'frais associés',
+                      style: linkStyle,
+                      recognizer: _recognizer,
+                    ),
+                    const TextSpan(text: '.'),
+                  ],
                 ),
               ),
             ),

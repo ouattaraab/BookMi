@@ -24,6 +24,7 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BookingDetailPage extends StatefulWidget {
   const BookingDetailPage({
@@ -235,6 +236,14 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                   label: 'Lieu',
                   value: booking.eventLocation,
                 ),
+                if (booking.eventLatitude != null &&
+                    booking.eventLongitude != null) ...[
+                  const SizedBox(height: 8),
+                  _MapsButton(
+                    lat: booking.eventLatitude!,
+                    lng: booking.eventLongitude!,
+                  ),
+                ],
                 if (booking.isExpress) ...[
                   const SizedBox(height: BookmiSpacing.spaceSm),
                   _DetailRow(
@@ -688,6 +697,48 @@ class _DetailRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _MapsButton extends StatelessWidget {
+  const _MapsButton({required this.lat, required this.lng});
+
+  final double lat;
+  final double lng;
+
+  Future<void> _open() async {
+    final url = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+    );
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _open,
+      child: Row(
+        children: [
+          Icon(
+            Icons.map_outlined,
+            size: 14,
+            color: BookmiColors.brandBlue,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'Ouvrir dans Google Maps',
+            style: const TextStyle(
+              fontSize: 12,
+              color: BookmiColors.brandBlue,
+              decoration: TextDecoration.underline,
+              decorationColor: BookmiColors.brandBlue,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
