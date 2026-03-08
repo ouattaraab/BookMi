@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Enums\UserRole;
 use App\Enums\WarningStatus;
 use App\Exceptions\AdminException;
+use App\Jobs\SendPushNotification;
 use App\Models\AdminWarning;
 use App\Models\BookingRequest;
 use App\Models\TalentProfile;
@@ -87,7 +88,20 @@ class AdminService
                 default         => throw new \InvalidArgumentException('Résolution invalide.'),
             };
 
-            $booking->update(['status' => $newStatus]);
+            $verdictLabel = match ($resolution) {
+                'refund_client' => 'Remboursement accordé',
+                'pay_talent'    => 'Paiement du talent confirmé',
+                'compromise'    => 'Accord à l\'amiable',
+            };
+
+            $adminResponse = $note
+                ? "{$verdictLabel} — {$note}"
+                : $verdictLabel;
+
+            $booking->update([
+                'status'                  => $newStatus,
+                'dispute_admin_response'  => $adminResponse,
+            ]);
 
             $this->audit->log('dispute.resolved', $booking, [
                 'resolution' => $resolution,
@@ -95,6 +109,31 @@ class AdminService
                 'new_status' => $newStatus->value,
             ]);
         });
+
+        // Notify client
+        SendPushNotification::dispatch(
+            $booking->client_id,
+            '⚖️ Litige traité',
+            'L\'administrateur a rendu son verdict sur votre litige.',
+            [
+                'type'       => 'dispute_resolved',
+                'booking_id' => (string) $booking->id,
+            ],
+        );
+
+        // Notify talent
+        $talentUserId = $booking->talentProfile?->user_id;
+        if ($talentUserId) {
+            SendPushNotification::dispatch(
+                $talentUserId,
+                '⚖️ Litige traité',
+                'L\'administrateur a rendu son verdict sur le litige de votre réservation.',
+                [
+                    'type'       => 'dispute_resolved',
+                    'booking_id' => (string) $booking->id,
+                ],
+            );
+        }
     }
 
     // ─── Warnings & Suspension (8.3) ────────────────────────────────────────

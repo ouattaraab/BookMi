@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\BookingStatus;
 use App\Filament\Resources\BookingRequestResource\Pages;
 use App\Jobs\GenerateContractPdf;
+use App\Jobs\SendPushNotification;
 use App\Models\BookingRequest;
 use App\Models\User;
 use App\Services\RefundService;
@@ -102,7 +103,12 @@ class BookingRequestResource extends Resource
                         ->searchable()
                         ->nullable(),
                     Forms\Components\Textarea::make('mediation_notes')
-                        ->label('Notes de médiation')
+                        ->label('Notes de médiation (internes)')
+                        ->maxLength(2000)
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('dispute_admin_response')
+                        ->label('Réponse visible par le client et le talent')
+                        ->helperText('Ce message sera affiché dans le détail de la réservation sur l\'application mobile.')
                         ->maxLength(2000)
                         ->columnSpanFull(),
                 ])->columns(2),
@@ -330,6 +336,54 @@ class BookingRequestResource extends Resource
                         } catch (\Throwable $e) {
                             Notification::make()->title('Erreur : ' . $e->getMessage())->danger()->send();
                         }
+                    }),
+
+                Tables\Actions\Action::make('reply_dispute')
+                    ->label('Répondre')
+                    ->icon('heroicon-o-chat-bubble-left-right')
+                    ->color('info')
+                    ->visible(fn (BookingRequest $record): bool =>
+                        $record->status === BookingStatus::Disputed || $record->status === 'disputed')
+                    ->modalHeading('Envoyer une réponse au litige')
+                    ->modalDescription('Ce message sera affiché dans le détail de la réservation côté client et talent.')
+                    ->form([
+                        Forms\Components\Textarea::make('dispute_admin_response')
+                            ->label('Message de réponse')
+                            ->required()
+                            ->minLength(10)
+                            ->maxLength(2000)
+                            ->placeholder('Ex : Votre litige est en cours d\'analyse. Nous reviendrons vers vous sous 48h.')
+                            ->default(fn (BookingRequest $record): ?string => $record->dispute_admin_response),
+                    ])
+                    ->action(function (BookingRequest $record, array $data): void {
+                        $record->update(['dispute_admin_response' => $data['dispute_admin_response']]);
+
+                        // Push au client
+                        SendPushNotification::dispatch(
+                            $record->client_id,
+                            '💬 Réponse à votre litige',
+                            'L\'administrateur a répondu à votre litige.',
+                            [
+                                'type'       => 'dispute_response',
+                                'booking_id' => (string) $record->id,
+                            ],
+                        );
+
+                        // Push au talent
+                        $talentUserId = $record->talentProfile?->user_id;
+                        if ($talentUserId) {
+                            SendPushNotification::dispatch(
+                                $talentUserId,
+                                '💬 Réponse au litige',
+                                'L\'administrateur a répondu au litige sur votre réservation.',
+                                [
+                                    'type'       => 'dispute_response',
+                                    'booking_id' => (string) $record->id,
+                                ],
+                            );
+                        }
+
+                        Notification::make()->title('Réponse envoyée.')->success()->send();
                     }),
 
                 Tables\Actions\Action::make('assign_mediator')

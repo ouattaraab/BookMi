@@ -44,6 +44,7 @@ class BookingRequest extends Model
         'dispute_reason',
         'dispute_comment',
         'disputed_at',
+        'dispute_admin_response',
         'client_confirmed_arrival_at',
         'event_latitude',
         'event_longitude',

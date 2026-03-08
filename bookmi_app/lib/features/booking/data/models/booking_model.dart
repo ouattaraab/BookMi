@@ -99,6 +99,7 @@ class BookingModel {
     this.disputeReasonLabel,
     this.disputeComment,
     this.disputedAt,
+    this.disputeAdminResponse,
   });
 
   final int id;
@@ -145,6 +146,7 @@ class BookingModel {
   final String? disputeReasonLabel;
   final String? disputeComment;
   final DateTime? disputedAt;
+  final String? disputeAdminResponse;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     final client = json['client'] as Map<String, dynamic>?;
@@ -204,6 +206,7 @@ class BookingModel {
       disputedAt: json['disputed_at'] != null
           ? DateTime.tryParse(json['disputed_at'] as String)
           : null,
+      disputeAdminResponse: json['dispute_admin_response'] as String?,
     );
   }
 
@@ -246,6 +249,7 @@ class BookingModel {
     String? disputeReasonLabel,
     String? disputeComment,
     DateTime? disputedAt,
+    String? disputeAdminResponse,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -288,6 +292,7 @@ class BookingModel {
       disputeReasonLabel: disputeReasonLabel ?? this.disputeReasonLabel,
       disputeComment: disputeComment ?? this.disputeComment,
       disputedAt: disputedAt ?? this.disputedAt,
+      disputeAdminResponse: disputeAdminResponse ?? this.disputeAdminResponse,
     );
   }
 

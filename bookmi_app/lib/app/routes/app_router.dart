@@ -535,6 +535,7 @@ GoRouter buildAppRouter(
 
   // Wire FCM notification tap → deep-link.
   // • booking_id present           → booking detail page
+  //   (includes dispute_response + dispute_resolved)
   // • admin_broadcast              → messages tab
   // • talent_update                → talent profile page
   // • availability_alert           → talent profile page

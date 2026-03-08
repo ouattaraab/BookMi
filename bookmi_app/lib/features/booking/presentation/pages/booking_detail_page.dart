@@ -521,10 +521,10 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
-          // Dispute info card (when already disputed)
-          if (booking.status == 'disputed' &&
-              (booking.disputeReason != null ||
-                  booking.disputeComment != null)) ...[
+          // Dispute info card — visible when dispute was opened (even after resolution)
+          if (booking.disputeReason != null ||
+              booking.disputeComment != null ||
+              booking.disputeAdminResponse != null) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _DisputeInfoCard(booking: booking),
           ],
@@ -2398,6 +2398,53 @@ class _DisputeInfoCard extends StatelessWidget {
               height: 1.5,
             ),
           ),
+          // Admin response — shown when admin has replied
+          if (booking.disputeAdminResponse != null &&
+              booking.disputeAdminResponse!.isNotEmpty) ...[
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.blue.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.shield_outlined,
+                        color: Colors.blueAccent,
+                        size: 15,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Réponse de l\'équipe BookMi',
+                        style: TextStyle(
+                          color: Colors.blue.shade300,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    booking.disputeAdminResponse!,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
