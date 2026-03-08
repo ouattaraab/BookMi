@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\BookingStatus;
+use App\Enums\DisputeReason;
 use App\Exceptions\BookingException;
 use App\Http\Requests\Api\RejectBookingRequestRequest;
 use App\Http\Requests\Api\StoreBookingRequestRequest;
@@ -225,12 +226,25 @@ class BookingRequestController extends BaseController
 
     /**
      * POST /api/v1/booking_requests/{booking}/dispute
+     *
+     * Body: { reason: string (DisputeReason), comment?: string }
      */
-    public function dispute(BookingRequest $booking): JsonResponse
+    public function dispute(Request $request, BookingRequest $booking): JsonResponse
     {
         $this->authorize('openDispute', $booking);
 
-        $booking = $this->bookingService->openDispute($booking);
+        $validReasons = array_column(DisputeReason::cases(), 'value');
+
+        $validated = $request->validate([
+            'reason'  => ['required', 'string', 'in:' . implode(',', $validReasons)],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $booking = $this->bookingService->openDispute(
+            $booking,
+            DisputeReason::from($validated['reason']),
+            $validated['comment'] ?? null,
+        );
 
         $booking->load($this->detailRelations());
 

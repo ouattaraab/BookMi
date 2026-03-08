@@ -424,10 +424,18 @@ class BookingRepository {
   }
 
   /// Open a dispute on a booking (client action).
-  Future<ApiResult<BookingModel>> openDispute(int id) async {
+  Future<ApiResult<BookingModel>> openDispute(
+    int id, {
+    required String reason,
+    String? comment,
+  }) async {
     try {
       final response = await _dio.post<Map<String, dynamic>>(
         ApiEndpoints.bookingDispute(id),
+        data: {
+          'reason': reason,
+          if (comment != null && comment.isNotEmpty) 'comment': comment,
+        },
       );
       final booking = BookingModel.fromJson(
         response.data!['data'] as Map<String, dynamic>,

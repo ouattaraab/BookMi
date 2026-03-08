@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Client;
 
 use App\Enums\BookingStatus;
+use App\Enums\DisputeReason;
 use App\Enums\EscrowStatus;
 use App\Enums\PaymentMethod;
 use App\Events\BookingCreated;
@@ -228,9 +229,10 @@ class BookingController extends Controller
     /**
      * POST /client/bookings/{booking}/dispute
      *
-     * Ouvre un litige pour la réservation (client seulement, statut paid ou confirmed).
+     * Signale un problème pour la réservation (client seulement).
+     * Statuts éligibles : pending, accepted, paid, confirmed.
      */
-    public function dispute(BookingRequest $booking): RedirectResponse
+    public function dispute(Request $request, BookingRequest $booking): RedirectResponse
     {
         if ($booking->client_id !== auth()->id()) {
             abort(403);
@@ -241,24 +243,36 @@ class BookingController extends Controller
             : BookingStatus::from((string) $booking->status);
 
         if ($status === BookingStatus::Disputed) {
-            return back()->with('info', 'Un litige est déjà ouvert pour cette réservation.');
+            return back()->with('info', 'Un problème est déjà signalé pour cette réservation.');
         }
 
-        if (! in_array($status, [BookingStatus::Paid, BookingStatus::Confirmed])) {
-            return back()->with('error', 'Un litige ne peut être ouvert que pour une réservation payée ou confirmée.');
+        $eligibleStatuses = [
+            BookingStatus::Pending,
+            BookingStatus::Accepted,
+            BookingStatus::Paid,
+            BookingStatus::Confirmed,
+        ];
+
+        if (! in_array($status, $eligibleStatuses)) {
+            return back()->with('error', 'Il n\'est pas possible de signaler un problème pour cette réservation.');
         }
 
-        $booking->update(['status' => 'disputed']);
+        $validReasons = array_column(DisputeReason::cases(), 'value');
 
-        // Notify talent
-        \App\Jobs\SendPushNotification::dispatch(
-            $booking->talentProfile->user_id,
-            'Litige ouvert',
-            'Un client a ouvert un litige sur votre réservation #' . $booking->id . '.',
-            ['type' => 'dispute_opened', 'booking_id' => $booking->id],
+        $validated = $request->validate([
+            'reason'  => ['required', 'string', 'in:' . implode(',', $validReasons)],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        /** @var BookingService $bookingService */
+        $bookingService = app(BookingService::class);
+        $bookingService->openDispute(
+            $booking,
+            DisputeReason::from($validated['reason']),
+            $validated['comment'] ?? null,
         );
 
-        return back()->with('success', 'Litige ouvert. L\'équipe BookMi va examiner votre demande.');
+        return back()->with('success', 'Problème signalé. L\'équipe BookMi va examiner votre demande.');
     }
 
     public function pay(int $id): View

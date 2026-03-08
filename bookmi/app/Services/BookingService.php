@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Enums\BookingStatus;
+use App\Enums\DisputeReason;
 use App\Enums\PackageType;
 use App\Enums\CalendarSlotStatus;
 use App\Events\BookingAccepted;
 use App\Events\BookingCancelled;
 use App\Events\BookingCreated;
+use App\Events\BookingDisputed;
 use App\Exceptions\BookingException;
 use App\Jobs\GenerateContractPdf;
 use App\Jobs\SendPushNotification;
@@ -385,10 +387,10 @@ class BookingService
     /**
      * Open a dispute on a booking (client action).
      *
-     * Transitions: paid|confirmed → disputed
-     * Side-effects: FCM notification to the talent.
+     * Transitions: pending|accepted|paid|confirmed → disputed
+     * Side-effects: FCM to talent + event dispatched for admin notifications.
      */
-    public function openDispute(BookingRequest $booking): BookingRequest
+    public function openDispute(BookingRequest $booking, DisputeReason $reason, ?string $comment = null): BookingRequest
     {
         if (! $booking->status->canTransitionTo(BookingStatus::Disputed)) {
             throw BookingException::invalidStatusTransition();
@@ -396,19 +398,28 @@ class BookingService
 
         $fromStatus = $booking->status;
 
-        $booking->update(['status' => BookingStatus::Disputed]);
+        $booking->update([
+            'status'          => BookingStatus::Disputed,
+            'dispute_reason'  => $reason,
+            'dispute_comment' => $comment,
+            'disputed_at'     => now(),
+        ]);
 
         $this->logStatusTransition($booking, $fromStatus, BookingStatus::Disputed, $booking->client_id);
 
+        // Notify talent via push notification
         $talentUserId = $booking->talentProfile?->user_id;
         if ($talentUserId) {
             SendPushNotification::dispatch(
                 $talentUserId,
-                'Litige ouvert',
-                'Un litige a été ouvert pour votre réservation.',
+                'Problème signalé',
+                'Un client a signalé un problème sur votre réservation.',
                 ['type' => 'dispute_opened', 'booking_id' => (string) $booking->id],
             );
         }
+
+        // Dispatch event so admins receive notifications
+        BookingDisputed::dispatch($booking);
 
         return $booking;
     }

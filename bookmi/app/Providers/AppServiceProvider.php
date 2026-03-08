@@ -20,8 +20,11 @@ use App\Repositories\Eloquent\FavoriteRepository;
 use App\Repositories\Eloquent\ServicePackageRepository;
 use App\Repositories\Eloquent\TalentRepository;
 use App\Repositories\Eloquent\VerificationRepository;
+use App\Events\BookingDisputed;
+use App\Listeners\NotifyAdminOfBookingDisputed;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -69,6 +72,9 @@ class AppServiceProvider extends ServiceProvider
         TalentProfile::observe(TalentProfileObserver::class);
         BookingRequest::observe(BookingRequestObserver::class);
         PortfolioItem::observe(PortfolioItemObserver::class);
+
+        Event::listen(BookingDisputed::class, NotifyAdminOfBookingDisputed::class);
+
         $this->configureRateLimiting();
     }
 

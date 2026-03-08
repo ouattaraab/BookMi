@@ -504,8 +504,10 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
             ),
           ],
 
-          // Client: open dispute (paid or confirmed)
-          if (!isTalent && ['paid', 'confirmed'].contains(booking.status)) ...[
+          // Client: signal a problem (pending, accepted, paid, confirmed)
+          if (!isTalent &&
+              ['pending', 'accepted', 'paid', 'confirmed']
+                  .contains(booking.status)) ...[
             const SizedBox(height: BookmiSpacing.spaceMd),
             _DisputeButton(
               bookingId: booking.id,
@@ -517,6 +519,14 @@ class _BookingDetailPageState extends State<BookingDetailPage> {
                 _fetch();
               },
             ),
+          ],
+
+          // Dispute info card (when already disputed)
+          if (booking.status == 'disputed' &&
+              (booking.disputeReason != null ||
+                  booking.disputeComment != null)) ...[
+            const SizedBox(height: BookmiSpacing.spaceMd),
+            _DisputeInfoCard(booking: booking),
           ],
 
           // Client: leave a review (confirmed or completed, not yet reviewed)
@@ -1921,6 +1931,17 @@ class _ReceiptButtonState extends State<_ReceiptButton> {
 
 // ── Dispute Button ──────────────────────────────────────────────────────────
 
+/// Reason options matching the backend DisputeReason enum.
+const _disputeReasons = [
+  ('no_show', 'Talent ne s\'est pas présenté'),
+  ('late_arrival', 'Retard important du talent'),
+  ('poor_quality', 'Prestation de mauvaise qualité'),
+  ('different_from_description', 'Prestation différente de la description'),
+  ('early_termination', 'Prestation interrompue prématurément'),
+  ('communication_issue', 'Problème de communication'),
+  ('other', 'Autre problème'),
+];
+
 class _DisputeButton extends StatefulWidget {
   const _DisputeButton({
     required this.bookingId,
@@ -1937,71 +1958,29 @@ class _DisputeButton extends StatefulWidget {
 class _DisputeButtonState extends State<_DisputeButton> {
   bool _loading = false;
 
-  Future<void> _openDispute() async {
-    final confirmed = await showDialog<bool>(
+  Future<void> _openDisputeSheet() async {
+    final result = await showModalBottomSheet<({String reason, String? comment})>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1A2233),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: Colors.amber.withValues(alpha: 0.3),
-          ),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.report_problem_outlined,
-              color: Colors.amber,
-              size: 22,
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Ouvrir un litige',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'En ouvrant un litige, notre équipe sera notifiée et examinera votre dossier. '
-          'Cette action ne peut pas être annulée.',
-          style: TextStyle(color: Colors.white70, fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text(
-              'Annuler',
-              style: TextStyle(color: Colors.white54),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.amber),
-            child: const Text(
-              'Confirmer le litige',
-              style: TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _DisputeSheet(),
     );
 
-    if (confirmed != true || !mounted) return;
+    if (result == null || !mounted) return;
 
     setState(() => _loading = true);
 
     final repo = context.read<BookingRepository>();
-    final result = await repo.openDispute(widget.bookingId);
+    final apiResult = await repo.openDispute(
+      widget.bookingId,
+      reason: result.reason,
+      comment: result.comment,
+    );
 
     if (!mounted) return;
     setState(() => _loading = false);
 
-    switch (result) {
+    switch (apiResult) {
       case ApiSuccess():
         widget.onDisputeOpened();
       case ApiFailure(:final message):
@@ -2018,7 +1997,7 @@ class _DisputeButtonState extends State<_DisputeButton> {
   Widget build(BuildContext context) {
     return GlassCard(
       child: InkWell(
-        onTap: _loading ? null : _openDispute,
+        onTap: _loading ? null : _openDisputeSheet,
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -2042,7 +2021,7 @@ class _DisputeButtonState extends State<_DisputeButton> {
                 ),
               const SizedBox(width: 8),
               Text(
-                'Ouvrir un litige',
+                'Signaler un problème',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -2052,6 +2031,374 @@ class _DisputeButtonState extends State<_DisputeButton> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+// ── Dispute Sheet ────────────────────────────────────────────────────────────
+
+class _DisputeSheet extends StatefulWidget {
+  const _DisputeSheet();
+
+  @override
+  State<_DisputeSheet> createState() => _DisputeSheetState();
+}
+
+class _DisputeSheetState extends State<_DisputeSheet> {
+  String? _selectedReason;
+  final _commentController = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_selectedReason == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez sélectionner le type de problème.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).pop((
+      reason: _selectedReason!,
+      comment: _commentController.text.trim().isEmpty
+          ? null
+          : _commentController.text.trim(),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF0D1B38),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + keyboardHeight),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle bar
+          Center(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          // Header
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.amber.withValues(alpha: 0.4),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.report_problem_outlined,
+                  color: Colors.amber,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Signaler un problème',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'Notre équipe analysera votre signalement',
+                      style: TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white54),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Reason label
+          const Text(
+            'Type de problème *',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Reason list
+          ...(_disputeReasons.map(
+            (entry) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: InkWell(
+                onTap: () => setState(() => _selectedReason = entry.$1),
+                borderRadius: BorderRadius.circular(12),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 150),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: _selectedReason == entry.$1
+                        ? Colors.amber.withValues(alpha: 0.12)
+                        : Colors.white.withValues(alpha: 0.05),
+                    border: Border.all(
+                      color: _selectedReason == entry.$1
+                          ? Colors.amber.withValues(alpha: 0.5)
+                          : Colors.white.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _selectedReason == entry.$1
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_unchecked,
+                        size: 18,
+                        color: _selectedReason == entry.$1
+                            ? Colors.amber
+                            : Colors.white38,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          entry.$2,
+                          style: TextStyle(
+                            color: _selectedReason == entry.$1
+                                ? Colors.amber.shade200
+                                : Colors.white70,
+                            fontSize: 13,
+                            fontWeight: _selectedReason == entry.$1
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )),
+          const SizedBox(height: 16),
+          // Comment
+          const Text(
+            'Description (optionnel)',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _commentController,
+            maxLines: 3,
+            maxLength: 1000,
+            style: const TextStyle(color: Colors.white, fontSize: 13),
+            decoration: InputDecoration(
+              hintText:
+                  'Décrivez le problème en détail : date, lieu, ce qui s\'est passé...',
+              hintStyle: TextStyle(
+                color: Colors.white.withValues(alpha: 0.35),
+                fontSize: 13,
+              ),
+              filled: true,
+              fillColor: Colors.white.withValues(alpha: 0.06),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(
+                  color: Colors.amber.withValues(alpha: 0.6),
+                ),
+              ),
+              counterStyle:
+                  TextStyle(color: Colors.white.withValues(alpha: 0.4)),
+              contentPadding: const EdgeInsets.all(12),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Warning
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.25)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline, size: 15, color: Colors.red),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Cette action est irréversible. Le paiement au talent sera suspendu jusqu\'à la résolution du litige par l\'équipe BookMi.',
+                    style: TextStyle(
+                      color: Colors.red.shade300,
+                      fontSize: 11,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Submit button
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: _submitting ? null : _submit,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.amber.shade700,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.send_outlined, size: 18),
+              label: Text(
+                _submitting ? 'Envoi...' : 'Envoyer le signalement',
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Dispute Info Card ────────────────────────────────────────────────────────
+
+class _DisputeInfoCard extends StatelessWidget {
+  const _DisputeInfoCard({required this.booking});
+
+  final BookingModel booking;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.report_problem_outlined,
+                color: Colors.amber,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Problème signalé — en cours d\'analyse',
+                style: TextStyle(
+                  color: Colors.amber.shade300,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          if (booking.disputeReasonLabel != null) ...[
+            const SizedBox(height: 10),
+            Text(
+              'Motif : ${booking.disputeReasonLabel}',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          if (booking.disputeComment != null &&
+              booking.disputeComment!.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              booking.disputeComment!,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.65),
+                fontSize: 12,
+                height: 1.5,
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
+          Text(
+            'L\'équipe BookMi va examiner votre dossier. Le paiement au talent est suspendu jusqu\'à résolution.',
+            style: TextStyle(
+              color: Colors.amber.withValues(alpha: 0.7),
+              fontSize: 11,
+              height: 1.5,
+            ),
+          ),
+        ],
       ),
     );
   }

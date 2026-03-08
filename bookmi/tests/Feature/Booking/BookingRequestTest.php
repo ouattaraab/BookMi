@@ -448,13 +448,17 @@ class BookingRequestTest extends TestCase
         $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Paid]);
         $this->actingAs($client, 'sanctum');
 
-        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute", [
+            'reason'  => 'no_show',
+            'comment' => 'Le talent ne s\'est pas présenté.',
+        ]);
 
         $response->assertOk();
         $response->assertJsonPath('data.status', 'disputed');
         $this->assertDatabaseHas('booking_requests', [
-            'id'     => $booking->id,
-            'status' => 'disputed',
+            'id'            => $booking->id,
+            'status'        => 'disputed',
+            'dispute_reason' => 'no_show',
         ]);
     }
 
@@ -466,7 +470,9 @@ class BookingRequestTest extends TestCase
         $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Confirmed]);
         $this->actingAs($client, 'sanctum');
 
-        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute", [
+            'reason' => 'poor_quality',
+        ]);
 
         $response->assertOk();
         $response->assertJsonPath('data.status', 'disputed');
@@ -480,23 +486,56 @@ class BookingRequestTest extends TestCase
         $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Paid]);
         $this->actingAs($talentUser, 'sanctum');
 
-        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute", [
+            'reason' => 'no_show',
+        ]);
 
         $response->assertForbidden();
     }
 
     #[Test]
-    public function cannot_open_dispute_on_pending_booking(): void
+    public function client_can_open_dispute_on_pending_booking(): void
     {
         [, $talent, $package] = $this->createTalentWithPackage();
         $client  = $this->createClientUser();
         $booking = $this->createBooking($client, $talent, $package);
         $this->actingAs($client, 'sanctum');
 
-        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute", [
+            'reason' => 'communication_issue',
+        ]);
+
+        $response->assertOk();
+        $response->assertJsonPath('data.status', 'disputed');
+    }
+
+    #[Test]
+    public function cannot_open_dispute_on_completed_booking(): void
+    {
+        [, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Completed]);
+        $this->actingAs($client, 'sanctum');
+
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute", [
+            'reason' => 'no_show',
+        ]);
 
         $response->assertStatus(422);
         $response->assertJsonPath('error.code', 'BOOKING_INVALID_TRANSITION');
+    }
+
+    #[Test]
+    public function cannot_open_dispute_without_reason(): void
+    {
+        [, $talent, $package] = $this->createTalentWithPackage();
+        $client  = $this->createClientUser();
+        $booking = $this->createBooking($client, $talent, $package, ['status' => BookingStatus::Paid]);
+        $this->actingAs($client, 'sanctum');
+
+        $response = $this->postJson("/api/v1/booking_requests/{$booking->id}/dispute");
+
+        $response->assertUnprocessable();
     }
     // ─── AC: Express booking surcharge ───────────────────────────────────────
 

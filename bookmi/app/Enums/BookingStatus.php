@@ -21,8 +21,8 @@ enum BookingStatus: string
     public function allowedTransitions(): array
     {
         return match ($this) {
-            self::Pending   => [self::Accepted, self::Rejected, self::Cancelled],
-            self::Accepted  => [self::Paid, self::Cancelled],
+            self::Pending   => [self::Accepted, self::Rejected, self::Cancelled, self::Disputed],
+            self::Accepted  => [self::Paid, self::Cancelled, self::Disputed],
             self::Paid      => [self::Confirmed, self::Cancelled, self::Disputed],
             self::Confirmed => [self::Completed, self::Cancelled, self::Disputed],
             self::Completed => [],

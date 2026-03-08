@@ -322,20 +322,137 @@ Cette action est irréversible.')">
         </div>
         @endif
 
-        {{-- Bouton litige (réservation payée ou confirmée seulement) --}}
-        @if(in_array($sk, ['paid', 'confirmed']))
+        {{-- Bouton Signaler un problème (statuts actifs seulement) --}}
+        @if(in_array($sk, ['pending', 'accepted', 'paid', 'confirmed']))
         <div style="padding:0 24px 24px;">
-            <form action="{{ route('client.bookings.dispute', $booking->id) }}" method="POST"
-                  onsubmit="return confirm('Confirmer l\'ouverture d\'un litige ? L\'équipe BookMi sera notifiée.')">
-                @csrf
-                <button type="submit"
-                        style="width:100%;padding:12px 24px;border-radius:14px;font-size:0.85rem;font-weight:800;color:#991B1B;background:#FEF2F2;border:1.5px solid #FCA5A5;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Nunito',sans-serif;transition:background 0.2s,border-color 0.2s;"
-                        onmouseover="this.style.background='#FEE2E2';this.style.borderColor='#F87171'"
-                        onmouseout="this.style.background='#FEF2F2';this.style.borderColor='#FCA5A5'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                    Ouvrir un litige
-                </button>
-            </form>
+            <button type="button" onclick="document.getElementById('disputeModal').style.display='flex'"
+                    style="width:100%;padding:12px 24px;border-radius:14px;font-size:0.85rem;font-weight:800;color:#92400E;background:#FFFBEB;border:1.5px solid #FCD34D;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Nunito',sans-serif;transition:background 0.2s,border-color 0.2s;"
+                    onmouseover="this.style.background='#FEF3C7';this.style.borderColor='#F59E0B'"
+                    onmouseout="this.style.background='#FFFBEB';this.style.borderColor='#FCD34D'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Signaler un problème
+            </button>
+        </div>
+
+        {{-- Modal Signaler un problème --}}
+        <div id="disputeModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);padding:16px;"
+             onclick="if(event.target===this)this.style.display='none'">
+            <div style="background:#FFFFFF;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.2);width:100%;max-width:480px;overflow:hidden;font-family:'Nunito',sans-serif;">
+                {{-- Modal header --}}
+                <div style="padding:20px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:#FFFBEB;border:1.5px solid #FCD34D;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#B45309" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <h3 style="font-size:1rem;font-weight:900;color:#1A2744;margin:0;">Signaler un problème</h3>
+                            <p style="font-size:0.75rem;color:#8A8278;font-weight:500;margin:0;">Réservation #{{ $booking->id }}</p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('disputeModal').style.display='none'"
+                            style="background:none;border:none;cursor:pointer;color:#B0A89E;padding:4px;border-radius:6px;line-height:1;"
+                            title="Fermer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                {{-- Modal body --}}
+                <form action="{{ route('client.bookings.dispute', $booking->id) }}" method="POST">
+                    @csrf
+                    <div style="padding:20px 24px;">
+                        <p style="font-size:0.85rem;color:#6B7280;font-weight:500;line-height:1.6;margin:0 0 20px;">
+                            Notre équipe analysera votre signalement et prendra une décision. Cela peut aller jusqu'à
+                            <strong style="color:#1A2744;">la restitution des fonds</strong> si le talent n'a pas honoré la prestation.
+                        </p>
+                        {{-- Reason --}}
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;font-size:0.78rem;font-weight:800;color:#1A2744;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">
+                                Type de problème <span style="color:#EF4444;">*</span>
+                            </label>
+                            <select name="reason" required
+                                    style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E1DA;font-size:0.875rem;font-weight:600;color:#1A2744;background:#FFFFFF;cursor:pointer;font-family:'Nunito',sans-serif;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%236B7280' stroke-width='2.5' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;">
+                                <option value="" disabled selected>Sélectionnez le motif...</option>
+                                <option value="no_show">Talent ne s'est pas présenté</option>
+                                <option value="late_arrival">Retard important du talent</option>
+                                <option value="poor_quality">Prestation de mauvaise qualité</option>
+                                <option value="different_from_description">Prestation différente de la description</option>
+                                <option value="early_termination">Prestation interrompue prématurément</option>
+                                <option value="communication_issue">Problème de communication</option>
+                                <option value="other">Autre problème</option>
+                            </select>
+                        </div>
+                        {{-- Comment --}}
+                        <div style="margin-bottom:4px;">
+                            <label style="display:block;font-size:0.78rem;font-weight:800;color:#1A2744;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">
+                                Description du problème <span style="font-weight:500;text-transform:none;color:#8A8278;">(optionnel)</span>
+                            </label>
+                            <textarea name="comment" rows="4" maxlength="1000" placeholder="Décrivez le problème en détail : date, lieu, ce qui s'est passé..."
+                                      style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E1DA;font-size:0.875rem;font-weight:500;color:#1A2744;background:#FFFFFF;font-family:'Nunito',sans-serif;resize:vertical;box-sizing:border-box;outline:none;transition:border-color 0.2s;"
+                                      onfocus="this.style.borderColor='#F59E0B'" onblur="this.style.borderColor='#E5E1DA'"></textarea>
+                            <p style="font-size:0.72rem;color:#B0A89E;font-weight:500;margin:4px 0 0;text-align:right;">Maximum 1000 caractères</p>
+                        </div>
+                        {{-- Warning --}}
+                        <div style="margin-top:16px;padding:12px 14px;border-radius:10px;background:#FEF2F2;border:1px solid #FCA5A5;">
+                            <p style="font-size:0.78rem;font-weight:700;color:#991B1B;margin:0;display:flex;align-items:flex-start;gap:8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                Cette action est irréversible. Le statut de la réservation passera à « En litige » et votre dossier sera examiné par l'équipe BookMi.
+                            </p>
+                        </div>
+                    </div>
+                    {{-- Modal footer --}}
+                    <div style="padding:16px 24px;border-top:1px solid #EAE7E0;display:flex;gap:10px;justify-content:flex-end;">
+                        <button type="button" onclick="document.getElementById('disputeModal').style.display='none'"
+                                style="padding:10px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;color:#6B7280;background:#F3F4F6;border:none;cursor:pointer;font-family:'Nunito',sans-serif;">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                                style="padding:10px 24px;border-radius:10px;font-size:0.85rem;font-weight:800;color:#92400E;background:#FEF3C7;border:1.5px solid #FCD34D;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:7px;transition:background 0.2s;"
+                                onmouseover="this.style.background='#FDE68A'" onmouseout="this.style.background='#FEF3C7'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            Envoyer le signalement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        @endif
+
+        {{-- Section : Problème signalé (statut disputed) --}}
+        @if($sk === 'disputed')
+        <div style="padding:0 24px 24px;">
+            <div style="padding:16px 18px;border-radius:14px;background:#FFFBEB;border:1.5px solid #FCD34D;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="#B45309" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span style="font-size:0.85rem;font-weight:800;color:#92400E;">Problème signalé — en cours d'analyse</span>
+                </div>
+                @if($booking->dispute_reason)
+                <p style="font-size:0.78rem;font-weight:700;color:#B45309;margin:0 0 4px;">Motif :
+                    <span style="font-weight:600;color:#78350F;">
+                        @php
+                            $reasonLabels = [
+                                'no_show'                 => 'Talent ne s\'est pas présenté',
+                                'late_arrival'            => 'Retard important du talent',
+                                'poor_quality'            => 'Prestation de mauvaise qualité',
+                                'different_from_description' => 'Prestation différente de la description',
+                                'early_termination'       => 'Prestation interrompue prématurément',
+                                'communication_issue'     => 'Problème de communication',
+                                'other'                   => 'Autre problème',
+                            ];
+                            $reasonValue = $booking->dispute_reason instanceof \BackedEnum
+                                ? $booking->dispute_reason->value
+                                : (string) $booking->dispute_reason;
+                        @endphp
+                        {{ $reasonLabels[$reasonValue] ?? $reasonValue }}
+                    </span>
+                </p>
+                @endif
+                @if($booking->dispute_comment)
+                <p style="font-size:0.82rem;color:#78350F;font-weight:500;line-height:1.6;margin:6px 0 0;padding-top:8px;border-top:1px solid #FDE68A;">{{ $booking->dispute_comment }}</p>
+                @endif
+                <p style="font-size:0.75rem;color:#B45309;font-weight:500;margin:8px 0 0;">
+                    L'équipe BookMi examinera votre dossier et vous contactera pour le verdict.
+                    Le paiement au talent est suspendu jusqu'à résolution.
+                </p>
+            </div>
         </div>
         @endif
 

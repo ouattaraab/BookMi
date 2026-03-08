@@ -95,6 +95,10 @@ class BookingModel {
     this.statusLogs,
     this.pendingReschedule,
     this.clientConfirmedArrivalAt,
+    this.disputeReason,
+    this.disputeReasonLabel,
+    this.disputeComment,
+    this.disputedAt,
   });
 
   final int id;
@@ -137,6 +141,10 @@ class BookingModel {
   final List<BookingStatusLog>? statusLogs;
   final RescheduleInfo? pendingReschedule;
   final DateTime? clientConfirmedArrivalAt;
+  final String? disputeReason;
+  final String? disputeReasonLabel;
+  final String? disputeComment;
+  final DateTime? disputedAt;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     final client = json['client'] as Map<String, dynamic>?;
@@ -190,6 +198,12 @@ class BookingModel {
               json['client_confirmed_arrival_at'] as String,
             )
           : null,
+      disputeReason: json['dispute_reason'] as String?,
+      disputeReasonLabel: json['dispute_reason_label'] as String?,
+      disputeComment: json['dispute_comment'] as String?,
+      disputedAt: json['disputed_at'] != null
+          ? DateTime.tryParse(json['disputed_at'] as String)
+          : null,
     );
   }
 
@@ -228,6 +242,10 @@ class BookingModel {
     List<BookingStatusLog>? statusLogs,
     RescheduleInfo? pendingReschedule,
     DateTime? clientConfirmedArrivalAt,
+    String? disputeReason,
+    String? disputeReasonLabel,
+    String? disputeComment,
+    DateTime? disputedAt,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -266,6 +284,10 @@ class BookingModel {
       pendingReschedule: pendingReschedule ?? this.pendingReschedule,
       clientConfirmedArrivalAt:
           clientConfirmedArrivalAt ?? this.clientConfirmedArrivalAt,
+      disputeReason: disputeReason ?? this.disputeReason,
+      disputeReasonLabel: disputeReasonLabel ?? this.disputeReasonLabel,
+      disputeComment: disputeComment ?? this.disputeComment,
+      disputedAt: disputedAt ?? this.disputedAt,
     );
   }
 

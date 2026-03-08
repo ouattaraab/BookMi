@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\DisputeReason;
 use App\Enums\RescheduleStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +41,9 @@ class BookingRequest extends Model
         'accept_comment',
         'mediator_id',
         'mediation_notes',
+        'dispute_reason',
+        'dispute_comment',
+        'disputed_at',
         'client_confirmed_arrival_at',
         'event_latitude',
         'event_longitude',
@@ -66,6 +70,8 @@ class BookingRequest extends Model
             'client_confirmed_arrival_at'  => 'datetime',
             'event_latitude'               => 'float',
             'event_longitude'              => 'float',
+            'dispute_reason'               => DisputeReason::class,
+            'disputed_at'                  => 'datetime',
         ];
     }
 
