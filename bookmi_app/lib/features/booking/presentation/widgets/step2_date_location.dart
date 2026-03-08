@@ -98,8 +98,14 @@ class _Step2DateLocationState extends State<Step2DateLocation> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(BookmiSpacing.spaceBase),
+      padding: EdgeInsets.fromLTRB(
+        BookmiSpacing.spaceBase,
+        BookmiSpacing.spaceBase,
+        BookmiSpacing.spaceBase,
+        BookmiSpacing.spaceBase + keyboardHeight,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
