@@ -92,6 +92,7 @@ class AdminService
                 'refund_client' => 'Remboursement accordé',
                 'pay_talent'    => 'Paiement du talent confirmé',
                 'compromise'    => 'Accord à l\'amiable',
+                default         => 'Litige résolu',
             };
 
             $adminResponse = $note
