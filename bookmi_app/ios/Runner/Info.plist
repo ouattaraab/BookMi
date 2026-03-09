@@ -4,6 +4,16 @@
 <dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>BookMi a besoin d'accéder au microphone pour envoyer des messages vocaux.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>BookMi utilise la caméra pour prendre vos photos de profil et de portfolio.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>BookMi accède à votre galerie pour uploader vos photos de profil et de portfolio.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>BookMi peut enregistrer des photos dans votre galerie.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BookMi utilise votre position pour vous montrer les talents près de vous.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>BookMi utilise Face ID pour sécuriser votre connexion biométrique.</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>en</string>

@@ -32,13 +32,30 @@ import 'package:go_router/go_router.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({super.key});
+
+  @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  // Store the future in State so it is not recreated on every rebuild.
+  // Creating _AppDependencies.initialize() inside build() would generate a
+  // new Future (and a new GoRouter) on every rebuild, resetting navigation
+  // to /splash and causing BlocListener to miss state transitions.
+  late final Future<_AppDependencies> _depsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _depsFuture = _AppDependencies.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<_AppDependencies>(
-      future: _AppDependencies.initialize(),
+      future: _depsFuture,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const MaterialApp(
