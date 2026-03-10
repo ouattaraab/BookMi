@@ -39,6 +39,8 @@ Route::get('/messages', [MessageController::class, 'index'])->name('messages');
 Route::post('/messages/booking/{bookingId}', [MessageController::class, 'startFromBooking'])->name('messages.start');
 Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
 Route::post('/messages/{id}', [MessageController::class, 'send'])->name('messages.send');
+Route::patch('/messages/{id}/typing', [MessageController::class, 'typing'])->name('messages.typing');
+Route::get('/messages/{id}/status', [MessageController::class, 'status'])->name('messages.status');
 
 // Notifications
 Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');

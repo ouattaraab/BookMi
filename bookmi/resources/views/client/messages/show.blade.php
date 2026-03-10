@@ -138,6 +138,23 @@
     flex-shrink: 0;
 }
 .back-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+/* ── Typing indicator ── */
+#bm-typing-indicator { display: none; align-items: center; gap: 8px; padding-left: 40px; margin-top: 4px; }
+#bm-typing-indicator .bm-dots {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 1rem 1rem 1rem 0.25rem;
+    padding: 10px 14px; display: inline-flex; gap: 5px; align-items: center;
+}
+#bm-typing-indicator .bm-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.45);
+    animation: bmDot 1.4s ease-in-out infinite;
+}
+#bm-typing-indicator .bm-dot:nth-child(2) { animation-delay: 0.2s; }
+#bm-typing-indicator .bm-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bmDot {
+    0%, 60%, 100% { transform: scale(1); opacity: 0.45; }
+    30% { transform: scale(1.4); opacity: 1; }
+}
 /* ── Lightbox ── */
 .lightbox {
     position: fixed; inset: 0; z-index: 1000;
@@ -151,6 +168,7 @@
 
 @section('content')
 @php
+    $lastMessageId  = $conversation->messages->last()?->id ?? 0;
     $talentProfile  = $conversation->talentProfile;
     $talentUser     = $talentProfile->user ?? null;
     $talentName     = $talentProfile->stage_name
@@ -219,7 +237,7 @@
         @else
             @foreach($conversation->messages as $message)
             @php $isClient = $message->sender_id === auth()->id(); @endphp
-            <div class="flex {{ $isClient ? 'justify-end' : 'justify-start' }} items-end gap-2">
+            <div class="flex {{ $isClient ? 'justify-end' : 'justify-start' }} items-end gap-2" data-msg-id="{{ $message->id }}">
 
                 {{-- Talent avatar (left) --}}
                 @if(!$isClient)
@@ -261,11 +279,9 @@
                     <p class="text-xs mt-1" style="color:var(--text-faint)">
                         {{ $message->created_at->format('H:i') }}
                         @if($isClient)
-                            @if($message->read_at)
-                                <span class="ml-1" style="color:var(--blue-light)" title="Lu">✓✓</span>
-                            @else
-                                <span class="ml-1" style="color:var(--text-faint)" title="Envoyé">✓</span>
-                            @endif
+                            <span class="ml-1 bm-read-{{ $message->id }}"
+                                  style="color:{{ $message->read_at ? 'var(--blue-light)' : 'var(--text-faint)' }}"
+                                  title="{{ $message->read_at ? 'Lu' : 'Envoyé' }}">{{ $message->read_at ? '✓✓' : '✓' }}</span>
                         @endif
                     </p>
                 </div>
@@ -279,6 +295,15 @@
             </div>
             @endforeach
         @endif
+
+        {{-- Typing indicator --}}
+        <div id="bm-typing-indicator">
+            <div class="bm-dots">
+                <span class="bm-dot"></span>
+                <span class="bm-dot"></span>
+                <span class="bm-dot"></span>
+            </div>
+        </div>
     </div>
 
     {{-- Locked state --}}
@@ -330,7 +355,7 @@
                         rows="1"
                         placeholder="Écrivez un message..."
                         id="bm-textarea"
-                        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';bmUpdateSendBtn()"
+                        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';bmUpdateSendBtn();bmSendTyping()"
                         onkeydown="if(!event.shiftKey&&event.key==='Enter'){event.preventDefault();if(!document.getElementById('bm-send-btn').disabled)this.closest('form').submit();}"
                     >{{ old('content') }}</textarea>
 
@@ -412,5 +437,98 @@ function bmUpdateSendBtn() {
     var ta = document.getElementById('bm-textarea');
     if (ta && ta.value.trim().length > 0) bmUpdateSendBtn();
 })();
+
+// ── Typing indicator & real-time polling ──
+var bmMyUserId   = {{ auth()->id() }};
+var bmLastMsgId  = {{ $lastMessageId }};
+var bmStatusUrl  = '{{ route("client.messages.status", $conversation->id) }}';
+var bmTypingUrl  = '{{ route("client.messages.typing", $conversation->id) }}';
+var bmCsrf       = document.querySelector('meta[name="csrf-token"]')?.content ?? '{{ csrf_token() }}';
+var bmTypingTimer = null;
+
+function bmSendTyping() {
+    clearTimeout(bmTypingTimer);
+    bmTypingTimer = setTimeout(function() {
+        fetch(bmTypingUrl, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': bmCsrf, 'Accept': 'application/json' }
+        }).catch(function() {});
+    }, 300);
+}
+
+function bmEscape(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
+}
+
+function bmBuildMsgHtml(msg) {
+    var isMe = msg.sender_id === bmMyUserId;
+    var bubble = '';
+    if (msg.content) {
+        bubble += '<div class="' + (isMe ? 'bubble-client' : 'bubble-talent') + '">' + bmEscape(msg.content) + '</div>';
+    }
+    if (msg.media_url) {
+        if (msg.media_type === 'video') {
+            bubble += '<div class="bubble-media-img mt-1"><video controls preload="none" style="max-height:20rem;border-radius:0.875rem;"><source src="' + msg.media_url + '" type="video/mp4"></video></div>';
+        } else {
+            bubble += '<div class="bubble-media-img mt-1"><img src="' + msg.media_url + '" alt="Image" loading="lazy" style="border-radius:0.875rem;max-height:20rem;width:auto;max-width:18rem;"></div>';
+        }
+    }
+    var readMark = isMe
+        ? '<span class="ml-1 bm-read-' + msg.id + '" style="color:' + (msg.read_at ? 'var(--blue-light)' : 'var(--text-faint)') + '" title="' + (msg.read_at ? 'Lu' : 'Envoyé') + '">' + (msg.read_at ? '✓✓' : '✓') + '</span>'
+        : '';
+    var inner = '<div class="flex flex-col ' + (isMe ? 'items-end' : 'items-start') + '">'
+        + bubble
+        + '<p class="text-xs mt-1" style="color:var(--text-faint)">' + msg.created_at + readMark + '</p>'
+        + '</div>';
+    return '<div class="flex ' + (isMe ? 'justify-end' : 'justify-start') + ' items-end gap-2" data-msg-id="' + msg.id + '">' + inner + '</div>';
+}
+
+function bmPoll() {
+    fetch(bmStatusUrl + '?after=' + bmLastMsgId, {
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': bmCsrf }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+        if (!data) return;
+
+        // Typing indicator
+        var typingEl = document.getElementById('bm-typing-indicator');
+        if (typingEl) typingEl.style.display = data.is_typing ? 'flex' : 'none';
+
+        // Append new messages
+        if (data.new_messages && data.new_messages.length > 0) {
+            var scrollEl = document.getElementById('msg-scroll');
+            var atBottom = !scrollEl || (scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 80);
+            var typingEl2 = document.getElementById('bm-typing-indicator');
+            data.new_messages.forEach(function(msg) {
+                if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
+                var html = bmBuildMsgHtml(msg);
+                if (typingEl2) {
+                    typingEl2.insertAdjacentHTML('beforebegin', html);
+                } else if (scrollEl) {
+                    scrollEl.insertAdjacentHTML('beforeend', html);
+                }
+                if (msg.id > bmLastMsgId) bmLastMsgId = msg.id;
+            });
+            if (atBottom && scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+        }
+
+        // Update read receipts on existing messages
+        if (data.read_updates) {
+            Object.keys(data.read_updates).forEach(function(msgId) {
+                document.querySelectorAll('.bm-read-' + msgId).forEach(function(el) {
+                    el.textContent = '✓✓';
+                    el.style.color = 'var(--blue-light)';
+                    el.title = 'Lu';
+                });
+            });
+        }
+    })
+    .catch(function() {});
+}
+
+setInterval(bmPoll, 3000);
 </script>
 @endsection

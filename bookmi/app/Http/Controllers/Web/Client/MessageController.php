@@ -7,8 +7,11 @@ use App\Http\Controllers\Web\Concerns\HandleMessageSend;
 use App\Enums\BookingStatus;
 use App\Models\BookingRequest;
 use App\Models\Conversation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class MessageController extends Controller
@@ -36,6 +39,64 @@ class MessageController extends Controller
             ->update(['read_at' => now()]);
 
         return view('client.messages.show', compact('conversation'));
+    }
+
+    public function typing(int $id): JsonResponse
+    {
+        Conversation::where('client_id', auth()->id())->findOrFail($id);
+        Cache::put('typing:conv:' . $id . ':user:' . auth()->id(), true, now()->addSeconds(5));
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function status(int $id, Request $request): JsonResponse
+    {
+        $conversation = Conversation::where('client_id', auth()->id())
+            ->with('talentProfile')
+            ->findOrFail($id);
+
+        $afterId     = max(0, (int) $request->query('after', 0));
+        $otherUserId = $conversation->talentProfile?->user_id;
+        $isTyping    = $otherUserId !== null && Cache::has('typing:conv:' . $id . ':user:' . $otherUserId);
+
+        $newMessages = $conversation->messages()
+            ->where('id', '>', $afterId)
+            ->orderBy('id')
+            ->get()
+            ->map(function ($m) {
+                /** @var \App\Models\Message $m */
+                return [
+                    'id'         => $m->id,
+                    'sender_id'  => $m->sender_id,
+                    'content'    => $m->content,
+                    'media_url'  => $m->media_path ? Storage::disk('public')->url($m->media_path) : null,
+                    'media_type' => $m->media_type,
+                    'created_at' => $m->created_at->format('H:i'),
+                    'read_at'    => $m->read_at instanceof \Carbon\Carbon ? $m->read_at->toIso8601String() : null,
+                ];
+            });
+
+        $readUpdates = $conversation->messages()
+            ->where('sender_id', auth()->id())
+            ->whereNotNull('read_at')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get(['id', 'read_at'])
+            ->mapWithKeys(function ($m) {
+                /** @var \App\Models\Message $m */
+                return [(int) $m->id => $m->read_at instanceof \Carbon\Carbon ? $m->read_at->toIso8601String() : (string) $m->read_at];
+            });
+
+        $conversation->messages()
+            ->where('sender_id', '!=', auth()->id())
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+
+        return response()->json([
+            'is_typing'    => $isTyping,
+            'new_messages' => $newMessages,
+            'read_updates' => $readUpdates,
+        ]);
     }
 
     public function startFromBooking(int $bookingId): RedirectResponse

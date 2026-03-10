@@ -59,6 +59,22 @@
     color: #ef4444; transition: background 0.2s;
 }
 .media-preview-cancel:hover { background: #fca5a5; }
+/* ── Typing indicator ── */
+#bm-typing-indicator { display: none; align-items: center; gap: 8px; padding: 8px 16px; }
+#bm-typing-indicator .bm-dots {
+    background: #f3f4f6; border-radius: 1rem 1rem 1rem 0.25rem;
+    padding: 10px 14px; display: inline-flex; gap: 5px; align-items: center;
+}
+#bm-typing-indicator .bm-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #9ca3af;
+    animation: bmDot 1.4s ease-in-out infinite;
+}
+#bm-typing-indicator .bm-dot:nth-child(2) { animation-delay: 0.2s; }
+#bm-typing-indicator .bm-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bmDot {
+    0%, 60%, 100% { transform: scale(1); opacity: 0.5; }
+    30% { transform: scale(1.4); opacity: 1; }
+}
 /* ── Lightbox ── */
 .lightbox {
     position: fixed; inset: 0; z-index: 1000;
@@ -72,6 +88,7 @@
 
 @section('content')
 @php
+    $lastMessageId   = $conversation->messages->last()?->id ?? 0;
     $client          = $conversation->client;
     $clientFirstName = $client->first_name ?? 'Client';
     $clientLastName  = $client->last_name  ?? '';
@@ -128,7 +145,7 @@
         <div class="flex-1 overflow-y-auto p-6 space-y-4" id="messages-container">
             @forelse($conversation->messages as $message)
                 @php $isMe = $message->sender_id === auth()->id(); @endphp
-                <div class="flex items-end gap-2 {{ $isMe ? 'justify-end' : 'justify-start' }}">
+                <div class="flex items-end gap-2 {{ $isMe ? 'justify-end' : 'justify-start' }}" data-msg-id="{{ $message->id }}">
 
                     {{-- Client avatar (left) --}}
                     @if(!$isMe)
@@ -165,10 +182,10 @@
 
                         <div class="flex items-center gap-1 mt-1 {{ $isMe ? 'justify-end' : 'justify-start' }}">
                             <span class="text-xs text-gray-400">{{ $message->created_at->format('H:i') }}</span>
-                            @if($isMe && $message->read_at)
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
+                            @if($isMe)
+                                <span class="bm-read-{{ $message->id }} text-xs"
+                                      style="color:{{ $message->read_at ? '#f97316' : '#d1d5db' }}"
+                                      title="{{ $message->read_at ? 'Lu' : 'Envoyé' }}">{{ $message->read_at ? '✓✓' : '✓' }}</span>
                             @endif
                         </div>
                     </div>
@@ -188,6 +205,15 @@
             @empty
                 <div class="text-center py-12 text-gray-400 text-sm">Aucun message pour l'instant. Démarrez la conversation !</div>
             @endforelse
+
+            {{-- Typing indicator --}}
+            <div id="bm-typing-indicator">
+                <div class="bm-dots">
+                    <span class="bm-dot"></span>
+                    <span class="bm-dot"></span>
+                    <span class="bm-dot"></span>
+                </div>
+            </div>
         </div>
 
         {{-- Error message --}}
@@ -238,7 +264,7 @@
                         maxlength="2000"
                         id="bm-textarea"
                         class="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
-                        oninput="bmUpdateSendBtn()"
+                        oninput="bmUpdateSendBtn();bmSendTyping()"
                         onkeydown="if(event.ctrlKey && event.key === 'Enter' && !document.getElementById('bm-send-btn').disabled) this.form.submit();"
                     >{{ old('content') }}</textarea>
 
@@ -325,5 +351,96 @@ function bmUpdateSendBtn() {
     var ta = document.getElementById('bm-textarea');
     if (ta && ta.value.trim().length > 0) bmUpdateSendBtn();
 })();
+
+// ── Typing indicator & real-time polling ──
+var bmMyUserId   = {{ auth()->id() }};
+var bmLastMsgId  = {{ $lastMessageId }};
+var bmStatusUrl  = '{{ route("talent.messages.status", $conversation->id) }}';
+var bmTypingUrl  = '{{ route("talent.messages.typing", $conversation->id) }}';
+var bmCsrf       = document.querySelector('meta[name="csrf-token"]')?.content ?? '{{ csrf_token() }}';
+var bmTypingTimer = null;
+
+function bmSendTyping() {
+    clearTimeout(bmTypingTimer);
+    bmTypingTimer = setTimeout(function() {
+        fetch(bmTypingUrl, {
+            method: 'PATCH',
+            headers: { 'X-CSRF-TOKEN': bmCsrf, 'Accept': 'application/json' }
+        }).catch(function() {});
+    }, 300);
+}
+
+function bmEscape(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(str));
+    return d.innerHTML;
+}
+
+function bmBuildMsgHtml(msg) {
+    var isMe = msg.sender_id === bmMyUserId;
+    var bubble = '';
+    if (msg.content) {
+        bubble += '<div class="px-4 py-3 rounded-2xl text-sm leading-relaxed ' + (isMe ? 'text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm') + '"' + (isMe ? ' style="background:#FF6B35"' : '') + '>' + bmEscape(msg.content) + '</div>';
+    }
+    if (msg.media_url) {
+        if (msg.media_type === 'video') {
+            bubble += '<div class="bubble-media-img"><video controls preload="none" style="border-radius:0.875rem;max-height:20rem;"><source src="' + msg.media_url + '" type="video/mp4"></video></div>';
+        } else {
+            bubble += '<div class="bubble-media-img"><img src="' + msg.media_url + '" alt="Image" loading="lazy" style="border-radius:0.875rem;max-height:20rem;width:auto;max-width:18rem;"></div>';
+        }
+    }
+    var readMark = isMe
+        ? '<span class="bm-read-' + msg.id + ' text-xs" style="color:' + (msg.read_at ? '#f97316' : '#d1d5db') + '" title="' + (msg.read_at ? 'Lu' : 'Envoyé') + '">' + (msg.read_at ? '✓✓' : '✓') + '</span>'
+        : '';
+    var timeRow = '<div class="flex items-center gap-1 mt-1 ' + (isMe ? 'justify-end' : 'justify-start') + '"><span class="text-xs text-gray-400">' + msg.created_at + '</span>' + readMark + '</div>';
+    var inner = '<div class="flex flex-col ' + (isMe ? 'items-end' : 'items-start') + ' max-w-xs md:max-w-md lg:max-w-lg">' + bubble + timeRow + '</div>';
+    return '<div class="flex items-end gap-2 ' + (isMe ? 'justify-end' : 'justify-start') + '" data-msg-id="' + msg.id + '">' + inner + '</div>';
+}
+
+function bmPoll() {
+    fetch(bmStatusUrl + '?after=' + bmLastMsgId, {
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': bmCsrf }
+    })
+    .then(function(r) { return r.ok ? r.json() : null; })
+    .then(function(data) {
+        if (!data) return;
+
+        // Typing indicator
+        var typingEl = document.getElementById('bm-typing-indicator');
+        if (typingEl) typingEl.style.display = data.is_typing ? 'flex' : 'none';
+
+        // Append new messages
+        if (data.new_messages && data.new_messages.length > 0) {
+            var scrollEl = document.getElementById('messages-container');
+            var atBottom = !scrollEl || (scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 80);
+            var typingEl2 = document.getElementById('bm-typing-indicator');
+            data.new_messages.forEach(function(msg) {
+                if (document.querySelector('[data-msg-id="' + msg.id + '"]')) return;
+                var html = bmBuildMsgHtml(msg);
+                if (typingEl2) {
+                    typingEl2.insertAdjacentHTML('beforebegin', html);
+                } else if (scrollEl) {
+                    scrollEl.insertAdjacentHTML('beforeend', html);
+                }
+                if (msg.id > bmLastMsgId) bmLastMsgId = msg.id;
+            });
+            if (atBottom && scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+        }
+
+        // Update read receipts on existing messages
+        if (data.read_updates) {
+            Object.keys(data.read_updates).forEach(function(msgId) {
+                document.querySelectorAll('.bm-read-' + msgId).forEach(function(el) {
+                    el.textContent = '✓✓';
+                    el.style.color = '#f97316';
+                    el.title = 'Lu';
+                });
+            });
+        }
+    })
+    .catch(function() {});
+}
+
+setInterval(bmPoll, 3000);
 </script>
 @endsection

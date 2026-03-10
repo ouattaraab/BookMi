@@ -47,6 +47,8 @@ Route::delete('/packages/{id}', [PackageController::class, 'destroy'])->name('pa
 Route::get('/messages', [MessageController::class, 'index'])->name('messages');
 Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
 Route::post('/messages/{id}', [MessageController::class, 'send'])->name('messages.send');
+Route::patch('/messages/{id}/typing', [MessageController::class, 'typing'])->name('messages.typing');
+Route::get('/messages/{id}/status', [MessageController::class, 'status'])->name('messages.status');
 
 // Statistiques
 Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
