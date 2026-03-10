@@ -245,4 +245,48 @@ class ManagerRepository {
       );
     }
   }
+
+  Future<ApiResult<List<Map<String, dynamic>>>>
+  getManagerConversations() async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '/manager/conversations',
+      );
+      final rawData = response.data!['data'];
+      final items = (rawData is List
+              ? rawData
+              : (rawData['data'] as List<dynamic>? ?? []))
+          .cast<Map<String, dynamic>>();
+      return ApiSuccess(items.toList());
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message:
+            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
+
+  Future<ApiResult<void>> sendManagerMessage(
+    int conversationId,
+    String content,
+  ) async {
+    try {
+      await _dio.post<void>(
+        '/manager/conversations/$conversationId/messages',
+        data: {'content': content},
+      );
+      return const ApiSuccess(null);
+    } on DioException catch (e) {
+      final errorData = e.response?.data as Map<String, dynamic>?;
+      final error = errorData?['error'] as Map<String, dynamic>?;
+      return ApiFailure(
+        code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
+        message:
+            (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      );
+    }
+  }
 }

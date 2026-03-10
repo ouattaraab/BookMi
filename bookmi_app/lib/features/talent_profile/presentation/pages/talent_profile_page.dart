@@ -97,6 +97,59 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
     );
   }
 
+  Future<void> _notifyAvailability(int talentProfileId) async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) {
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (_) => const _AuthRequiredReservationSheet(),
+      );
+      return;
+    }
+
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(days: 7)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+      helpText: 'Choisir la date souhaitée',
+      confirmText: 'Me notifier',
+    );
+    if (picked == null || !mounted) return;
+
+    final m = picked.month.toString().padLeft(2, '0');
+    final d = picked.day.toString().padLeft(2, '0');
+    final eventDate = '${picked.year}-$m-$d';
+
+    try {
+      await ApiClient.instance.dio.post<void>(
+        '/talents/$talentProfileId/notify-availability',
+        data: {'event_date': eventDate},
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Vous serez notifié dès que ce talent sera disponible.',
+          ),
+          backgroundColor: Color(0xFF4CAF50),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } on Exception catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Impossible d'enregistrer l'alerte."),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
   Future<void> _toggleFollow(int talentProfileId) async {
     final authState = context.read<AuthBloc>().state;
     if (authState is! AuthAuthenticated) return;
@@ -672,8 +725,8 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                         onTalentTap: _onSimilarTalentTap,
                       ),
 
-                      // Bottom spacing for CTA button
-                      const SizedBox(height: 80),
+                      // Bottom spacing for CTA button + notify button
+                      const SizedBox(height: 110),
                     ],
                   ),
                 ),
@@ -704,50 +757,72 @@ class _TalentProfilePageState extends State<TalentProfilePage> {
                 ],
               ),
             ),
-            child: Container(
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: BookmiColors.gradientCta,
-                borderRadius: BorderRadius.circular(BookmiRadius.button),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(BookmiRadius.button),
-                  onTap: () {
-                    final authState = context.read<AuthBloc>().state;
-                    if (authState is! AuthAuthenticated) {
-                      showModalBottomSheet<void>(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        isScrollControlled: true,
-                        builder: (_) => const _AuthRequiredReservationSheet(),
-                      );
-                      return;
-                    }
-                    AnalyticsService.instance.trackTap('btn_reserver');
-                    BookingFlowSheet.show(
-                      context,
-                      repository: context.read<BookingRepository>(),
-                      talentProfileId: talentId,
-                      talentStageName: stageName,
-                      servicePackages: servicePackages,
-                      enableExpress:
-                          profile['enable_express_booking'] as bool? ?? false,
-                    );
-                  },
-                  child: Center(
-                    child: Text(
-                      'Réserver · ${TalentCard.formatCachet(cachetAmount)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: BookmiColors.gradientCta,
+                    borderRadius: BorderRadius.circular(BookmiRadius.button),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(BookmiRadius.button),
+                      onTap: () {
+                        final authState = context.read<AuthBloc>().state;
+                        if (authState is! AuthAuthenticated) {
+                          showModalBottomSheet<void>(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) =>
+                                const _AuthRequiredReservationSheet(),
+                          );
+                          return;
+                        }
+                        AnalyticsService.instance.trackTap('btn_reserver');
+                        BookingFlowSheet.show(
+                          context,
+                          repository: context.read<BookingRepository>(),
+                          talentProfileId: talentId,
+                          talentStageName: stageName,
+                          servicePackages: servicePackages,
+                          enableExpress:
+                              profile['enable_express_booking'] as bool? ??
+                              false,
+                        );
+                      },
+                      child: Center(
+                        child: Text(
+                          'Réserver · ${TalentCard.formatCachet(cachetAmount)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+                TextButton.icon(
+                  onPressed: () => _notifyAvailability(talentId),
+                  icon: const Icon(
+                    Icons.notifications_outlined,
+                    size: 15,
+                    color: Colors.white70,
+                  ),
+                  label: const Text(
+                    'Me notifier quand disponible',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

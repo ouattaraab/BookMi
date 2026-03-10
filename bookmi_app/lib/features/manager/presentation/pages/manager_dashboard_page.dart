@@ -2,6 +2,8 @@ import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/manager/data/repositories/manager_repository.dart';
+import 'package:bookmi_app/features/manager/presentation/pages/manager_all_bookings_page.dart';
+import 'package:bookmi_app/features/manager/presentation/pages/manager_conversations_page.dart';
 import 'package:bookmi_app/features/manager/presentation/pages/manager_talent_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -67,9 +69,27 @@ class _ManagerDashboardPageState extends State<ManagerDashboardPage> {
         ),
         actions: [
           IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => ManagerConversationsPage(repo: _repo),
+              ),
+            ),
+            icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF6C5ECF)),
+            tooltip: 'Messages',
+          ),
+          IconButton(
             onPressed: () => context.pushNamed(RouteNames.managerInvitations),
             icon: const Icon(Icons.mail_outline, color: Color(0xFF6C5ECF)),
             tooltip: 'Invitations',
+          ),
+          IconButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => ManagerAllBookingsPage(repo: _repo),
+              ),
+            ),
+            icon: const Icon(Icons.list_alt, color: Color(0xFF6C5ECF)),
+            tooltip: 'Toutes les réservations',
           ),
           IconButton(
             onPressed: _load,
