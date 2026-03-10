@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         onManagerTap: isTalent
                             ? () => context.pushNamed(
-                                RouteNames.managerDashboard,
+                                RouteNames.profileManagerAssignment,
                               )
                             : null,
                       ),
@@ -515,7 +515,7 @@ class _DashboardCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: _ActionButton(
-                    label: 'Accès Manager',
+                    label: 'Mes managers',
                     icon: Icons.manage_accounts_outlined,
                     isPrimary: true,
                     onTap: onManagerTap ?? () {},

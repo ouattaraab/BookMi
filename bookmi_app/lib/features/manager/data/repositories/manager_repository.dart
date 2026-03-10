@@ -255,7 +255,8 @@ class ManagerRepository {
       final rawData = response.data!['data'];
       final items = (rawData is List
               ? rawData
-              : (rawData['data'] as List<dynamic>? ?? []))
+              : ((rawData as Map<String, dynamic>)['data'] as List<dynamic>? ??
+                  []))
           .cast<Map<String, dynamic>>();
       return ApiSuccess(items.toList());
     } on DioException catch (e) {

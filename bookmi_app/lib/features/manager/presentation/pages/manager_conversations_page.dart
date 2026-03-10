@@ -123,7 +123,7 @@ class _ManagerConversationsPageState extends State<ManagerConversationsPage> {
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: _conversations.length,
-        separatorBuilder: (_, _a) => const SizedBox(height: 10),
+        separatorBuilder: (context, index) => const SizedBox(height: 10),
         itemBuilder: (context, i) {
           final conv = _conversations[i];
           return _ConversationCard(

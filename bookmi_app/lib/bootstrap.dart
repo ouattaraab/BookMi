@@ -26,12 +26,21 @@ Future<void> bootstrap(
   }
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await NotificationService.instance.init();
+  // 5-second timeout: requestPermission/getInitialMessage can hang on iOS
+  // simulator (no APNs). The app still works — FCM just won't be available.
+  await NotificationService.instance.init().timeout(
+    const Duration(seconds: 5),
+    onTimeout: () {},
+  );
 
   // Print FCM token in debug mode — useful for testing artisan bookmi:test-push
+  // Non-blocking: getToken() can hang indefinitely on iOS simulator (no APNs)
   if (kDebugMode) {
-    final fcmToken = await NotificationService.instance.getFcmToken();
-    debugPrint('[BookMi FCM] Device token: $fcmToken');
+    unawaited(
+      NotificationService.instance
+          .getFcmToken()
+          .then((t) => debugPrint('[BookMi FCM] Device token: $t')),
+    );
   }
 
   // Initialize Hive for local storage

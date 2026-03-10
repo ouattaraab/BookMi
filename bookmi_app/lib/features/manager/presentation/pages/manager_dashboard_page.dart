@@ -74,7 +74,10 @@ class _ManagerDashboardPageState extends State<ManagerDashboardPage> {
                 builder: (_) => ManagerConversationsPage(repo: _repo),
               ),
             ),
-            icon: const Icon(Icons.chat_bubble_outline, color: Color(0xFF6C5ECF)),
+            icon: const Icon(
+              Icons.chat_bubble_outline,
+              color: Color(0xFF6C5ECF),
+            ),
             tooltip: 'Messages',
           ),
           IconButton(

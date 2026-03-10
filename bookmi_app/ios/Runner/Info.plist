@@ -2,23 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>BookMi a besoin d'accéder au microphone pour envoyer des messages vocaux.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>BookMi utilise la caméra pour prendre vos photos de profil et de portfolio.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>BookMi accède à votre galerie pour uploader vos photos de profil et de portfolio.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>BookMi peut enregistrer des photos dans votre galerie.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>BookMi utilise votre position pour vous montrer les talents près de vous.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>BookMi utilise Face ID pour sécuriser votre connexion biométrique.</string>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>en</string>
-		<string>es</string>
-	</array>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -29,6 +14,11 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>es</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>$(FLAVOR_APP_NAME)</string>
 	<key>CFBundlePackageType</key>
@@ -37,9 +27,59 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>click.bookmi.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>bookmi</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
 	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>BookMi utilise la caméra pour prendre vos photos de profil et de portfolio.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>BookMi utilise Face ID pour sécuriser votre connexion biométrique.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>BookMi utilise votre position pour vous montrer les talents près de vous.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>BookMi a besoin d'accéder au microphone pour envoyer des messages vocaux.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>BookMi peut enregistrer des photos dans votre galerie.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>BookMi accède à votre galerie pour uploader vos photos de profil et de portfolio.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -60,47 +100,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
-	<!-- Deep linking: enable Flutter deep link handling -->
-	<key>FlutterDeepLinkingEnabled</key>
-	<true/>
-	<!-- Custom URL scheme: bookmi://talent/slug -->
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>click.bookmi.app</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>bookmi</string>
-			</array>
-		</dict>
-	</array>
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-		<key>UISceneConfigurations</key>
-		<dict>
-			<key>UIWindowSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneClassName</key>
-					<string>UIWindowScene</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-					<key>UISceneConfigurationName</key>
-					<string>flutter</string>
-					<key>UISceneStoryboardFile</key>
-					<string>Main</string>
-				</dict>
-			</array>
-		</dict>
-	</dict>
 </dict>
 </plist>

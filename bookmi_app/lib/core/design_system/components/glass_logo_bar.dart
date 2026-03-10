@@ -9,18 +9,19 @@ import 'package:google_fonts/google_fonts.dart';
 class GlassLogoBar extends StatelessWidget implements PreferredSizeWidget {
   const GlassLogoBar({super.key});
 
-  static const double _barHeight = 74.0;
+  static const double _contentHeight = 68.0;
 
   @override
-  Size get preferredSize => const Size.fromHeight(_barHeight);
+  Size get preferredSize => const Size.fromHeight(_contentHeight);
 
   @override
   Widget build(BuildContext context) {
     final tier = GpuTierProvider.detect();
+    final topPadding = MediaQuery.of(context).padding.top;
 
     Widget bar = Container(
-      height: _barHeight,
-      padding: const EdgeInsets.only(top: 16),
+      height: _contentHeight + topPadding,
+      padding: EdgeInsets.only(top: topPadding + 8),
       decoration: BoxDecoration(
         color: _getBackgroundColor(tier),
         border: const Border(
@@ -37,19 +38,19 @@ class GlassLogoBar extends StatelessWidget implements PreferredSizeWidget {
               TextSpan(
                 text: 'Book',
                 style: GoogleFonts.nunito(
-                  fontSize: 45,
+                  fontSize: 38,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
-                  letterSpacing: -1.8,
+                  letterSpacing: -1.5,
                 ),
               ),
               TextSpan(
                 text: 'Mi',
                 style: GoogleFonts.nunito(
-                  fontSize: 45,
+                  fontSize: 38,
                   fontWeight: FontWeight.w900,
                   color: BookmiColors.brandBlueLight,
-                  letterSpacing: -1.8,
+                  letterSpacing: -1.5,
                 ),
               ),
             ],
