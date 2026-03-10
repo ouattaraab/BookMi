@@ -37,9 +37,9 @@ Future<void> bootstrap(
   // Non-blocking: getToken() can hang indefinitely on iOS simulator (no APNs)
   if (kDebugMode) {
     unawaited(
-      NotificationService.instance
-          .getFcmToken()
-          .then((t) => debugPrint('[BookMi FCM] Device token: $t')),
+      NotificationService.instance.getFcmToken().then(
+        (t) => debugPrint('[BookMi FCM] Device token: $t'),
+      ),
     );
   }
 

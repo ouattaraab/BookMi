@@ -177,18 +177,17 @@ class _ConversationCard extends StatelessWidget {
     final clientFirstName = (client['first_name'] as String?) ?? '';
     final clientLastName = (client['last_name'] as String?) ?? '';
     final clientName = '$clientFirstName $clientLastName'.trim();
-    final clientInitial =
-        clientName.isNotEmpty ? clientName[0].toUpperCase() : '?';
+    final clientInitial = clientName.isNotEmpty
+        ? clientName[0].toUpperCase()
+        : '?';
 
     final talentStageName =
         (talent['stage_name'] as String?) ??
         ((talent['user'] as Map<String, dynamic>?)?['first_name'] as String? ??
             '');
 
-    final lastMessageContent =
-        (latestMessage?['content'] as String?) ?? '';
-    final lastMessageAt =
-        conversation['last_message_at'] as String?;
+    final lastMessageContent = (latestMessage?['content'] as String?) ?? '';
+    final lastMessageAt = conversation['last_message_at'] as String?;
 
     return InkWell(
       onTap: onTap,

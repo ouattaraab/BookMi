@@ -73,8 +73,9 @@ class _ManagerChatPageState extends State<ManagerChatPage> {
     });
 
     try {
-      final response = await ApiClient.instance.dio
-          .get<Map<String, dynamic>>('/conversations/$_conversationId/messages');
+      final response = await ApiClient.instance.dio.get<Map<String, dynamic>>(
+        '/conversations/$_conversationId/messages',
+      );
       if (!mounted) return;
       final items = ((response.data?['data'] as List<dynamic>?) ?? [])
           .cast<Map<String, dynamic>>();
@@ -330,8 +331,9 @@ class _ChatBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment:
-            isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe) ...[
@@ -350,8 +352,9 @@ class _ChatBubble extends StatelessWidget {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
@@ -362,9 +365,7 @@ class _ChatBubble extends StatelessWidget {
                     maxWidth: MediaQuery.of(context).size.width * 0.70,
                   ),
                   decoration: BoxDecoration(
-                    color: isMe
-                        ? const Color(0xFF6C5ECF)
-                        : Colors.white,
+                    color: isMe ? const Color(0xFF6C5ECF) : Colors.white,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),

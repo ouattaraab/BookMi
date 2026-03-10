@@ -95,7 +95,8 @@ class _SplashPageState extends State<SplashPage>
     // deduplicate the identical state emission and BlocListener would never
     // fire. Instead navigate immediately via a post-frame callback.
     final currentState = bloc.state;
-    if (currentState is AuthAuthenticated || currentState is AuthUnauthenticated) {
+    if (currentState is AuthAuthenticated ||
+        currentState is AuthUnauthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) context.go(RoutePaths.home);
       });
@@ -107,7 +108,8 @@ class _SplashPageState extends State<SplashPage>
       final s = bloc.state;
       if (s is AuthInitial || s is AuthLoading) {
         bloc.add(const AuthSessionExpired());
-      } else if (mounted && (s is AuthAuthenticated || s is AuthUnauthenticated)) {
+      } else if (mounted &&
+          (s is AuthAuthenticated || s is AuthUnauthenticated)) {
         // State resolved but navigation didn't happen (e.g. blocked frame).
         context.go(RoutePaths.home);
       }
