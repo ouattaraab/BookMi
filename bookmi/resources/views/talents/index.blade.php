@@ -1117,7 +1117,7 @@ nav[aria-label="Pagination"] svg { display: none; }
 @endsection
 
 @section('scripts')
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 (function () {
     'use strict';
 

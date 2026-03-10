@@ -261,7 +261,7 @@
         </form>
     </div>
 
-    <script>
+    <script nonce="{{ app('csp_nonce') }}">
     function toggleTalentNotif(track) {
         const isOn = track.style.background.includes('FF6B35') || track.style.background.includes('ff6b35');
         const checkbox = track.closest('label').querySelector('input[type="checkbox"]');

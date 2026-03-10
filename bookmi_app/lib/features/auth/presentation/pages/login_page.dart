@@ -50,11 +50,12 @@ class _LoginPageState extends State<LoginPage> {
       reason: 'Connectez-vous à BookMi avec votre empreinte digitale',
     );
     if (!authenticated || !mounted) return;
-    final creds = await _secureStorage.getBiometricCredentials();
-    if (creds == null || !mounted) return;
-    context.read<AuthBloc>().add(
-      AuthLoginSubmitted(email: creds.email, password: creds.password),
-    );
+    // Use stored token — no plaintext password needed.
+    // If the token has expired, AuthCheckRequested emits AuthUnauthenticated
+    // and the user will be prompted to log in manually.
+    final token = await _secureStorage.getBiometricToken();
+    if (token == null || !mounted) return;
+    context.read<AuthBloc>().add(const AuthCheckRequested());
   }
 
   @override

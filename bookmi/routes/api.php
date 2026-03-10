@@ -143,7 +143,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::put('/talent_profiles/me/auto_reply', [TalentProfileController::class, 'updateAutoReply'])->name('talent_profiles.auto_reply');
 
         Route::get('/me/withdrawal_requests', [WithdrawalRequestController::class, 'index'])->name('me.withdrawal_requests.index');
-        Route::post('/me/withdrawal_requests', [WithdrawalRequestController::class, 'store'])->name('me.withdrawal_requests.store');
+        Route::post('/me/withdrawal_requests', [WithdrawalRequestController::class, 'store'])
+            ->middleware('throttle:withdrawal')
+            ->name('me.withdrawal_requests.store');
         Route::patch('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'update'])->name('talent_profiles.update');
         Route::delete('/talent_profiles/{talent_profile}', [TalentProfileController::class, 'destroy'])->name('talent_profiles.destroy');
 
@@ -230,6 +232,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // Alertes disponibilité
         Route::post('/talents/{talent}/notify-availability', [TalentController::class, 'notifyAvailability'])
+            ->middleware('throttle:notify-availability')
             ->name('talents.notify-availability');
 
         // Notifications push (Story 5.4)

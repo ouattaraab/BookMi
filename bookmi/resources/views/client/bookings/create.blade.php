@@ -84,7 +84,7 @@ main.page-content { background: #F2EFE9 !important; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 </style>
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 function locationPicker() {
     return {
         query: {{ json_encode(old('event_location', '')) }},

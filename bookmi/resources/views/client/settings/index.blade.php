@@ -234,7 +234,7 @@ main.page-content { background: #F2EFE9 !important; }
         </form>
     </div>
 
-    <script>
+    <script nonce="{{ app('csp_nonce') }}">
     function previewAvatar(input) {
         if (input.files && input.files[0]) {
             const file = input.files[0];
@@ -507,7 +507,7 @@ main.page-content { background: #F2EFE9 !important; }
         </form>
     </div>
 
-    <script>
+    <script nonce="{{ app('csp_nonce') }}">
     function toggleNotif(track) {
         const isOn = track.style.background.includes('FF6B35') || track.style.background.includes('ff6b35');
         const key = track.dataset.key;

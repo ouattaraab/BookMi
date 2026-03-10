@@ -112,8 +112,18 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('messaging', function (Request $request) {
-            // 60 messages par minute par utilisateur
-            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+            // 20 messages par minute par utilisateur (réduit de 60 pour limiter le spam)
+            return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('withdrawal', function (Request $request) {
+            // 3 demandes de retrait par heure par utilisateur
+            return Limit::perHour(3)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('notify-availability', function (Request $request) {
+            // 5 alertes de disponibilité par minute par utilisateur
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
         });
 
         RateLimiter::for('analytics', function (Request $request) {

@@ -227,7 +227,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="{{ app('csp_nonce') }}">
     (function(){
         var c = document.getElementById('authStars');
         if (!c) return;

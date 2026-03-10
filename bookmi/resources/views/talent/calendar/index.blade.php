@@ -319,7 +319,7 @@ main.page-content { background: #F2EFE9 !important; }
 </div>
 
 @section('scripts')
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 function calendarApp() {
     return {
         // Modal réservations

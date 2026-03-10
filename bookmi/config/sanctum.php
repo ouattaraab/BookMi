@@ -47,7 +47,9 @@ return [
     |
     */
 
-    'expiration' => 1440,
+    // 10 080 minutes = 7 jours. Équilibre sécurité/UX mobile :
+    // les tokens expirés déclenchent un 401 → AuthSessionExpired → re-login.
+    'expiration' => 10080,
 
     /*
     |--------------------------------------------------------------------------

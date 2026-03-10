@@ -691,7 +691,7 @@ Cette action est irréversible.')">
                     Publier mon avis
                 </button>
 
-                <script>
+                <script nonce="{{ app('csp_nonce') }}">
                 document.querySelectorAll('.criteria-star').forEach(function(star) {
                     star.addEventListener('click', function() {
                         var name = this.dataset.name;

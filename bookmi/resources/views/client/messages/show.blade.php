@@ -380,7 +380,7 @@
 
 </div>
 
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 // Scroll messages to bottom
 (function() {
     var el = document.getElementById('msg-scroll');

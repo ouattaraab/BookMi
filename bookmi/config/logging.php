@@ -74,6 +74,17 @@ return [
             'formatter' => \Monolog\Formatter\JsonFormatter::class,
         ],
 
+        // Audit trail for financial operations (payments, withdrawals, refunds).
+        // Kept separate for compliance, forensics, and fraud detection.
+        'financial' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/financial.log'),
+            'level' => 'info',
+            'days' => 90,
+            'replace_placeholders' => true,
+            'formatter' => \Monolog\Formatter\JsonFormatter::class,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

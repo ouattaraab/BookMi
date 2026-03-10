@@ -508,7 +508,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 function paymentPage(isVerified) {
     return {
         tab: '{{ request('tab', 'account') }}',

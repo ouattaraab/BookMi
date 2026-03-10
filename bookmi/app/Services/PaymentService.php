@@ -93,11 +93,13 @@ class PaymentService
             ]);
         });
 
-        Log::info('payment.initiated', [
+        Log::channel('financial')->info('payment.initiated', [
             'booking_id'      => $booking->id,
             'transaction_id'  => $transaction->id,
+            'client_id'       => $booking->client_id,
             'amount'          => $transaction->amount,
             'method'          => $paymentMethod->value,
+            'ip'              => request()->ip(),
         ]);
 
         // ── HTTP call OUTSIDE DB transaction — does not hold DB connection ──
@@ -119,10 +121,12 @@ class PaymentService
         } catch (PaymentException $e) {
             // Mark transaction as failed for observability before re-throwing
             $transaction->update(['status' => TransactionStatus::Failed->value]);
-            Log::error('payment.failed', [
+            Log::channel('financial')->error('payment.failed', [
                 'booking_id'     => $booking->id,
                 'transaction_id' => $transaction->id,
+                'client_id'      => $booking->client_id,
                 'error'          => $e->getMessage(),
+                'ip'             => request()->ip(),
             ]);
             throw $e;
         }
@@ -133,10 +137,12 @@ class PaymentService
             'gateway_response'  => $result,
         ]);
 
-        Log::info('payment.processing', [
+        Log::channel('financial')->info('payment.processing', [
             'booking_id'     => $booking->id,
             'transaction_id' => $transaction->id,
+            'client_id'      => $booking->client_id,
             'reference'      => $result['reference'] ?? $idempotencyKey,
+            'ip'             => request()->ip(),
         ]);
 
         return $transaction->fresh();

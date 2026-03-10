@@ -714,7 +714,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 document.addEventListener('DOMContentLoaded', function () {
 
     /* ── Star field generation ── */

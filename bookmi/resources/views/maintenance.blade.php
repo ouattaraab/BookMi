@@ -169,7 +169,7 @@
     </div>
 
     @if($end_at)
-    <script>
+    <script nonce="{{ app('csp_nonce') }}">
         (function () {
             const end = new Date('{{ $end_at }}');
             const el  = document.getElementById('countdown');

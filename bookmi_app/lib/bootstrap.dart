@@ -46,6 +46,9 @@ Future<void> bootstrap(
   // Initialize Hive for local storage
   await Hive.initFlutter();
 
+  // Load pinned CA certificate BEFORE creating ApiClient (production only).
+  await ApiClient.loadPinnedCertificate();
+
   // Initialize ApiClient singleton before the widget tree is built
   ApiClient(baseUrl: baseUrl, secureStorage: SecureStorage());
 

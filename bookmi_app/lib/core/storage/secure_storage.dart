@@ -8,8 +8,6 @@ class SecureStorage {
 
   static const _tokenKey = 'auth_token';
   static const _biometricEnabledKey = 'biometric_enabled';
-  static const _biometricEmailKey = 'biometric_email';
-  static const _biometricPasswordKey = 'biometric_password';
 
   Future<String?> getToken() => _storage.read(key: _tokenKey);
 
@@ -21,34 +19,26 @@ class SecureStorage {
   Future<void> deleteAll() => _storage.deleteAll();
 
   // ── Biometric ────────────────────────────────────────────────────
+  // Security: biometric login re-uses the existing Sanctum token stored in
+  // _tokenKey — no plaintext password is ever persisted.
 
   Future<bool> isBiometricEnabled() async {
     final value = await _storage.read(key: _biometricEnabledKey);
     return value == 'true';
   }
 
-  Future<void> setBiometricEnabled({
-    required bool enabled,
-    String? email,
-    String? password,
-  }) async {
+  Future<void> setBiometricEnabled({required bool enabled}) async {
     await _storage.write(
       key: _biometricEnabledKey,
       value: enabled ? 'true' : 'false',
     );
-    if (enabled && email != null && password != null) {
-      await _storage.write(key: _biometricEmailKey, value: email);
-      await _storage.write(key: _biometricPasswordKey, value: password);
-    } else if (!enabled) {
-      await _storage.delete(key: _biometricEmailKey);
-      await _storage.delete(key: _biometricPasswordKey);
-    }
   }
 
-  Future<({String email, String password})?> getBiometricCredentials() async {
-    final email = await _storage.read(key: _biometricEmailKey);
-    final password = await _storage.read(key: _biometricPasswordKey);
-    if (email == null || password == null) return null;
-    return (email: email, password: password);
+  /// Returns the stored token if biometric is enabled, null otherwise.
+  /// The caller must verify biometric auth BEFORE calling this.
+  Future<String?> getBiometricToken() async {
+    final enabled = await isBiometricEnabled();
+    if (!enabled) return null;
+    return getToken();
   }
 }

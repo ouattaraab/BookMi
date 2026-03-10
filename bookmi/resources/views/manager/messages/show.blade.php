@@ -134,7 +134,7 @@ main.page-content { background: #F2EFE9 !important; }
 @endsection
 
 @section('scripts')
-<script>
+<script nonce="{{ app('csp_nonce') }}">
     // Scroll vers le bas au chargement
     document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('messages-container');

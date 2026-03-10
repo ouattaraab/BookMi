@@ -291,7 +291,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 // Scroll to bottom
 (function() {
     var el = document.getElementById('messages-container');

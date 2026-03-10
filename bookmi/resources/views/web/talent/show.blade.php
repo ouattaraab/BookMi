@@ -787,7 +787,7 @@
 @endsection
 
 @section('scripts')
-<script>
+<script nonce="{{ app('csp_nonce') }}">
 /* ── Star field (hero talent profile) ── */
 (function () {
     var c = document.getElementById('tp-stars');

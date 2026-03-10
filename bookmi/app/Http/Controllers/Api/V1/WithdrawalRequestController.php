@@ -10,6 +10,7 @@ use App\Services\AdminNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class WithdrawalRequestController extends BaseController
 {
@@ -130,6 +131,15 @@ class WithdrawalRequestController extends BaseController
         }
 
         /** @var WithdrawalRequest $withdrawalRequest */
+
+        Log::channel('financial')->info('withdrawal.requested', [
+            'withdrawal_id'     => $withdrawalRequest->id,
+            'talent_profile_id' => $profile->id,
+            'user_id'           => $user->id,
+            'amount'            => $withdrawalRequest->amount,
+            'payout_method'     => $withdrawalRequest->payout_method?->value,
+            'ip'                => $request->ip(),
+        ]);
 
         // Notifier les admins (email + push in-app)
         AdminNotificationService::withdrawalRequested($withdrawalRequest);
