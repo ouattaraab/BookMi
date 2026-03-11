@@ -391,6 +391,51 @@
                 @endif
             </div>
 
+            {{-- Signaler cet avis --}}
+            <div style="padding-top:10px;border-top:1px solid #F3F4F6;margin-top:10px;">
+                <button type="button"
+                        onclick="document.getElementById('reportReviewModal{{ $clientReview->id }}').style.display='flex'"
+                        style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:9px;font-size:0.78rem;font-weight:700;color:#9A3412;background:#FFF7ED;border:1.5px solid #FED7AA;cursor:pointer;font-family:inherit;transition:background 0.2s;"
+                        onmouseover="this.style.background='#FFEDD5'" onmouseout="this.style.background='#FFF7ED'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                    Signaler cet avis
+                </button>
+            </div>
+            {{-- Modal signalement avis --}}
+            <div id="reportReviewModal{{ $clientReview->id }}"
+                 style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);padding:16px;"
+                 onclick="if(event.target===this)this.style.display='none'">
+                <div style="background:#FFFFFF;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.2);width:100%;max-width:440px;overflow:hidden;font-family:inherit;">
+                    <div style="padding:18px 22px;border-bottom:1px solid #F3F4F6;display:flex;align-items:center;justify-content:space-between;">
+                        <h6 style="font-size:0.9rem;font-weight:800;color:#1A2744;margin:0;">Signaler cet avis</h6>
+                        <button onclick="document.getElementById('reportReviewModal{{ $clientReview->id }}').style.display='none'"
+                                style="background:none;border:none;cursor:pointer;color:#9CA3AF;padding:4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                    </div>
+                    <form action="{{ route('talent.bookings.review.report', ['bookingId' => $booking->id, 'reviewId' => $clientReview->id]) }}" method="POST">
+                        @csrf
+                        <div style="padding:18px 22px;">
+                            <p style="font-size:0.82rem;color:#6B7280;font-weight:500;margin:0 0 14px;line-height:1.5;">Indiquez pourquoi cet avis vous semble inapproprié. Notre équipe l'examinera.</p>
+                            <textarea name="reason" rows="3" required maxlength="500"
+                                      placeholder="Décrivez le problème (contenu faux, inapproprié, hors-sujet…)"
+                                      style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E7EB;font-size:0.875rem;font-family:inherit;color:#1A2744;resize:none;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                                      onfocus="this.style.borderColor='#FF6B35'" onblur="this.style.borderColor='#E5E7EB'"></textarea>
+                        </div>
+                        <div style="padding:0 22px 18px;display:flex;gap:8px;justify-content:flex-end;">
+                            <button type="button" onclick="document.getElementById('reportReviewModal{{ $clientReview->id }}').style.display='none'"
+                                    style="padding:9px 18px;border-radius:9px;font-size:0.82rem;font-weight:700;color:#6B7280;background:#F3F4F6;border:none;cursor:pointer;font-family:inherit;">
+                                Annuler
+                            </button>
+                            <button type="submit"
+                                    style="padding:9px 20px;border-radius:9px;font-size:0.82rem;font-weight:800;color:white;background:linear-gradient(135deg,#EA580C,#C2410C);border:none;cursor:pointer;font-family:inherit;">
+                                Signaler
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             @else
             {{-- Formulaire réponse --}}
             <form method="POST" action="{{ route('talent.bookings.review.reply', ['id' => $booking->id, 'reviewId' => $clientReview->id]) }}" class="space-y-3 pt-2 border-t border-gray-100">

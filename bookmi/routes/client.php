@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\Web\Client\AnalyticsController;
 use App\Http\Controllers\Web\Client\BookingController;
 use App\Http\Controllers\Web\Client\DashboardController;
 use App\Http\Controllers\Web\Client\FavoriteController;
 use App\Http\Controllers\Web\Client\MessageController;
 use App\Http\Controllers\Web\Client\NotificationController;
+use App\Http\Controllers\Web\Client\PortfolioController;
+use App\Http\Controllers\Web\Client\ReportController;
 use App\Http\Controllers\Web\Client\ReviewController;
 use App\Http\Controllers\Web\Client\SettingsController;
 use App\Http\Controllers\Web\Client\VerificationController;
@@ -28,6 +31,8 @@ Route::get('/bookings/{id}/receipt', [BookingController::class, 'receipt'])->nam
 Route::get('/bookings/{id}/contract', [BookingController::class, 'contract'])->name('bookings.contract');
 Route::post('/bookings/{id}/review', [ReviewController::class, 'store'])->name('bookings.review.store');
 Route::post('/bookings/{id}/confirm-arrival', [BookingController::class, 'confirmArrival'])->name('bookings.confirm-arrival');
+Route::post('/bookings/{id}/portfolio', [PortfolioController::class, 'store'])->name('bookings.portfolio');
+Route::post('/bookings/{id}/report', [ReportController::class, 'store'])->name('bookings.report');
 
 // Favoris
 Route::get('/favorites', [FavoriteController::class, 'index'])->name('favorites');
@@ -57,6 +62,9 @@ Route::post('/settings/2fa/disable', [SettingsController::class, 'disable'])->na
 Route::post('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
 Route::delete('/settings/avatar', [SettingsController::class, 'deleteAvatar'])->name('settings.avatar.delete');
 Route::post('/settings/notifications', [SettingsController::class, 'updateNotificationPreferences'])->name('settings.notifications.update');
+
+// Analytiques
+Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
 // Vérification d'identité
 Route::get('/verification', [VerificationController::class, 'index'])->name('verification');

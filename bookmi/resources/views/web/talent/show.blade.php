@@ -724,6 +724,13 @@
                         <a href="{{ route('client.bookings.create', ['talent' => $profile->slug ?? $profile->id]) }}" class="tp-cta-btn">
                             Demander une prestation →
                         </a>
+                        {{-- Notification disponibilité --}}
+                        <button type="button" onclick="openAvailabilityModal()" id="notify-avail-btn"
+                                style="display:block;width:100%;margin-top:10px;padding:11px 20px;border-radius:12px;font-size:0.85rem;font-weight:700;color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.05);border:1.5px solid rgba(255,255,255,0.12);cursor:pointer;text-align:center;font-family:inherit;transition:all 0.2s;"
+                                onmouseover="this.style.background='rgba(255,255,255,0.10)';this.style.borderColor='rgba(255,255,255,0.25)'"
+                                onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='rgba(255,255,255,0.12)'">
+                            🔔 Me notifier quand disponible
+                        </button>
                     @else
                         <a href="{{ route('register') }}" class="tp-cta-btn">
                             Créer un compte client →
@@ -736,6 +743,41 @@
                     <a href="{{ route('register') }}" class="tp-login-btn">
                         Créer un compte gratuitement
                     </a>
+                @endauth
+
+                {{-- Modal Notifier disponibilité --}}
+                @auth
+                @if(auth()->user()->hasRole('client'))
+                <div id="avail-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);padding:16px;"
+                     onclick="if(event.target===this)closeAvailabilityModal()">
+                    <div style="background:#1A2336;border:1px solid rgba(255,255,255,0.10);border-radius:20px;width:100%;max-width:360px;overflow:hidden;font-family:'Nunito',sans-serif;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                        <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:space-between;">
+                            <h6 style="font-size:0.95rem;font-weight:800;color:white;margin:0;">Date souhaitée</h6>
+                            <button onclick="closeAvailabilityModal()" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.45);padding:4px;line-height:1;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                        <div style="padding:20px 24px;">
+                            <p style="font-size:0.82rem;color:rgba(255,255,255,0.5);font-weight:500;margin:0 0 14px;">Indiquez la date pour laquelle vous souhaitez que {{ $profile->stage_name }} soit disponible.</p>
+                            <input type="date" id="avail-date"
+                                   min="{{ now()->addDay()->format('Y-m-d') }}"
+                                   style="width:100%;padding:12px 16px;border-radius:12px;border:1.5px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05);color:white;font-family:'Nunito',sans-serif;font-size:0.9rem;font-weight:600;outline:none;box-sizing:border-box;transition:border-color 0.2s;"
+                                   onfocus="this.style.borderColor='#1AB3FF'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                            <div id="avail-feedback" style="margin-top:10px;font-size:0.8rem;font-weight:600;"></div>
+                        </div>
+                        <div style="padding:0 24px 20px;display:flex;gap:8px;justify-content:flex-end;">
+                            <button onclick="closeAvailabilityModal()"
+                                    style="padding:10px 18px;border-radius:10px;font-size:0.85rem;font-weight:700;color:rgba(255,255,255,0.55);background:rgba(255,255,255,0.06);border:none;cursor:pointer;font-family:inherit;">
+                                Annuler
+                            </button>
+                            <button onclick="submitAvailability()"
+                                    style="padding:10px 20px;border-radius:10px;font-size:0.85rem;font-weight:800;color:white;background:linear-gradient(135deg,#1AB3FF,#0090E8);border:none;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(26,179,255,0.30);">
+                                Enregistrer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @endif
                 @endauth
 
                 <div style="margin-top:1.5rem; padding-top:1.25rem; border-top:1px solid rgba(255,255,255,0.06);">
@@ -843,6 +885,56 @@ function portfolioLightbox() {
             document.body.style.overflow = '';
         }
     }
+}
+
+// Availability notification
+function openAvailabilityModal() {
+    var m = document.getElementById('avail-modal');
+    if (m) { m.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+}
+function closeAvailabilityModal() {
+    var m = document.getElementById('avail-modal');
+    if (m) { m.style.display = 'none'; document.body.style.overflow = ''; }
+    var fb = document.getElementById('avail-feedback');
+    if (fb) fb.textContent = '';
+}
+function submitAvailability() {
+    var dateEl = document.getElementById('avail-date');
+    var feedback = document.getElementById('avail-feedback');
+    if (!dateEl || !dateEl.value) {
+        feedback.style.color = '#F87171';
+        feedback.textContent = 'Veuillez sélectionner une date.';
+        return;
+    }
+    feedback.style.color = 'rgba(255,255,255,0.45)';
+    feedback.textContent = 'Enregistrement…';
+
+    fetch('/api/v1/talents/{{ $profile->id }}/notify-availability', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ event_date: dateEl.value })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data && (data.message || data.success || data.data)) {
+            feedback.style.color = '#4CAF50';
+            feedback.textContent = '✓ Vous serez notifié quand ' + '{{ addslashes($profile->stage_name) }}' + ' sera disponible à cette date.';
+            var btn = document.getElementById('notify-avail-btn');
+            if (btn) { btn.textContent = '✓ Notification activée'; btn.disabled = true; }
+            setTimeout(closeAvailabilityModal, 2000);
+        } else {
+            feedback.style.color = '#F87171';
+            feedback.textContent = (data && data.message) ? data.message : 'Erreur. Veuillez réessayer.';
+        }
+    })
+    .catch(function() {
+        feedback.style.color = '#F87171';
+        feedback.textContent = 'Erreur réseau. Veuillez réessayer.';
+    });
 }
 </script>
 @endsection

@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class PromoCodeResource extends Resource
 {
@@ -133,6 +134,21 @@ class PromoCodeResource extends Resource
                         : "{$record->used_count} / ∞"
                     ),
 
+                Tables\Columns\TextColumn::make('booking_requests_count')
+                    ->label('Utilisations (réservations)')
+                    ->badge()
+                    ->color('info')
+                    ->default(0),
+
+                Tables\Columns\TextColumn::make('booking_requests_sum_discount_amount')
+                    ->label('Total remisé (XOF)')
+                    ->formatStateUsing(
+                        fn ($state): string => $state !== null
+                        ? number_format((int) $state, 0, ',', '.') . ' XOF'
+                        : '—'
+                    )
+                    ->placeholder('—'),
+
                 Tables\Columns\TextColumn::make('min_booking_amount')
                     ->label('Montant min.')
                     ->formatStateUsing(
@@ -195,6 +211,13 @@ class PromoCodeResource extends Resource
     public static function getRelations(): array
     {
         return [];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount('bookingRequests')
+            ->withSum('bookingRequests', 'discount_amount');
     }
 
     public static function getPages(): array

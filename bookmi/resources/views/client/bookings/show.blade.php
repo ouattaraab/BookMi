@@ -619,6 +619,113 @@ Cette action est irréversible.')">
     </div>
     @endif
 
+    {{-- ── Portfolio client post-prestation ── --}}
+    @if($sk === 'completed')
+    <div class="dash-fade" style="animation-delay:188ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;">
+        <div style="padding:16px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;gap:10px;">
+            <div style="width:8px;height:8px;border-radius:50%;background:#7C3AED;flex-shrink:0;"></div>
+            <h3 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0;">Ajouter des photos à la galerie</h3>
+        </div>
+        <div style="padding:20px 24px;">
+            @if(session('portfolio_success'))
+            <div style="margin-bottom:14px;padding:12px 16px;border-radius:12px;background:#F0FDF4;border:1px solid #86EFAC;font-size:0.875rem;font-weight:600;color:#15803D;">
+                {{ session('portfolio_success') }}
+            </div>
+            @endif
+            <p style="font-size:0.82rem;color:#8A8278;font-weight:500;margin:0 0 14px;line-height:1.5;">
+                Partagez vos photos de l'événement pour enrichir le portfolio de {{ $talentName }}. Elles seront soumises à validation.
+            </p>
+            <form action="{{ route('client.bookings.portfolio', $booking->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <input type="file" name="media[]" accept="image/*,video/*" multiple
+                       style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid #E5E1DA;background:#FDFCFA;font-size:0.875rem;font-family:'Nunito',sans-serif;color:#4A5568;cursor:pointer;margin-bottom:10px;box-sizing:border-box;">
+                @error('media')
+                <p style="color:#EF4444;font-size:0.75rem;font-weight:600;margin:-6px 0 8px;">{{ $message }}</p>
+                @enderror
+                <button type="submit"
+                        style="padding:11px 24px;border-radius:12px;font-size:0.875rem;font-weight:800;color:white;background:linear-gradient(135deg,#7C3AED,#6D28D9);border:none;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 14px rgba(124,58,237,0.25);transition:transform 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform=''">
+                    Envoyer les médias
+                </button>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    {{-- ── Signaler un problème (completed / disputed) ── --}}
+    @if(in_array($sk, ['completed', 'disputed']))
+    <div class="dash-fade" style="animation-delay:189ms;margin-bottom:16px;">
+        @if(session('report_success'))
+        <div style="margin-bottom:12px;padding:12px 16px;border-radius:12px;background:#F0FDF4;border:1px solid #86EFAC;font-size:0.875rem;font-weight:600;color:#15803D;">
+            {{ session('report_success') }}
+        </div>
+        @endif
+        @if($errors->has('report'))
+        <div style="margin-bottom:12px;padding:12px 16px;border-radius:12px;background:#FEF2F2;border:1px solid #FCA5A5;font-size:0.875rem;font-weight:600;color:#991B1B;">
+            {{ $errors->first('report') }}
+        </div>
+        @endif
+        <button type="button"
+                onclick="document.getElementById('reportModal').style.display='flex'"
+                style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;font-size:0.82rem;font-weight:800;color:#EF4444;background:#FEF2F2;border:1.5px solid #FCA5A5;cursor:pointer;font-family:'Nunito',sans-serif;transition:background 0.2s;"
+                onmouseover="this.style.background='#FEE2E2'" onmouseout="this.style.background='#FEF2F2'">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            Signaler un problème
+        </button>
+    </div>
+
+    {{-- Modal signalement --}}
+    <div id="reportModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);padding:16px;"
+         onclick="if(event.target===this)this.style.display='none'">
+        <div style="background:#FFFFFF;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.2);width:100%;max-width:480px;overflow:hidden;font-family:'Nunito',sans-serif;">
+            <div style="padding:20px 24px;border-bottom:1px solid #EAE7E0;display:flex;align-items:center;justify-content:space-between;">
+                <h6 style="font-size:1rem;font-weight:900;color:#1A2744;margin:0;">Signaler un problème</h6>
+                <button onclick="document.getElementById('reportModal').style.display='none'"
+                        style="background:none;border:none;cursor:pointer;color:#B0A89E;padding:4px;border-radius:6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <form action="{{ route('client.bookings.report', $booking->id) }}" method="POST">
+                @csrf
+                <div style="padding:20px 24px;">
+                    <div style="margin-bottom:16px;">
+                        <label style="display:block;font-size:0.78rem;font-weight:800;color:#1A2744;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Motif <span style="color:#EF4444;">*</span></label>
+                        <select name="reason" required
+                                style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E1DA;font-size:0.875rem;font-weight:600;color:#1A2744;background:#FFFFFF;cursor:pointer;font-family:'Nunito',sans-serif;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%236B7280' stroke-width='2.5' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;">
+                            <option value="">Choisir…</option>
+                            <option value="no_show">Talent absent</option>
+                            <option value="late_arrival">Arrivée tardive</option>
+                            <option value="quality_issue">Prestation non conforme</option>
+                            <option value="payment_issue">Problème de paiement</option>
+                            <option value="inappropriate_behaviour">Comportement inapproprié</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.78rem;font-weight:800;color:#1A2744;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Description <span style="color:#EF4444;">*</span></label>
+                        <textarea name="description" rows="4" maxlength="1000" required
+                                  placeholder="Décrivez le problème en détail…"
+                                  style="width:100%;padding:11px 14px;border-radius:12px;border:1.5px solid #E5E1DA;font-size:0.875rem;font-weight:500;color:#1A2744;background:#FFFFFF;font-family:'Nunito',sans-serif;resize:vertical;box-sizing:border-box;outline:none;transition:border-color 0.2s;"
+                                  onfocus="this.style.borderColor='#EF4444'" onblur="this.style.borderColor='#E5E1DA'"></textarea>
+                    </div>
+                </div>
+                <div style="padding:16px 24px;border-top:1px solid #EAE7E0;display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" onclick="document.getElementById('reportModal').style.display='none'"
+                            style="padding:10px 20px;border-radius:10px;font-size:0.85rem;font-weight:700;color:#6B7280;background:#F3F4F6;border:none;cursor:pointer;font-family:'Nunito',sans-serif;">
+                        Annuler
+                    </button>
+                    <button type="submit"
+                            style="padding:10px 24px;border-radius:10px;font-size:0.85rem;font-weight:800;color:white;background:linear-gradient(135deg,#EF4444,#DC2626);border:none;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:7px;transition:opacity 0.2s;"
+                            onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        Envoyer le signalement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
     {{-- Formulaire avis (status completed seulement, pas encore évalué) --}}
     @if($sk === 'completed' && !$hasReview)
     <div class="dash-fade" style="animation-delay:190ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);margin-bottom:16px;overflow:hidden;"

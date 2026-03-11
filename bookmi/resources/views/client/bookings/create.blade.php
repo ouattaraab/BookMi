@@ -360,6 +360,22 @@ function locationPicker() {
                     </label>
                 </div>
 
+                {{-- Code promo --}}
+                <div class="dash-fade" style="animation-delay:235ms;background:#FFFFFF;border-radius:18px;border:1px solid #E5E1DA;box-shadow:0 2px 12px rgba(26,39,68,0.06);padding:20px 24px;margin-bottom:20px;">
+                    <h2 style="font-size:0.9rem;font-weight:900;color:#1A2744;margin:0 0 14px 0;">Code promo <span style="font-weight:500;font-size:0.8rem;text-transform:none;letter-spacing:0;color:#B0A89E;">(optionnel)</span></h2>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" id="promo-input" class="booking-input" placeholder="Entrez votre code"
+                               style="text-transform:uppercase;flex:1;" maxlength="50">
+                        <button type="button" onclick="validatePromo()"
+                                style="padding:13px 18px;border-radius:12px;font-size:0.85rem;font-weight:800;color:#1A2744;background:#F2EFE9;border:1.5px solid #E5E1DA;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;transition:background 0.2s;"
+                                onmouseover="this.style.background='#E5E1DA'" onmouseout="this.style.background='#F2EFE9'">
+                            Vérifier
+                        </button>
+                    </div>
+                    <div id="promo-feedback" style="margin-top:6px;font-size:0.8rem;font-weight:600;"></div>
+                    <input type="hidden" name="promo_code" id="promo-code-hidden">
+                </div>
+
                 {{-- Submit --}}
                 <div class="dash-fade" style="animation-delay:240ms;">
                     <button type="submit" class="btn-submit">
@@ -429,4 +445,65 @@ function locationPicker() {
     </div>
 
 </div>
+@endsection
+
+@section('scripts')
+<script nonce="{{ app('csp_nonce') }}">
+function validatePromo() {
+    var code = document.getElementById('promo-input').value.trim().toUpperCase();
+    var feedback = document.getElementById('promo-feedback');
+    var hidden = document.getElementById('promo-code-hidden');
+
+    if (!code) {
+        feedback.style.color = '#EF4444';
+        feedback.textContent = 'Veuillez saisir un code promo.';
+        return;
+    }
+
+    // Lire le montant depuis le composant Alpine (total calculé)
+    var amount = 0;
+    var alpineEl = document.querySelector('[x-data]');
+    if (alpineEl && window.Alpine) {
+        try { amount = Alpine.$data(alpineEl).total || 0; } catch(e) {}
+    }
+
+    feedback.style.color = '#B0A89E';
+    feedback.textContent = 'Vérification…';
+
+    fetch('/api/v1/promo_codes/validate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ code: code, booking_amount: parseInt(amount) || 0 })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data && data.valid) {
+            var disc = data.discount_amount ? parseInt(data.discount_amount) : 0;
+            feedback.style.color = '#15803D';
+            feedback.textContent = '✓ Code valide' + (disc ? ' — Remise : ' + disc.toLocaleString('fr-FR') + ' XOF' : '');
+            hidden.value = code;
+        } else {
+            feedback.style.color = '#EF4444';
+            feedback.textContent = (data && data.message) ? data.message : 'Code invalide ou expiré.';
+            hidden.value = '';
+        }
+    })
+    .catch(function() {
+        feedback.style.color = '#EF4444';
+        feedback.textContent = 'Erreur de vérification. Veuillez réessayer.';
+        hidden.value = '';
+    });
+}
+
+document.getElementById('promo-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); validatePromo(); }
+});
+document.getElementById('promo-input').addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+});
+</script>
 @endsection

@@ -130,6 +130,7 @@
                 ['route' => 'client.favorites',      'label' => 'Favoris',          'icon' => 'heart'],
                 ['route' => 'client.messages',       'label' => 'Messages',         'icon' => 'chat-bubble-left'],
                 ['route' => 'client.notifications',  'label' => 'Notifications',    'icon' => 'bell', 'badge' => $notifUnread > 0 ? $notifUnread : null],
+                ['route' => 'client.analytics',      'label' => 'Analytiques',      'icon' => 'chart-bar'],
                 ['route' => 'client.settings',       'label' => 'Paramètres',       'icon' => 'cog'],
             ];
             @endphp

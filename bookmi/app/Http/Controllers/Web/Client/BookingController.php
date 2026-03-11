@@ -12,6 +12,7 @@ use App\Exceptions\PaymentException;
 use App\Http\Controllers\Controller;
 use App\Models\BookingRequest;
 use App\Models\EscrowHold;
+use App\Models\PromoCode;
 use App\Models\TalentProfile;
 use App\Models\Transaction;
 use App\Services\BookingService;
@@ -78,6 +79,7 @@ class BookingController extends Controller
             'message'            => ['nullable', 'string', 'max:1000'],
             'is_express'         => ['nullable', 'boolean'],
             'travel_cost'        => ['nullable', 'integer', 'min:0', 'max:999999'],
+            'promo_code'         => ['nullable', 'string', 'max:50'],
         ]);
 
         $talent = TalentProfile::with('servicePackages')->findOrFail($validated['talent_profile_id']);
@@ -96,20 +98,34 @@ class BookingController extends Controller
         $isExpress        = $request->boolean('is_express') && $talent->enable_express_booking;
         $travelCost       = (int) ($validated['travel_cost'] ?? 0);
         $expressFee       = $isExpress ? (int) round($cachetAmount * 0.15) : 0;
-        $totalAmount      = $cachetAmount + $commissionAmount + $expressFee + $travelCost;
+        $baseTotal        = $cachetAmount + $commissionAmount + $expressFee + $travelCost;
+
+        // Promo code resolution
+        $promoCode     = null;
+        $promoDiscount = 0;
+        if (! empty($validated['promo_code'])) {
+            $promoCode = PromoCode::where('code', strtoupper($validated['promo_code']))->first();
+            if ($promoCode && $promoCode->isValidFor($baseTotal)) {
+                $promoDiscount = $promoCode->calculateDiscount($baseTotal);
+            } else {
+                $promoCode = null;
+            }
+        }
+
+        $totalAmount = max(0, $baseTotal - $promoDiscount);
 
         // Atomic: lockForUpdate sur talent_profile sérialise les réservations
         // concurrentes pour ce talent — ferme la fenêtre TOCTOU entre
         // isDateAvailable() et BookingRequest::create().
         try {
-            $booking = DB::transaction(function () use ($validated, $talent, $cachetAmount, $commissionAmount, $isExpress, $travelCost, $expressFee, $totalAmount) {
+            $booking = DB::transaction(function () use ($validated, $talent, $cachetAmount, $commissionAmount, $isExpress, $travelCost, $expressFee, $totalAmount, $promoCode, $promoDiscount) {
                 TalentProfile::lockForUpdate()->find($talent->id);
 
                 if (! $this->calendarService->isDateAvailable($talent, $validated['event_date'], $validated['start_time'] ?? null)) {
                     throw BookingException::dateUnavailable();
                 }
 
-                return BookingRequest::create([
+                $data = [
                     'client_id'          => auth()->id(),
                     'talent_profile_id'  => $validated['talent_profile_id'],
                     'service_package_id' => $validated['service_package_id'] ?? null,
@@ -124,7 +140,15 @@ class BookingController extends Controller
                     'travel_cost'        => $travelCost,
                     'express_fee'        => $expressFee,
                     'total_amount'       => $totalAmount,
-                ]);
+                ];
+
+                if ($promoCode !== null) {
+                    $data['promo_code_id']  = $promoCode->id;
+                    $data['discount_amount'] = $promoDiscount;
+                    $promoCode->increment('used_count');
+                }
+
+                return BookingRequest::create($data);
             });
         } catch (BookingException $e) {
             return back()->withInput()->with('error', $e->getMessage());

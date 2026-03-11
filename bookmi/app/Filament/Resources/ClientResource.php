@@ -204,6 +204,38 @@ class ClientResource extends Resource
                         Notification::make()->title('Vérification révoquée')->warning()->send();
                     }),
             ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('verify_bulk')
+                        ->label('Vérifier sélectionnés')
+                        ->icon('heroicon-o-shield-check')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Vérifier les clients sélectionnés')
+                        ->modalDescription('Les clients sélectionnés recevront le badge "Client vérifié".')
+                        ->action(function ($records): void {
+                            $records->each(fn (User $user) => $user->update([
+                                'is_client_verified' => true,
+                                'client_verified_at' => now(),
+                            ]));
+                            Notification::make()->title('Clients vérifiés')->success()->send();
+                        }),
+
+                    Tables\Actions\BulkAction::make('unverify_bulk')
+                        ->label('Révoquer vérification')
+                        ->icon('heroicon-o-shield-exclamation')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Révoquer la vérification des clients sélectionnés')
+                        ->action(function ($records): void {
+                            $records->each(fn (User $user) => $user->update([
+                                'is_client_verified' => false,
+                                'client_verified_at' => null,
+                            ]));
+                            Notification::make()->title('Vérifications révoquées')->warning()->send();
+                        }),
+                ]),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 

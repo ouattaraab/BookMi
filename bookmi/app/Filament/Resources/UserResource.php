@@ -276,6 +276,41 @@ class UserResource extends Resource
                         }
                     }),
             ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\BulkAction::make('suspend_bulk')
+                        ->label('Suspendre sélectionnés')
+                        ->icon('heroicon-o-no-symbol')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('Suspendre les utilisateurs sélectionnés')
+                        ->modalDescription('Les utilisateurs sélectionnés ne pourront plus se connecter.')
+                        ->action(function ($records): void {
+                            $records->each(fn (User $user) => $user->update([
+                                'is_suspended'     => true,
+                                'is_active'        => false,
+                                'suspended_at'     => now(),
+                            ]));
+                            Notification::make()->title('Utilisateurs suspendus')->warning()->send();
+                        }),
+
+                    Tables\Actions\BulkAction::make('activate_bulk')
+                        ->label('Activer sélectionnés')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalHeading('Activer les utilisateurs sélectionnés')
+                        ->action(function ($records): void {
+                            $records->each(fn (User $user) => $user->update([
+                                'is_suspended'     => false,
+                                'is_active'        => true,
+                                'suspended_at'     => null,
+                                'suspension_reason' => null,
+                            ]));
+                            Notification::make()->title('Utilisateurs activés')->success()->send();
+                        }),
+                ]),
+            ])
             ->defaultSort('created_at', 'desc');
     }
 
