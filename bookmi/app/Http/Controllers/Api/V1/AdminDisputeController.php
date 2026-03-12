@@ -75,9 +75,15 @@ class AdminDisputeController extends BaseController
 
         $messages = $conversation->messages()->with('sender')->latest()->paginate(50);
 
-        return $this->paginatedResponse($messages->setCollection(
-            $messages->getCollection()->map(fn ($m) => new MessageResource($m))
-        ));
+        return response()->json([
+            'data' => MessageResource::collection($messages->items()),
+            'meta' => [
+                'current_page' => $messages->currentPage(),
+                'last_page'    => $messages->lastPage(),
+                'per_page'     => $messages->perPage(),
+                'total'        => $messages->total(),
+            ],
+        ]);
     }
 
     /**
