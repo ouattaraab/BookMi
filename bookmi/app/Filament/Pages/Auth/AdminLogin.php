@@ -30,6 +30,7 @@ class AdminLogin extends Login
         // 1. Honeypot — bots fill hidden "website" field; humans leave it empty
         $data = $this->form->getRawState();
         if (! empty($data['website'] ?? '')) {
+            $this->logHoneypotHit($data['website'] ?? '');
             $this->redirect(request()->url());
 
             return null;
@@ -55,6 +56,22 @@ class AdminLogin extends Login
             RateLimiter::hit($key, 900);
             throw $e;
         }
+    }
+
+    private function logHoneypotHit(string $honeypotValue): void
+    {
+        $request = request();
+        $geo = app(\App\Services\GeoIpService::class)->lookup($request->ip() ?? '');
+
+        \App\Models\HoneypotLog::create([
+            'ip'             => $request->ip(),
+            'user_agent'     => $request->userAgent(),
+            'honeypot_value' => $honeypotValue,
+            'referer'        => $request->header('referer'),
+            'url'            => $request->fullUrl(),
+            'country'        => $geo['country'],
+            'city'           => $geo['city'],
+        ]);
     }
 
     /**
