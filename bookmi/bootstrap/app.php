@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\CheckMaintenanceMode::class,
             \App\Http\Middleware\BlockIpMiddleware::class,
+            \App\Http\Middleware\LogRateLimitMiddleware::class,
         ]);
         $middleware->api(append: [
             \App\Http\Middleware\SecurityHeaders::class,

@@ -54,6 +54,11 @@ class WebLoginController extends Controller
                 'user_agent'  => $request->userAgent(),
             ]);
 
+            app(\App\Services\SecurityEventService::class)->log('login_failed', $request, [
+                'email'    => $email,
+                'metadata' => ['client_type' => 'web'],
+            ]);
+
             return back()->withErrors([
                 'email' => 'Ces identifiants ne correspondent à aucun compte.',
             ])->onlyInput('email');

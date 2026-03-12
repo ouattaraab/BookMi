@@ -372,6 +372,15 @@ class AuthService
     private function persistLockout(string $email, int $attempts, Carbon $lockedUntil, array $context): void
     {
         try {
+            app(\App\Services\SecurityEventService::class)->log('login_locked', request(), [
+                'email'    => $email,
+                'metadata' => ['attempts' => $attempts, 'locked_until' => $lockedUntil->toIso8601String()],
+            ]);
+        } catch (\Throwable) {
+            // Never let security logging break auth
+        }
+
+        try {
             $user = User::where('email', $email)->first();
             LoginLockoutLog::create([
                 'email'          => $email,

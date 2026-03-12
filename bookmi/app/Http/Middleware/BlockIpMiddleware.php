@@ -19,6 +19,7 @@ class BlockIpMiddleware
         });
 
         if ($isBlocked) {
+            app(\App\Services\SecurityEventService::class)->log('blocked_attempt', $request);
             abort(403, 'Votre adresse IP a été bloquée.');
         }
 

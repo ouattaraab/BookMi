@@ -54,6 +54,9 @@ class AdminLogin extends Login
             return $response;
         } catch (ValidationException $e) {
             RateLimiter::hit($key, 900);
+            app(\App\Services\SecurityEventService::class)->log('login_failed', request(), [
+                'metadata' => ['client_type' => 'admin'],
+            ]);
             throw $e;
         }
     }
