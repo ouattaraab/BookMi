@@ -751,14 +751,32 @@ parameters:
 			path: app/Jobs/CompressPortfolioImage.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Listeners/HandleEscrowReleased.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Listeners/HandleEscrowReleased.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$talentProfile\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Listeners/HandleEscrowReleased.php
+
+		-
+			message: '#^Parameter \#1 \$booking of class App\\Notifications\\EscrowReleasedAdminClientNotification constructor expects App\\Models\\BookingRequest, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Listeners/HandleEscrowReleased.php
+
+		-
+			message: '#^Parameter \#1 \$booking of class App\\Notifications\\EscrowReleasedAdminTalentNotification constructor expects App\\Models\\BookingRequest, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Listeners/HandleEscrowReleased.php
 
@@ -1001,6 +1019,42 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Notifications/BookingRequestedNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/EscrowReleasedAdminClientNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/EscrowReleasedAdminClientNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/EscrowReleasedAdminClientNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>first_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/EscrowReleasedAdminTalentNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>last_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/EscrowReleasedAdminTalentNotification.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>stage_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/EscrowReleasedAdminTalentNotification.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client\.$#'
