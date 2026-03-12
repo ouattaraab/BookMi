@@ -77,6 +77,10 @@ return [
         'escalation_hours' => 96,
     ],
 
+    'admin_path' => env('ADMIN_PATH', 'admin'),
+
+    'admin_allowed_ips' => env('ADMIN_ALLOWED_IPS', ''),
+
     'verification' => [
         'allowed_mimes' => ['image/jpeg', 'image/png', 'application/pdf'],
         'max_file_size_kb' => 5120,

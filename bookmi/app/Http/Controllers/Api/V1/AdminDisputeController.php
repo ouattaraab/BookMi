@@ -73,9 +73,11 @@ class AdminDisputeController extends BaseController
 
         event(new AdminAccessedMessages($request->user(), $booking));
 
-        $messages = $conversation->messages()->with('sender')->get();
+        $messages = $conversation->messages()->with('sender')->latest()->paginate(50);
 
-        return $this->successResponse(MessageResource::collection($messages));
+        return $this->paginatedResponse($messages->setCollection(
+            $messages->getCollection()->map(fn ($m) => new MessageResource($m))
+        ));
     }
 
     /**

@@ -19,11 +19,29 @@ class MessagingCubit extends Cubit<MessagingState> {
   /// instantly when returning from ChatPage (which emits MessagesLoaded).
   ConversationsLoaded? _conversationsCache;
 
+  /// Timestamp when _conversationsCache was last populated.
+  DateTime? _cacheLoadedAt;
+
+  /// Cache TTL: conversations list is considered stale after 3 minutes.
+  static const _cacheTtl = Duration(minutes: 3);
+
+  bool get _isCacheValid =>
+      _cacheLoadedAt != null &&
+      DateTime.now().difference(_cacheLoadedAt!) < _cacheTtl;
+
+  /// Periodic timer that refreshes messages silently while in ChatPage.
+  Timer? _pollTimer;
+
   /// Debounce timer for the typing indicator.
   Timer? _typingDebounce;
 
   /// Load conversations + admin broadcasts in parallel, merge and emit.
+  /// Skips the network call when the in-memory cache is still within its TTL.
   Future<void> loadConversations() async {
+    if (_isCacheValid && _conversationsCache != null) {
+      emit(_conversationsCache!);
+      return;
+    }
     emit(const MessagingLoading());
 
     final convFuture = _repository.getConversations();
@@ -46,11 +64,13 @@ class MessagingCubit extends Cubit<MessagingState> {
           broadcasts: broadcasts,
         );
         _conversationsCache = loaded;
+        _cacheLoadedAt = DateTime.now();
         emit(loaded);
     }
   }
 
   /// Load messages for a conversation and mark them as read.
+  /// Also starts the 5-second polling timer for live sync.
   Future<void> loadMessages(int conversationId) async {
     emit(const MessagingLoading());
     switch (await _repository.getMessages(conversationId)) {
@@ -61,6 +81,32 @@ class MessagingCubit extends Cubit<MessagingState> {
         final ordered = data.reversed.toList();
         emit(MessagesLoaded(conversationId: conversationId, messages: ordered));
         // Mark as read in background
+        unawaited(_repository.markAsRead(conversationId));
+        // Start polling so new messages appear without user action
+        _pollTimer?.cancel();
+        _pollTimer = Timer.periodic(
+          const Duration(seconds: 5),
+          (_) => _refreshMessages(conversationId),
+        );
+    }
+  }
+
+  /// Silently reload messages without emitting a loading state.
+  /// Used by the polling timer so the UI is not disrupted.
+  Future<void> _refreshMessages(int conversationId) async {
+    if (state is! MessagesLoaded && state is! ContactSharingBlocked) return;
+    switch (await _repository.getMessages(conversationId)) {
+      case ApiFailure():
+        return; // stay on current state; network hiccup is non-fatal
+      case ApiSuccess(:final data):
+        final ordered = data.reversed.toList();
+        final current = state;
+        final isTyping = current is MessagesLoaded ? current.isOtherTyping : false;
+        emit(MessagesLoaded(
+          conversationId: conversationId,
+          messages: ordered,
+          isOtherTyping: isTyping,
+        ));
         unawaited(_repository.markAsRead(conversationId));
     }
   }
@@ -188,6 +234,7 @@ class MessagingCubit extends Cubit<MessagingState> {
 
   @override
   Future<void> close() {
+    _pollTimer?.cancel();
     _typingDebounce?.cancel();
     return super.close();
   }

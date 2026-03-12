@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use Filament\FontProviders\GoogleFontProvider;
+use App\Http\Middleware\AdminIpAllowlist;
 use App\Http\Middleware\FilamentTwoFactorMiddleware;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -28,8 +29,8 @@ class AdminPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
-            ->login()
+            ->path(config('bookmi.admin_path', 'admin'))
+            ->login(\App\Filament\Pages\Auth\AdminLogin::class)
 
             // ── Charte BookMi — Brand Blue #2196F3 (palette Material Design) ──
             ->colors([
@@ -103,6 +104,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\TalentsLevelWidget::class,
             ])
             ->middleware([
+                AdminIpAllowlist::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,

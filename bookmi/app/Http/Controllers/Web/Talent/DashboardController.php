@@ -29,23 +29,30 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $rawStats = BookingRequest::where('talent_profile_id', $profile->id)
+            ->selectRaw(
+                'COUNT(*) AS total,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS pending,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS confirmed,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS completed,
+                 SUM(CASE WHEN status = ? THEN cachet_amount ELSE 0 END) AS revenue',
+                ['pending', 'confirmed', 'completed', 'completed']
+            )
+            ->first();
+
         $stats = [
-            'total'     => BookingRequest::where('talent_profile_id', $profile->id)->count(),
-            'pending'   => BookingRequest::where('talent_profile_id', $profile->id)->where('status', 'pending')->count(),
-            'confirmed' => BookingRequest::where('talent_profile_id', $profile->id)->where('status', 'confirmed')->count(),
-            'completed' => BookingRequest::where('talent_profile_id', $profile->id)->where('status', 'completed')->count(),
-            'revenue'   => BookingRequest::where('talent_profile_id', $profile->id)
-                ->where('status', 'completed')
-                ->sum('cachet_amount'),
+            'total'     => (int) ($rawStats->total ?? 0),
+            'pending'   => (int) ($rawStats->pending ?? 0),
+            'confirmed' => (int) ($rawStats->confirmed ?? 0),
+            'completed' => (int) ($rawStats->completed ?? 0),
+            'revenue'   => (int) ($rawStats->revenue ?? 0),
         ];
+
+        $completedCount = (int) ($rawStats->completed ?? 0);
 
         $talentLevel = $profile->talent_level instanceof TalentLevel
             ? $profile->talent_level
             : TalentLevel::from((string) $profile->talent_level);
-
-        $completedCount = BookingRequest::where('talent_profile_id', $profile->id)
-            ->where('status', 'completed')
-            ->count();
 
         $levelData = $this->buildLevelData($talentLevel, $completedCount);
 

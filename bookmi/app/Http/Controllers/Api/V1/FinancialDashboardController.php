@@ -9,7 +9,7 @@ use App\Models\Payout;
 use App\Models\TalentProfile;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinancialDashboardController extends BaseController
 {
@@ -34,15 +34,23 @@ class FinancialDashboardController extends BaseController
         $startOfPrevMonth    = $now->copy()->subMonth()->startOfMonth();
         $endOfPrevMonth      = $now->copy()->subMonth()->endOfMonth();
 
-        // Base query — only succeeded payouts
-        $base = Payout::where('talent_profile_id', $talentProfile->id)
-            ->where('status', PayoutStatus::Succeeded->value);
+        // Single query — aggregate all 4 metrics in one SQL pass
+        $agg = Payout::where('talent_profile_id', $talentProfile->id)
+            ->where('status', PayoutStatus::Succeeded->value)
+            ->selectRaw(
+                'SUM(amount) AS revenus_total,
+                 SUM(CASE WHEN processed_at >= ? THEN amount ELSE 0 END) AS mois_courant,
+                 SUM(CASE WHEN processed_at >= ? AND processed_at <= ? THEN amount ELSE 0 END) AS mois_precedent,
+                 COUNT(*) AS nombre_prestations',
+                [$startOfCurrentMonth, $startOfPrevMonth, $endOfPrevMonth]
+            )
+            ->first();
 
-        $revenusTotal          = (int) (clone $base)->sum('amount');
-        $revenusMoisCourant    = (int) (clone $base)->where('processed_at', '>=', $startOfCurrentMonth)->sum('amount');
-        $revenusMoisPrecedent  = (int) (clone $base)->whereBetween('processed_at', [$startOfPrevMonth, $endOfPrevMonth])->sum('amount');
-        $nombrePrestations     = (clone $base)->count();
-        $cachetMoyen           = $nombrePrestations > 0 ? (int) round($revenusTotal / $nombrePrestations) : 0;
+        $revenusTotal         = (int) ($agg->revenus_total ?? 0);
+        $revenusMoisCourant   = (int) ($agg->mois_courant ?? 0);
+        $revenusMoisPrecedent = (int) ($agg->mois_precedent ?? 0);
+        $nombrePrestations    = (int) ($agg->nombre_prestations ?? 0);
+        $cachetMoyen          = $nombrePrestations > 0 ? (int) round($revenusTotal / $nombrePrestations) : 0;
 
         $comparaison = 0.0;
         if ($revenusMoisPrecedent > 0) {
@@ -54,7 +62,8 @@ class FinancialDashboardController extends BaseController
         // Last 6 months breakdown — single query, grouped in PHP to avoid DB-specific date functions
         $sixMonthsAgo = $now->copy()->subMonths(5)->startOfMonth();
 
-        $rawPayouts = (clone $base)
+        $rawPayouts = Payout::where('talent_profile_id', $talentProfile->id)
+            ->where('status', PayoutStatus::Succeeded->value)
             ->where('processed_at', '>=', $sixMonthsAgo)
             ->select(['amount', 'processed_at'])
             ->get();
@@ -163,7 +172,7 @@ class FinancialDashboardController extends BaseController
      * Returns a UTF-8 CSV file of all completed bookings for the authenticated talent.
      * Optional query param: year (e.g. ?year=2025)
      */
-    public function exportEarnings(Request $request): Response|JsonResponse
+    public function exportEarnings(Request $request): StreamedResponse|JsonResponse
     {
         $talentProfile = TalentProfile::where('user_id', $request->user()->id)->first();
 
@@ -182,37 +191,34 @@ class FinancialDashboardController extends BaseController
             $query->whereYear('event_date', $year);
         }
 
-        $bookings = $query->get();
-
         $filename = 'revenus_' . ($year ?? date('Y')) . '_' . date('Ymd') . '.csv';
 
-        /** @var resource $handle */
-        $handle = fopen('php://memory', 'w+');
-        fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel
-        fputcsv($handle, ['Date prestation', 'Client', 'Forfait', 'Cachet (FCFA)', 'Commission (FCFA)', 'Net (FCFA)'], ';');
+        return response()->streamDownload(function () use ($query) {
+            /** @var resource $handle */
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF"); // UTF-8 BOM for Excel
+            fputcsv($handle, ['Date prestation', 'Client', 'Forfait', 'Cachet (FCFA)', 'Commission (FCFA)', 'Net (FCFA)'], ';');
 
-        foreach ($bookings as $b) {
-            $cachet     = (int) $b->cachet_amount;
-            $commission = (int) $b->commission_amount;
-            $net        = $cachet - $commission;
-            $clientName = trim(($b->client->first_name ?? '') . ' ' . ($b->client->last_name ?? ''));
-            $packageName = isset($b->package_snapshot['name'])
-                ? $b->package_snapshot['name']
-                : 'Prestation libre';
-            $eventDate  = $b->event_date instanceof \Carbon\Carbon
-                ? $b->event_date->format('d/m/Y')
-                : (string) $b->event_date;
+            $query->chunk(500, function ($bookings) use ($handle) {
+                foreach ($bookings as $b) {
+                    $cachet     = (int) $b->cachet_amount;
+                    $commission = (int) $b->commission_amount;
+                    $net        = $cachet - $commission;
+                    $clientName = trim(($b->client->first_name ?? '') . ' ' . ($b->client->last_name ?? ''));
+                    $packageName = isset($b->package_snapshot['name'])
+                        ? $b->package_snapshot['name']
+                        : 'Prestation libre';
+                    $eventDate  = $b->event_date instanceof \Carbon\Carbon
+                        ? $b->event_date->format('d/m/Y')
+                        : (string) $b->event_date;
 
-            fputcsv($handle, [$eventDate, $clientName, $packageName, $cachet, $commission, $net], ';');
-        }
+                    fputcsv($handle, [$eventDate, $clientName, $packageName, $cachet, $commission, $net], ';');
+                }
+            });
 
-        rewind($handle);
-        $csv = (string) stream_get_contents($handle);
-        fclose($handle);
-
-        return response($csv, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            fclose($handle);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 

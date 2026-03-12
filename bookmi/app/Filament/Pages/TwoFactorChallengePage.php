@@ -19,6 +19,8 @@ class TwoFactorChallengePage extends Page
 
     public string $code = '';
 
+    public bool $setupRequired = false;
+
     public function getTitle(): string | Htmlable
     {
         return 'Vérification à deux facteurs';
@@ -43,6 +45,7 @@ class TwoFactorChallengePage extends Page
 
     public function mount(): void
     {
+        $this->setupRequired = (bool) session('2fa_setup_required', false);
         $this->form->fill();
     }
 

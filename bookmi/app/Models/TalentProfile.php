@@ -92,7 +92,7 @@ class TalentProfile extends Model
             'auto_reply_is_active'       => 'boolean',
             'overload_threshold' => 'integer',
             'overload_notified_at' => 'datetime',
-            'visibility_score'            => 'float',
+            'visibility_score'            => 'decimal:2',
             'avg_punctuality_score'       => 'float',
             'avg_quality_score'           => 'float',
             'avg_professionalism_score'   => 'float',

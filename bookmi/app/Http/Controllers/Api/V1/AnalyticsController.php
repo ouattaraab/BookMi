@@ -71,25 +71,35 @@ class AnalyticsController extends BaseController
             ->values()
             ->toArray();
 
-        // Current month stats
-        $currentMonthRevenue = (int) BookingRequest::where('talent_profile_id', $talent->id)
-            ->where('status', BookingStatus::Completed->value)
-            ->whereMonth('event_date', $now->month)
-            ->whereYear('event_date', $now->year)
-            ->sum('total_amount');
+        // Current month stats — combined into one query
+        $bookingAgg = BookingRequest::where('talent_profile_id', $talent->id)
+            ->selectRaw(
+                'SUM(CASE WHEN status = ? AND event_date >= ? AND event_date <= ? THEN total_amount ELSE 0 END) AS current_month_revenue,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS pending_count',
+                [
+                    BookingStatus::Completed->value,
+                    $now->copy()->startOfMonth()->toDateString(),
+                    $now->copy()->endOfMonth()->toDateString(),
+                    BookingStatus::Pending->value,
+                ]
+            )
+            ->first();
 
-        $pendingBookings = BookingRequest::where('talent_profile_id', $talent->id)
-            ->where('status', BookingStatus::Pending->value)
-            ->count();
+        $currentMonthRevenue = (int) ($bookingAgg->current_month_revenue ?? 0);
+        $pendingBookings = (int) ($bookingAgg->pending_count ?? 0);
 
-        // Profile views (last 30 days + total)
+        // Profile views (last 30 days + total) — combined into one query
         $thirtyDaysAgo = $now->copy()->subDays(29)->startOfDay();
 
-        $profileViewsLast30 = ProfileView::where('talent_profile_id', $talent->id)
-            ->where('viewed_at', '>=', $thirtyDaysAgo)
-            ->count();
+        $viewsAgg = ProfileView::where('talent_profile_id', $talent->id)
+            ->selectRaw(
+                'COUNT(*) AS total, SUM(CASE WHEN viewed_at >= ? THEN 1 ELSE 0 END) AS last30',
+                [$thirtyDaysAgo]
+            )
+            ->first();
 
-        $profileViewsTotal = ProfileView::where('talent_profile_id', $talent->id)->count();
+        $profileViewsTotal = (int) ($viewsAgg->total ?? 0);
+        $profileViewsLast30 = (int) ($viewsAgg->last30 ?? 0);
 
         // DATE() est portable MySQL/SQLite — évite de charger toutes les lignes en PHP
         $dailyViews = ProfileView::where('talent_profile_id', $talent->id)

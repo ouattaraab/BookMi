@@ -59,6 +59,8 @@ class TalentCard extends StatelessWidget {
                   ? CachedNetworkImage(
                       imageUrl: photoUrl,
                       fit: BoxFit.cover,
+                      maxWidthDiskCache: 400,
+                      maxHeightDiskCache: 300,
                       placeholder: (_, __) => _placeholder(),
                       errorWidget: (_, __, ___) => _placeholder(),
                     )

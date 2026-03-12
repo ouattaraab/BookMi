@@ -48,5 +48,7 @@ abstract class TestCase extends BaseTestCase
         $pdo->sqliteCreateFunction('ASIN', fn (float $x): float => asin($x), 1);
         $pdo->sqliteCreateFunction('SQRT', fn (float $x): float => sqrt(max(0, $x)), 1);
         $pdo->sqliteCreateFunction('POWER', fn (float $x, float $y): float => pow($x, $y), 2);
+        $pdo->sqliteCreateFunction('MONTH', fn (string $date): int => (int) date('n', strtotime($date)), 1);
+        $pdo->sqliteCreateFunction('YEAR', fn (string $date): int => (int) date('Y', strtotime($date)), 1);
     }
 }

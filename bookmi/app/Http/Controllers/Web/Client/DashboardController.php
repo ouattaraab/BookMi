@@ -18,11 +18,21 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $rawStats = BookingRequest::where('client_id', $user->id)
+            ->selectRaw(
+                'COUNT(*) AS total,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS pending,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS confirmed,
+                 SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS completed',
+                ['pending', 'confirmed', 'completed']
+            )
+            ->first();
+
         $stats = [
-            'total'     => BookingRequest::where('client_id', $user->id)->count(),
-            'pending'   => BookingRequest::where('client_id', $user->id)->where('status', 'pending')->count(),
-            'confirmed' => BookingRequest::where('client_id', $user->id)->where('status', 'confirmed')->count(),
-            'completed' => BookingRequest::where('client_id', $user->id)->where('status', 'completed')->count(),
+            'total'     => (int) ($rawStats->total ?? 0),
+            'pending'   => (int) ($rawStats->pending ?? 0),
+            'confirmed' => (int) ($rawStats->confirmed ?? 0),
+            'completed' => (int) ($rawStats->completed ?? 0),
         ];
 
         return view('client.dashboard', compact('bookings', 'stats'));

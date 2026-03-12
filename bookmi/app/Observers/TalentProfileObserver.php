@@ -6,6 +6,7 @@ use App\Models\TalentNotificationRequest;
 use App\Models\TalentProfile;
 use App\Notifications\TalentAvailableNotification;
 use App\Services\ActivityLogger;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Notification;
 
 class TalentProfileObserver
@@ -19,6 +20,8 @@ class TalentProfileObserver
             'stage_name'  => $talent->stage_name,
             'category_id' => $talent->category_id,
         ]);
+
+        $this->clearCaches($talent);
 
         if ($talent->is_verified) {
             $this->notifyInterestedUsers($talent);
@@ -41,9 +44,34 @@ class TalentProfileObserver
             ]);
         }
 
+        $this->clearCaches($talent);
+
         if ($talent->wasChanged('is_verified') && $talent->is_verified) {
             $this->notifyInterestedUsers($talent);
         }
+    }
+
+    public function deleted(TalentProfile $talent): void
+    {
+        $this->clearCaches($talent);
+    }
+
+    /**
+     * Invalide tous les caches liés à ce profil talent et aux résultats de recherche.
+     */
+    private function clearCaches(TalentProfile $talent): void
+    {
+        // Profil individuel (TalentController::show)
+        if ($talent->slug) {
+            Cache::forget('talents.profile.' . $talent->slug);
+        }
+
+        // Incrémente la version de cache recherche : toutes les clés
+        // talents.search.*.v{n} deviennent stale sans avoir à les supprimer
+        Cache::increment('search.cache_version');
+
+        // Catégories (CategoryController cache rememberForever)
+        Cache::forget('categories.tree');
     }
 
     /**

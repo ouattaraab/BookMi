@@ -36,27 +36,17 @@ class PlatformSettingsPage extends Page implements HasForms
         return ($user?->is_admin === true) || ($user?->hasRole('admin_ceo') ?? false);
     }
 
-    // ── Editable form fields ────────────────────────────────────────────────
+    // ── Form state ────────────────────────────────────────────────────────────
 
-    public ?float $commission_rate = null;
+    /** @var array<string, mixed> */
+    public array $data = [];
 
-    public ?int $escrow_auto_confirm_hours = null;
-
-    public ?int $escrow_payout_delay_hours = null;
-
-    public ?float $low_rating_alert = null;
-
-    // ── Read-only config display (non-editable settings) ───────────────────
+    // ── Read-only config display (non-editable settings) ─────────────────────
 
     public array $settings = [];
 
     public function mount(): void
     {
-        $this->commission_rate          = (float) (PlatformSetting::get('commission_rate') ?? config('bookmi.commission_rate', 15));
-        $this->escrow_auto_confirm_hours = (int) (PlatformSetting::get('escrow_auto_confirm_hours') ?? config('bookmi.escrow.auto_confirm_hours', 48));
-        $this->escrow_payout_delay_hours = (int) (PlatformSetting::get('escrow_payout_delay_hours') ?? config('bookmi.escrow.payout_delay_hours', 24));
-        $this->low_rating_alert         = (float) (PlatformSetting::get('low_rating_alert') ?? config('bookmi.talent.low_rating_threshold', 3.0));
-
         $levels = config('bookmi.talent.levels', []);
 
         $this->settings = [];
@@ -71,10 +61,13 @@ class PlatformSettingsPage extends Page implements HasForms
         }
 
         $this->form->fill([
-            'commission_rate'          => $this->commission_rate,
-            'escrow_auto_confirm_hours' => $this->escrow_auto_confirm_hours,
-            'escrow_payout_delay_hours' => $this->escrow_payout_delay_hours,
-            'low_rating_alert'          => $this->low_rating_alert,
+            'commission_rate'           => (float) (PlatformSetting::get('commission_rate') ?? config('bookmi.commission_rate', 15)),
+            'escrow_auto_confirm_hours' => (int) (PlatformSetting::get('escrow_auto_confirm_hours') ?? config('bookmi.escrow.auto_confirm_hours', 48)),
+            'escrow_payout_delay_hours' => (int) (PlatformSetting::get('escrow_payout_delay_hours') ?? config('bookmi.escrow.payout_delay_hours', 24)),
+            'low_rating_alert'          => (float) (PlatformSetting::get('low_rating_alert') ?? config('bookmi.talent.low_rating_threshold', 3.0)),
+            'maintenance_mode'          => PlatformSetting::bool('maintenance_mode', false),
+            'force_update_version'      => PlatformSetting::get('force_update_version') ?? '',
+            'force_update_message'      => PlatformSetting::get('force_update_message') ?? '',
         ]);
     }
 
@@ -119,8 +112,30 @@ class PlatformSettingsPage extends Page implements HasForms
                             ->required()
                             ->suffix('/ 5'),
                     ])->columns(2),
+
+                Forms\Components\Section::make('Application mobile')
+                    ->description('Paramètres de maintenance et de mise à jour forcée.')
+                    ->schema([
+                        Forms\Components\Toggle::make('maintenance_mode')
+                            ->label('Mode maintenance')
+                            ->helperText('Active le mode maintenance — les utilisateurs voient une page de maintenance.')
+                            ->onColor('danger')
+                            ->offColor('success'),
+
+                        Forms\Components\TextInput::make('force_update_version')
+                            ->label('Version minimale requise')
+                            ->helperText('Version semver (ex: 1.2.0) en dessous de laquelle la mise à jour est forcée. Laisser vide pour désactiver.')
+                            ->placeholder('ex: 1.2.0')
+                            ->maxLength(20),
+
+                        Forms\Components\Textarea::make('force_update_message')
+                            ->label('Message de mise à jour forcée')
+                            ->helperText('Message affiché à l\'utilisateur lorsqu\'une mise à jour est obligatoire.')
+                            ->rows(3)
+                            ->maxLength(500),
+                    ])->columns(1),
             ])
-            ->statePath('');
+            ->statePath('data');
     }
 
     public function save(): void
@@ -131,6 +146,9 @@ class PlatformSettingsPage extends Page implements HasForms
         PlatformSetting::set('escrow_auto_confirm_hours', (int) $data['escrow_auto_confirm_hours'], 'integer');
         PlatformSetting::set('escrow_payout_delay_hours', (int) $data['escrow_payout_delay_hours'], 'integer');
         PlatformSetting::set('low_rating_alert', (float) $data['low_rating_alert'], 'float');
+        PlatformSetting::set('maintenance_mode', (bool) ($data['maintenance_mode'] ?? false), 'boolean');
+        PlatformSetting::set('force_update_version', (string) ($data['force_update_version'] ?? ''), 'string');
+        PlatformSetting::set('force_update_message', (string) ($data['force_update_message'] ?? ''), 'string');
 
         Notification::make()
             ->title('Paramètres mis à jour')
