@@ -28,10 +28,15 @@ class SecurityHeaders
 
         $response = $next($request);
 
+        // Belt-and-suspenders: remove PHP version disclosure header.
+        // Primary removal is handled by php_flag expose_php Off in .htaccess,
+        // but some hosting stacks re-add it after PHP processing.
+        $response->headers->remove('X-Powered-By');
+
         // Prevent MIME sniffing
         $response->headers->set('X-Content-Type-Options', 'nosniff');
 
-        // Prevent clickjacking
+        // Prevent clickjacking — overridden to 'none' for non-framed pages below
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 
         // Legacy XSS filter (for older browsers)
@@ -40,14 +45,22 @@ class SecurityHeaders
         // Control referrer information
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Force HTTPS in production
+        // Force HTTPS in production — with preload flag for HSTS preload list submission
         if (app()->isProduction()) {
-            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
 
-        // Skip CSP for API routes — JSON responses are not rendered as HTML.
+        // Permissions-Policy: restrict access to sensitive browser APIs
+        $response->headers->set('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(self), payment=(self)');
+
+        // Skip HTML-specific headers for API routes — JSON is not rendered as HTML.
         if ($request->is('api/*')) {
             return $response;
+        }
+
+        // For web routes: no framing allowed outside Filament (which uses iframes for previews)
+        if (! $request->is('admin/*') && ! $request->is('filament/*')) {
+            $response->headers->set('X-Frame-Options', 'DENY');
         }
 
         // Content-Security-Policy with per-request nonce.
@@ -65,6 +78,7 @@ class SecurityHeaders
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
+            "upgrade-insecure-requests",
         ]);
         $response->headers->set('Content-Security-Policy', $csp);
 

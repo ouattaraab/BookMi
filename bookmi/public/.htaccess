@@ -1,6 +1,18 @@
 # Force PHP 8.4 on Hostinger shared hosting (CloudLinux)
 AddHandler application/x-httpd-php84 .php
 
+# ── Security: strip server fingerprinting headers ────────────────────────────
+# Prevent PHP version disclosure (X-Powered-By: PHP/x.x.x)
+php_flag expose_php Off
+
+# Remove X-Powered-By and Server version details via mod_headers
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+    Header always unset X-Powered-By
+    Header unset Server
+</IfModule>
+# ─────────────────────────────────────────────────────────────────────────────
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
