@@ -149,6 +149,7 @@ class HoneypotLogResource extends Resource
                         ->requiresConfirmation()
                         ->action(function (Collection $records) {
                             foreach ($records as $record) {
+                                /** @var HoneypotLog $record */
                                 BlockedIp::firstOrCreate(
                                     ['ip' => $record->ip],
                                     ['reason' => 'Honeypot — blocage en masse', 'blocked_by' => auth()->id()]
