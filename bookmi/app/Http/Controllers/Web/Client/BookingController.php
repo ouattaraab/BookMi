@@ -446,7 +446,7 @@ class BookingController extends Controller
                 ->first();
 
             if ($hold) {
-                $this->escrowService->releaseEscrow($hold);
+                $this->escrowService->releaseEscrow($hold, 'client', auth()->id());
             }
         }
 

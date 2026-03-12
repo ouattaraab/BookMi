@@ -19,6 +19,8 @@ class EscrowHold extends Model
         'held_at',
         'release_scheduled_at',
         'released_at',
+        'released_by',
+        'released_by_type',
     ];
 
     protected $casts = [
@@ -26,6 +28,7 @@ class EscrowHold extends Model
         'held_at'              => 'datetime',
         'release_scheduled_at' => 'datetime',
         'released_at'          => 'datetime',
+        'released_by'          => 'integer',
     ];
 
     // ─── Relations ──────────────────────────────────────────────────────────

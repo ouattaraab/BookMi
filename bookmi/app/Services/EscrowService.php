@@ -22,11 +22,11 @@ class EscrowService
      * Pattern: short DB transaction (lock + update) → event AFTER commit.
      * lockForUpdate() prevents duplicate releases under concurrent calls (TOCTOU guard).
      */
-    public function releaseEscrow(EscrowHold $hold): void
+    public function releaseEscrow(EscrowHold $hold, string $releasedByType = 'system', ?int $releasedById = null): void
     {
         $wasReleased = false;
 
-        DB::transaction(function () use ($hold, &$wasReleased) {
+        DB::transaction(function () use ($hold, $releasedByType, $releasedById, &$wasReleased) {
             $fresh = EscrowHold::where('id', $hold->id)->lockForUpdate()->first();
 
             if (! $fresh || $fresh->status !== EscrowStatus::Held) {
@@ -35,8 +35,10 @@ class EscrowService
             }
 
             $fresh->update([
-                'status'      => EscrowStatus::Released->value,
-                'released_at' => now(),
+                'status'            => EscrowStatus::Released->value,
+                'released_at'       => now(),
+                'released_by_type'  => $releasedByType,
+                'released_by'       => $releasedById,
             ]);
 
             // Transition booking to Confirmed if still in Paid status.
@@ -93,7 +95,7 @@ class EscrowService
             throw EscrowException::escrowNotHeld('not_found');
         }
 
-        $this->releaseEscrow($hold);
+        $this->releaseEscrow($hold, 'client', $client->id);
     }
 
     /**
@@ -133,6 +135,6 @@ class EscrowService
             throw EscrowException::escrowNotHeld('not_found');
         }
 
-        $this->releaseEscrow($hold);
+        $this->releaseEscrow($hold, 'talent', $talent->id);
     }
 }

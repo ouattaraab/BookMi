@@ -5,8 +5,10 @@ namespace App\Filament\Resources;
 use App\Enums\EscrowStatus;
 use App\Filament\Resources\EscrowHoldResource\Pages;
 use App\Models\EscrowHold;
+use App\Services\EscrowService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -85,6 +87,16 @@ class EscrowHoldResource extends Resource
                     Forms\Components\DateTimePicker::make('released_at')
                         ->label('Libéré le')
                         ->disabled(),
+                    Forms\Components\TextInput::make('released_by_type')
+                        ->label('Libéré par')
+                        ->formatStateUsing(fn (?string $state) => match ($state) {
+                            'client' => 'Client',
+                            'talent' => 'Talent',
+                            'admin'  => 'Administrateur',
+                            'system' => 'Système (auto)',
+                            default  => '—',
+                        })
+                        ->disabled(),
                 ])->columns(2),
         ]);
     }
@@ -96,7 +108,31 @@ class EscrowHoldResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('booking_request_id')
                     ->label('Réservation')
-                    ->sortable(),
+                    ->sortable()
+                    ->formatStateUsing(function ($state, EscrowHold $record): string {
+                        /** @var \App\Models\BookingRequest|null $booking */
+                        $booking = $record->bookingRequest;
+                        if (! $booking) {
+                            return "#{$state}";
+                        }
+
+                        $talent = optional($booking->talentProfile)->stage_name ?? '—';
+                        /** @var \App\Models\User|null $client */
+                        $client = $booking->client;
+                        $clientName = trim(($client->first_name ?? '') . ' ' . ($client->last_name ?? '')) ?: '—';
+                        $date = $booking->event_date
+                            ? \Carbon\Carbon::parse($booking->event_date)->format('d/m/Y')
+                            : '—';
+
+                        return "#{$state} — {$talent} · {$clientName} ({$date})";
+                    })
+                    ->url(
+                        fn (EscrowHold $record): ?string => $record->bookingRequest
+                        ? BookingRequestResource::getUrl('view', ['record' => $record->booking_request_id])
+                        : null
+                    )
+                    ->openUrlInNewTab()
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('cachet_amount')
                     ->label('Cachet (XOF)')
@@ -125,6 +161,25 @@ class EscrowHoldResource extends Resource
                         default                                                    => 'gray',
                     }),
 
+                Tables\Columns\TextColumn::make('released_by_type')
+                    ->label('Libéré par')
+                    ->badge()
+                    ->formatStateUsing(fn (?string $state) => match ($state) {
+                        'client' => 'Client',
+                        'talent' => 'Talent',
+                        'admin'  => 'Admin',
+                        'system' => 'Système',
+                        default  => '—',
+                    })
+                    ->color(fn (?string $state) => match ($state) {
+                        'admin'  => 'primary',
+                        'system' => 'gray',
+                        'client' => 'success',
+                        'talent' => 'info',
+                        default  => 'gray',
+                    })
+                    ->placeholder('—'),
+
                 Tables\Columns\TextColumn::make('held_at')
                     ->label('Bloqué le')
                     ->dateTime('d/m/Y H:i')
@@ -138,8 +193,7 @@ class EscrowHoldResource extends Resource
                 Tables\Columns\TextColumn::make('released_at')
                     ->label('Libéré le')
                     ->dateTime('d/m/Y H:i')
-                    ->placeholder('—')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->placeholder('—'),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
@@ -149,6 +203,23 @@ class EscrowHoldResource extends Resource
                     )->toArray()),
             ])
             ->actions([
+                Tables\Actions\Action::make('release')
+                    ->label('Libérer manuellement')
+                    ->icon('heroicon-o-lock-open')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Libérer les fonds')
+                    ->modalDescription(fn (EscrowHold $record) => "Libérer manuellement les fonds de {$record->total_amount} XOF bloqués pour la réservation #{$record->booking_request_id} ? Cette action déclenche le versement au talent.")
+                    ->visible(fn (EscrowHold $record) => $record->status === EscrowStatus::Held)
+                    ->action(function (EscrowHold $record) {
+                        app(EscrowService::class)->releaseEscrow($record, 'admin', auth()->id());
+
+                        Notification::make()
+                            ->title("Fonds libérés — Réservation #{$record->booking_request_id}")
+                            ->success()
+                            ->send();
+                    }),
+
                 Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([]);
@@ -169,6 +240,9 @@ class EscrowHoldResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['bookingRequest']);
+        return parent::getEloquentQuery()->with([
+            'bookingRequest.talentProfile',
+            'bookingRequest.client',
+        ]);
     }
 }

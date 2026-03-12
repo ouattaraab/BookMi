@@ -86,7 +86,7 @@ class ConfirmArrivalController extends Controller
                 ->first();
 
             if ($hold) {
-                $this->escrowService->releaseEscrow($hold);
+                $this->escrowService->releaseEscrow($hold, 'client', $user->id);
                 $escrowReleased = true;
             }
         }
