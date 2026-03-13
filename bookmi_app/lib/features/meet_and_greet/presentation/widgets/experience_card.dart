@@ -48,7 +48,11 @@ class ExperienceCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Talent avatar header ─────────────────────────────
-              _TalentAvatarHeader(talent: talent, isFull: isFull),
+              _TalentAvatarHeader(
+                talent: talent,
+                isFull: isFull,
+                coverImageUrl: experience.coverImageUrl,
+              ),
               // ── Info ─────────────────────────────────────────────
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
@@ -99,10 +103,12 @@ class _TalentAvatarHeader extends StatelessWidget {
   const _TalentAvatarHeader({
     required this.talent,
     required this.isFull,
+    this.coverImageUrl,
   });
 
   final ExperienceTalentInfo? talent;
   final bool isFull;
+  final String? coverImageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -120,6 +126,25 @@ class _TalentAvatarHeader extends StatelessWidget {
       ),
       child: Stack(
         children: [
+          // Cover image background (when available)
+          if (coverImageUrl != null && coverImageUrl!.isNotEmpty)
+            Positioned.fill(
+              child: ClipRect(
+                child: CachedNetworkImage(
+                  imageUrl: coverImageUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (_, __) => const SizedBox.shrink(),
+                  errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          // Dark overlay for readability when cover is present
+          if (coverImageUrl != null && coverImageUrl!.isNotEmpty)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.40),
+              ),
+            ),
           // Avatar
           Center(
             child: Container(

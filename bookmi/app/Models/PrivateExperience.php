@@ -108,4 +108,16 @@ class PrivateExperience extends Model
     {
         return $query->where('event_date', '>=', now());
     }
+
+    /**
+     * URL publique du média de couverture (image ou vidéo).
+     */
+    public function getCoverImageUrlAttribute(): ?string
+    {
+        if (! $this->cover_image) {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->cover_image);
+    }
 }

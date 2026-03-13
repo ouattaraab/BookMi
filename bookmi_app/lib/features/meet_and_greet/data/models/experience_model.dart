@@ -80,6 +80,7 @@ class ExperienceModel {
     required this.status,
     this.venueAddress,
     this.venueRevealed = false,
+    this.coverImageUrl,
     this.talentProfile,
     this.myBooking,
   });
@@ -99,6 +100,10 @@ class ExperienceModel {
   /// Venue address — only shown when revealed or user has booked.
   final String? venueAddress;
   final bool venueRevealed;
+
+  /// Cover media URL (photo or video uploaded by talent/admin).
+  final String? coverImageUrl;
+
   final ExperienceTalentInfo? talentProfile;
 
   /// Non-null when the current authenticated user has booked this experience.
@@ -125,6 +130,7 @@ class ExperienceModel {
       status: json['status'] as String? ?? 'draft',
       venueAddress: json['venue_address'] as String?,
       venueRevealed: json['venue_revealed'] as bool? ?? false,
+      coverImageUrl: json['cover_image'] as String?,
       talentProfile: talentJson != null
           ? ExperienceTalentInfo.fromJson(talentJson)
           : null,
@@ -139,6 +145,7 @@ class ExperienceModel {
     bool clearBooking = false,
     int? seatsAvailable,
     String? status,
+    String? coverImageUrl,
   }) {
     return ExperienceModel(
       id: id,
@@ -152,6 +159,7 @@ class ExperienceModel {
       status: status ?? this.status,
       venueAddress: venueAddress,
       venueRevealed: venueRevealed,
+      coverImageUrl: coverImageUrl ?? this.coverImageUrl,
       talentProfile: talentProfile,
       myBooking: clearBooking ? null : (myBooking ?? this.myBooking),
     );

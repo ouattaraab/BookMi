@@ -90,6 +90,19 @@ class PrivateExperienceResource extends Resource
                         ->maxValue(100),
                 ])->columns(3),
 
+            Forms\Components\Section::make('Média de couverture')
+                ->schema([
+                    Forms\Components\FileUpload::make('cover_image')
+                        ->label('Photo ou vidéo de couverture')
+                        ->disk('public')
+                        ->directory('experience-covers')
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime'])
+                        ->maxSize(51200)
+                        ->image()
+                        ->imageEditor()
+                        ->columnSpanFull(),
+                ])->columns(1),
+
             Forms\Components\Section::make('Statut')
                 ->schema([
                     Forms\Components\Select::make('status')

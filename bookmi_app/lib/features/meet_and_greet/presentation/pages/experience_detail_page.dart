@@ -144,6 +144,91 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
   }
 }
 
+// ── Hero background ───────────────────────────────────────────────
+
+class _HeroBackground extends StatelessWidget {
+  const _HeroBackground({required this.experience, required this.talent});
+
+  final ExperienceModel experience;
+  final ExperienceTalentInfo? talent;
+
+  @override
+  Widget build(BuildContext context) {
+    final coverUrl = experience.coverImageUrl;
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_blue, _violet],
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Cover image if available
+          if (coverUrl != null && coverUrl.isNotEmpty)
+            CachedNetworkImage(
+              imageUrl: coverUrl,
+              fit: BoxFit.cover,
+              placeholder: (_, __) => const SizedBox.shrink(),
+              errorWidget: (_, __, ___) => const SizedBox.shrink(),
+            ),
+          // Gradient overlay for readability
+          if (coverUrl != null && coverUrl.isNotEmpty)
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.15),
+                    Colors.black.withValues(alpha: 0.55),
+                  ],
+                ),
+              ),
+            ),
+          // Talent info overlay
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 16,
+            child: Column(
+              children: [
+                _TalentAvatar(talent: talent),
+                const SizedBox(height: 8),
+                Text(
+                  talent?.stageName ?? '',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+                if (talent?.categoryName != null)
+                  Text(
+                    talent!.categoryName!,
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 // ── Loaded view ───────────────────────────────────────────────────
 
 class _LoadedView extends StatelessWidget {
@@ -177,43 +262,9 @@ class _LoadedView extends StatelessWidget {
           foregroundColor: _titleColor,
           elevation: 0,
           flexibleSpace: FlexibleSpaceBar(
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [_blue, _violet],
-                ),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 40),
-                      _TalentAvatar(talent: talent),
-                      const SizedBox(height: 10),
-                      Text(
-                        talent?.stageName ?? '',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                      if (talent?.categoryName != null)
-                        Text(
-                          talent!.categoryName!,
-                          style: GoogleFonts.manrope(
-                            fontSize: 12,
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
+            background: _HeroBackground(
+              experience: experience,
+              talent: talent,
             ),
           ),
         ),

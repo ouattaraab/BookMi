@@ -174,4 +174,5 @@ abstract final class ApiEndpoints {
   static String experienceDetail(int id) => '/experiences/$id';
   static String bookExperience(int id) => '/experiences/$id/book';
   static String cancelExperienceBooking(int id) => '/experiences/$id/booking';
+  static String uploadExperienceCover(int id) => '/experiences/$id/cover';
 }

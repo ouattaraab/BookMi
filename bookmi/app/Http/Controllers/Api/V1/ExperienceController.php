@@ -13,6 +13,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ExperienceController extends Controller
 {
@@ -261,6 +262,102 @@ class ExperienceController extends Controller
         return response()->json(['message' => 'Inscription annulée.']);
     }
 
+    // ── Cover media upload (talent) ────────────────────────────────────────
+
+    /**
+     * POST /api/v1/experiences/{id}/cover
+     * Le talent upload une photo ou vidéo de couverture pour son Meet & Greet.
+     */
+    public function uploadCover(Request $request, int $id): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user    = auth()->user();
+        $profile = TalentProfile::where('user_id', $user->id)->first();
+
+        $experience = PrivateExperience::findOrFail($id);
+
+        if (! $profile || $experience->talent_profile_id !== $profile->id) {
+            return response()->json(['message' => 'Accès non autorisé.'], 403);
+        }
+
+        $request->validate([
+            'cover' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif,mp4,mov', 'max:51200'],
+        ]);
+
+        // Supprimer l'ancien média si existant
+        if ($experience->cover_image) {
+            Storage::disk('public')->delete($experience->cover_image);
+        }
+
+        $file  = $request->file('cover');
+        $mime  = $file->getMimeType() ?? '';
+
+        if (str_starts_with($mime, 'image')) {
+            // Optimise l'image avec GD avant stockage
+            $filename    = "experience-covers/{$id}/" . uniqid() . '.jpg';
+            $storagePath = storage_path('app/public/' . $filename);
+            @mkdir(dirname($storagePath), 0755, true);
+            $this->optimizeImage($file->getRealPath(), $storagePath, 1200, 82);
+            $path = $filename;
+        } else {
+            // Vidéo — stockée telle quelle
+            $path = $file->store("experience-covers/{$id}", 'public');
+        }
+
+        $experience->update(['cover_image' => $path]);
+
+        return response()->json([
+            'message' => 'Média de couverture mis à jour.',
+            'data'    => [
+                'cover_image'     => $experience->fresh()->cover_image_url,
+                'is_video'        => str_starts_with($mime, 'video'),
+            ],
+        ]);
+    }
+
+    /**
+     * Redimensionne et ré-encode une image en JPEG avec GD.
+     */
+    private function optimizeImage(string $source, string $dest, int $maxWidth, int $quality): void
+    {
+        $info = @getimagesize($source);
+        if (! $info) {
+            copy($source, $dest);
+            return;
+        }
+
+        [$width, $height, $type] = $info;
+
+        $src = match ($type) {
+            IMAGETYPE_JPEG => imagecreatefromjpeg($source),
+            IMAGETYPE_PNG  => imagecreatefrompng($source),
+            IMAGETYPE_WEBP => imagecreatefromwebp($source),
+            IMAGETYPE_GIF  => imagecreatefromgif($source),
+            default        => null,
+        };
+
+        if (! $src) {
+            copy($source, $dest);
+            return;
+        }
+
+        if ($width > $maxWidth) {
+            $newWidth  = $maxWidth;
+            $newHeight = (int) round($height * $maxWidth / $width);
+        } else {
+            $newWidth  = $width;
+            $newHeight = $height;
+        }
+
+        $dst   = imagecreatetruecolor($newWidth, $newHeight);
+        $white = imagecolorallocate($dst, 255, 255, 255);
+        imagefill($dst, 0, 0, $white);
+        imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+        imagejpeg($dst, $dest, $quality);
+        imagedestroy($src);
+        imagedestroy($dst);
+    }
+
     // ── Serializers ────────────────────────────────────────────────────────
 
     /**
@@ -282,7 +379,7 @@ class ExperienceController extends Controller
             'booked_seats'    => $e->booked_seats,
             'seats_available' => $e->seats_available,
             'is_full'         => $e->is_full,
-            'cover_image'     => $e->cover_image,
+            'cover_image'     => $e->cover_image_url,
             'talent'          => $talent ? [
                 'id'            => $talent->id,
                 'stage_name'    => $talent->stage_name,

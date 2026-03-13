@@ -167,6 +167,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/experiences/{id}/book', [ExperienceController::class, 'book'])->name('experiences.book');
         Route::delete('/experiences/{id}/booking', [ExperienceController::class, 'cancelBooking'])->name('experiences.booking.cancel');
 
+        // ── Meet & Greet — talent (upload cover) ──────────────────────────
+        Route::post('/experiences/{id}/cover', [ExperienceController::class, 'uploadCover'])->name('experiences.cover');
+
         // Calendrier disponibilités (talent uniquement)
         Route::post('/calendar_slots', [CalendarSlotController::class, 'store'])->name('calendar.store');
         Route::put('/calendar_slots/{slot}', [CalendarSlotController::class, 'update'])->name('calendar.update');
