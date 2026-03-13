@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\Talent\BookingController;
 use App\Http\Controllers\Web\Talent\MeetAndGreetController;
+use App\Http\Controllers\Web\Talent\SubscriberController;
 use App\Http\Controllers\Web\Talent\CalendarController;
 use App\Http\Controllers\Web\Talent\ReportController;
 use App\Http\Controllers\Web\Talent\ReviewController;
@@ -99,6 +100,9 @@ Route::get('/managers', [ManagerController::class, 'index'])->name('managers');
 Route::post('/managers/invite', [ManagerController::class, 'invite'])->name('managers.invite');
 Route::delete('/managers/invitations/{id}/cancel', [ManagerController::class, 'cancel'])->name('managers.invitations.cancel');
 Route::delete('/managers/{id}/remove', [ManagerController::class, 'removeManager'])->name('managers.remove');
+
+// Abonnés
+Route::get('/subscribers', [SubscriberController::class, 'index'])->name('subscribers');
 
 // Paramètres (2FA)
 Route::get('/settings', [SettingsController::class, 'index'])->name('settings');

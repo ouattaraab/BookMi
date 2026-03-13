@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web\Talent;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\NotifyTalentFollowers;
 use App\Models\PortfolioItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,6 +59,19 @@ class PortfolioController extends Controller
             'is_approved'       => true,
         ]);
 
+        if ($profile->followers()->exists()) {
+            $contentType = $isVideo ? 'video' : 'photo';
+            $label       = $isVideo ? 'une nouvelle vidéo' : 'une nouvelle photo';
+            NotifyTalentFollowers::dispatch(
+                $profile->id,
+                $profile->stage_name,
+                "{$profile->stage_name} a partagé {$label}",
+                $request->caption ?? "Découvrez le nouveau contenu de {$profile->stage_name}.",
+                $contentType,
+                $profile->slug ?? '',
+            );
+        }
+
         return back()->with('success', 'Média ajouté au portfolio.');
     }
 
@@ -85,6 +99,17 @@ class PortfolioController extends Controller
             'caption'           => $request->caption,
             'is_approved'       => true,
         ]);
+
+        if ($profile->followers()->exists()) {
+            NotifyTalentFollowers::dispatch(
+                $profile->id,
+                $profile->stage_name,
+                "{$profile->stage_name} a partagé un nouveau contenu",
+                $request->caption ?? "Découvrez le nouveau contenu de {$profile->stage_name}.",
+                'link',
+                $profile->slug ?? '',
+            );
+        }
 
         return back()->with('success', 'Lien ajouté au portfolio.');
     }

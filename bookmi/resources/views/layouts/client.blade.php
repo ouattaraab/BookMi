@@ -130,6 +130,7 @@
                 ['href'  => '/talents',              'label' => 'Découvrir',         'icon' => 'magnifying-glass'],
                 ['route' => 'client.bookings',       'label' => 'Mes réservations', 'icon' => 'book-open'],
                 ['route' => 'client.favorites',      'label' => 'Favoris',          'icon' => 'heart'],
+                ['route' => 'client.subscriptions',  'label' => 'Mes abonnements',  'icon' => 'users'],
                 ['route' => 'client.messages',       'label' => 'Messages',         'icon' => 'chat-bubble-left'],
                 ['route' => 'client.notifications',  'label' => 'Notifications',    'icon' => 'bell', 'badge' => $notifUnread > 0 ? $notifUnread : null],
                 ['route' => 'client.analytics',      'label' => 'Analytiques',      'icon' => 'chart-bar'],

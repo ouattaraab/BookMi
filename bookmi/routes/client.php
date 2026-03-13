@@ -11,6 +11,7 @@ use App\Http\Controllers\Web\Client\PortfolioController;
 use App\Http\Controllers\Web\Client\ReportController;
 use App\Http\Controllers\Web\Client\ReviewController;
 use App\Http\Controllers\Web\Client\SettingsController;
+use App\Http\Controllers\Web\Client\SubscriptionController;
 use App\Http\Controllers\Web\Client\VerificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -70,6 +71,10 @@ Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics
 // Vérification d'identité
 Route::get('/verification', [VerificationController::class, 'index'])->name('verification');
 Route::post('/verification', [VerificationController::class, 'submit'])->name('verification.submit');
+
+// Abonnements (talents suivis)
+Route::get('/subscriptions', [SubscriptionController::class, 'index'])->name('subscriptions');
+Route::delete('/subscriptions/{talentProfileId}', [SubscriptionController::class, 'destroy'])->name('subscriptions.destroy');
 
 // Meet & Greet — inscription / annulation
 Route::post('/meet-and-greet/book', [ExperienceBookingController::class, 'book'])->name('meet-and-greet.book');

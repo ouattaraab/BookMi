@@ -553,15 +553,15 @@
      2b. MEET & GREET — Expériences exclusives
 ════════════════════════════════════════════════ --}}
 @if(isset($upcomingExperiences) && $upcomingExperiences->isNotEmpty())
-<section style="background:linear-gradient(135deg,#FFFDF5 0%,#FEF9E7 50%,#FFFDF5 100%); padding:5rem 1.5rem;">
+<section style="background:linear-gradient(135deg,#060E1C 0%,#0D1117 50%,#060E1C 100%); padding:5rem 1.5rem;">
     <div class="reveal" style="text-align:center; margin-bottom:3rem;">
-        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(217,119,6,0.08); border:1px solid rgba(217,119,6,0.25); border-radius:100px; padding:5px 16px; margin-bottom:1rem;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#D97706" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span style="font-size:0.7rem; font-weight:800; color:#B45309; text-transform:uppercase; letter-spacing:0.1em;">Expériences exclusives</span>
+        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); border-radius:100px; padding:5px 16px; margin-bottom:1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#8B5CF6" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span style="font-size:0.7rem; font-weight:800; color:#8B5CF6; text-transform:uppercase; letter-spacing:0.1em;">Expériences exclusives</span>
         </div>
-        <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#1C1917; margin:0 0 0.5rem;">Meet & Greet</h2>
-        <div style="width:36px; height:3px; background:linear-gradient(90deg,#D97706,#F59E0B); border-radius:2px; margin:0 auto 0.75rem;"></div>
-        <p style="color:#6B7280; font-size:0.95rem; font-weight:500; margin:0; max-width:480px; margin-left:auto; margin-right:auto;">
+        <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:white; margin:0 0 0.5rem;">Meet & Greet</h2>
+        <div style="width:36px; height:3px; background:linear-gradient(90deg,#8B5CF6,#1AB3FF); border-radius:2px; margin:0 auto 0.75rem;"></div>
+        <p style="color:rgba(255,255,255,0.45); font-size:0.95rem; font-weight:500; margin:0; max-width:480px; margin-left:auto; margin-right:auto;">
             Vivez des moments uniques et intimes avec vos artistes préférés.
         </p>
     </div>
@@ -575,9 +575,9 @@
         @endphp
         <a href="{{ route('meet-and-greet.show', $exp->id) }}"
            class="reveal"
-           style="display:block; background:white; border:1px solid rgba(217,119,6,0.15); border-radius:20px; padding:1.5rem; text-decoration:none; box-shadow:0 2px 12px rgba(217,119,6,0.07); transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s, border-color 0.2s; transition-delay:{{ $loop->index * 0.07 }}s;"
-           onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 50px rgba(217,119,6,0.14)';this.style.borderColor='rgba(217,119,6,0.35)'"
-           onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(217,119,6,0.07)';this.style.borderColor='rgba(217,119,6,0.15)'">
+           style="display:block; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:1.5rem; text-decoration:none; transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s, border-color 0.2s; transition-delay:{{ $loop->index * 0.07 }}s;"
+           onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 50px rgba(139,92,246,0.2)';this.style.borderColor='rgba(139,92,246,0.35)'"
+           onmouseout="this.style.transform='';this.style.boxShadow='';this.style.borderColor='rgba(255,255,255,0.08)'">
 
             {{-- En-tête artiste --}}
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:1.25rem;">
@@ -585,33 +585,33 @@
                     {{ $init }}
                 </div>
                 <div style="flex:1; min-width:0;">
-                    <p style="font-weight:800; font-size:0.9rem; color:#111827; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $exp->talentProfile->stage_name }}</p>
-                    <p style="color:#9CA3AF; font-size:0.75rem; font-weight:600; margin:0;">{{ $exp->talentProfile->category->name ?? '' }}</p>
+                    <p style="font-weight:800; font-size:0.9rem; color:white; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $exp->talentProfile->stage_name }}</p>
+                    <p style="color:rgba(255,255,255,0.35); font-size:0.75rem; font-weight:600; margin:0;">{{ $exp->talentProfile->category->name ?? '' }}</p>
                 </div>
                 @if($isFull)
-                    <span style="background:#FEF3C7; color:#D97706; font-size:0.65rem; font-weight:800; padding:3px 8px; border-radius:100px; border:1px solid #FDE68A; white-space:nowrap;">COMPLET</span>
+                    <span style="background:rgba(251,191,36,0.15); color:#fbbf24; font-size:0.65rem; font-weight:800; padding:3px 8px; border-radius:100px; border:1px solid rgba(251,191,36,0.3); white-space:nowrap;">COMPLET</span>
                 @else
-                    <span style="background:#D1FAE5; color:#059669; font-size:0.65rem; font-weight:800; padding:3px 8px; border-radius:100px; border:1px solid #A7F3D0; white-space:nowrap;">{{ $exp->seats_available }} place{{ $exp->seats_available > 1 ? 's' : '' }}</span>
+                    <span style="background:rgba(16,185,129,0.12); color:#10B981; font-size:0.65rem; font-weight:800; padding:3px 8px; border-radius:100px; border:1px solid rgba(16,185,129,0.25); white-space:nowrap;">{{ $exp->seats_available }} place{{ $exp->seats_available > 1 ? 's' : '' }}</span>
                 @endif
             </div>
 
             {{-- Titre --}}
-            <h3 style="font-size:1rem; font-weight:800; color:#1E1B4B; margin:0 0 0.75rem; line-height:1.3;">{{ $exp->title }}</h3>
+            <h3 style="font-size:1rem; font-weight:800; color:white; margin:0 0 0.75rem; line-height:1.3;">{{ $exp->title }}</h3>
 
             {{-- Description courte --}}
             @if($exp->description)
-                <p style="color:#6B7280; font-size:0.82rem; line-height:1.65; margin:0 0 1.25rem;">{{ Str::limit($exp->description, 90) }}</p>
+                <p style="color:rgba(255,255,255,0.45); font-size:0.82rem; line-height:1.65; margin:0 0 1.25rem;">{{ Str::limit($exp->description, 90) }}</p>
             @endif
 
             {{-- Métas --}}
-            <div style="display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid #FDE68A;">
-                <div style="display:flex; align-items:center; gap:5px; color:#6B7280; font-size:0.78rem; font-weight:600;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div style="display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex; align-items:center; gap:5px; color:rgba(255,255,255,0.45); font-size:0.78rem; font-weight:600;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     {{ $exp->event_date->isoFormat('D MMM YYYY') }}
                 </div>
-                <div style="color:#B45309; font-weight:900; font-size:0.95rem;">
+                <div style="color:#8B5CF6; font-weight:900; font-size:0.95rem;">
                     {{ number_format($pps, 0, ',', '.') }}
-                    <span style="font-size:0.72rem; font-weight:700; color:#D97706;">FCFA/pers.</span>
+                    <span style="font-size:0.72rem; font-weight:700; color:rgba(139,92,246,0.7);">FCFA/pers.</span>
                 </div>
             </div>
         </a>

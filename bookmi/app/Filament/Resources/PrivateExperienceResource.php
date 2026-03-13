@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\ExperienceBookingStatus;
 use App\Enums\ExperienceStatus;
 use App\Filament\Resources\PrivateExperienceResource\Pages;
+use App\Jobs\NotifyTalentFollowers;
 use App\Models\ExperienceBooking;
 use App\Models\PrivateExperience;
 use Filament\Forms;
@@ -172,6 +173,18 @@ class PrivateExperienceResource extends Resource
                     ->action(function (PrivateExperience $record) {
                         $record->update(['status' => ExperienceStatus::Published->value]);
                         Notification::make()->title('Expérience publiée')->success()->send();
+
+                        $talentProfile = $record->talentProfile;
+                        if ($talentProfile instanceof \App\Models\TalentProfile && $talentProfile->followers()->exists()) {
+                            NotifyTalentFollowers::dispatch(
+                                $talentProfile->id,
+                                $talentProfile->stage_name,
+                                "{$talentProfile->stage_name} organise un Meet & Greet !",
+                                $record->title . ' — Réservez vite, les places sont limitées.',
+                                'meet_and_greet',
+                                $talentProfile->slug ?? '',
+                            );
+                        }
                     }),
                 Tables\Actions\Action::make('cancel')
                     ->label('Annuler')
