@@ -284,7 +284,10 @@ class _ExperienceBookingCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _StatusBadge(status: item.status, label: item.statusLabel),
+                      _StatusBadge(
+                        status: item.status,
+                        label: item.statusLabel,
+                      ),
                       TextButton.icon(
                         onPressed: () => _showReceiptSheet(context),
                         icon: const Icon(Icons.receipt_long_outlined, size: 16),
@@ -506,10 +509,14 @@ class _ReceiptSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final totalFormatted =
-        NumberFormat('#,###', 'fr_FR').format(item.totalAmount);
-    final pricePerSeatFormatted =
-        NumberFormat('#,###', 'fr_FR').format(item.pricePerSeat);
+    final totalFormatted = NumberFormat(
+      '#,###',
+      'fr_FR',
+    ).format(item.totalAmount);
+    final pricePerSeatFormatted = NumberFormat(
+      '#,###',
+      'fr_FR',
+    ).format(item.pricePerSeat);
 
     return Container(
       decoration: const BoxDecoration(

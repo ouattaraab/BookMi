@@ -60,7 +60,10 @@ class _MyExperiencesPageState extends State<MyExperiencesPage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -94,12 +97,15 @@ class _MyExperiencesPageState extends State<MyExperiencesPage> {
             return _ErrorView(message: msg, onRetry: _reload);
           }
 
-          final experiences = (result as ApiSuccess<List<ExperienceModel>>).data;
+          final experiences =
+              (result as ApiSuccess<List<ExperienceModel>>).data;
           if (experiences.isEmpty) {
-            return _EmptyView(onCreateTap: () async {
-              await context.pushNamed(RouteNames.createExperience);
-              _reload();
-            });
+            return _EmptyView(
+              onCreateTap: () async {
+                await context.pushNamed(RouteNames.createExperience);
+                _reload();
+              },
+            );
           }
 
           return RefreshIndicator(
@@ -197,8 +203,11 @@ class _ExperienceCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_forward_ios_rounded,
-                    size: 12, color: _blue),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 12,
+                  color: _blue,
+                ),
               ],
             ),
           ],

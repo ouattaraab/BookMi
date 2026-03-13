@@ -250,8 +250,7 @@ class _AvatarPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final initial =
-        stageName.isNotEmpty ? stageName[0].toUpperCase() : '?';
+    final initial = stageName.isNotEmpty ? stageName[0].toUpperCase() : '?';
     return Container(
       color: Colors.white.withValues(alpha: 0.15),
       child: Center(
@@ -310,9 +309,10 @@ class _PriceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatted = NumberFormat('#,###', 'fr_FR')
-        .format(pricePerSeat)
-        .replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F');
+    final formatted = NumberFormat(
+      '#,###',
+      'fr_FR',
+    ).format(pricePerSeat).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

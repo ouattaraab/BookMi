@@ -69,8 +69,10 @@ class _ExperienceAttendeesPageState extends State<ExperienceAttendeesPage> {
           overflow: TextOverflow.ellipsis,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -116,11 +118,14 @@ class _ExperienceAttendeesPageState extends State<ExperienceAttendeesPage> {
                     child: Row(
                       children: [
                         ShaderMask(
-                          shaderCallback: (bounds) =>
-                              const LinearGradient(colors: [_blue, _violet])
-                                  .createShader(bounds),
-                          child: const Icon(Icons.people_rounded,
-                              color: Colors.white, size: 18),
+                          shaderCallback: (bounds) => const LinearGradient(
+                            colors: [_blue, _violet],
+                          ).createShader(bounds),
+                          child: const Icon(
+                            Icons.people_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -147,8 +152,7 @@ class _ExperienceAttendeesPageState extends State<ExperienceAttendeesPage> {
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
                     sliver: SliverList.separated(
                       itemCount: attendees.length,
-                      separatorBuilder: (_, __) =>
-                          const SizedBox(height: 10),
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) =>
                           _AttendeeRow(attendee: attendees[index]),
                     ),

@@ -170,12 +170,10 @@ GoRouter buildAppRouter(
         name: RouteNames.experienceDetail,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
-          final id =
-              int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
           final preloaded = state.extra as ExperienceModel?;
           return BlocProvider(
-            create: (_) =>
-                ExperienceDetailCubit(repository: experienceRepo),
+            create: (_) => ExperienceDetailCubit(repository: experienceRepo),
             child: ExperienceDetailPage(
               experienceId: id,
               preloaded: preloaded,
@@ -204,8 +202,7 @@ GoRouter buildAppRouter(
         name: RouteNames.experienceAttendees,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
-          final id =
-              int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
           final experience = state.extra as ExperienceModel?;
           return ExperienceAttendeesPage(
             experienceId: id,

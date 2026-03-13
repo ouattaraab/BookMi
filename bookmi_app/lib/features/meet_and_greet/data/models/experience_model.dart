@@ -132,7 +132,8 @@ class ExperienceModel {
 
   factory ExperienceModel.fromJson(Map<String, dynamic> json) {
     // API returns key 'talent' (from serializeList) OR 'talent_profile' (legacy)
-    final talentJson = (json['talent'] ?? json['talent_profile']) as Map<String, dynamic>?;
+    final talentJson =
+        (json['talent'] ?? json['talent_profile']) as Map<String, dynamic>?;
     final bookingJson = json['my_booking'] as Map<String, dynamic>?;
     return ExperienceModel(
       id: json['id'] as int,

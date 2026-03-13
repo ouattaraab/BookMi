@@ -101,12 +101,16 @@ class MessagingCubit extends Cubit<MessagingState> {
       case ApiSuccess(:final data):
         final ordered = data.reversed.toList();
         final current = state;
-        final isTyping = current is MessagesLoaded ? current.isOtherTyping : false;
-        emit(MessagesLoaded(
-          conversationId: conversationId,
-          messages: ordered,
-          isOtherTyping: isTyping,
-        ));
+        final isTyping = current is MessagesLoaded
+            ? current.isOtherTyping
+            : false;
+        emit(
+          MessagesLoaded(
+            conversationId: conversationId,
+            messages: ordered,
+            isOtherTyping: isTyping,
+          ),
+        );
         unawaited(_repository.markAsRead(conversationId));
     }
   }

@@ -37,10 +37,10 @@ final class ExperienceLoaded extends ExperienceState {
 
   @override
   int get hashCode => Object.hash(
-        Object.hashAll(experiences),
-        currentPage,
-        lastPage,
-      );
+    Object.hashAll(experiences),
+    currentPage,
+    lastPage,
+  );
 }
 
 final class ExperienceLoadingMore extends ExperienceLoaded {

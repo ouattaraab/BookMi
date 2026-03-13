@@ -879,8 +879,7 @@ class _GeneralSection extends StatelessWidget {
           _MenuItem(
             icon: Icons.star_outline_rounded,
             label: 'Mes Meet & Greet',
-            onTap: () =>
-                context.pushNamed(RouteNames.myExperienceBookings),
+            onTap: () => context.pushNamed(RouteNames.myExperienceBookings),
           ),
           _Divider(),
           _MenuItem(

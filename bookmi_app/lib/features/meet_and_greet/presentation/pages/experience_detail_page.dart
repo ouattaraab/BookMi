@@ -140,9 +140,9 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
             Expanded(
               child: _ErrorView(
                 message: state.message,
-                onRetry: () => context
-                    .read<ExperienceDetailCubit>()
-                    .loadDetail(widget.experienceId),
+                onRetry: () => context.read<ExperienceDetailCubit>().loadDetail(
+                  widget.experienceId,
+                ),
               ),
             ),
           ],
@@ -155,12 +155,13 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
         isLoading: state is ExperienceDetailBooking,
         seatsCount: _seatsCount,
         onSeatsChanged: (v) => setState(() => _seatsCount = v),
-        onBook: () => context
-            .read<ExperienceDetailCubit>()
-            .bookSeats(state.experience.id, _seatsCount),
-        onCancel: () => context
-            .read<ExperienceDetailCubit>()
-            .cancelBooking(state.experience.id),
+        onBook: () => context.read<ExperienceDetailCubit>().bookSeats(
+          state.experience.id,
+          _seatsCount,
+        ),
+        onCancel: () => context.read<ExperienceDetailCubit>().cancelBooking(
+          state.experience.id,
+        ),
       );
     }
     return const SizedBox.shrink();
@@ -389,8 +390,7 @@ class _LoadedView extends StatelessWidget {
     }
   }
 
-  String _trimTime(String t) =>
-      t.length > 5 ? t.substring(0, 5) : t;
+  String _trimTime(String t) => t.length > 5 ? t.substring(0, 5) : t;
 }
 
 // ── Booking card ──────────────────────────────────────────────────
@@ -456,8 +456,11 @@ class _BookingCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded,
-                      color: _blue, size: 20),
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: _blue,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -602,10 +605,10 @@ class _BookingCard extends StatelessWidget {
     );
   }
 
-  String _fmt(int amount) =>
-      NumberFormat('#,###', 'fr_FR')
-          .format(amount)
-          .replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F');
+  String _fmt(int amount) => NumberFormat(
+    '#,###',
+    'fr_FR',
+  ).format(amount).replaceAll(RegExp(r'[\s\u00A0\u202F,]'), '\u202F');
 }
 
 // ── Seats selector ────────────────────────────────────────────────
@@ -693,7 +696,10 @@ class _TalentAvatar extends StatelessWidget {
       height: 72,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 2.5),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.6),
+          width: 2.5,
+        ),
         gradient: const LinearGradient(colors: [_blue, _violet]),
       ),
       child: ClipOval(
@@ -887,12 +893,17 @@ class _ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded,
-                size: 48, color: Colors.redAccent),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Colors.redAccent,
+            ),
             const SizedBox(height: 12),
-            Text(message,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.manrope(color: _mutedText)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.manrope(color: _mutedText),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: onRetry,

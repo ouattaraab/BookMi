@@ -7,8 +7,8 @@ import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience
 /// Cubit managing the detail page of a single experience and booking actions.
 class ExperienceDetailCubit extends Cubit<ExperienceDetailState> {
   ExperienceDetailCubit({required ExperienceRepository repository})
-      : _repository = repository,
-        super(const ExperienceDetailInitial());
+    : _repository = repository,
+      super(const ExperienceDetailInitial());
 
   final ExperienceRepository _repository;
 
@@ -67,7 +67,9 @@ class ExperienceDetailCubit extends Cubit<ExperienceDetailState> {
     switch (result) {
       case ApiSuccess():
         // Reload fresh state after cancellation.
-        final reloadResult = await _repository.getExperienceDetail(experienceId);
+        final reloadResult = await _repository.getExperienceDetail(
+          experienceId,
+        );
         switch (reloadResult) {
           case ApiSuccess(:final data):
             emit(

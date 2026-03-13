@@ -179,7 +179,8 @@ abstract final class ApiEndpoints {
   // Meet & Greet — Talent management
   static const myExperiences = '/talent/experiences';
   static const createExperience = '/talent/experiences';
-  static String experienceAttendees(int id) => '/talent/experiences/$id/attendees';
+  static String experienceAttendees(int id) =>
+      '/talent/experiences/$id/attendees';
 
   // Meet & Greet — Client bookings list
   static const myExperienceBookings = '/me/experience-bookings';

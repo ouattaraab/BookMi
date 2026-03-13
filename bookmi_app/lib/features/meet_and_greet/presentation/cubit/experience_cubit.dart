@@ -6,8 +6,8 @@ import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience
 /// Cubit managing the list of public experiences shown on the home screen.
 class ExperienceCubit extends Cubit<ExperienceState> {
   ExperienceCubit({required ExperienceRepository repository})
-      : _repository = repository,
-        super(const ExperienceInitial());
+    : _repository = repository,
+      super(const ExperienceInitial());
 
   final ExperienceRepository _repository;
 

@@ -138,11 +138,18 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                   color: _blue.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.photo_library_rounded, color: _blue, size: 20),
+                child: const Icon(
+                  Icons.photo_library_rounded,
+                  color: _blue,
+                  size: 20,
+                ),
               ),
               title: Text(
                 'Photo depuis la galerie',
-                style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w600),
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               onTap: () => Navigator.pop(ctx, 'photo_gallery'),
             ),
@@ -154,11 +161,18 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                   color: _violet.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.videocam_rounded, color: _violet, size: 20),
+                child: const Icon(
+                  Icons.videocam_rounded,
+                  color: _violet,
+                  size: 20,
+                ),
               ),
               title: Text(
                 'Vidéo depuis la galerie',
-                style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w600),
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               onTap: () => Navigator.pop(ctx, 'video_gallery'),
             ),
@@ -170,11 +184,18 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                   color: Colors.white.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.camera_alt_rounded, color: _mutedFg, size: 20),
+                child: Icon(
+                  Icons.camera_alt_rounded,
+                  color: _mutedFg,
+                  size: 20,
+                ),
               ),
               title: Text(
                 'Prendre une photo',
-                style: GoogleFonts.manrope(color: Colors.white, fontWeight: FontWeight.w600),
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               onTap: () => Navigator.pop(ctx, 'photo_camera'),
             ),
@@ -194,17 +215,29 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
           imageQuality: 85,
           maxWidth: 1200,
         );
-        if (picked != null) setState(() { _coverFile = File(picked!.path); _coverIsVideo = false; });
+        if (picked != null)
+          setState(() {
+            _coverFile = File(picked!.path);
+            _coverIsVideo = false;
+          });
       case 'video_gallery':
         picked = await _picker.pickVideo(source: ImageSource.gallery);
-        if (picked != null) setState(() { _coverFile = File(picked!.path); _coverIsVideo = true; });
+        if (picked != null)
+          setState(() {
+            _coverFile = File(picked!.path);
+            _coverIsVideo = true;
+          });
       case 'photo_camera':
         picked = await _picker.pickImage(
           source: ImageSource.camera,
           imageQuality: 85,
           maxWidth: 1200,
         );
-        if (picked != null) setState(() { _coverFile = File(picked!.path); _coverIsVideo = false; });
+        if (picked != null)
+          setState(() {
+            _coverFile = File(picked!.path);
+            _coverIsVideo = false;
+          });
     }
   }
 
@@ -250,7 +283,11 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                   color: _blue.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.my_location_rounded, color: _blue, size: 20),
+                child: const Icon(
+                  Icons.my_location_rounded,
+                  color: _blue,
+                  size: 20,
+                ),
               ),
               title: Text(
                 'Utiliser ma position actuelle',
@@ -273,7 +310,11 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                   color: _violet.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.edit_location_alt_rounded, color: _violet, size: 20),
+                child: const Icon(
+                  Icons.edit_location_alt_rounded,
+                  color: _violet,
+                  size: 20,
+                ),
               ),
               title: Text(
                 'Saisir l\'adresse manuellement',
@@ -385,7 +426,9 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
 
     setState(() => _loading = true);
 
-    final eventDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(_selectedDateTime!);
+    final eventDate = DateFormat(
+      'yyyy-MM-dd HH:mm:ss',
+    ).format(_selectedDateTime!);
 
     final pricePerSeat = int.tryParse(_priceCtrl.text.trim()) ?? 0;
     final maxSeats = int.tryParse(_seatsCtrl.text.trim()) ?? 0;
@@ -454,7 +497,10 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => context.pop(),
         ),
       ),
@@ -504,7 +550,10 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
                 file: _coverFile,
                 isVideo: _coverIsVideo,
                 onTap: _pickCoverMedia,
-                onRemove: () => setState(() { _coverFile = null; _coverIsVideo = false; }),
+                onRemove: () => setState(() {
+                  _coverFile = null;
+                  _coverIsVideo = false;
+                }),
               ),
               const SizedBox(height: 24),
 
@@ -595,7 +644,9 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
           style: GoogleFonts.manrope(color: Colors.white, fontSize: 14),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: GoogleFonts.manrope(color: _mutedFg.withValues(alpha: 0.5)),
+            hintStyle: GoogleFonts.manrope(
+              color: _mutedFg.withValues(alpha: 0.5),
+            ),
             filled: true,
             fillColor: _inputFill,
             counterStyle: GoogleFonts.manrope(color: _mutedFg, fontSize: 11),
@@ -617,8 +668,10 @@ class _CreateExperiencePageState extends State<CreateExperiencePage> {
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: Color(0xFFEF4444), width: 1.5),
+              borderSide: const BorderSide(
+                color: Color(0xFFEF4444),
+                width: 1.5,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
@@ -666,9 +719,9 @@ class _CoverPicker extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ShaderMask(
-                shaderCallback: (bounds) =>
-                    const LinearGradient(colors: [_blue, _violet])
-                        .createShader(bounds),
+                shaderCallback: (bounds) => const LinearGradient(
+                  colors: [_blue, _violet],
+                ).createShader(bounds),
                 child: const Icon(
                   Icons.add_photo_alternate_rounded,
                   size: 36,
@@ -748,7 +801,10 @@ class _CoverPicker extends StatelessWidget {
                     top: 10,
                     left: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(8),
@@ -757,7 +813,9 @@ class _CoverPicker extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            isVideo ? Icons.videocam_rounded : Icons.image_rounded,
+                            isVideo
+                                ? Icons.videocam_rounded
+                                : Icons.image_rounded,
                             size: 13,
                             color: isVideo ? _violet : _blue,
                           ),
@@ -805,7 +863,11 @@ class _CoverPicker extends StatelessWidget {
                 color: Colors.black.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.close_rounded, size: 16, color: Colors.white),
+              child: const Icon(
+                Icons.close_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
             ),
           ),
         ),

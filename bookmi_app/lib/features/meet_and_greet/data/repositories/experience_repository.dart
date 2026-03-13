@@ -23,8 +23,7 @@ class ExperienceListResponse {
 }
 
 class ExperienceRepository {
-  ExperienceRepository({required ApiClient apiClient})
-      : _dio = apiClient.dio;
+  ExperienceRepository({required ApiClient apiClient}) : _dio = apiClient.dio;
 
   /// Test-only constructor that accepts a raw Dio instance.
   ExperienceRepository.forTesting({required Dio dio}) : _dio = dio;
@@ -178,8 +177,7 @@ class ExperienceRepository {
         ApiEndpoints.uploadExperienceCover(id),
         data: formData,
       );
-      final coverUrl =
-          response.data!['data']?['cover_image'] as String? ?? '';
+      final coverUrl = response.data!['data']?['cover_image'] as String? ?? '';
       return ApiSuccess(coverUrl);
     } on DioException catch (e) {
       return _handleError(e);
@@ -187,7 +185,8 @@ class ExperienceRepository {
   }
 
   /// Fetch the list of M&G bookings for the authenticated client.
-  Future<ApiResult<List<ExperienceBookingListItem>>> getMyExperienceBookings() async {
+  Future<ApiResult<List<ExperienceBookingListItem>>>
+  getMyExperienceBookings() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>(
         ApiEndpoints.myExperienceBookings,
@@ -208,8 +207,7 @@ class ExperienceRepository {
     final error = errorData?['error'] as Map<String, dynamic>?;
     return ApiFailure<T>(
       code: (error?['code'] as String?) ?? 'NETWORK_ERROR',
-      message:
-          (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
+      message: (error?['message'] as String?) ?? e.message ?? 'Erreur réseau',
     );
   }
 }
