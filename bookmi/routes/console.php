@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\AutoCompleteBookings;
+use App\Console\Commands\SendMeetAndGreetReminders;
 use App\Console\Commands\CleanupExpiredData;
 use App\Console\Commands\DetectEmptyCalendar;
 use App\Console\Commands\DetectSuspiciousActivity;
@@ -69,3 +70,6 @@ Schedule::command(CleanupExpiredData::class)->dailyAt('01:00');
 
 // Regenerate public sitemap weekly (plan 2B)
 Schedule::command(GenerateSitemap::class)->weekly();
+
+// Send Meet & Greet reminders to clients 24h before the event
+Schedule::command(SendMeetAndGreetReminders::class)->dailyAt('09:00');

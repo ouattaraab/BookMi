@@ -120,10 +120,33 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
       );
     }
     if (state is ExperienceDetailFailure) {
-      return _ErrorView(
-        message: state.message,
-        onRetry: () =>
-            context.read<ExperienceDetailCubit>().loadDetail(widget.experienceId),
+      return SafeArea(
+        child: Column(
+          children: [
+            // Back button row
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: _titleColor,
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+            Expanded(
+              child: _ErrorView(
+                message: state.message,
+                onRetry: () => context
+                    .read<ExperienceDetailCubit>()
+                    .loadDetail(widget.experienceId),
+              ),
+            ),
+          ],
+        ),
       );
     }
     if (state is ExperienceDetailLoaded) {

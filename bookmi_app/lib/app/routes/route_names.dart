@@ -46,6 +46,10 @@ abstract final class RouteNames {
   static const profileConsents = 'profileConsents';
   // Meet & Greet
   static const experienceDetail = 'experienceDetail';
+  static const myExperiences = 'myExperiences';
+  static const createExperience = 'createExperience';
+  static const experienceAttendees = 'experienceAttendees';
+  static const myExperienceBookings = 'myExperienceBookings';
 }
 
 abstract final class RoutePaths {
@@ -95,4 +99,8 @@ abstract final class RoutePaths {
   static const profileConsents = 'consents';
   // Meet & Greet
   static const experienceDetail = '/experiences/:id';
+  static const myExperiences = '/my-experiences';
+  static const createExperience = '/my-experiences/create';
+  static const experienceAttendees = '/my-experiences/:id/attendees';
+  static const myExperienceBookings = '/my-experience-bookings';
 }

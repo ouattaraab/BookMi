@@ -31,13 +31,15 @@ class PrivateExperience extends Model
         'cover_image',
         'cancelled_reason',
         'commission_rate',
+        'reminder_sent_at',
     ];
 
     protected $casts = [
-        'event_date'       => 'datetime',
-        'venue_revealed'   => 'boolean',
-        'premium_options'  => 'array',
-        'status'           => ExperienceStatus::class,
+        'event_date'        => 'datetime',
+        'venue_revealed'    => 'boolean',
+        'premium_options'   => 'array',
+        'status'            => ExperienceStatus::class,
+        'reminder_sent_at'  => 'datetime',
     ];
 
     // ── Relations ──────────────────────────────────────────────────────────

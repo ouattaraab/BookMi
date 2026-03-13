@@ -49,22 +49,45 @@ class ExperienceController extends Controller
     /**
      * GET /api/v1/experiences/{id}
      * Détail d'une expérience.
+     * Accessible si :
+     *  - expérience publiquement visible (published / full), OU
+     *  - utilisateur authentifié ayant une réservation active pour cette expérience, OU
+     *  - talent propriétaire de l'expérience.
      */
     public function show(int $id): JsonResponse
     {
-        $experience = PrivateExperience::with(['talentProfile:id,stage_name,slug,profile_photo,city,category_id'])
-            ->whereIn('status', ExperienceStatus::visibleOnPublic())
-            ->findOrFail($id);
-
         /** @var \App\Models\User|null $user */
         $user      = auth()->user();
         $myBooking = null;
 
+        $query = PrivateExperience::with(['talentProfile:id,stage_name,slug,profile_photo,city,category_id'])
+            ->where('id', $id);
+
         if ($user) {
+            // Récupérer la réservation éventuelle
             $myBooking = ExperienceBooking::where('private_experience_id', $id)
                 ->where('client_id', $user->id)
                 ->first();
+
+            // Autoriser si : visible publiquement OU utilisateur réservé OU talent propriétaire
+            $talentProfile = \App\Models\TalentProfile::where('user_id', $user->id)->first();
+            $ownedIds      = $talentProfile
+                ? PrivateExperience::where('talent_profile_id', $talentProfile->id)->pluck('id')
+                : collect();
+
+            $bookedIds = ExperienceBooking::where('client_id', $user->id)
+                ->pluck('private_experience_id');
+
+            $query->where(function ($q) use ($bookedIds, $ownedIds) {
+                $q->whereIn('status', ExperienceStatus::visibleOnPublic())
+                  ->orWhereIn('id', $bookedIds)
+                  ->orWhereIn('id', $ownedIds);
+            });
+        } else {
+            $query->whereIn('status', ExperienceStatus::visibleOnPublic());
         }
+
+        $experience = $query->firstOrFail();
 
         return response()->json([
             'data' => $this->serializeDetail($experience, $myBooking),
@@ -93,7 +116,7 @@ class ExperienceController extends Controller
             'description'   => ['nullable', 'string', 'max:3000'],
             'event_date'    => ['required', 'date_format:Y-m-d H:i:s', 'after:today'],
             'venue_address' => ['nullable', 'string', 'max:255'],
-            'total_price'   => ['required', 'integer', 'min:1000'],
+            'total_price'   => ['required', 'integer', 'min:100'],
             'max_seats'     => ['required', 'integer', 'min:1', 'max:500'],
         ]);
 
@@ -262,6 +285,103 @@ class ExperienceController extends Controller
         return response()->json(['message' => 'Inscription annulée.']);
     }
 
+    // ── Client: list own bookings ──────────────────────────────────────────
+
+    /**
+     * GET /api/v1/me/experience-bookings
+     * Liste des réservations M&G du client connecté.
+     */
+    public function myBookings(): JsonResponse
+    {
+        /** @var \App\Models\User $client */
+        $client = auth()->user();
+
+        $bookings = ExperienceBooking::with([
+            'experience.talentProfile:id,stage_name,profile_photo',
+        ])
+            ->where('client_id', $client->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $data = $bookings->map(function (ExperienceBooking $b): array {
+            /** @var PrivateExperience|null $exp */
+            $exp    = $b->experience instanceof PrivateExperience ? $b->experience : null;
+            /** @var TalentProfile|null $talent */
+            $talent = $exp && $exp->talentProfile instanceof TalentProfile
+                ? $exp->talentProfile
+                : null;
+
+            return [
+                'booking_id'   => $b->id,
+                'seats_count'  => $b->seats_count,
+                'price_per_seat' => $b->price_per_seat,
+                'total_amount' => $b->total_amount,
+                'status'       => $b->status->value,
+                'status_label' => $b->status->label(),
+                'experience'   => $exp ? [
+                    'id'            => $exp->id,
+                    'title'         => $exp->title,
+                    'event_date'    => $exp->event_date->toDateString(),
+                    'event_time'    => $exp->event_date->format('H:i'),
+                    'venue_address' => $exp->venue_address,
+                    'cover_image'   => $exp->cover_image_url,
+                    'talent'        => $talent ? [
+                        'id'            => $talent->id,
+                        'stage_name'    => $talent->stage_name,
+                        'profile_photo' => $talent->profile_photo,
+                    ] : null,
+                ] : null,
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
+    // ── Talent: list experience attendees ──────────────────────────────────
+
+    /**
+     * GET /api/v1/talent/experiences/{id}/attendees
+     * Liste des participants à une expérience du talent connecté.
+     */
+    public function attendees(int $id): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
+        if (! $user->hasRole('talent')) {
+            return response()->json(['message' => 'Accès réservé aux talents.'], 403);
+        }
+
+        $profile    = TalentProfile::where('user_id', $user->id)->firstOrFail();
+        $experience = PrivateExperience::where('id', $id)
+            ->where('talent_profile_id', $profile->id)
+            ->firstOrFail();
+
+        $bookings = ExperienceBooking::with(['client:id,first_name,last_name'])
+            ->where('private_experience_id', $experience->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        $data = $bookings->map(function (ExperienceBooking $b): array {
+            /** @var \App\Models\User|null $client */
+            $client = $b->client instanceof \App\Models\User ? $b->client : null;
+
+            return [
+                'id'           => $b->id,
+                'client_id'    => $b->client_id,
+                'first_name'   => $client !== null ? $client->first_name : '',
+                'last_name'    => $client !== null ? $client->last_name : '',
+                'seats_count'  => $b->seats_count,
+                'total_amount' => $b->total_amount,
+                'status'       => $b->status->value,
+                'status_label' => $b->status->label(),
+                'created_at'   => $b->created_at?->toIso8601String(),
+            ];
+        });
+
+        return response()->json(['data' => $data]);
+    }
+
     // ── Cover media upload (talent) ────────────────────────────────────────
 
     /**
@@ -372,6 +492,7 @@ class ExperienceController extends Controller
             'id'              => $e->id,
             'title'           => $e->title,
             'event_date'      => $e->event_date->toIso8601String(),
+            'event_time'      => $e->event_date->format('H:i'),
             'status'          => $e->status->value,
             'status_label'    => $e->status->label(),
             'price_per_seat'  => $e->price_per_seat,

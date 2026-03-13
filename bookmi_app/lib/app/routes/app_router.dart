@@ -60,7 +60,11 @@ import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_pro
 import 'package:bookmi_app/features/meet_and_greet/data/models/experience_model.dart';
 import 'package:bookmi_app/features/meet_and_greet/data/repositories/experience_repository.dart';
 import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_detail_cubit.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/pages/experience_attendees_page.dart';
 import 'package:bookmi_app/features/meet_and_greet/presentation/pages/experience_detail_page.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/pages/create_experience_page.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/pages/my_experience_bookings_page.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/pages/my_experiences_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -178,6 +182,44 @@ GoRouter buildAppRouter(
             ),
           );
         },
+      ),
+
+      // ── Meet & Greet — talent management ─────────────────────────────────
+      GoRoute(
+        path: RoutePaths.myExperiences,
+        name: RouteNames.myExperiences,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) =>
+            MyExperiencesPage(repository: experienceRepo),
+      ),
+      GoRoute(
+        path: RoutePaths.createExperience,
+        name: RouteNames.createExperience,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) =>
+            CreateExperiencePage(repository: experienceRepo),
+      ),
+      GoRoute(
+        path: RoutePaths.experienceAttendees,
+        name: RouteNames.experienceAttendees,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final id =
+              int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final experience = state.extra as ExperienceModel?;
+          return ExperienceAttendeesPage(
+            experienceId: id,
+            experience: experience,
+            repository: experienceRepo,
+          );
+        },
+      ),
+      GoRoute(
+        path: RoutePaths.myExperienceBookings,
+        name: RouteNames.myExperienceBookings,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) =>
+            MyExperienceBookingsPage(repository: experienceRepo),
       ),
 
       // ── Maintenance / Force update (exempt from auth guard) ─────────────
@@ -586,6 +628,16 @@ GoRouter buildAppRouter(
       router.push(RoutePaths.managerInvitations);
     } else if (type == 'manager_invitation_response') {
       router.push(RoutePaths.profileManagerAssignment);
+    } else if (type == 'mg_reminder') {
+      final expId = message.data['experience_id'] as String?;
+      if (expId != null && expId.isNotEmpty) {
+        router.pushNamed(
+          RouteNames.experienceDetail,
+          pathParameters: {'id': expId},
+        );
+      } else {
+        router.push(RoutePaths.notifications);
+      }
     } else if (type == 'new_message' || type == 'admin_broadcast') {
       router.go(RoutePaths.messages);
     } else if (type == 'payout_method_verified' ||

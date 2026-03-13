@@ -115,15 +115,32 @@ class ExperienceModel {
   bool get isCompleted => status == 'completed';
   bool get hasBooked => myBooking != null;
 
+  static String _extractTime(Map<String, dynamic> json) {
+    final explicit = json['event_time'] as String?;
+    if (explicit != null && explicit.isNotEmpty) return explicit;
+    // Fall back to extracting HH:mm from event_date ISO string
+    final dateStr = json['event_date'] as String? ?? '';
+    try {
+      final dt = DateTime.parse(dateStr).toLocal();
+      final h = dt.hour.toString().padLeft(2, '0');
+      final m = dt.minute.toString().padLeft(2, '0');
+      return '$h:$m';
+    } catch (_) {
+      return '';
+    }
+  }
+
   factory ExperienceModel.fromJson(Map<String, dynamic> json) {
-    final talentJson = json['talent_profile'] as Map<String, dynamic>?;
+    // API returns key 'talent' (from serializeList) OR 'talent_profile' (legacy)
+    final talentJson = (json['talent'] ?? json['talent_profile']) as Map<String, dynamic>?;
     final bookingJson = json['my_booking'] as Map<String, dynamic>?;
     return ExperienceModel(
       id: json['id'] as int,
       title: json['title'] as String? ?? '',
       description: json['description'] as String? ?? '',
       eventDate: json['event_date'] as String? ?? '',
-      eventTime: json['event_time'] as String? ?? '',
+      // Backend may return 'event_time' separately, or it can be extracted from 'event_date'
+      eventTime: _extractTime(json),
       pricePerSeat: json['price_per_seat'] as int? ?? 0,
       maxSeats: json['max_seats'] as int? ?? 0,
       seatsAvailable: json['seats_available'] as int? ?? 0,

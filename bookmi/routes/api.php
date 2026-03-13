@@ -162,6 +162,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // ── Meet & Greet — talent (créer / lister ses propres expériences) ──
         Route::post('/talent/experiences', [ExperienceController::class, 'store'])->name('talent.experiences.store');
         Route::get('/talent/experiences', [ExperienceController::class, 'myExperiences'])->name('talent.experiences.index');
+        Route::get('/talent/experiences/{id}/attendees', [ExperienceController::class, 'attendees'])->name('talent.experiences.attendees');
+
+        // ── Meet & Greet — client (mes réservations) ──────────────────────
+        Route::get('/me/experience-bookings', [ExperienceController::class, 'myBookings'])->name('me.experience-bookings');
 
         // ── Meet & Greet — client (réserver / annuler) ────────────────────
         Route::post('/experiences/{id}/book', [ExperienceController::class, 'book'])->name('experiences.book');

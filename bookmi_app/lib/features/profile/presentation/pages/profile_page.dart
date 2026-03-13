@@ -815,6 +815,12 @@ class _GeneralSection extends StatelessWidget {
             ),
             _Divider(),
             _MenuItem(
+              icon: Icons.star_outline_rounded,
+              label: 'Mes Meet & Greet',
+              onTap: () => context.pushNamed(RouteNames.myExperiences),
+            ),
+            _Divider(),
+            _MenuItem(
               icon: Icons.calendar_month_outlined,
               label: 'Gestion du calendrier',
               onTap: () => context.pushNamed(RouteNames.profileCalendar),
@@ -869,6 +875,13 @@ class _GeneralSection extends StatelessWidget {
               onTap: () => context.pushNamed(RouteNames.profileFavorites),
             ),
           ],
+          _Divider(),
+          _MenuItem(
+            icon: Icons.star_outline_rounded,
+            label: 'Mes Meet & Greet',
+            onTap: () =>
+                context.pushNamed(RouteNames.myExperienceBookings),
+          ),
           _Divider(),
           _MenuItem(
             icon: Icons.card_giftcard_outlined,
