@@ -14,8 +14,23 @@ class ExperienceDetailCubit extends Cubit<ExperienceDetailState> {
 
   /// Initialise the cubit from an already-fetched [experience] object
   /// (e.g. when navigating from a card that already has the data).
+  /// Shows the cached data immediately, then refreshes in the background to
+  /// pick up the latest cover image, seat count, etc.
   void initWithExperience(ExperienceModel experience) {
     emit(ExperienceDetailLoaded(experience: experience));
+    // ignore: discarded_futures
+    _refreshInBackground(experience.id);
+  }
+
+  Future<void> _refreshInBackground(int id) async {
+    final result = await _repository.getExperienceDetail(id);
+    if (isClosed) return;
+    if (result is ApiSuccess<ExperienceModel>) {
+      final current = state;
+      if (current is ExperienceDetailLoaded && current.experience.id == id) {
+        emit(ExperienceDetailLoaded(experience: result.data));
+      }
+    }
   }
 
   /// Fetch full detail from the API (always fresh).
