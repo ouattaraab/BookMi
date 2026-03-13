@@ -222,6 +222,14 @@ class TalentProfile extends Model
     }
 
     /**
+     * @return HasMany<PrivateExperience, $this>
+     */
+    public function privateExperiences(): HasMany
+    {
+        return $this->hasMany(PrivateExperience::class);
+    }
+
+    /**
      * @return HasMany<PortfolioItem, $this>
      */
     public function portfolioItems(): HasMany

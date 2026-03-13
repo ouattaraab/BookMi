@@ -152,7 +152,7 @@
                             @endif
                         </div>
 
-                    @elseif($myBooking && $myBooking['status'] !== 'cancelled')
+                    @elseif($myBooking && $myBooking->status->value !== 'cancelled')
                         {{-- Déjà inscrit --}}
                         <div style="text-align:center; margin-bottom:1.25rem;">
                             <div style="width:52px; height:52px; background:rgba(16,185,129,0.12); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 0.75rem;">
@@ -160,16 +160,16 @@
                             </div>
                             <h3 style="color:white; font-weight:900; font-size:1rem; margin:0 0 0.25rem;">Vous êtes inscrit !</h3>
                             <p style="color:rgba(255,255,255,0.45); font-size:0.8rem; margin:0;">
-                                {{ $myBooking['seats_count'] }} place(s) · {{ number_format($myBooking['total_amount'], 0, ',', '.') }} FCFA
+                                {{ $myBooking->seats_count }} place(s) · {{ number_format($myBooking->total_amount, 0, ',', '.') }} FCFA
                             </p>
-                            @if($myBooking['status'] === 'pending')
+                            @if($myBooking->status->value === 'pending')
                                 <p style="color:#fbbf24; font-size:0.78rem; font-weight:700; margin:8px 0 0;">En attente de confirmation</p>
-                            @elseif($myBooking['status'] === 'confirmed')
+                            @elseif($myBooking->status->value === 'confirmed')
                                 <p style="color:#10B981; font-size:0.78rem; font-weight:700; margin:8px 0 0;">Inscription confirmée ✓</p>
                             @endif
                         </div>
                         @auth
-                        <form action="{{ route('client.meet-and-greet.cancel', $myBooking['id']) }}" method="POST">
+                        <form action="{{ route('client.meet-and-greet.cancel', $myBooking->id) }}" method="POST">
                             @csrf
                             <button type="submit"
                                     onclick="return confirm('Annuler votre inscription ?')"

@@ -2,6 +2,7 @@
 
 // consent system — loi 2013-450 CI + RGPD (deploy fix: bookmi_app/bookmi/)
 use App\Http\Controllers\Api\V1\ConsentController;
+use App\Http\Controllers\Api\V1\ExperienceController;
 use App\Http\Controllers\Api\V1\AppEventController;
 use App\Http\Controllers\Api\V1\AppVersionController;
 use App\Http\Controllers\Api\V1\DownloadController;
@@ -95,6 +96,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
     Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
+    // ── Meet & Greet (public — discovery mobile) ──────────────────────────
+    Route::get('/experiences', [ExperienceController::class, 'index'])->name('experiences.index');
+    Route::get('/experiences/{id}', [ExperienceController::class, 'show'])->name('experiences.show');
+
     Route::get('/talents', [TalentController::class, 'index'])->name('talents.index');
     Route::get('/talents/{slug}', [TalentController::class, 'show'])->name('talents.show');
     Route::get('/talents/{talent}/calendar', [CalendarSlotController::class, 'index'])->name('calendar.index');
@@ -153,6 +158,14 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/verifications/me', [VerificationController::class, 'showOwn'])->name('verifications.me');
 
         Route::apiResource('service_packages', ServicePackageController::class)->except(['show']);
+
+        // ── Meet & Greet — talent (créer / lister ses propres expériences) ──
+        Route::post('/talent/experiences', [ExperienceController::class, 'store'])->name('talent.experiences.store');
+        Route::get('/talent/experiences', [ExperienceController::class, 'myExperiences'])->name('talent.experiences.index');
+
+        // ── Meet & Greet — client (réserver / annuler) ────────────────────
+        Route::post('/experiences/{id}/book', [ExperienceController::class, 'book'])->name('experiences.book');
+        Route::delete('/experiences/{id}/booking', [ExperienceController::class, 'cancelBooking'])->name('experiences.booking.cancel');
 
         // Calendrier disponibilités (talent uniquement)
         Route::post('/calendar_slots', [CalendarSlotController::class, 'store'])->name('calendar.store');
