@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\Talent\BookingController;
+use App\Http\Controllers\Web\Talent\MeetAndGreetController;
 use App\Http\Controllers\Web\Talent\CalendarController;
 use App\Http\Controllers\Web\Talent\ReportController;
 use App\Http\Controllers\Web\Talent\ReviewController;
@@ -85,6 +86,13 @@ Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('
 // Vérification
 Route::get('/verification', [VerificationController::class, 'index'])->name('verification');
 Route::post('/verification', [VerificationController::class, 'submit'])->name('verification.submit');
+
+// Meet & Greet
+Route::get('/meet-and-greet', [MeetAndGreetController::class, 'index'])->name('meet-and-greet.index');
+Route::get('/meet-and-greet/create', [MeetAndGreetController::class, 'create'])->name('meet-and-greet.create');
+Route::post('/meet-and-greet', [MeetAndGreetController::class, 'store'])->name('meet-and-greet.store');
+Route::get('/meet-and-greet/{id}', [MeetAndGreetController::class, 'show'])->name('meet-and-greet.show');
+Route::post('/meet-and-greet/{id}/cancel', [MeetAndGreetController::class, 'cancel'])->name('meet-and-greet.cancel');
 
 // Managers
 Route::get('/managers', [ManagerController::class, 'index'])->name('managers');

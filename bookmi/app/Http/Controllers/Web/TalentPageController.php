@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\ExperienceBooking;
+use App\Models\PrivateExperience;
 use App\Models\TalentFollow;
 use App\Models\TalentProfile;
 use App\Services\TalentProfileService;
@@ -30,10 +32,29 @@ class TalentPageController extends Controller
                 ->exists()
             : false;
 
+        // Meet & Greet à venir pour ce talent
+        $experiences = PrivateExperience::where('talent_profile_id', $result['profile']->id)
+            ->publiclyVisible()
+            ->upcoming()
+            ->orderBy('event_date')
+            ->get();
+
+        // Réservations déjà faites par le client connecté pour ces expériences
+        $myExperienceBookings = [];
+        if (auth()->check() && $experiences->isNotEmpty()) {
+            $myExperienceBookings = ExperienceBooking::where('client_id', auth()->id())
+                ->whereIn('private_experience_id', $experiences->pluck('id'))
+                ->get()
+                ->keyBy('private_experience_id')
+                ->toArray();
+        }
+
         return view('web.talent.show', [
-            'profile'        => $result['profile'],
-            'similarTalents' => $result['similar_talents'],
-            'isFollowing'    => $isFollowing,
+            'profile'             => $result['profile'],
+            'similarTalents'      => $result['similar_talents'],
+            'isFollowing'         => $isFollowing,
+            'experiences'         => $experiences,
+            'myExperienceBookings' => $myExperienceBookings,
         ]);
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\Client\AnalyticsController;
+use App\Http\Controllers\Web\Client\ExperienceBookingController;
 use App\Http\Controllers\Web\Client\BookingController;
 use App\Http\Controllers\Web\Client\DashboardController;
 use App\Http\Controllers\Web\Client\FavoriteController;
@@ -69,3 +70,7 @@ Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics
 // Vérification d'identité
 Route::get('/verification', [VerificationController::class, 'index'])->name('verification');
 Route::post('/verification', [VerificationController::class, 'submit'])->name('verification.submit');
+
+// Meet & Greet — inscription / annulation
+Route::post('/meet-and-greet/book', [ExperienceBookingController::class, 'book'])->name('meet-and-greet.book');
+Route::post('/meet-and-greet/{bookingId}/cancel', [ExperienceBookingController::class, 'cancel'])->name('meet-and-greet.cancel');

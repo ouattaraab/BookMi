@@ -373,6 +373,12 @@
             @if($profile->receivedReviews->isNotEmpty())
                 <a href="#avis" class="tp-tab">Avis ({{ $profile->receivedReviews->count() }})</a>
             @endif
+            @if(isset($experiences) && $experiences->isNotEmpty())
+                <a href="#meet-greet" class="tp-tab" style="display:inline-flex; align-items:center; gap:5px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="#8B5CF6" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Meet & Greet ({{ $experiences->count() }})
+                </a>
+            @endif
         </div>
     </div>
 </section>
@@ -664,6 +670,113 @@
                         </div>
                         @endif
 
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            {{-- ── SECTION MEET & GREET ── --}}
+            @if(isset($experiences) && $experiences->isNotEmpty())
+            <div class="tp-section" id="meet-greet">
+                <h2 class="tp-section-title" style="display:flex; align-items:center; gap:8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#8B5CF6" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Meet & Greet
+                </h2>
+                <div style="display:flex; flex-direction:column; gap:1.25rem;">
+                    @foreach($experiences as $exp)
+                    @php
+                        $myBooking  = $myExperienceBookings[$exp->id] ?? null;
+                        $isFull     = $exp->status->value === 'full';
+                        $alreadyIn  = $myBooking && $myBooking['status'] !== 'cancelled';
+                    @endphp
+                    <div style="background:rgba(139,92,246,0.05); border:1px solid rgba(139,92,246,0.18); border-radius:18px; overflow:hidden;">
+
+                        {{-- Header --}}
+                        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; margin-bottom:0.75rem;">
+                                <div>
+                                    <h3 style="font-size:1rem; font-weight:800; color:white; margin:0 0 0.25rem;">{{ $exp->title }}</h3>
+                                    <div style="display:flex; flex-wrap:wrap; gap:12px; font-size:0.8rem; color:rgba(255,255,255,0.5); font-weight:600;">
+                                        <span>📅 {{ $exp->event_date->isoFormat('dddd D MMMM YYYY à HH[h]mm') }}</span>
+                                        @if($exp->venue_address && ($exp->venue_revealed || $alreadyIn))
+                                            <span>📍 {{ $exp->venue_address }}</span>
+                                        @elseif($exp->venue_address)
+                                            <span>📍 Lieu révélé après inscription</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div style="text-align:right; flex-shrink:0;">
+                                    <div style="font-size:1.3rem; font-weight:900; color:#8B5CF6; line-height:1.1;">
+                                        {{ number_format($exp->price_per_seat, 0, ',', '.') }}
+                                        <span style="font-size:0.72rem; font-weight:700; color:rgba(139,92,246,0.6);">FCFA</span>
+                                    </div>
+                                    <div style="font-size:0.72rem; color:rgba(255,255,255,0.35); font-weight:600;">par personne</div>
+                                </div>
+                            </div>
+
+                            {{-- Places bar --}}
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden;">
+                                    <div style="height:100%; width:{{ min(100, round($exp->booked_seats / max(1,$exp->max_seats) * 100)) }}%; background:{{ $isFull ? '#fbbf24' : 'linear-gradient(90deg,#8B5CF6,#1AB3FF)' }}; border-radius:2px; transition:width 0.5s;"></div>
+                                </div>
+                                <span style="font-size:0.75rem; font-weight:700; color:rgba(255,255,255,0.4); white-space:nowrap; flex-shrink:0;">
+                                    {{ $exp->booked_seats }}/{{ $exp->max_seats }}
+                                    @if($isFull)
+                                        <span style="color:#fbbf24;"> · COMPLET</span>
+                                    @else
+                                        · {{ $exp->seats_available }} dispo
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Description --}}
+                        @if($exp->description)
+                        <div style="padding:0.875rem 1.5rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <p style="color:rgba(255,255,255,0.5); font-size:0.85rem; line-height:1.7; margin:0;">{{ Str::limit($exp->description, 200) }}</p>
+                        </div>
+                        @endif
+
+                        {{-- Action --}}
+                        <div style="padding:1rem 1.5rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem;">
+                            <a href="{{ route('meet-and-greet.show', $exp->id) }}"
+                               style="color:rgba(139,92,246,0.8); font-size:0.82rem; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;"
+                               onmouseover="this.style.color='#8B5CF6'" onmouseout="this.style.color='rgba(139,92,246,0.8)'">
+                                Voir tous les détails →
+                            </a>
+
+                            @if($alreadyIn)
+                                <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); color:#10B981; font-size:0.78rem; font-weight:800; padding:6px 14px; border-radius:100px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                    Inscrit{{ $myBooking['status'] === 'confirmed' ? ' ✓' : ' (en attente)' }}
+                                </span>
+                            @elseif($isFull)
+                                <span style="background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); color:#fbbf24; font-size:0.78rem; font-weight:800; padding:6px 14px; border-radius:100px;">
+                                    🔒 Complet
+                                </span>
+                            @else
+                                @auth
+                                    @if(auth()->user()->hasRole('client'))
+                                        <form action="{{ route('client.meet-and-greet.book') }}" method="POST" style="margin:0; display:inline;">
+                                            @csrf
+                                            <input type="hidden" name="experience_id" value="{{ $exp->id }}">
+                                            <input type="hidden" name="seats_count" value="1">
+                                            <button type="submit"
+                                                    style="display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:12px; background:linear-gradient(135deg,#8B5CF6,#6D28D9); color:white; font-weight:800; font-size:0.85rem; border:none; cursor:pointer; font-family:inherit; box-shadow:0 4px 14px rgba(139,92,246,0.4); transition:transform 0.15s;"
+                                                    onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform=''">
+                                                🎟 Réserver ma place
+                                            </button>
+                                        </form>
+                                    @endif
+                                @else
+                                    <a href="{{ route('login') }}"
+                                       style="display:inline-flex; align-items:center; gap:6px; padding:9px 20px; border-radius:12px; background:linear-gradient(135deg,#8B5CF6,#6D28D9); color:white; font-weight:800; font-size:0.85rem; text-decoration:none; box-shadow:0 4px 14px rgba(139,92,246,0.4);">
+                                        🎟 Réserver ma place
+                                    </a>
+                                @endauth
+                            @endif
+                        </div>
                     </div>
                     @endforeach
                 </div>

@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\Auth\WebResetPasswordController;
 use App\Http\Controllers\Web\Auth\WebTwoFactorController;
 use App\Http\Controllers\Web\HomeController;
 use App\Http\Controllers\Web\MaintenanceController;
+use App\Http\Controllers\Web\MeetAndGreetController;
 use App\Http\Controllers\Web\TalentDiscoveryController;
 use App\Http\Controllers\Web\TalentNotificationController;
 use App\Http\Controllers\Web\TalentPageController;
@@ -76,6 +77,9 @@ Route::get('/talents/{slug}', [TalentPageController::class, 'show'])->name('tale
 Route::post('/talents/{profile}/follow', [TalentPageController::class, 'toggleFollow'])
     ->middleware('auth')
     ->name('talent.follow');
+
+// ── Meet & Greet (public) ────────────────────────────────────────────────────
+Route::get('/meet-and-greet/{id}', [MeetAndGreetController::class, 'show'])->name('meet-and-greet.show');
 
 // ── Pages légales ───────────────────────────────────────────────────────────
 Route::get('/conditions-utilisation', fn () => view('legal.conditions-utilisation'))->name('legal.conditions');

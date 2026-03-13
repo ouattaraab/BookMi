@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\PrivateExperience;
 use App\Models\TalentProfile;
 use Illuminate\View\View;
 
@@ -23,6 +24,13 @@ class HomeController extends Controller
             ->map->count()
             ->toArray();
 
-        return view('home', compact('featuredTalents', 'categoryCount'));
+        $upcomingExperiences = PrivateExperience::with(['talentProfile.user', 'talentProfile.category'])
+            ->publiclyVisible()
+            ->upcoming()
+            ->orderBy('event_date')
+            ->limit(6)
+            ->get();
+
+        return view('home', compact('featuredTalents', 'categoryCount', 'upcomingExperiences'));
     }
 }
