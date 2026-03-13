@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/features/meet_and_greet/data/models/experience_model.dart';
 import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_detail_cubit.dart';
@@ -7,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 // ── Aurora palette ────────────────────────────────────────────────
@@ -35,6 +38,8 @@ class ExperienceDetailPage extends StatefulWidget {
 
 class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
   int _seatsCount = 1;
+  bool _uploadingCover = false;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -45,6 +50,98 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
     } else {
       cubit.loadDetail(widget.experienceId);
     }
+  }
+
+  Future<void> _pickAndUploadCover() async {
+    final choice = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: const Color(0xFF1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Modifier la photo de couverture',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.photo_library_rounded,
+                color: _blue,
+              ),
+              title: Text(
+                'Choisir depuis la galerie',
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () => Navigator.pop(ctx, 'gallery'),
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt_rounded,
+                color: _violet,
+              ),
+              title: Text(
+                'Prendre une photo',
+                style: GoogleFonts.manrope(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onTap: () => Navigator.pop(ctx, 'camera'),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+
+    if (choice == null || !mounted) return;
+
+    final XFile? picked = choice == 'gallery'
+        ? await _picker.pickImage(
+            source: ImageSource.gallery,
+            imageQuality: 85,
+            maxWidth: 1200,
+          )
+        : await _picker.pickImage(
+            source: ImageSource.camera,
+            imageQuality: 85,
+            maxWidth: 1200,
+          );
+
+    if (picked == null || !mounted) return;
+
+    setState(() => _uploadingCover = true);
+    await context.read<ExperienceDetailCubit>().uploadCover(
+      widget.experienceId,
+      File(picked.path),
+    );
+    if (mounted) setState(() => _uploadingCover = false);
   }
 
   @override
@@ -158,6 +255,7 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
         experience: state.experience,
         isLoading: state is ExperienceDetailBooking,
         isOwner: widget.isOwner,
+        uploadingCover: _uploadingCover,
         seatsCount: _seatsCount,
         onSeatsChanged: (v) => setState(() => _seatsCount = v),
         onBook: () => context.read<ExperienceDetailCubit>().bookSeats(
@@ -172,6 +270,7 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
           pathParameters: {'id': state.experience.id.toString()},
           extra: state.experience,
         ),
+        onEditCover: _pickAndUploadCover,
       );
     }
     return const SizedBox.shrink();
@@ -181,10 +280,19 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
 // ── Hero background ───────────────────────────────────────────────
 
 class _HeroBackground extends StatelessWidget {
-  const _HeroBackground({required this.experience, required this.talent});
+  const _HeroBackground({
+    required this.experience,
+    required this.talent,
+    this.isOwner = false,
+    this.uploadingCover = false,
+    this.onEditCover,
+  });
 
   final ExperienceModel experience;
   final ExperienceTalentInfo? talent;
+  final bool isOwner;
+  final bool uploadingCover;
+  final VoidCallback? onEditCover;
 
   @override
   Widget build(BuildContext context) {
@@ -223,6 +331,37 @@ class _HeroBackground extends StatelessWidget {
                 ),
               ),
             ),
+          // Owner: edit cover button (top-right)
+          if (isOwner)
+            Positioned(
+              top: 12,
+              right: 12,
+              child: GestureDetector(
+                onTap: uploadingCover ? null : onEditCover,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    shape: BoxShape.circle,
+                  ),
+                  child: uploadingCover
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                ),
+              ),
+            ),
+
           // Talent info overlay
           Positioned(
             left: 0,
@@ -270,21 +409,25 @@ class _LoadedView extends StatelessWidget {
     required this.experience,
     required this.isLoading,
     required this.isOwner,
+    required this.uploadingCover,
     required this.seatsCount,
     required this.onSeatsChanged,
     required this.onBook,
     required this.onCancel,
     required this.onViewAttendees,
+    required this.onEditCover,
   });
 
   final ExperienceModel experience;
   final bool isLoading;
   final bool isOwner;
+  final bool uploadingCover;
   final int seatsCount;
   final ValueChanged<int> onSeatsChanged;
   final VoidCallback onBook;
   final VoidCallback onCancel;
   final VoidCallback onViewAttendees;
+  final VoidCallback onEditCover;
 
   @override
   Widget build(BuildContext context) {
@@ -303,6 +446,9 @@ class _LoadedView extends StatelessWidget {
             background: _HeroBackground(
               experience: experience,
               talent: talent,
+              isOwner: isOwner,
+              uploadingCover: uploadingCover,
+              onEditCover: onEditCover,
             ),
           ),
         ),

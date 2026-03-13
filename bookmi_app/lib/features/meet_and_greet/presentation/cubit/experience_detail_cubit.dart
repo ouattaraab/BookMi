@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:bookmi_app/core/network/api_result.dart';
 import 'package:bookmi_app/features/meet_and_greet/data/models/experience_model.dart';
@@ -102,6 +104,30 @@ class ExperienceDetailCubit extends Cubit<ExperienceDetailState> {
               ),
             );
         }
+      case ApiFailure(:final message):
+        emit(
+          ExperienceDetailBookingFailure(
+            experience: current.experience,
+            errorMessage: message,
+          ),
+        );
+    }
+  }
+
+  /// Upload a new cover photo/video for the experience.
+  Future<void> uploadCover(int experienceId, File file) async {
+    final current = state;
+    if (current is! ExperienceDetailLoaded) return;
+
+    final result = await _repository.uploadCover(experienceId, file);
+    if (isClosed) return;
+    switch (result) {
+      case ApiSuccess(:final data):
+        emit(
+          ExperienceDetailLoaded(
+            experience: current.experience.copyWith(coverImageUrl: data),
+          ),
+        );
       case ApiFailure(:final message):
         emit(
           ExperienceDetailBookingFailure(
