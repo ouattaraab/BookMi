@@ -1,9 +1,11 @@
+import 'package:bookmi_app/app/routes/route_names.dart';
 import 'package:bookmi_app/features/meet_and_greet/data/models/experience_model.dart';
 import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_detail_cubit.dart';
 import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_detail_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -19,11 +21,13 @@ class ExperienceDetailPage extends StatefulWidget {
   const ExperienceDetailPage({
     required this.experienceId,
     this.preloaded,
+    this.isOwner = false,
     super.key,
   });
 
   final int experienceId;
   final ExperienceModel? preloaded;
+  final bool isOwner;
 
   @override
   State<ExperienceDetailPage> createState() => _ExperienceDetailPageState();
@@ -153,6 +157,7 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
       return _LoadedView(
         experience: state.experience,
         isLoading: state is ExperienceDetailBooking,
+        isOwner: widget.isOwner,
         seatsCount: _seatsCount,
         onSeatsChanged: (v) => setState(() => _seatsCount = v),
         onBook: () => context.read<ExperienceDetailCubit>().bookSeats(
@@ -161,6 +166,11 @@ class _ExperienceDetailPageState extends State<ExperienceDetailPage> {
         ),
         onCancel: () => context.read<ExperienceDetailCubit>().cancelBooking(
           state.experience.id,
+        ),
+        onViewAttendees: () => context.pushNamed(
+          RouteNames.experienceAttendees,
+          pathParameters: {'id': state.experience.id.toString()},
+          extra: state.experience,
         ),
       );
     }
@@ -259,18 +269,22 @@ class _LoadedView extends StatelessWidget {
   const _LoadedView({
     required this.experience,
     required this.isLoading,
+    required this.isOwner,
     required this.seatsCount,
     required this.onSeatsChanged,
     required this.onBook,
     required this.onCancel,
+    required this.onViewAttendees,
   });
 
   final ExperienceModel experience;
   final bool isLoading;
+  final bool isOwner;
   final int seatsCount;
   final ValueChanged<int> onSeatsChanged;
   final VoidCallback onBook;
   final VoidCallback onCancel;
+  final VoidCallback onViewAttendees;
 
   @override
   Widget build(BuildContext context) {
@@ -365,15 +379,50 @@ class _LoadedView extends StatelessWidget {
                   const SizedBox(height: 20),
                 ],
 
-                // Booking card
-                _BookingCard(
-                  experience: experience,
-                  isLoading: isLoading,
-                  seatsCount: seatsCount,
-                  onSeatsChanged: onSeatsChanged,
-                  onBook: onBook,
-                  onCancel: onCancel,
-                ),
+                // Owner: attendees button
+                if (isOwner) ...[
+                  _SectionTitle(label: 'Gestion'),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: onViewAttendees,
+                      icon: const Icon(
+                        Icons.people_rounded,
+                        size: 18,
+                        color: _violet,
+                      ),
+                      label: Text(
+                        'Voir les inscrits',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontWeight: FontWeight.w700,
+                          color: _violet,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(
+                          color: _violet.withValues(alpha: 0.5),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // Booking card (hidden for owner)
+                if (!isOwner)
+                  _BookingCard(
+                    experience: experience,
+                    isLoading: isLoading,
+                    seatsCount: seatsCount,
+                    onSeatsChanged: onSeatsChanged,
+                    onBook: onBook,
+                    onCancel: onCancel,
+                  ),
               ],
             ),
           ),

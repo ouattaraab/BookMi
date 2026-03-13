@@ -171,12 +171,21 @@ GoRouter buildAppRouter(
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
-          final preloaded = state.extra as ExperienceModel?;
+          ExperienceModel? preloaded;
+          bool isOwner = false;
+          if (state.extra is Map) {
+            final map = state.extra as Map;
+            preloaded = map['experience'] as ExperienceModel?;
+            isOwner = map['isOwner'] as bool? ?? false;
+          } else if (state.extra is ExperienceModel) {
+            preloaded = state.extra as ExperienceModel;
+          }
           return BlocProvider(
             create: (_) => ExperienceDetailCubit(repository: experienceRepo),
             child: ExperienceDetailPage(
               experienceId: id,
               preloaded: preloaded,
+              isOwner: isOwner,
             ),
           );
         },

@@ -120,9 +120,12 @@ class _MyExperiencesPageState extends State<MyExperiencesPage> {
                 return _ExperienceCard(
                   experience: experiences[index],
                   onTap: () => context.pushNamed(
-                    RouteNames.experienceAttendees,
+                    RouteNames.experienceDetail,
                     pathParameters: {'id': experiences[index].id.toString()},
-                    extra: experiences[index],
+                    extra: {
+                      'experience': experiences[index],
+                      'isOwner': true,
+                    },
                   ),
                 );
               },
@@ -195,7 +198,7 @@ class _ExperienceCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  'Voir les inscrits',
+                  'Voir le détail',
                   style: GoogleFonts.manrope(
                     fontSize: 12,
                     color: _blue,
