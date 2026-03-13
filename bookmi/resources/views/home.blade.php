@@ -553,14 +553,14 @@
      2b. MEET & GREET — Expériences exclusives
 ════════════════════════════════════════════════ --}}
 @if(isset($upcomingExperiences) && $upcomingExperiences->isNotEmpty())
-<section style="background:linear-gradient(135deg,#F7F3FF 0%,#EDE9FE 50%,#F7F3FF 100%); padding:5rem 1.5rem;">
+<section style="background:linear-gradient(135deg,#FFFDF5 0%,#FEF9E7 50%,#FFFDF5 100%); padding:5rem 1.5rem;">
     <div class="reveal" style="text-align:center; margin-bottom:3rem;">
-        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(109,40,217,0.08); border:1px solid rgba(109,40,217,0.2); border-radius:100px; padding:5px 16px; margin-bottom:1rem;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#6D28D9" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            <span style="font-size:0.7rem; font-weight:800; color:#6D28D9; text-transform:uppercase; letter-spacing:0.1em;">Expériences exclusives</span>
+        <div style="display:inline-flex; align-items:center; gap:6px; background:rgba(217,119,6,0.08); border:1px solid rgba(217,119,6,0.25); border-radius:100px; padding:5px 16px; margin-bottom:1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="#D97706" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span style="font-size:0.7rem; font-weight:800; color:#B45309; text-transform:uppercase; letter-spacing:0.1em;">Expériences exclusives</span>
         </div>
-        <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#1E1B4B; margin:0 0 0.5rem;">Meet & Greet</h2>
-        <div style="width:36px; height:3px; background:linear-gradient(90deg,#7C3AED,#1AB3FF); border-radius:2px; margin:0 auto 0.75rem;"></div>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; color:#1C1917; margin:0 0 0.5rem;">Meet & Greet</h2>
+        <div style="width:36px; height:3px; background:linear-gradient(90deg,#D97706,#F59E0B); border-radius:2px; margin:0 auto 0.75rem;"></div>
         <p style="color:#6B7280; font-size:0.95rem; font-weight:500; margin:0; max-width:480px; margin-left:auto; margin-right:auto;">
             Vivez des moments uniques et intimes avec vos artistes préférés.
         </p>
@@ -575,9 +575,9 @@
         @endphp
         <a href="{{ route('meet-and-greet.show', $exp->id) }}"
            class="reveal"
-           style="display:block; background:white; border:1px solid rgba(109,40,217,0.12); border-radius:20px; padding:1.5rem; text-decoration:none; box-shadow:0 2px 12px rgba(109,40,217,0.06); transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s, border-color 0.2s; transition-delay:{{ $loop->index * 0.07 }}s;"
-           onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 50px rgba(109,40,217,0.14)';this.style.borderColor='rgba(109,40,217,0.3)'"
-           onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(109,40,217,0.06)';this.style.borderColor='rgba(109,40,217,0.12)'">
+           style="display:block; background:white; border:1px solid rgba(217,119,6,0.15); border-radius:20px; padding:1.5rem; text-decoration:none; box-shadow:0 2px 12px rgba(217,119,6,0.07); transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s, border-color 0.2s; transition-delay:{{ $loop->index * 0.07 }}s;"
+           onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 20px 50px rgba(217,119,6,0.14)';this.style.borderColor='rgba(217,119,6,0.35)'"
+           onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(217,119,6,0.07)';this.style.borderColor='rgba(217,119,6,0.15)'">
 
             {{-- En-tête artiste --}}
             <div style="display:flex; align-items:center; gap:12px; margin-bottom:1.25rem;">
@@ -604,14 +604,14 @@
             @endif
 
             {{-- Métas --}}
-            <div style="display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid #EDE9FE;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding-top:1rem; border-top:1px solid #FDE68A;">
                 <div style="display:flex; align-items:center; gap:5px; color:#6B7280; font-size:0.78rem; font-weight:600;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     {{ $exp->event_date->isoFormat('D MMM YYYY') }}
                 </div>
-                <div style="color:#6D28D9; font-weight:900; font-size:0.95rem;">
+                <div style="color:#B45309; font-weight:900; font-size:0.95rem;">
                     {{ number_format($pps, 0, ',', '.') }}
-                    <span style="font-size:0.72rem; font-weight:700; color:#7C3AED;">FCFA/pers.</span>
+                    <span style="font-size:0.72rem; font-weight:700; color:#D97706;">FCFA/pers.</span>
                 </div>
             </div>
         </a>
