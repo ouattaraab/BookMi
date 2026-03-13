@@ -7,6 +7,7 @@ use App\Enums\ExperienceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ExperienceBooking;
 use App\Models\PrivateExperience;
+use App\Notifications\MeetAndGreetBookingConfirmation;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -77,7 +78,18 @@ class ExperienceBookingController extends Controller
             throw $e;
         }
 
-        return back()->with('success', 'Votre place est réservée ! L\'équipe BookMi vous contactera pour finaliser votre inscription.');
+        // Envoi du reçu/billet par email
+        $booking = ExperienceBooking::where('private_experience_id', $expId)
+            ->where('client_id', $client->id)
+            ->latest()
+            ->first();
+
+        if ($booking) {
+            $booking->load(['experience.talentProfile', 'client']);
+            $client->notify(new MeetAndGreetBookingConfirmation($booking));
+        }
+
+        return back()->with('success', 'Votre place est réservée ! Un billet de confirmation vous a été envoyé par email.');
     }
 
     /**

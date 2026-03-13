@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ExperienceBooking;
 use App\Models\PrivateExperience;
 use App\Models\TalentProfile;
+use App\Notifications\MeetAndGreetBookingConfirmation;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -208,8 +209,12 @@ class ExperienceController extends Controller
             throw $e;
         }
 
+        // Envoi du reçu/billet par email
+        $booking->load(['experience.talentProfile', 'client']);
+        $client->notify(new MeetAndGreetBookingConfirmation($booking));
+
         return response()->json([
-            'message' => 'Inscription enregistrée. L\'équipe BookMi vous contactera pour finaliser.',
+            'message' => 'Inscription enregistrée. Un billet de confirmation vous a été envoyé par email.',
             'data'    => [
                 'id'           => $booking->id,
                 'seats_count'  => $booking->seats_count,
