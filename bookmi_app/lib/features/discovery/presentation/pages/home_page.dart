@@ -19,6 +19,10 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:bookmi_app/features/profile/bloc/profile_bloc.dart';
+import 'package:bookmi_app/features/meet_and_greet/data/models/experience_model.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_cubit.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_state.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/widgets/experience_card.dart';
 
 // ── Design tokens (dark) ─────────────────────────────────────────
 const _primary = Color(0xFF2196F3);
@@ -65,6 +69,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     context.read<DiscoveryBloc>().add(const DiscoveryFetched());
+    context.read<ExperienceCubit>().loadExperiences();
   }
 
   void _onHeroSearch(String? query, DateTime? eventDate) {
@@ -276,6 +281,8 @@ class _HomePageState extends State<HomePage> {
                       onTalentTap: _onTalentTap,
                       eventDate: eventDate,
                     ),
+                    const SizedBox(height: 24),
+                    const _MeetAndGreetSection(),
                     const SizedBox(height: 100),
                   ],
                 );
@@ -1492,6 +1499,118 @@ class _NotifyAvailabilityButtonState extends State<_NotifyAvailabilityButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── Meet & Greet section ──────────────────────────────────────────
+
+class _MeetAndGreetSection extends StatelessWidget {
+  const _MeetAndGreetSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<ExperienceCubit, ExperienceState>(
+      builder: (context, state) {
+        if (state is ExperienceInitial) return const SizedBox.shrink();
+
+        final experiences = state is ExperienceLoaded
+            ? state.experiences
+            : <ExperienceModel>[];
+        final isLoading =
+            state is ExperienceLoading || state is ExperienceInitial;
+
+        if (!isLoading && experiences.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1AB3FF), Color(0xFF8B5CF6)],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'M&G',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Meet & Greet',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Voir tout',
+                      style: GoogleFonts.manrope(
+                        fontSize: 13,
+                        color: const Color(0xFF1AB3FF),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 230,
+              child: isLoading
+                  ? ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: 3,
+                      itemBuilder: (_, __) => Container(
+                        width: 220,
+                        margin: const EdgeInsets.only(right: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F1C3A),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: experiences.length,
+                      itemBuilder: (_, i) {
+                        final exp = experiences[i];
+                        return ExperienceCard(
+                          experience: exp,
+                          onTap: () => context.pushNamed(
+                            RouteNames.experienceDetail,
+                            pathParameters: {'id': '${exp.id}'},
+                            extra: exp,
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

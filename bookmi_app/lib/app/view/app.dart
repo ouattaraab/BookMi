@@ -2,6 +2,8 @@ import 'package:bookmi_app/app/routes/app_router.dart';
 import 'package:bookmi_app/core/design_system/theme/bookmi_theme.dart';
 import 'package:bookmi_app/core/network/api_client.dart';
 import 'package:bookmi_app/features/app_update/data/repositories/app_version_repository.dart';
+import 'package:bookmi_app/features/meet_and_greet/data/repositories/experience_repository.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_cubit.dart';
 import 'package:bookmi_app/core/storage/local_storage.dart';
 import 'package:bookmi_app/core/storage/secure_storage.dart';
 import 'package:bookmi_app/features/auth/bloc/auth_bloc.dart';
@@ -83,6 +85,9 @@ class _AppState extends State<App> {
               BlocProvider<DiscoveryBloc>(
                 create: (_) => DiscoveryBloc(repository: deps.discoveryRepo),
               ),
+              BlocProvider<ExperienceCubit>(
+                create: (_) => ExperienceCubit(repository: deps.experienceRepo),
+              ),
             ],
             child: MaterialApp.router(
               routerConfig: deps.router,
@@ -115,6 +120,7 @@ class _AppDependencies {
     required this.notificationRepo,
     required this.payoutMethodRepo,
     required this.appVersionRepo,
+    required this.experienceRepo,
     required this.router,
   });
 
@@ -132,6 +138,7 @@ class _AppDependencies {
   final NotificationRepository notificationRepo;
   final PayoutMethodRepository payoutMethodRepo;
   final AppVersionRepository appVersionRepo;
+  final ExperienceRepository experienceRepo;
   final GoRouter router;
 
   static Future<_AppDependencies> initialize() async {
@@ -207,6 +214,7 @@ class _AppDependencies {
     final notificationRepo = NotificationRepository(apiClient: apiClient);
     final payoutMethodRepo = PayoutMethodRepository(apiClient: apiClient);
     final appVersionRepo = AppVersionRepository(apiClient: apiClient);
+    final experienceRepo = ExperienceRepository(apiClient: apiClient);
 
     final router = buildAppRouter(
       talentProfileRepo,
@@ -219,6 +227,7 @@ class _AppDependencies {
       profileRepo,
       notificationRepo,
       payoutMethodRepo,
+      experienceRepo,
       notificationService: NotificationService.instance,
     );
 
@@ -237,6 +246,7 @@ class _AppDependencies {
       notificationRepo: notificationRepo,
       payoutMethodRepo: payoutMethodRepo,
       appVersionRepo: appVersionRepo,
+      experienceRepo: experienceRepo,
       router: router,
     );
   }

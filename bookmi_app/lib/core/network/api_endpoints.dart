@@ -168,4 +168,10 @@ abstract final class ApiEndpoints {
   static const auth2faSetupEmail = '/auth/2fa/setup/email';
   static const auth2faEnableEmail = '/auth/2fa/enable/email';
   static const auth2faDisable = '/auth/2fa/disable';
+
+  // Meet & Greet — Private Experiences
+  static const experiences = '/experiences';
+  static String experienceDetail(int id) => '/experiences/$id';
+  static String bookExperience(int id) => '/experiences/$id/book';
+  static String cancelExperienceBooking(int id) => '/experiences/$id/booking';
 }

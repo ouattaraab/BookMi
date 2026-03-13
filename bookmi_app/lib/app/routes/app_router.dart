@@ -57,6 +57,10 @@ import 'package:bookmi_app/features/profile/presentation/pages/manager_assignmen
 import 'package:bookmi_app/features/talent_profile/bloc/talent_profile_bloc.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/presentation/pages/talent_profile_page.dart';
+import 'package:bookmi_app/features/meet_and_greet/data/models/experience_model.dart';
+import 'package:bookmi_app/features/meet_and_greet/data/repositories/experience_repository.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/cubit/experience_detail_cubit.dart';
+import 'package:bookmi_app/features/meet_and_greet/presentation/pages/experience_detail_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -89,7 +93,8 @@ GoRouter buildAppRouter(
   MessagingRepository messagingRepo,
   ProfileRepository profileRepo,
   NotificationRepository notificationRepo,
-  PayoutMethodRepository payoutMethodRepo, {
+  PayoutMethodRepository payoutMethodRepo,
+  ExperienceRepository experienceRepo, {
   NotificationService? notificationService,
 }) {
   final router = GoRouter(
@@ -153,6 +158,26 @@ GoRouter buildAppRouter(
         name: RouteNames.consentUpdate,
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) => ConsentUpdatePage.wrapped(context),
+      ),
+
+      // ── Meet & Greet detail ───────────────────────────────────────────────
+      GoRoute(
+        path: RoutePaths.experienceDetail,
+        name: RouteNames.experienceDetail,
+        parentNavigatorKey: rootNavigatorKey,
+        builder: (context, state) {
+          final id =
+              int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+          final preloaded = state.extra as ExperienceModel?;
+          return BlocProvider(
+            create: (_) =>
+                ExperienceDetailCubit(repository: experienceRepo),
+            child: ExperienceDetailPage(
+              experienceId: id,
+              preloaded: preloaded,
+            ),
+          );
+        },
       ),
 
       // ── Maintenance / Force update (exempt from auth guard) ─────────────

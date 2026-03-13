@@ -13,6 +13,7 @@ import 'package:bookmi_app/features/profile/data/repositories/payout_method_repo
 import 'package:bookmi_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:bookmi_app/features/talent_profile/data/repositories/talent_profile_repository.dart';
 import 'package:bookmi_app/features/tracking/data/repositories/tracking_repository.dart';
+import 'package:bookmi_app/features/meet_and_greet/data/repositories/experience_repository.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -63,6 +64,7 @@ void main() {
 
     final notificationRepo = MockNotificationRepository();
     final payoutMethodRepo = MockPayoutMethodRepository();
+    final experienceRepo = ExperienceRepository.forTesting(dio: mockDio);
 
     router = buildAppRouter(
       repo,
@@ -75,6 +77,7 @@ void main() {
       profileRepo,
       notificationRepo,
       payoutMethodRepo,
+      experienceRepo,
     );
   });
 

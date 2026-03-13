@@ -44,6 +44,8 @@ abstract final class RouteNames {
   // Consentements
   static const consentUpdate = 'consentUpdate';
   static const profileConsents = 'profileConsents';
+  // Meet & Greet
+  static const experienceDetail = 'experienceDetail';
 }
 
 abstract final class RoutePaths {
@@ -91,4 +93,6 @@ abstract final class RoutePaths {
   // Consentements
   static const consentUpdate = '/consent/update';
   static const profileConsents = 'consents';
+  // Meet & Greet
+  static const experienceDetail = '/experiences/:id';
 }
