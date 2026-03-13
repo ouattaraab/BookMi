@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ExperienceBookingStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExperienceBooking extends Model
 {
+    /** @use HasFactory<\Database\Factories\ExperienceBookingFactory> */
+    use HasFactory;
     protected $fillable = [
         'private_experience_id',
         'client_id',

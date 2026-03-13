@@ -75,7 +75,7 @@ class PrivateExperienceResource extends Resource
                         ->label('Prix total artiste (XOF)')
                         ->numeric()
                         ->required()
-                        ->minValue(0),
+                        ->minValue(1000),
                     Forms\Components\TextInput::make('max_seats')
                         ->label('Nombre de places max')
                         ->numeric()

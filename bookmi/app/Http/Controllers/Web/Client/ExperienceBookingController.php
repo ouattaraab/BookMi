@@ -7,6 +7,7 @@ use App\Enums\ExperienceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\ExperienceBooking;
 use App\Models\PrivateExperience;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,51 +26,58 @@ class ExperienceBookingController extends Controller
 
         /** @var \App\Models\User $client */
         $client = auth()->user();
+        $seats  = (int) $validated['seats_count'];
+        $expId  = (int) $validated['experience_id'];
 
-        $experience = PrivateExperience::where('id', $validated['experience_id'])
-            ->where('status', ExperienceStatus::Published->value)
-            ->lockForUpdate()
-            ->firstOrFail();
+        try {
+            DB::transaction(function () use ($expId, $seats, $client): void {
+                // lockForUpdate INSIDE transaction — verrou réel
+                $experience = PrivateExperience::where('id', $expId)
+                    ->where('status', ExperienceStatus::Published->value)
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-        // Déjà inscrit ?
-        if (ExperienceBooking::where('private_experience_id', $experience->id)
-            ->where('client_id', $client->id)
-            ->exists()) {
-            return back()->with('error', 'Vous êtes déjà inscrit à cet événement.');
-        }
+                if (ExperienceBooking::where('private_experience_id', $expId)
+                    ->where('client_id', $client->id)
+                    ->exists()) {
+                    abort(422, 'Vous êtes déjà inscrit à cet événement.');
+                }
 
-        $seats = (int) $validated['seats_count'];
+                if ($experience->seats_available < $seats) {
+                    abort(422, 'Désolé, il ne reste que ' . $experience->seats_available . ' place(s) disponible(s).');
+                }
 
-        if ($experience->seats_available < $seats) {
-            return back()->with('error', 'Désolé, il ne reste que ' . $experience->seats_available . ' place(s) disponible(s).');
-        }
+                $pricePerSeat     = $experience->price_per_seat;
+                $totalAmount      = $pricePerSeat * $seats;
+                $commissionAmount = (int) round($totalAmount * $experience->commission_rate / 100);
 
-        DB::transaction(function () use ($experience, $seats, $client) {
-            $pricePerSeat     = $experience->price_per_seat;
-            $totalAmount      = $pricePerSeat * $seats;
-            $commissionAmount = (int) round($totalAmount * $experience->commission_rate / 100);
+                ExperienceBooking::create([
+                    'private_experience_id' => $experience->id,
+                    'client_id'             => $client->id,
+                    'seats_count'           => $seats,
+                    'price_per_seat'        => $pricePerSeat,
+                    'total_amount'          => $totalAmount,
+                    'commission_amount'     => $commissionAmount,
+                    'status'                => ExperienceBookingStatus::Pending->value,
+                ]);
 
-            ExperienceBooking::create([
-                'private_experience_id' => $experience->id,
-                'client_id'             => $client->id,
-                'seats_count'           => $seats,
-                'price_per_seat'        => $pricePerSeat,
-                'total_amount'          => $totalAmount,
-                'commission_amount'     => $commissionAmount,
-                'status'                => ExperienceBookingStatus::Pending->value,
-            ]);
+                $experience->increment('booked_seats', $seats);
+                $experience->refresh();
 
-            // Incrémenter les places réservées atomiquement
-            $experience->increment('booked_seats', $seats);
-
-            // Passer en 'full' si toutes les places sont prises
-            $experience->refresh();
-            if ($experience->booked_seats >= $experience->max_seats) {
-                $experience->update(['status' => ExperienceStatus::Full->value]);
+                if ($experience->booked_seats >= $experience->max_seats) {
+                    $experience->update(['status' => ExperienceStatus::Full->value]);
+                }
+            });
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (QueryException $e) {
+            if ($e->getCode() === '23000') {
+                return back()->with('error', 'Vous êtes déjà inscrit à cet événement.');
             }
-        });
+            throw $e;
+        }
 
-        return back()->with('success', '🎉 Votre place est réservée ! L\'équipe BookMi vous contactera pour finaliser votre inscription.');
+        return back()->with('success', 'Votre place est réservée ! L\'équipe BookMi vous contactera pour finaliser votre inscription.');
     }
 
     /**
@@ -85,18 +93,23 @@ class ExperienceBookingController extends Controller
             ->where('status', ExperienceBookingStatus::Pending->value)
             ->firstOrFail();
 
-        DB::transaction(function () use ($booking) {
+        DB::transaction(function () use ($booking): void {
             $booking->update([
                 'status'       => ExperienceBookingStatus::Cancelled->value,
                 'cancelled_at' => now(),
             ]);
-            // Libérer les places
-            $booking->experience()->decrement('booked_seats', $booking->seats_count);
-            // Si l'expérience était "full", la repasser en "published"
+
+            // lockForUpdate pour éviter la lecture d'un état périmé
             /** @var PrivateExperience|null $exp */
-            $exp = $booking->experience()->first();
-            if ($exp instanceof PrivateExperience && $exp->status === ExperienceStatus::Full) {
-                $exp->update(['status' => ExperienceStatus::Published->value]);
+            $exp = $booking->experience()->lockForUpdate()->first();
+
+            if ($exp instanceof PrivateExperience) {
+                $exp->decrement('booked_seats', $booking->seats_count);
+                $exp->refresh();
+
+                if ($exp->status === ExperienceStatus::Full) {
+                    $exp->update(['status' => ExperienceStatus::Published->value]);
+                }
             }
         });
 

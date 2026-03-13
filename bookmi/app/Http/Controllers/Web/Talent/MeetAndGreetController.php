@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Web\Talent;
 
+use App\Enums\ExperienceBookingStatus;
 use App\Enums\ExperienceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\PrivateExperience;
 use App\Models\TalentProfile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -104,12 +106,23 @@ class MeetAndGreetController extends Controller
             ->whereIn('status', [ExperienceStatus::Draft->value, ExperienceStatus::Published->value, ExperienceStatus::Full->value])
             ->firstOrFail();
 
-        $experience->update([
-            'status'           => ExperienceStatus::Cancelled->value,
-            'cancelled_reason' => $validated['cancelled_reason'],
-        ]);
+        DB::transaction(function () use ($experience, $validated): void {
+            // Annuler toutes les réservations actives des participants
+            $experience->bookings()
+                ->whereIn('status', [ExperienceBookingStatus::Pending->value, ExperienceBookingStatus::Confirmed->value])
+                ->update([
+                    'status'           => ExperienceBookingStatus::Cancelled->value,
+                    'cancelled_at'     => now(),
+                    'cancelled_reason' => "Événement annulé par l'artiste.",
+                ]);
+
+            $experience->update([
+                'status'           => ExperienceStatus::Cancelled->value,
+                'cancelled_reason' => $validated['cancelled_reason'],
+            ]);
+        });
 
         return redirect()->route('talent.meet-and-greet.index')
-            ->with('warning', 'L\'événement a été annulé. Les participants seront informés.');
+            ->with('warning', 'L\'événement a été annulé. Les réservations des participants ont été annulées.');
     }
 }

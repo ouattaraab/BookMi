@@ -85,13 +85,16 @@ class PrivateExperience extends Model
     }
 
     /**
-     * Part nette talent (total perçu − commission BookMi).
+     * Part nette talent (total perçu − commission BookMi) — 1 seule query.
      */
     public function getTalentNetAttribute(): int
     {
-        $commission = (int) $this->bookings()->where('status', 'confirmed')->sum('commission_amount');
+        $net = $this->bookings()
+            ->where('status', 'confirmed')
+            ->selectRaw('SUM(total_amount) - SUM(commission_amount) as net')
+            ->value('net');
 
-        return $this->total_collected - $commission;
+        return (int) ($net ?? 0);
     }
 
     // ── Scopes ─────────────────────────────────────────────────────────────
